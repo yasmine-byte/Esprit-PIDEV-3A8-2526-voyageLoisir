@@ -1,0 +1,8 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    {% include 'admin/Partials/navbar.html.twig' %}
+    {% include 'admin/Partials/sidebar.html.twig' %}
+
+    {% block admin_content %}{% endblock %}
+{% endblock %}

@@ -1,0 +1,136 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}Settings - CryptoVault{% endblock %}
+
+{% block admin_content %}
+    <div class="page-header">
+        <h1>Settings</h1>
+        <p>Manage your account preferences and security</p>
+    </div>
+
+    <div class="settings-tabs">
+        <button class="settings-tab active" data-tab="profile">Profile</button>
+        <button class="settings-tab" data-tab="security">Security</button>
+        <button class="settings-tab" data-tab="notifications">Notifications</button>
+        <button class="settings-tab" data-tab="preferences">Preferences</button>
+        <button class="settings-tab" data-tab="connected">Connected</button>
+    </div>
+
+    <div class="settings-content active" id="profile">
+        <div class="card">
+            <div class="profile-header">
+                <div class="profile-avatar">AM</div>
+                <div class="profile-info">
+                    <h2>Alex Morgan</h2>
+                    <p>alex.morgan@email.com</p>
+                    <span class="profile-badge">Pro Trader</span>
+                </div>
+            </div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label">First Name</label>
+                    <input type="text" class="form-input" value="Alex">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Last Name</label>
+                    <input type="text" class="form-input" value="Morgan">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Email Address</label>
+                    <input type="email" class="form-input" value="alex.morgan@email.com">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Phone Number</label>
+                    <input type="tel" class="form-input" value="+1 (555) 123-4567">
+                </div>
+            </div>
+            <div class="btn-group">
+                <button class="btn primary">Save Changes</button>
+                <button class="btn">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="settings-content" id="security">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Security Settings</h3>
+            </div>
+            <div class="security-item">
+                <div class="security-info">
+                    <div class="security-title">Password</div>
+                    <div class="security-status enabled">Last changed 30 days ago</div>
+                </div>
+                <button class="security-btn">Change Password</button>
+            </div>
+            <div class="security-item">
+                <div class="security-info">
+                    <div class="security-title">Two-Factor Authentication</div>
+                    <div class="security-status enabled">Enabled via Authenticator App</div>
+                </div>
+                <button class="security-btn">Manage</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="settings-content" id="notifications">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Notification Preferences</h3>
+            </div>
+            <div class="toggle-item">
+                <div class="toggle-info">
+                    <div class="toggle-title">Price Alerts</div>
+                    <div class="toggle-description">Get notified when prices hit your targets</div>
+                </div>
+                <div class="toggle-switch active"></div>
+            </div>
+            <div class="toggle-item">
+                <div class="toggle-info">
+                    <div class="toggle-title">Transaction Updates</div>
+                    <div class="toggle-description">Receive alerts for deposits and trades</div>
+                </div>
+                <div class="toggle-switch active"></div>
+            </div>
+            <div class="toggle-item">
+                <div class="toggle-info">
+                    <div class="toggle-title">Security Alerts</div>
+                    <div class="toggle-description">Important security notifications</div>
+                </div>
+                <div class="toggle-switch active"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="settings-content" id="preferences">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Display Preferences</h3>
+            </div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label">Currency</label>
+                    <select class="form-select">
+                        <option value="usd" selected>USD - US Dollar</option>
+                        <option value="eur">EUR - Euro</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Language</label>
+                    <select class="form-select">
+                        <option value="en" selected>English</option>
+                        <option value="fr">French</option>
+                    </select>
+                </div>
+            </div>
+            <div class="btn-group">
+                <button class="btn primary">Save Preferences</button>
+                <button class="btn">Reset to Default</button>
+            </div>
+        </div>
+    </div>
+
+    <footer class="copyright">
+        Copyright &copy; 2026 CryptoVault
+    </footer>
+{% endblock %}

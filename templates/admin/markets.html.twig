@@ -1,0 +1,177 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}Markets - CryptoVault{% endblock %}
+
+{% block admin_content %}
+    <div class="page-header">
+        <h1>Markets</h1>
+        <p>Live cryptocurrency prices and market data</p>
+    </div>
+
+    <div class="market-stats">
+        <div class="market-stat">
+            <div class="market-stat-label">Total Market Cap</div>
+            <div class="market-stat-value">$2.48T</div>
+            <div class="market-stat-change positive">+2.4%</div>
+        </div>
+        <div class="market-stat">
+            <div class="market-stat-label">24h Volume</div>
+            <div class="market-stat-value">$84.2B</div>
+            <div class="market-stat-change positive">+5.8%</div>
+        </div>
+        <div class="market-stat">
+            <div class="market-stat-label">BTC Dominance</div>
+            <div class="market-stat-value">52.4%</div>
+            <div class="market-stat-change negative">-0.3%</div>
+        </div>
+        <div class="market-stat">
+            <div class="market-stat-label">Active Cryptos</div>
+            <div class="market-stat-value">12,847</div>
+            <div class="market-stat-change positive">+24</div>
+        </div>
+    </div>
+
+    <div class="search-filters">
+        <div class="search-box">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"/>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+            <input type="text" placeholder="Search coins..." id="searchInput">
+        </div>
+        <div class="filter-tabs">
+            <button class="filter-tab active">All</button>
+            <button class="filter-tab">Favorites</button>
+            <button class="filter-tab">DeFi</button>
+            <button class="filter-tab">NFT</button>
+            <button class="filter-tab">Layer 1</button>
+        </div>
+    </div>
+
+    <div class="content-grid">
+        <div class="card">
+            <table class="market-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Coin</th>
+                        <th class="text-right">Price</th>
+                        <th class="text-right">24h %</th>
+                        <th class="text-right">Volume</th>
+                        <th class="text-right">Market Cap</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="coin-rank">1</span></td>
+                        <td>
+                            <div class="coin-cell">
+                                <div class="coin-icon btc">₿</div>
+                                <div>
+                                    <div class="coin-name">Bitcoin</div>
+                                    <div class="coin-symbol">BTC</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="price-cell">$43,256.00</td>
+                        <td class="change-cell positive">+2.34%</td>
+                        <td class="volume-cell">$28.4B</td>
+                        <td class="mcap-cell">$847.2B</td>
+                        <td><button class="star-btn active">★</button></td>
+                    </tr>
+                    <tr>
+                        <td><span class="coin-rank">2</span></td>
+                        <td>
+                            <div class="coin-cell">
+                                <div class="coin-icon eth">Ξ</div>
+                                <div>
+                                    <div class="coin-name">Ethereum</div>
+                                    <div class="coin-symbol">ETH</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="price-cell">$2,284.50</td>
+                        <td class="change-cell positive">+1.87%</td>
+                        <td class="volume-cell">$12.8B</td>
+                        <td class="mcap-cell">$274.5B</td>
+                        <td><button class="star-btn active">★</button></td>
+                    </tr>
+                    <tr>
+                        <td><span class="coin-rank">3</span></td>
+                        <td>
+                            <div class="coin-cell">
+                                <div class="coin-icon sol">◎</div>
+                                <div>
+                                    <div class="coin-name">Solana</div>
+                                    <div class="coin-symbol">SOL</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="price-cell">$98.42</td>
+                        <td class="change-cell positive">+5.67%</td>
+                        <td class="volume-cell">$2.4B</td>
+                        <td class="mcap-cell">$42.8B</td>
+                        <td><button class="star-btn active">★</button></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div>
+            <div class="card" style="margin-bottom: 24px;">
+                <div class="card-header">
+                    <h3 class="card-title">🔥 Trending</h3>
+                </div>
+                <div class="trending-list">
+                    <div class="trending-item">
+                        <div class="trending-rank">1</div>
+                        <div class="trending-coin">
+                            <div class="trending-icon" style="background: linear-gradient(135deg, #c3a634, #ba9f33);">Ð</div>
+                            <div>
+                                <div class="trending-name">Dogecoin</div>
+                                <div class="trending-symbol">DOGE</div>
+                            </div>
+                        </div>
+                        <div class="trending-change positive">+8.45%</div>
+                    </div>
+                    <div class="trending-item">
+                        <div class="trending-rank">2</div>
+                        <div class="trending-coin">
+                            <div class="trending-icon" style="background: linear-gradient(135deg, #9945ff, #14f195);">◎</div>
+                            <div>
+                                <div class="trending-name">Solana</div>
+                                <div class="trending-symbol">SOL</div>
+                            </div>
+                        </div>
+                        <div class="trending-change positive">+5.67%</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Fear & Greed Index</h3>
+                </div>
+                <div class="fear-greed">
+                    <div class="fear-greed-meter">
+                        <div class="fear-greed-indicator" style="left: 68%;"></div>
+                    </div>
+                    <div class="fear-greed-labels">
+                        <span>Extreme Fear</span>
+                        <span>Neutral</span>
+                        <span>Extreme Greed</span>
+                    </div>
+                    <div class="fear-greed-value">
+                        <div class="fear-greed-number">68</div>
+                        <div class="fear-greed-label">Greed</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="copyright">
+        Copyright &copy; 2026 CryptoVault
+    </footer>
+{% endblock %}
