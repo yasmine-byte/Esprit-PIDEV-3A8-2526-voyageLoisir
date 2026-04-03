@@ -1,0 +1,13 @@
+{{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+<div style="display:grid; gap:20px;">
+    <div>
+        {{ form_label(form.nom, 'Nom du type', {'label_attr': {'class': 'form-label'}}) }}
+        {{ form_widget(form.nom, {'attr': {'class': 'form-input', 'placeholder': 'Ex: Hotel, Villa, Appartement...'}}) }}
+        <div style="color:#ef4444; font-size:12px; margin-top:4px;">{{ form_errors(form.nom) }}</div>
+    </div>
+</div>
+<div style="margin-top:28px; display:flex; gap:12px;">
+    <button type="submit" class="btn primary">{{ button_label|default('Enregistrer') }}</button>
+    <a href="{{ path('app_type_index') }}" class="btn">Annuler</a>
+</div>
+{{ form_end(form) }}
