@@ -1,7 +1,9 @@
 <?php
-
 namespace App\Controller;
 
+use App\Repository\HebergementRepository;
+use App\Repository\ChambreRepository;
+use App\Repository\ReservationRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -9,9 +11,24 @@ use Symfony\Component\Routing\Attribute\Route;
 class AdminController extends AbstractController
 {
     #[Route('/admin', name: 'app_admin')]
-    public function index(): Response
+    public function index(
+        HebergementRepository $hebergementRepo,
+        ChambreRepository $chambreRepo,
+        ReservationRepository $reservationRepo
+    ): Response
     {
-        return $this->render('admin/index.html.twig'); // ← corrigé
+        $reservations = $reservationRepo->findBy([], ['id' => 'DESC']);
+        $enAttente = $reservationRepo->findBy(['statut' => 'en_attente']);
+
+        return $this->render('admin/index.html.twig', [
+            'reservations' => $reservations,
+            'stats' => [
+                'hebergements' => count($hebergementRepo->findAll()),
+                'chambres'     => count($chambreRepo->findAll()),
+                'reservations' => count($reservations),
+                'enAttente'    => count($enAttente),
+            ]
+        ]);
     }
 
     #[Route('/admin/login', name: 'admin_login')]
@@ -43,6 +60,4 @@ class AdminController extends AbstractController
     {
         return $this->render('admin/add-user.html.twig');
     }
-
-    
 }

@@ -1,7 +1,82 @@
 {% extends 'admin/base_admin.html.twig' %}
-
 {% block title %}Dashboard{% endblock %}
-
 {% block admin_content %}
-    <h1>Bienvenue sur le Dashboard</h1>
+
+    <div class="page-header">
+        <h1>Dashboard</h1>
+        <p>Bienvenue sur le panneau d'administration</p>
+    </div>
+
+    <div class="market-stats" style="margin-bottom:32px;">
+        <div class="market-stat">
+            <div class="market-stat-label">Hébergements</div>
+            <div class="market-stat-value">{{ stats.hebergements }}</div>
+        </div>
+        <div class="market-stat">
+            <div class="market-stat-label">Chambres</div>
+            <div class="market-stat-value">{{ stats.chambres }}</div>
+        </div>
+        <div class="market-stat">
+            <div class="market-stat-label">Réservations</div>
+            <div class="market-stat-value">{{ stats.reservations }}</div>
+        </div>
+        <div class="market-stat">
+            <div class="market-stat-label">En attente</div>
+            <div class="market-stat-value">{{ stats.enAttente }}</div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Réservations récentes</h3>
+        </div>
+        <table class="market-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Client</th>
+                    <th>Hébergement</th>
+                    <th>Arrivée</th>
+                    <th>Départ</th>
+                    <th>Nuits</th>
+                    <th>Total</th>
+                    <th>Statut</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for reservation in reservations %}
+                <tr>
+                    <td>{{ reservation.id }}</td>
+                    <td>
+                        <div style="font-weight:600;">{{ reservation.clientNom }}</div>
+                        <div style="color:var(--text-secondary); font-size:12px;">{{ reservation.clientEmail }}</div>
+                    </td>
+                    <td>{{ reservation.hebergement ? reservation.hebergement.description|slice(0,25) ~ '...' : 'N/A' }}</td>
+                    <td>{{ reservation.dateDebut ? reservation.dateDebut|date('d/m/Y') : '-' }}</td>
+                    <td>{{ reservation.dateFin ? reservation.dateFin|date('d/m/Y') : '-' }}</td>
+                    <td>{{ reservation.nbNuits }}</td>
+                    <td class="price-cell">{{ reservation.total }} TND</td>
+                    <td>
+                        {% if reservation.statut == 'en_attente' %}
+                            <span style="background:#f59e0b20; color:#f59e0b; padding:4px 12px; border-radius:20px; font-size:12px; font-weight:600;">En attente</span>
+                        {% elseif reservation.statut == 'confirmee' %}
+                            <span style="background:#22c55e20; color:#22c55e; padding:4px 12px; border-radius:20px; font-size:12px; font-weight:600;">Confirmée</span>
+                        {% else %}
+                            <span style="background:#ef444420; color:#ef4444; padding:4px 12px; border-radius:20px; font-size:12px; font-weight:600;">{{ reservation.statut }}</span>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="8" style="text-align:center; padding:40px; color:var(--text-secondary);">
+                        Aucune réservation pour le moment
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <footer class="copyright">Copyright &copy; 2026 Voyage</footer>
+
 {% endblock %}

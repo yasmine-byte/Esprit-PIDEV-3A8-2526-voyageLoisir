@@ -1,17 +1,11 @@
 {% extends 'base_front.html.twig' %}
-
 {% block title %}Properties - Villa Agency{% endblock %}
-
 {% block body %}
 
   <div id="js-preloader" class="js-preloader">
     <div class="preloader-inner">
       <span class="dot"></span>
-      <div class="dots">
-        <span></span>
-        <span></span>
-        <span></span>
-      </div>
+      <div class="dots"><span></span><span></span><span></span></div>
     </div>
   </div>
 
@@ -45,7 +39,6 @@
             <ul class="nav">
               <li><a href="{{ path('app_home') }}">Home</a></li>
               <li><a href="{{ path('app_properties') }}" class="active">Properties</a></li>
-              <li><a href="{{ path('app_property_details') }}">Property Details</a></li>
               <li><a href="{{ path('app_contact') }}">Contact Us</a></li>
             </ul>
             <a class='menu-trigger'><span>Menu</span></a>
@@ -59,8 +52,8 @@
     <div class="container">
       <div class="row">
         <div class="col-lg-12">
-          <span class="breadcrumb"><a href="#">Home</a> / Properties</span>
-          <h3>Properties</h3>
+          <span class="breadcrumb"><a href="{{ path('app_home') }}">Home</a> / Properties</span>
+          <h3>Nos Hébergements</h3>
         </div>
       </div>
     </div>
@@ -68,119 +61,33 @@
 
   <div class="section properties">
     <div class="container">
-      <ul class="properties-filter">
-        <li><a class="is_active" href="#!" data-filter="*">Show All</a></li>
-        <li><a href="#!" data-filter=".adv">Apartment</a></li>
-        <li><a href="#!" data-filter=".str">Villa House</a></li>
-        <li><a href="#!" data-filter=".rac">Penthouse</a></li>
-      </ul>
       <div class="row properties-box">
-        <div class="col-lg-4 col-md-6 align-self-center mb-30 properties-items adv">
+        {% for hebergement in hebergements %}
+        <div class="col-lg-4 col-md-6 align-self-center mb-30 properties-items">
           <div class="item">
-            <a href="{{ path('app_property_details') }}"><img src="{{ asset('assets_front/images/images/property-01.jpg') }}" alt=""></a>
-            <span class="category">Luxury Villa</span>
-            <h6>$2.264.000</h6>
-            <h4><a href="{{ path('app_property_details') }}">18 Old Street Miami, OR 97219</a></h4>
+            <a href="{{ path('app_property_details', {'id': hebergement.id}) }}">
+              {% if hebergement.imagePath %}
+                <img src="{{ asset('uploads/hebergements/' ~ hebergement.imagePath) }}" alt="{{ hebergement.description }}">
+              {% else %}
+                <img src="{{ asset('assets_front/images/images/property-01.jpg') }}" alt="">
+              {% endif %}
+            </a>
+            <span class="category">{{ hebergement.type ? hebergement.type.nom : 'Hébergement' }}</span>
+            <h6>{{ hebergement.prix }} TND / nuit</h6>
+            <h4><a href="{{ path('app_property_details', {'id': hebergement.id}) }}">{{ hebergement.description }}</a></h4>
             <ul>
-              <li>Bedrooms: <span>8</span></li>
-              <li>Bathrooms: <span>8</span></li>
-              <li>Area: <span>545m2</span></li>
-              <li>Floor: <span>3</span></li>
-              <li>Parking: <span>6 spots</span></li>
+              <li>Chambres: <span>{{ hebergement.no|length }}</span></li>
             </ul>
-            <div class="main-button"><a href="{{ path('app_property_details') }}">Schedule a visit</a></div>
+            <div class="main-button">
+              <a href="{{ path('app_property_details', {'id': hebergement.id}) }}">Voir & Réserver</a>
+            </div>
           </div>
         </div>
-        <div class="col-lg-4 col-md-6 align-self-center mb-30 properties-items str">
-          <div class="item">
-            <a href="{{ path('app_property_details') }}"><img src="{{ asset('assets_front/images/images/property-02.jpg') }}" alt=""></a>
-            <span class="category">Luxury Villa</span>
-            <h6>$1.180.000</h6>
-            <h4><a href="{{ path('app_property_details') }}">54 New Street Florida, OR 27001</a></h4>
-            <ul>
-              <li>Bedrooms: <span>6</span></li>
-              <li>Bathrooms: <span>5</span></li>
-              <li>Area: <span>450m2</span></li>
-              <li>Floor: <span>3</span></li>
-              <li>Parking: <span>8 spots</span></li>
-            </ul>
-            <div class="main-button"><a href="{{ path('app_property_details') }}">Schedule a visit</a></div>
-          </div>
+        {% else %}
+        <div class="col-12 text-center">
+          <p>Aucun hébergement disponible.</p>
         </div>
-        <div class="col-lg-4 col-md-6 align-self-center mb-30 properties-items adv rac">
-          <div class="item">
-            <a href="{{ path('app_property_details') }}"><img src="{{ asset('assets_front/images/images/property-03.jpg') }}" alt=""></a>
-            <span class="category">Luxury Villa</span>
-            <h6>$1.460.000</h6>
-            <h4><a href="{{ path('app_property_details') }}">26 Mid Street Portland, OR 38540</a></h4>
-            <ul>
-              <li>Bedrooms: <span>5</span></li>
-              <li>Bathrooms: <span>4</span></li>
-              <li>Area: <span>225m2</span></li>
-              <li>Floor: <span>3</span></li>
-              <li>Parking: <span>10 spots</span></li>
-            </ul>
-            <div class="main-button"><a href="{{ path('app_property_details') }}">Schedule a visit</a></div>
-          </div>
-        </div>
-        <div class="col-lg-4 col-md-6 align-self-center mb-30 properties-items str">
-          <div class="item">
-            <a href="{{ path('app_property_details') }}"><img src="{{ asset('assets_front/images/images/property-04.jpg') }}" alt=""></a>
-            <span class="category">Apartment</span>
-            <h6>$584.500</h6>
-            <h4><a href="{{ path('app_property_details') }}">12 Hope Street Portland, OR 12650</a></h4>
-            <ul>
-              <li>Bedrooms: <span>4</span></li>
-              <li>Bathrooms: <span>3</span></li>
-              <li>Area: <span>125m2</span></li>
-              <li>Floor: <span>25th</span></li>
-              <li>Parking: <span>2 cars</span></li>
-            </ul>
-            <div class="main-button"><a href="{{ path('app_property_details') }}">Schedule a visit</a></div>
-          </div>
-        </div>
-        <div class="col-lg-4 col-md-6 align-self-center mb-30 properties-items rac str">
-          <div class="item">
-            <a href="{{ path('app_property_details') }}"><img src="{{ asset('assets_front/images/images/property-05.jpg') }}" alt=""></a>
-            <span class="category">Penthouse</span>
-            <h6>$925.600</h6>
-            <h4><a href="{{ path('app_property_details') }}">34 Hope Street Portland, OR 42680</a></h4>
-            <ul>
-              <li>Bedrooms: <span>4</span></li>
-              <li>Bathrooms: <span>4</span></li>
-              <li>Area: <span>180m2</span></li>
-              <li>Floor: <span>38th</span></li>
-              <li>Parking: <span>2 cars</span></li>
-            </ul>
-            <div class="main-button"><a href="{{ path('app_property_details') }}">Schedule a visit</a></div>
-          </div>
-        </div>
-        <div class="col-lg-4 col-md-6 align-self-center mb-30 properties-items rac adv">
-          <div class="item">
-            <a href="{{ path('app_property_details') }}"><img src="{{ asset('assets_front/images/images/property-06.jpg') }}" alt=""></a>
-            <span class="category">Modern Condo</span>
-            <h6>$450.000</h6>
-            <h4><a href="{{ path('app_property_details') }}">22 Hope Street Portland, OR 16540</a></h4>
-            <ul>
-              <li>Bedrooms: <span>3</span></li>
-              <li>Bathrooms: <span>2</span></li>
-              <li>Area: <span>165m2</span></li>
-              <li>Floor: <span>26th</span></li>
-              <li>Parking: <span>3 cars</span></li>
-            </ul>
-            <div class="main-button"><a href="{{ path('app_property_details') }}">Schedule a visit</a></div>
-          </div>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col-lg-12">
-          <ul class="pagination">
-            <li><a href="#">1</a></li>
-            <li><a class="is_active" href="#">2</a></li>
-            <li><a href="#">3</a></li>
-            <li><a href="#">>></a></li>
-          </ul>
-        </div>
+        {% endfor %}
       </div>
     </div>
   </div>
@@ -188,7 +95,7 @@
   <footer>
     <div class="container">
       <div class="col-lg-12">
-        <p>Copyright &copy; 2026 Villa Agency Co., Ltd. All rights reserved. Design: <a rel="nofollow" href="https://templatemo.com" target="_blank">TemplateMo</a></p>
+        <p>Copyright &copy; 2026 Villa Agency Co., Ltd. All rights reserved.</p>
       </div>
     </div>
   </footer>

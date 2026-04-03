@@ -1,0 +1,63 @@
+{% extends 'admin/base_admin.html.twig' %}
+{% block title %}Gestion Hébergements{% endblock %}
+{% block admin_content %}
+
+    <div class="page-header">
+        <h1>Gestion des Hébergements</h1>
+        <p>{{ hebergements|length }} hébergement(s) enregistré(s)</p>
+    </div>
+
+    <div style="margin-bottom:20px;">
+        <a href="{{ path('app_hebergement_new') }}" style="background:var(--accent-primary); color:#fff; padding:10px 20px; border-radius:8px; text-decoration:none; font-weight:600; display:inline-flex; align-items:center; gap:8px;">
+            + Nouvel Hébergement
+        </a>
+    </div>
+
+    <div class="card">
+        <table class="market-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Description</th>
+                    <th>Prix</th>
+                    <th>Type</th>
+                    <th>Chambres</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for hebergement in hebergements %}
+                <tr>
+                    <td>{{ hebergement.id }}</td>
+                    <td style="max-width:250px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                        {{ hebergement.description }}
+                    </td>
+                    <td class="price-cell">{{ hebergement.prix }} TND</td>
+                    <td>
+                        <span style="background:var(--bg-secondary); color:var(--accent-primary); padding:4px 12px; border-radius:20px; font-size:12px; font-weight:600;">
+                            {{ hebergement.type ? hebergement.type.nom : 'N/A' }}
+                        </span>
+                    </td>
+                    <td>{{ hebergement.no|length }}</td>
+                    <td>
+                        <div style="display:flex; gap:8px;">
+                            <a href="{{ path('app_hebergement_show', {'id': hebergement.id}) }}" style="background:#3b82f620; color:#3b82f6; padding:5px 12px; border-radius:6px; text-decoration:none; font-size:13px; font-weight:500;">Voir</a>
+                            <a href="{{ path('app_hebergement_edit', {'id': hebergement.id}) }}" style="background:#f59e0b20; color:#f59e0b; padding:5px 12px; border-radius:6px; text-decoration:none; font-size:13px; font-weight:500;">Modifier</a>
+                            {{ include('hebergement/_delete_form.html.twig') }}
+                        </div>
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="6" style="text-align:center; padding:40px; color:var(--text-secondary);">
+                        Aucun hébergement trouvé
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <footer class="copyright">Copyright &copy; 2026 Voyage</footer>
+
+{% endblock %}
