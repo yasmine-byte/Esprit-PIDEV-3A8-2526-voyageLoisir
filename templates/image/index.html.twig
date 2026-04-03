@@ -1,0 +1,48 @@
+﻿{% extends 'admin/base_admin.html.twig' %}
+{% block title %}Images{% endblock %}
+
+{% block admin_content %}
+<div class="page-header">
+    <h1>Images</h1>
+    <p>Gérer toutes les images</p>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Liste des Images</h3>
+        <a href="{{ path('app_image_new') }}" class="action-btn primary">+ Ajouter</a>
+    </div>
+    <table class="market-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Aperçu</th>
+                <th>URL</th>
+                <th>Destination</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for image in images %}
+            <tr>
+                <td>{{ image.id }}</td>
+                <td>
+                    <img src="{{ image.urlImage }}" alt="image" style="width:60px; height:40px; object-fit:cover; border-radius:4px;">
+                </td>
+                <td>{{ image.urlImage }}</td>
+                <td>{{ image.destination ? image.destination.nom : '-' }}</td>
+                <td>
+                    <a href="{{ path('app_image_show', {'id': image.id}) }}" class="action-btn">Voir</a>
+                    <a href="{{ path('app_image_edit', {'id': image.id}) }}" class="action-btn">Modifier</a>
+                    {{ include('image/_delete_form.html.twig') }}
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="5">Aucune image trouvée</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<footer class="copyright">Copyright &copy; 2026 VoyageLoisir</footer>
+{% endblock %}

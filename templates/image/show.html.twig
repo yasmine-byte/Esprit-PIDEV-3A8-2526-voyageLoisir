@@ -1,0 +1,32 @@
+{% extends 'admin/base_admin.html.twig' %}
+{% block title %}Voyage #{{ voyage.id }}{% endblock %}
+
+{% block admin_content %}
+<div class="page-header">
+    <h1>Voyage #{{ voyage.id }}</h1>
+    <p>Détails du voyage</p>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Informations</h3>
+        <div>
+            <a href="{{ path('app_voyage_edit', {'id': voyage.id}) }}" class="action-btn">Modifier</a>
+            <a href="{{ path('app_voyage_index') }}" class="action-btn">← Retour</a>
+        </div>
+    </div>
+    <div style="padding: 20px;">
+        <table class="market-table">
+            <tbody>
+                <tr><th>ID</th><td>{{ voyage.id }}</td></tr>
+                <tr><th>Date Départ</th><td>{{ voyage.dateDepart ? voyage.dateDepart|date('d/m/Y') : '-' }}</td></tr>
+                <tr><th>Date Arrivée</th><td>{{ voyage.dateArrivee ? voyage.dateArrivee|date('d/m/Y') : '-' }}</td></tr>
+                <tr><th>Point Départ</th><td>{{ voyage.pointDepart ?? '-' }}</td></tr>
+                <tr><th>Point Arrivée</th><td>{{ voyage.pointArrivee ?? '-' }}</td></tr>
+                <tr><th>Prix</th><td>{{ voyage.prix ? voyage.prix ~ ' €' : '-' }}</td></tr>
+            </tbody>
+        </table>
+        {{ include('voyage/_delete_form.html.twig') }}
+    </div>
+</div>
+{% endblock %}
