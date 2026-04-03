@@ -1,0 +1,59 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}Destinations{% endblock %}
+
+{% block admin_content %}
+<div class="page-header">
+    <h1>Destinations</h1>
+    <p>Gérer toutes les destinations</p>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Liste des Destinations</h3>
+        <a href="{{ path('app_destination_new') }}" class="action-btn primary">+ Ajouter</a>
+    </div>
+    <table class="market-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nom</th>
+                <th>Pays</th>
+                <th>Saison</th>
+                <th>Nb Visites</th>
+                <th>Statut</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for destination in destinations %}
+            <tr>
+                <td>{{ destination.id }}</td>
+                <td>{{ destination.nom }}</td>
+                <td>{{ destination.pays }}</td>
+                <td>{{ destination.meilleureSaison }}</td>
+                <td>{{ destination.nbVisites }}</td>
+                <td>
+                    {% if destination.statut %}
+                        <span class="transaction-status completed">Actif</span>
+                    {% else %}
+                        <span class="transaction-status" style="background:#ff4444">Inactif</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <a href="{{ path('app_destination_show', {'id': destination.id}) }}" class="action-btn">Voir</a>
+                    <a href="{{ path('app_destination_edit', {'id': destination.id}) }}" class="action-btn">Modifier</a>
+                    {{ include('destination/_delete_form.html.twig') }}
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="7">Aucune destination trouvée</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<footer class="copyright">Copyright &copy; 2026 VoyageLoisir</footer>
+{% endblock %}

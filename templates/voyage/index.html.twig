@@ -1,0 +1,48 @@
+﻿{% extends 'admin/base_admin.html.twig' %}
+{% block title %}Voyages{% endblock %}
+
+{% block admin_content %}
+<div class="page-header">
+    <h1>Voyages</h1>
+    <p>Gérer tous les voyages</p>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Liste des Voyages</h3>
+        <a href="{{ path('app_voyage_new') }}" class="action-btn primary">+ Ajouter</a>
+    </div>
+    <table class="market-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Date Départ</th>
+                <th>Date Arrivée</th>
+                <th>Point Départ</th>
+                <th>Point Arrivée</th>
+                <th>Prix</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for voyage in voyages %}
+            <tr>
+                <td>{{ voyage.id }}</td>
+                <td>{{ voyage.dateDepart ? voyage.dateDepart|date('d/m/Y') : '-' }}</td>
+                <td>{{ voyage.dateArrivee ? voyage.dateArrivee|date('d/m/Y') : '-' }}</td>
+                <td>{{ voyage.pointDepart ?? '-' }}</td>
+                <td>{{ voyage.pointArrivee ?? '-' }}</td>
+                <td>{{ voyage.prix ? voyage.prix ~ ' €' : '-' }}</td>
+                <td>
+                    <a href="{{ path('app_voyage_show', {'id': voyage.id}) }}" class="action-btn">Voir</a>
+                    <a href="{{ path('app_voyage_edit', {'id': voyage.id}) }}" class="action-btn">Modifier</a>
+                    {{ include('voyage/_delete_form.html.twig') }}
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="7">Aucun voyage trouvé</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

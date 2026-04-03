@@ -1,0 +1,44 @@
+﻿{% extends 'admin/base_admin.html.twig' %}
+{% block title %}Transports{% endblock %}
+
+{% block admin_content %}
+<div class="page-header">
+    <h1>Transports</h1>
+    <p>Gérer tous les transports</p>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Liste des Transports</h3>
+        <a href="{{ path('app_transport_new') }}" class="action-btn primary">+ Ajouter</a>
+    </div>
+    <table class="market-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Type Transport</th>
+                <th>Destination</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for transport in transports %}
+            <tr>
+                <td>{{ transport.id }}</td>
+                <td>{{ transport.typeTransport ?? '-' }}</td>
+                <td>{{ transport.destination ? transport.destination.nom : '-' }}</td>
+                <td>
+                    <a href="{{ path('app_transport_show', {'id': transport.id}) }}" class="action-btn">Voir</a>
+                    <a href="{{ path('app_transport_edit', {'id': transport.id}) }}" class="action-btn">Modifier</a>
+                    {{ include('transport/_delete_form.html.twig') }}
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="4">Aucun transport trouvé</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<footer class="copyright">Copyright &copy; 2026 VoyageLoisir</footer>
+{% endblock %}
