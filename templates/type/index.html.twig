@@ -4,13 +4,21 @@
 
     <div class="page-header">
         <h1>Gestion des Types</h1>
-        <p>{{ types|length }} type(s) enregistré(s)</p>
+        <p>{{ types|length }} type(s) trouvé(s)</p>
     </div>
 
-    <div style="margin-bottom:20px;">
-        <a href="{{ path('app_type_new') }}" style="background:var(--accent-gradient); color:#1c1c1e; padding:10px 20px; border-radius:8px; text-decoration:none; font-weight:600; display:inline-flex; align-items:center; gap:8px;">
+    <div style="display:flex; gap:12px; margin-bottom:20px; align-items:center;">
+        <a href="{{ path('app_type_new') }}" style="background:var(--accent-gradient); color:#1c1c1e; padding:10px 20px; border-radius:8px; text-decoration:none; font-weight:600; white-space:nowrap;">
             + Nouveau Type
         </a>
+        <form method="get" action="{{ path('app_type_index') }}" style="display:flex; gap:8px; flex:1;">
+            <input type="text" name="q" value="{{ q }}" placeholder="Rechercher par nom..."
+                   class="form-input" style="flex:1; padding:10px 14px;">
+            <button type="submit" class="btn primary" style="padding:10px 20px;">🔍</button>
+            {% if q %}
+            <a href="{{ path('app_type_index') }}" class="btn" style="padding:10px 16px;">✕</a>
+            {% endif %}
+        </form>
     </div>
 
     <div class="card">
@@ -29,23 +37,17 @@
                     <td><strong>{{ type.nom }}</strong></td>
                     <td>
                         <div style="display:flex; gap:8px;">
-                            <a href="{{ path('app_type_show', {'id': type.id}) }}" style="background:#3b82f620; color:#3b82f6; padding:5px 12px; border-radius:6px; text-decoration:none; font-size:13px; font-weight:500;">Voir</a>
-                            <a href="{{ path('app_type_edit', {'id': type.id}) }}" style="background:#f59e0b20; color:#f59e0b; padding:5px 12px; border-radius:6px; text-decoration:none; font-size:13px; font-weight:500;">Modifier</a>
+                            <a href="{{ path('app_type_show', {'id': type.id}) }}" style="background:#3b82f620; color:#3b82f6; padding:5px 12px; border-radius:6px; text-decoration:none; font-size:13px;">Voir</a>
+                            <a href="{{ path('app_type_edit', {'id': type.id}) }}" style="background:#f59e0b20; color:#f59e0b; padding:5px 12px; border-radius:6px; text-decoration:none; font-size:13px;">Modifier</a>
                             {{ include('type/_delete_form.html.twig') }}
                         </div>
                     </td>
                 </tr>
             {% else %}
-                <tr>
-                    <td colspan="3" style="text-align:center; padding:40px; color:var(--text-secondary);">
-                        Aucun type trouvé
-                    </td>
-                </tr>
+                <tr><td colspan="3" style="text-align:center; padding:40px; color:var(--text-secondary);">Aucun type trouvé</td></tr>
             {% endfor %}
             </tbody>
         </table>
     </div>
-
     <footer class="copyright">Copyright &copy; 2026 Voyage</footer>
-
 {% endblock %}

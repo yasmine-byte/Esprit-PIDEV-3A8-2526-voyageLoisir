@@ -4,13 +4,26 @@
 
     <div class="page-header">
         <h1>Gestion des Disponibilités</h1>
-        <p>{{ disponibilites|length }} disponibilité(s) enregistrée(s)</p>
+        <p>{{ disponibilites|length }} disponibilité(s) trouvée(s)</p>
     </div>
 
-    <div style="margin-bottom:20px;">
-        <a href="{{ path('app_disponibilite_new') }}" style="background:var(--accent-gradient); color:#1c1c1e; padding:10px 20px; border-radius:8px; text-decoration:none; font-weight:600; display:inline-flex; align-items:center; gap:8px;">
+    <div style="display:flex; gap:12px; margin-bottom:20px; align-items:center; flex-wrap:wrap;">
+        <a href="{{ path('app_disponibilite_new') }}" style="background:var(--accent-gradient); color:#1c1c1e; padding:10px 20px; border-radius:8px; text-decoration:none; font-weight:600; white-space:nowrap;">
             + Nouvelle Disponibilité
         </a>
+        <form method="get" action="{{ path('app_disponibilite_index') }}" style="display:flex; gap:8px; flex:1; flex-wrap:wrap;">
+            <input type="text" name="q" value="{{ q }}" placeholder="Rechercher par hébergement..."
+                   class="form-input" style="flex:1; min-width:200px; padding:10px 14px;">
+            <select name="statut" class="form-select" style="padding:10px 14px; min-width:150px;">
+                <option value="">Tous les statuts</option>
+                <option value="disponible" {{ statut == 'disponible' ? 'selected' : '' }}>Disponible</option>
+                <option value="indisponible" {{ statut == 'indisponible' ? 'selected' : '' }}>Indisponible</option>
+            </select>
+            <button type="submit" class="btn primary" style="padding:10px 20px;">🔍</button>
+            {% if q or statut %}
+            <a href="{{ path('app_disponibilite_index') }}" class="btn" style="padding:10px 16px;">✕</a>
+            {% endif %}
+        </form>
     </div>
 
     <div class="card">
@@ -41,23 +54,17 @@
                     </td>
                     <td>
                         <div style="display:flex; gap:8px;">
-                            <a href="{{ path('app_disponibilite_show', {'id': disponibilite.id}) }}" style="background:#3b82f620; color:#3b82f6; padding:5px 12px; border-radius:6px; text-decoration:none; font-size:13px; font-weight:500;">Voir</a>
-                            <a href="{{ path('app_disponibilite_edit', {'id': disponibilite.id}) }}" style="background:#f59e0b20; color:#f59e0b; padding:5px 12px; border-radius:6px; text-decoration:none; font-size:13px; font-weight:500;">Modifier</a>
+                            <a href="{{ path('app_disponibilite_show', {'id': disponibilite.id}) }}" style="background:#3b82f620; color:#3b82f6; padding:5px 12px; border-radius:6px; text-decoration:none; font-size:13px;">Voir</a>
+                            <a href="{{ path('app_disponibilite_edit', {'id': disponibilite.id}) }}" style="background:#f59e0b20; color:#f59e0b; padding:5px 12px; border-radius:6px; text-decoration:none; font-size:13px;">Modifier</a>
                             {{ include('disponibilite/_delete_form.html.twig') }}
                         </div>
                     </td>
                 </tr>
             {% else %}
-                <tr>
-                    <td colspan="6" style="text-align:center; padding:40px; color:var(--text-secondary);">
-                        Aucune disponibilité trouvée
-                    </td>
-                </tr>
+                <tr><td colspan="6" style="text-align:center; padding:40px; color:var(--text-secondary);">Aucune disponibilité trouvée</td></tr>
             {% endfor %}
             </tbody>
         </table>
     </div>
-
     <footer class="copyright">Copyright &copy; 2026 Voyage</footer>
-
 {% endblock %}

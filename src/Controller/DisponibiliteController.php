@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Controller;
 
 use App\Entity\Disponibilite;
@@ -15,10 +14,16 @@ use Symfony\Component\Routing\Attribute\Route;
 final class DisponibiliteController extends AbstractController
 {
     #[Route(name: 'app_disponibilite_index', methods: ['GET'])]
-    public function index(DisponibiliteRepository $disponibiliteRepository): Response
+    public function index(Request $request, DisponibiliteRepository $disponibiliteRepository): Response
     {
+        $query = $request->query->get('q');
+        $statut = $request->query->get('statut');
+        $disponibilites = $disponibiliteRepository->search($query, $statut);
+
         return $this->render('disponibilite/index.html.twig', [
-            'disponibilites' => $disponibiliteRepository->findAll(),
+            'disponibilites' => $disponibilites,
+            'q' => $query,
+            'statut' => $statut,
         ]);
     }
 
@@ -36,18 +41,13 @@ final class DisponibiliteController extends AbstractController
             return $this->redirectToRoute('app_disponibilite_index', [], Response::HTTP_SEE_OTHER);
         }
 
-        return $this->render('disponibilite/new.html.twig', [
-            'disponibilite' => $disponibilite,
-            'form' => $form,
-        ]);
+        return $this->render('disponibilite/new.html.twig', ['disponibilite' => $disponibilite, 'form' => $form]);
     }
 
     #[Route('/{id}', name: 'app_disponibilite_show', methods: ['GET'])]
     public function show(Disponibilite $disponibilite): Response
     {
-        return $this->render('disponibilite/show.html.twig', [
-            'disponibilite' => $disponibilite,
-        ]);
+        return $this->render('disponibilite/show.html.twig', ['disponibilite' => $disponibilite]);
     }
 
     #[Route('/{id}/edit', name: 'app_disponibilite_edit', methods: ['GET', 'POST'])]
@@ -62,10 +62,7 @@ final class DisponibiliteController extends AbstractController
             return $this->redirectToRoute('app_disponibilite_index', [], Response::HTTP_SEE_OTHER);
         }
 
-        return $this->render('disponibilite/edit.html.twig', [
-            'disponibilite' => $disponibilite,
-            'form' => $form,
-        ]);
+        return $this->render('disponibilite/edit.html.twig', ['disponibilite' => $disponibilite, 'form' => $form]);
     }
 
     #[Route('/{id}', name: 'app_disponibilite_delete', methods: ['POST'])]
@@ -76,7 +73,6 @@ final class DisponibiliteController extends AbstractController
             $entityManager->flush();
             $this->addFlash('success', 'Disponibilité supprimée avec succès !');
         }
-
         return $this->redirectToRoute('app_disponibilite_index', [], Response::HTTP_SEE_OTHER);
     }
 }

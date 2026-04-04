@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Controller;
 
 use App\Entity\Hebergement;
@@ -17,10 +16,16 @@ use Symfony\Component\String\Slugger\SluggerInterface;
 final class HebergementController extends AbstractController
 {
     #[Route(name: 'app_hebergement_index', methods: ['GET'])]
-    public function index(HebergementRepository $hebergementRepository): Response
+    public function index(Request $request, HebergementRepository $hebergementRepository): Response
     {
+        $query = $request->query->get('q');
+        $typeId = $request->query->get('type') ? (int)$request->query->get('type') : null;
+
+        $hebergements = $hebergementRepository->search($query, null, null, null, null, null, null);
+
         return $this->render('hebergement/index.html.twig', [
-            'hebergements' => $hebergementRepository->findAll(),
+            'hebergements' => $hebergements,
+            'q' => $query,
         ]);
     }
 
@@ -38,14 +43,9 @@ final class HebergementController extends AbstractController
                 $safeFilename = $slugger->slug($originalFilename);
                 $newFilename = $safeFilename.'-'.uniqid().'.'.$imageFile->guessExtension();
                 try {
-                    $imageFile->move(
-                        $this->getParameter('images_directory'),
-                        $newFilename
-                    );
+                    $imageFile->move($this->getParameter('images_directory'), $newFilename);
                     $hebergement->setImagePath($newFilename);
-                } catch (FileException $e) {
-                    // erreur upload
-                }
+                } catch (FileException $e) {}
             }
             $entityManager->persist($hebergement);
             $entityManager->flush();
@@ -62,9 +62,7 @@ final class HebergementController extends AbstractController
     #[Route('/{id}', name: 'app_hebergement_show', methods: ['GET'])]
     public function show(Hebergement $hebergement): Response
     {
-        return $this->render('hebergement/show.html.twig', [
-            'hebergement' => $hebergement,
-        ]);
+        return $this->render('hebergement/show.html.twig', ['hebergement' => $hebergement]);
     }
 
     #[Route('/{id}/edit', name: 'app_hebergement_edit', methods: ['GET', 'POST'])]
@@ -80,14 +78,9 @@ final class HebergementController extends AbstractController
                 $safeFilename = $slugger->slug($originalFilename);
                 $newFilename = $safeFilename.'-'.uniqid().'.'.$imageFile->guessExtension();
                 try {
-                    $imageFile->move(
-                        $this->getParameter('images_directory'),
-                        $newFilename
-                    );
+                    $imageFile->move($this->getParameter('images_directory'), $newFilename);
                     $hebergement->setImagePath($newFilename);
-                } catch (FileException $e) {
-                    // erreur upload
-                }
+                } catch (FileException $e) {}
             }
             $entityManager->flush();
             $this->addFlash('success', 'Hébergement modifié avec succès !');
@@ -108,7 +101,6 @@ final class HebergementController extends AbstractController
             $entityManager->flush();
             $this->addFlash('success', 'Hébergement supprimé avec succès !');
         }
-
         return $this->redirectToRoute('app_hebergement_index', [], Response::HTTP_SEE_OTHER);
     }
 }
