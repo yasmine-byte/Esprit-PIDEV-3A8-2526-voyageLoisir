@@ -19,7 +19,7 @@ class Transport
     #[Assert\Choice(choices: ["Avion", "Bus", "Voiture", "Train"], message: "Type de transport invalide.")]
     private ?string $type_transport = null;
 
-    #[ORM\ManyToOne]
+    #[ORM\ManyToOne(inversedBy: "transports")]
     #[Assert\NotNull(message: "La destination est obligatoire.")]
     private ?Destination $destination = null;
 

@@ -17,23 +17,30 @@ class ImageType extends AbstractType
     {
         $builder
             ->add("url_image", FileType::class, [
-                "label"    => "Image (fichier)",
+                "label"    => "Images (plusieurs fichiers)",
                 "mapped"   => false,
                 "required" => true,
-                "attr"     => ["accept" => "image/*"],
+                "multiple" => true,
+                "attr"     => [
+                    "accept"   => "image/*",
+                    "multiple" => "multiple",
+                ],
                 "constraints" => [
-                    new Assert\NotNull(message: "L image est obligatoire."),
-                    new Assert\File([
-                        "maxSize"          => "5M",
-                        "maxSizeMessage"   => "Max 5 Mo.",
-                        "mimeTypes"        => ["image/jpeg","image/png","image/gif","image/webp"],
-                        "mimeTypesMessage" => "Format non accepte (jpg, png, gif, webp).",
+                    new Assert\All([
+                        "constraints" => [
+                            new Assert\File([
+                                "maxSize"          => "5M",
+                                "maxSizeMessage"   => "Max 5 Mo par image.",
+                                "mimeTypes"        => ["image/jpeg","image/png","image/gif","image/webp"],
+                                "mimeTypesMessage" => "Format non accepte (jpg, png, gif, webp).",
+                            ]),
+                        ],
                     ]),
                 ],
             ])
             ->add("destination", EntityType::class, [
                 "class"        => Destination::class,
-                "choice_label" => "nom",
+                "choice_label" => "id",
                 "placeholder"  => "-- Choisir une destination --",
                 "required"     => true,
             ]);

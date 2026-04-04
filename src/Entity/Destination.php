@@ -5,6 +5,8 @@ namespace App\Entity;
 use App\Repository\DestinationRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: DestinationRepository::class)]
@@ -61,6 +63,18 @@ class Destination
     #[Assert\NotNull(message: "Le voyage est obligatoire.")]
     private ?Voyage $voyage = null;
 
+    #[ORM\OneToMany(mappedBy: "destination", targetEntity: Image::class, cascade: ["persist", "remove"])]
+    private Collection $images;
+
+    #[ORM\OneToMany(mappedBy: "destination", targetEntity: Transport::class, cascade: ["persist", "remove"])]
+    private Collection $transports;
+
+    public function __construct()
+    {
+        $this->images     = new ArrayCollection();
+        $this->transports = new ArrayCollection();
+    }
+
     public function getId(): ?int { return $this->id; }
     public function getNom(): ?string { return $this->nom; }
     public function setNom(string $nom): static { $this->nom = $nom; return $this; }
@@ -82,4 +96,38 @@ class Destination
     public function setVideoPath(?string $video_path): static { $this->video_path = $video_path; return $this; }
     public function getVoyage(): ?Voyage { return $this->voyage; }
     public function setVoyage(?Voyage $voyage): static { $this->voyage = $voyage; return $this; }
+
+    public function getImages(): Collection { return $this->images; }
+    public function addImage(Image $image): static
+    {
+        if (!$this->images->contains($image)) {
+            $this->images->add($image);
+            $image->setDestination($this);
+        }
+        return $this;
+    }
+    public function removeImage(Image $image): static
+    {
+        if ($this->images->removeElement($image)) {
+            if ($image->getDestination() === $this) $image->setDestination(null);
+        }
+        return $this;
+    }
+
+    public function getTransports(): Collection { return $this->transports; }
+    public function addTransport(Transport $transport): static
+    {
+        if (!$this->transports->contains($transport)) {
+            $this->transports->add($transport);
+            $transport->setDestination($this);
+        }
+        return $this;
+    }
+    public function removeTransport(Transport $transport): static
+    {
+        if ($this->transports->removeElement($transport)) {
+            if ($transport->getDestination() === $this) $transport->setDestination(null);
+        }
+        return $this;
+    }
 }
