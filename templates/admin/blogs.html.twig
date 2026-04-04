@@ -1,0 +1,411 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}Gestion Blog{% endblock %}
+
+{% block admin_content %}
+    <style>
+        .admin-blogs-page {
+            display: grid;
+            gap: 24px;
+        }
+
+        .admin-blogs-hero,
+        .admin-blogs-card {
+            background: #fff;
+            border-radius: 24px;
+            box-shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
+            overflow: hidden;
+        }
+
+        .admin-blogs-hero {
+            padding: 28px;
+            background:
+                radial-gradient(circle at top right, rgba(232, 101, 42, 0.14), transparent 26%),
+                linear-gradient(135deg, #ffffff, #fff7f1);
+        }
+
+        .admin-blogs-head {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 18px;
+            margin-bottom: 24px;
+        }
+
+        .admin-blogs-head h1 {
+            margin: 0 0 6px;
+            font-size: 2rem;
+            color: #0f172a;
+        }
+
+        .admin-blogs-head p {
+            margin: 0;
+            color: #64748b;
+            max-width: 720px;
+        }
+
+        .admin-blogs-badge {
+            padding: 10px 16px;
+            border-radius: 999px;
+            background: #fff4ed;
+            color: #e8652a;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .admin-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 16px;
+        }
+
+        .admin-stat-card {
+            padding: 20px;
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.92);
+            border: 1px solid #f1f5f9;
+        }
+
+        .admin-stat-label {
+            margin: 0 0 8px;
+            font-size: 0.82rem;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        .admin-stat-value {
+            margin: 0;
+            font-size: 2rem;
+            font-weight: 700;
+            color: #0f172a;
+            line-height: 1;
+        }
+
+        .admin-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 24px 28px;
+            border-bottom: 1px solid #eef2f7;
+            flex-wrap: wrap;
+        }
+
+        .admin-toolbar form {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            width: 100%;
+        }
+
+        .admin-search {
+            flex: 1 1 320px;
+            min-width: 260px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 16px;
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            background: #fff;
+        }
+
+        .admin-search input,
+        .admin-sort-select {
+            border: 0;
+            outline: 0;
+            width: 100%;
+            background: transparent;
+            color: #0f172a;
+            font-size: 0.95rem;
+        }
+
+        .admin-sort-wrap {
+            min-width: 220px;
+            padding: 12px 16px;
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            background: #fff;
+        }
+
+        .admin-toolbar-btn,
+        .admin-blogs-link,
+        .admin-delete-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 11px 16px;
+            border-radius: 999px;
+            border: 1px solid #e2e8f0;
+            background: #fff;
+            color: #0f172a;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.92rem;
+        }
+
+        .admin-toolbar-btn--primary,
+        .admin-blogs-link--primary {
+            background: #e8652a;
+            border-color: #e8652a;
+            color: #fff;
+        }
+
+        .admin-delete-btn {
+            background: #fff5f5;
+            border-color: #fecaca;
+            color: #b91c1c;
+        }
+
+        .admin-flash-stack {
+            display: grid;
+            gap: 12px;
+            padding: 0 28px 24px;
+        }
+
+        .admin-flash {
+            padding: 14px 16px;
+            border-radius: 14px;
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            color: #166534;
+        }
+
+        .admin-blogs-table-wrap {
+            overflow: auto;
+        }
+
+        .admin-blogs-table {
+            width: 100%;
+            min-width: 1320px;
+            border-collapse: collapse;
+        }
+
+        .admin-blogs-table th,
+        .admin-blogs-table td {
+            padding: 16px 18px;
+            border-bottom: 1px solid #eef2f7;
+            text-align: left;
+            vertical-align: top;
+            font-size: 0.95rem;
+        }
+
+        .admin-blogs-table th {
+            background: #f8fafc;
+            color: #334155;
+            font-size: 0.83rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+
+        .admin-blogs-table td {
+            color: #0f172a;
+        }
+
+        .admin-blogs-table small {
+            color: #64748b;
+        }
+
+        .admin-blogs-status {
+            display: inline-flex;
+            padding: 8px 12px;
+            border-radius: 999px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            text-transform: capitalize;
+        }
+
+        .admin-blogs-status--brouillon {
+            background: #fff7ed;
+            color: #c2410c;
+        }
+
+        .admin-blogs-status--publie {
+            background: #ecfdf5;
+            color: #047857;
+        }
+
+        .admin-blogs-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .admin-inline-form {
+            margin: 0;
+        }
+
+        .admin-blogs-empty {
+            padding: 36px 28px;
+            color: #64748b;
+        }
+
+        @media (max-width: 1199px) {
+            .admin-stats-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 767px) {
+            .admin-blogs-hero,
+            .admin-toolbar {
+                padding: 22px;
+            }
+
+            .admin-stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .admin-blogs-head {
+                flex-direction: column;
+            }
+
+            .admin-search,
+            .admin-sort-wrap,
+            .admin-toolbar-btn {
+                width: 100%;
+            }
+        }
+    </style>
+
+    <main class="admin-blogs-page">
+        <section class="admin-blogs-hero">
+            <div class="admin-blogs-head">
+                <div>
+                    <h1>Gestion Blog</h1>
+                    <p>Suivez les brouillons, les articles publies, et les contenus les plus complets depuis un seul espace admin.</p>
+                </div>
+                <div class="admin-blogs-badge">{{ blogs|length }} resultats</div>
+            </div>
+
+            <div class="admin-stats-grid">
+                <article class="admin-stat-card">
+                    <p class="admin-stat-label">Total blogs</p>
+                    <p class="admin-stat-value">{{ stats.total }}</p>
+                </article>
+                <article class="admin-stat-card">
+                    <p class="admin-stat-label">Publies</p>
+                    <p class="admin-stat-value">{{ stats.published }}</p>
+                </article>
+                <article class="admin-stat-card">
+                    <p class="admin-stat-label">Brouillons</p>
+                    <p class="admin-stat-value">{{ stats.drafts }}</p>
+                </article>
+                <article class="admin-stat-card">
+                    <p class="admin-stat-label">Lecture moyenne</p>
+                    <p class="admin-stat-value">{{ stats.avg_read_time ?: 0 }}m</p>
+                </article>
+            </div>
+        </section>
+
+        <section class="admin-blogs-card">
+            <div class="admin-toolbar">
+                <form method="get" action="{{ path('admin_blogs') }}">
+                    <label class="admin-search">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                        <input type="text" name="q" value="{{ search }}" placeholder="Search by title, slug, extrait or content">
+                    </label>
+
+                    <label class="admin-sort-wrap">
+                        <select class="admin-sort-select" name="sort" onchange="this.form.submit()">
+                            <option value="recent" {{ sort == 'recent' ? 'selected' : '' }}>Most recent</option>
+                            <option value="oldest" {{ sort == 'oldest' ? 'selected' : '' }}>Oldest first</option>
+                            <option value="title" {{ sort == 'title' ? 'selected' : '' }}>Title A-Z</option>
+                            <option value="status" {{ sort == 'status' ? 'selected' : '' }}>Status</option>
+                            <option value="published" {{ sort == 'published' ? 'selected' : '' }}>Latest published</option>
+                        </select>
+                    </label>
+
+                    <button class="admin-toolbar-btn admin-toolbar-btn--primary" type="submit">Search</button>
+                    <a class="admin-toolbar-btn" href="{{ path('admin_blogs') }}">Reset</a>
+                </form>
+            </div>
+
+            {% for label, messages in app.flashes %}
+                <div class="admin-flash-stack">
+                    {% for message in messages %}
+                        <div class="admin-flash">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+
+            {% if blogs is empty %}
+                <div class="admin-blogs-empty">No blogs match your current filters.</div>
+            {% else %}
+                <div class="admin-blogs-table-wrap">
+                    <table class="admin-blogs-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Titre</th>
+                                <th>Slug</th>
+                                <th>Status</th>
+                                <th>Image</th>
+                                <th>Extrait</th>
+                                <th>Contenu</th>
+                                <th>Auteur</th>
+                                <th>Date creation</th>
+                                <th>Date publication</th>
+                                <th>Sentiment</th>
+                                <th>Rating</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for blog in blogs %}
+                                {% set statusClass = blog.status == 'publie' ? 'admin-blogs-status--publie' : 'admin-blogs-status--brouillon' %}
+                                <tr>
+                                    <td>#{{ blog.id }}</td>
+                                    <td>
+                                        <strong>{{ blog.titre }}</strong><br>
+                                        <small>{{ blog.contenu|slice(0, 90) }}{% if blog.contenu|length > 90 %}...{% endif %}</small>
+                                    </td>
+                                    <td>{{ blog.slug ?: '-' }}</td>
+                                    <td><span class="admin-blogs-status {{ statusClass }}">{{ blog.status ?: 'brouillon' }}</span></td>
+                                    <td>
+                                        {% if blog.imageCouverture %}
+                                            <a href="{{ blog.imageCouverture }}" target="_blank" rel="noopener noreferrer">Open image</a>
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ blog.extrait ?: '-' }}</td>
+                                    <td>{{ blog.contenu|slice(0, 140) }}{% if blog.contenu|length > 140 %}...{% endif %}</td>
+                                    <td>{{ blog.authorId ?: 'User' }}</td>
+                                    <td>{{ blog.dateCreation ? blog.dateCreation|date('Y-m-d H:i') : '-' }}</td>
+                                    <td>{{ blog.datePublication ? blog.datePublication|date('Y-m-d H:i') : '-' }}</td>
+                                    <td>
+                                        {{ blog.sentimentScore is not null ? blog.sentimentScore : '-' }}
+                                        {% if blog.sentimentEmoji %}
+                                            <br><small>{{ blog.sentimentEmoji }}</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {{ blog.ratingAverage is not null ? blog.ratingAverage : '-' }}
+                                        <br><small>{{ blog.ratingCount is not null ? blog.ratingCount ~ ' votes' : 'No votes' }}</small>
+                                    </td>
+                                    <td>
+                                        <div class="admin-blogs-actions">
+                                            <a class="admin-blogs-link admin-blogs-link--primary" href="{{ path('admin_blog_show', {'id': blog.id}) }}">View</a>
+                                            <a class="admin-blogs-link" href="{{ path('app_blog_edit', {'id': blog.id}) }}">Edit</a>
+                                            <form class="admin-inline-form" method="post" action="{{ path('admin_blog_delete', {'id': blog.id}) }}" onsubmit="return confirm('Delete this blog?');">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('admin_delete_blog_' ~ blog.id) }}">
+                                                <button class="admin-delete-btn" type="submit">Delete</button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endif %}
+        </section>
+    </main>
+{% endblock %}

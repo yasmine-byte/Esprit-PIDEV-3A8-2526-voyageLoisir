@@ -195,6 +195,189 @@
     </div>
   </div>
 
+  {% set reviews = [
+    {
+      title: 'Inca Trail Trekking',
+      slug: 'Adventure · Peru',
+      rating: '4.8',
+      name: 'Sophie Martin',
+      text: 'An unforgettable high-altitude journey with cinematic mountain views, elegant camps, and a guide team that made every step feel inspiring and effortless.',
+      image: 'assets_front/images/images/property-04.jpg',
+      avatar: 'assets_front/images/images/featured.jpg'
+    },
+    {
+      title: 'Golden Dunes Escape',
+      slug: 'Luxury Desert · Morocco',
+      rating: '4.9',
+      name: 'Yassine Trabelsi',
+      text: 'Every detail felt premium, from the sunset ride and lantern-lit dinner to the smooth transfers and polished hospitality throughout the experience.',
+      image: 'assets_front/images/images/deal-01.jpg',
+      avatar: 'assets_front/images/images/property-01.jpg'
+    },
+    {
+      title: 'Aegean Coast Romance',
+      slug: 'Seaside Retreat · Greece',
+      rating: '4.7',
+      name: 'Emma Laurent',
+      text: 'A beautifully paced escape filled with hidden coves, refined boutique stays, and sunset moments that felt intimate, calm, and truly unforgettable.',
+      image: 'assets_front/images/images/property-05.jpg',
+      avatar: 'assets_front/images/images/property-02.jpg'
+    },
+    {
+      title: 'Aurora Horizon',
+      slug: 'Northern Expedition · Iceland',
+      rating: '5.0',
+      name: 'Karim Ben Salah',
+      text: 'A thrilling polar-style itinerary with dramatic scenery, cozy stays, and just the right balance of adventure, comfort, and once-in-a-lifetime wonder.',
+      image: 'assets_front/images/images/deal-03.jpg',
+      avatar: 'assets_front/images/images/property-03.jpg'
+    }
+  ] %}
+
+  <section class="reviews-section">
+    <div class="container">
+      <div class="reviews-heading">
+        <h2>Reviews</h2>
+        <p>Curated journeys, cinematic moments, and travelers who came back with stories worth keeping.</p>
+      </div>
+
+      <div class="reviews-carousel-shell">
+        <div class="reviews-track" id="reviews-track">
+        {% for review in reviews %}
+          <article class="review-card">
+            <div class="review-card-image">
+              <img src="{{ asset(review.image) }}" alt="{{ review.title }}">
+              <div class="review-rating-badge">&#9733; {{ review.rating }}</div>
+            </div>
+            <div class="review-content">
+              <h3>{{ review.title }}</h3>
+              <span class="review-trip">{{ review.slug }}</span>
+              <p>{{ review.text }}</p>
+              <div class="review-author">
+                <img src="{{ asset(review.avatar) }}" alt="{{ review.name }}">
+                <span>{{ review.name }}</span>
+              </div>
+            </div>
+          </article>
+        {% endfor %}
+        </div>
+      </div>
+
+      <div class="reviews-controls">
+        <button class="reviews-arrow" id="reviews-prev" type="button" aria-label="Previous reviews">&#8249;</button>
+        <button class="reviews-arrow" id="reviews-next" type="button" aria-label="Next reviews">&#8250;</button>
+      </div>
+
+      <div class="reviews-dots" id="reviews-dots" aria-label="Reviews pagination"></div>
+
+      <div class="reviews-action">
+        <a href="{{ path('app_contact') }}">Feedback Please</a>
+      </div>
+    </div>
+  </section>
+
   {% include 'home/partials/footer.html.twig' %}
 
+{% endblock %}
+
+{% block javascripts %}
+  {{ parent() }}
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const track = document.getElementById('reviews-track');
+      const prev = document.getElementById('reviews-prev');
+      const next = document.getElementById('reviews-next');
+      const dotsWrap = document.getElementById('reviews-dots');
+
+      if (!track || !prev || !next || !dotsWrap) {
+        return;
+      }
+
+      const getCards = () => Array.from(track.querySelectorAll('.review-card'));
+      let currentIndex = 0;
+      let dots = [];
+
+      const getStep = () => {
+        const firstCard = getCards()[0];
+        if (!firstCard) {
+          return 0;
+        }
+
+        const styles = window.getComputedStyle(track);
+        const gap = parseFloat(styles.columnGap || styles.gap || '0');
+        return firstCard.getBoundingClientRect().width + gap;
+      };
+
+      const getVisibleCount = () => {
+        const firstCard = getCards()[0];
+        if (!firstCard) {
+          return 1;
+        }
+
+        const shellWidth = track.parentElement.getBoundingClientRect().width;
+        const cardWidth = firstCard.getBoundingClientRect().width;
+        return Math.max(1, Math.floor(shellWidth / cardWidth));
+      };
+
+      const getPageCount = () => {
+        const visibleCount = getVisibleCount();
+        return Math.max(1, getCards().length - visibleCount + 1);
+      };
+
+      const renderDots = () => {
+        const pageCount = getPageCount();
+        dotsWrap.innerHTML = '';
+
+        for (let index = 0; index < pageCount; index += 1) {
+          const dot = document.createElement('button');
+          dot.type = 'button';
+          dot.className = 'reviews-dot';
+          dot.dataset.index = String(index);
+          dot.setAttribute('aria-label', `Go to review slide ${index + 1}`);
+          dotsWrap.appendChild(dot);
+        }
+
+        dots = Array.from(dotsWrap.querySelectorAll('.reviews-dot'));
+        dots.forEach((dot) => {
+          dot.addEventListener('click', function () {
+            scrollToIndex(Number(dot.dataset.index || 0));
+          });
+        });
+      };
+
+      const updateDots = () => {
+        if (!dots.length) {
+          return;
+        }
+
+        dots.forEach((dot, dotIndex) => {
+          dot.classList.toggle('is-active', dotIndex === currentIndex);
+        });
+      };
+
+      const scrollToIndex = (index) => {
+        const maxIndex = getPageCount() - 1;
+        currentIndex = Math.max(0, Math.min(index, maxIndex));
+        const step = getStep();
+        track.style.transform = `translateX(-${step * currentIndex}px)`;
+        updateDots();
+      };
+
+      prev.addEventListener('click', function () {
+        scrollToIndex(currentIndex - 1);
+      });
+
+      next.addEventListener('click', function () {
+        scrollToIndex(currentIndex + 1);
+      });
+
+      window.addEventListener('resize', function () {
+        renderDots();
+        scrollToIndex(currentIndex);
+      });
+
+      renderDots();
+      scrollToIndex(0);
+    });
+  </script>
 {% endblock %}
