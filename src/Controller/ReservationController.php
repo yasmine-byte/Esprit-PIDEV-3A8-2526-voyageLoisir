@@ -3,6 +3,7 @@ namespace App\Controller;
 
 use App\Entity\Reservation;
 use App\Repository\HebergementRepository;
+use App\Repository\DisponibiliteRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -12,12 +13,61 @@ use Symfony\Component\Routing\Attribute\Route;
 class ReservationController extends AbstractController
 {
     #[Route('/reservation/{id}', name: 'app_reservation_new', methods: ['POST'])]
-    public function new(int $id, Request $request, EntityManagerInterface $em, HebergementRepository $repo): Response
-    {
+    public function new(
+        int $id,
+        Request $request,
+        EntityManagerInterface $em,
+        HebergementRepository $repo,
+        DisponibiliteRepository $disponibiliteRepo
+    ): Response {
         $hebergement = $repo->find($id);
 
         $dateDebut = new \DateTime($request->request->get('dateDebut'));
         $dateFin = new \DateTime($request->request->get('dateFin'));
+
+        // Vérification que dateFin > dateDebut
+        if ($dateFin <= $dateDebut) {
+            $this->addFlash('error', 'La date de départ doit être après la date d\'arrivée.');
+            return $this->redirectToRoute('app_property_details', ['id' => $id]);
+        }
+
+        // Vérification de la disponibilité de l'hébergement
+        $disponibilites = $disponibiliteRepo->findBy([
+            'hebergement' => $hebergement,
+            'disponible' => true,
+        ]);
+
+        $estDisponible = false;
+        foreach ($disponibilites as $dispo) {
+            if ($dateDebut >= $dispo->getDateDebut() && $dateFin <= $dispo->getDateFin()) {
+                $estDisponible = true;
+                break;
+            }
+        }
+
+        if (!$estDisponible) {
+            $this->addFlash('error', 'Cet hébergement n\'est pas disponible pour les dates choisies. Veuillez choisir d\'autres dates.');
+            return $this->redirectToRoute('app_property_details', ['id' => $id]);
+        }
+
+        // Vérifier qu'il n'y a pas déjà une réservation sur ces dates
+        $reservationsExistantes = $em->getRepository(Reservation::class)->createQueryBuilder('r')
+            ->where('r.hebergement = :hebergement')
+            ->andWhere('r.statut != :annulee')
+            ->andWhere('r.dateDebut < :dateFin AND r.dateFin > :dateDebut')
+            ->setParameter('hebergement', $hebergement)
+            ->setParameter('annulee', 'annulee')
+            ->setParameter('dateDebut', $dateDebut)
+            ->setParameter('dateFin', $dateFin)
+            ->getQuery()
+            ->getResult();
+
+        if (count($reservationsExistantes) > 0) {
+            $this->addFlash('error', 'Cet hébergement est déjà réservé pour ces dates. Veuillez choisir d\'autres dates.');
+            return $this->redirectToRoute('app_property_details', ['id' => $id]);
+        }
+
+        // Créer la réservation
         $nbNuits = $dateDebut->diff($dateFin)->days;
         $total = $nbNuits * $hebergement->getPrix();
 
@@ -37,7 +87,6 @@ class ReservationController extends AbstractController
         $em->flush();
 
         $this->addFlash('success', 'Votre réservation a été confirmée ! Nous vous contacterons bientôt.');
-
         return $this->redirectToRoute('app_property_details', ['id' => $id]);
     }
 }

@@ -1,9 +1,10 @@
 <?php
-
 namespace App\Controller;
 
 use App\Repository\HebergementRepository;
+use App\Repository\TypeRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
@@ -18,10 +19,38 @@ class HomeController extends AbstractController
     }
 
     #[Route('/properties', name: 'app_properties')]
-    public function properties(HebergementRepository $hebergementRepository): Response
-    {
+    public function properties(
+        Request $request,
+        HebergementRepository $hebergementRepository,
+        TypeRepository $typeRepository
+    ): Response {
+        $description = $request->query->get('description');
+        $typeId = $request->query->get('type') ? (int)$request->query->get('type') : null;
+        $prixMin = $request->query->get('prixMin') ? (float)$request->query->get('prixMin') : null;
+        $prixMax = $request->query->get('prixMax') ? (float)$request->query->get('prixMax') : null;
+        $tri = $request->query->get('tri');
+        $dateDebutStr = $request->query->get('dateDebut');
+        $dateFinStr = $request->query->get('dateFin');
+
+        $dateDebut = $dateDebutStr ? new \DateTime($dateDebutStr) : null;
+        $dateFin = $dateFinStr ? new \DateTime($dateFinStr) : null;
+
+        $hebergements = $hebergementRepository->search(
+            $description, $typeId, $prixMin, $prixMax, $tri, $dateDebut, $dateFin
+        );
+
         return $this->render('home/properties.html.twig', [
-            'hebergements' => $hebergementRepository->findAll(),
+            'hebergements' => $hebergements,
+            'types' => $typeRepository->findAll(),
+            'filters' => [
+                'description' => $description,
+                'type' => $typeId,
+                'prixMin' => $prixMin,
+                'prixMax' => $prixMax,
+                'tri' => $tri,
+                'dateDebut' => $dateDebutStr,
+                'dateFin' => $dateFinStr,
+            ],
         ]);
     }
 
