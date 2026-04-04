@@ -1,0 +1,128 @@
+{% extends "base_front.html.twig" %}
+
+{% block title %}Destinations - VoyageLoisir{% endblock %}
+
+{% block body %}
+
+<div id="js-preloader" class="js-preloader">
+  <div class="preloader-inner">
+    <span class="dot"></span>
+    <div class="dots"><span></span><span></span><span></span></div>
+  </div>
+</div>
+
+<div class="sub-header">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8 col-md-8">
+        <ul class="info">
+          <li><i class="fa fa-envelope"></i> info@voyageloisir.com</li>
+          <li><i class="fa fa-map"></i> Tunis, Tunisie</li>
+        </ul>
+      </div>
+      <div class="col-lg-4 col-md-4">
+        <ul class="social-links">
+          <li><a href="#"><i class="fab fa-facebook"></i></a></li>
+          <li><a href="#"><i class="fab fa-twitter"></i></a></li>
+          <li><a href="#"><i class="fab fa-linkedin"></i></a></li>
+          <li><a href="#"><i class="fab fa-instagram"></i></a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<header class="header-area header-sticky">
+  <div class="container">
+    <div class="row">
+      <div class="col-12">
+        <nav class="main-nav">
+          <a href="{{ path("app_home") }}" class="logo"><h1>VoyageLoisir</h1></a>
+          <ul class="nav">
+            <li><a href="{{ path("app_home") }}">Accueil</a></li>
+            <li><a href="{{ path("app_destinations") }}" class="active">Destinations</a></li>
+            <li><a href="{{ path("app_contact") }}">Contact</a></li>
+          </ul>
+          <a class="menu-trigger"><span>Menu</span></a>
+        </nav>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="page-heading header-text">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-12">
+        <span class="breadcrumb"><a href="{{ path("app_home") }}">Accueil</a> / Destinations</span>
+        <h3>Nos Destinations</h3>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section properties">
+  <div class="container">
+
+    <ul class="properties-filter">
+      <li><a class="is_active" href="#!" data-filter="*">Toutes</a></li>
+      <li><a href="#!" data-filter=".Printemps">Printemps</a></li>
+      <li><a href="#!" data-filter=".Ete">Ete</a></li>
+      <li><a href="#!" data-filter=".Automne">Automne</a></li>
+      <li><a href="#!" data-filter=".Hiver">Hiver</a></li>
+    </ul>
+
+    <div class="row properties-box">
+      {% for destination in destinations %}
+      <div class="col-lg-4 col-md-6 align-self-center mb-30 properties-items {{ destination.meilleureSaison }}">
+        <div class="item">
+
+          {% if destination.images|length > 0 %}
+            <a href="{{ path("app_destination_detail", {"id": destination.id}) }}">
+              <img src="{{ asset(destination.images[0].urlImage) }}" alt="{{ destination.nom }}"
+                   style="height:220px;object-fit:cover;width:100%">
+            </a>
+          {% else %}
+            <a href="{{ path("app_destination_detail", {"id": destination.id}) }}">
+              <img src="{{ asset("assets_front/images/images/property-01.jpg") }}" alt="{{ destination.nom }}"
+                   style="height:220px;object-fit:cover;width:100%">
+            </a>
+          {% endif %}
+
+          <span class="category">{{ destination.meilleureSaison ?? "-" }}</span>
+          <h6>{{ destination.nbVisites ?? 0 }} visites</h6>
+          <h4>
+            <a href="{{ path("app_destination_detail", {"id": destination.id}) }}">
+              {{ destination.nom }} - {{ destination.pays }}
+            </a>
+          </h4>
+          <ul>
+            <li>Pays : <span>{{ destination.pays }}</span></li>
+            <li>Saison : <span>{{ destination.meilleureSaison ?? "-" }}</span></li>
+            <li>Statut : <span>{{ destination.statut ? "Actif" : "Inactif" }}</span></li>
+          </ul>
+          <div class="main-button">
+            <a href="{{ path("app_destination_detail", {"id": destination.id}) }}">Voir les details</a>
+          </div>
+
+        </div>
+      </div>
+      {% else %}
+      <div class="col-12 text-center" style="padding:60px 0">
+        <h4>Aucune destination disponible.</h4>
+      </div>
+      {% endfor %}
+    </div>
+
+  </div>
+</div>
+
+<footer>
+  <div class="container">
+    <div class="col-lg-12">
+      <p>Copyright &copy; 2026 VoyageLoisir. Design: <a href="https://templatemo.com" target="_blank">TemplateMo</a></p>
+    </div>
+  </div>
+</footer>
+
+{% endblock %}

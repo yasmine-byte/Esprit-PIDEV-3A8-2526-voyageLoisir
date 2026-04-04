@@ -17,7 +17,7 @@ class Image
     #[ORM\Column(length: 255)]
     private ?string $url_image = null;
 
-    #[ORM\ManyToOne]
+    #[ORM\ManyToOne(inversedBy: "images")]
     #[Assert\NotNull(message: "La destination est obligatoire.")]
     private ?Destination $destination = null;
 

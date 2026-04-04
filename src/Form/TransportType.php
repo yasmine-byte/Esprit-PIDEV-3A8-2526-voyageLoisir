@@ -30,7 +30,7 @@ class TransportType extends AbstractType
             ])
             ->add("destination", EntityType::class, [
                 "class"        => Destination::class,
-                "choice_label" => "nom",
+                "choice_label" => "id",
                 "placeholder"  => "-- Choisir une destination --",
                 "required"     => true,
             ]);
