@@ -3,125 +3,133 @@
 {% block title %}Statistiques des Avis{% endblock %}
 
 {% block admin_content %}
-    <h2 class="mb-4 text-light">Statistiques des Avis</h2>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<div class="row mb-4">
+    <div class="col-12">
+        <h2 class="text-light">Statistiques des Avis</h2>
+        <p class="text-muted">Analyse simple des retours clients.</p>
+    </div>
+</div>
 
-    <div class="row">
-        {# Graphique 1 : Camembert #}
-        <div class="col-md-4 mb-4">
-            <div class="card bg-dark text-light shadow-sm" style="border: 1px solid rgba(255,255,255,0.1);">
-                <div class="card-header border-bottom border-light border-opacity-10 py-3">
-                    <h5 class="mb-0 text-center">Répartition par Statut</h5>
-                </div>
-                <div class="card-body">
-                    <canvas id="chartStatuts" height="300"></canvas>
-                </div>
-            </div>
-        </div>
-
-        {# Graphique 2 : Courbe 7 jours #}
-        <div class="col-md-4 mb-4">
-            <div class="card bg-dark text-light shadow-sm" style="border: 1px solid rgba(255,255,255,0.1);">
-                <div class="card-header border-bottom border-light border-opacity-10 py-3">
-                    <h5 class="mb-0 text-center">Avis (7 derniers jours)</h5>
-                </div>
-                <div class="card-body">
-                    <canvas id="chartEvol" height="300"></canvas>
-                </div>
-            </div>
-        </div>
-
-        {# Graphique 3 : Bar chart des étoiles #}
-        <div class="col-md-4 mb-4">
-            <div class="card bg-dark text-light shadow-sm" style="border: 1px solid rgba(255,255,255,0.1);">
-                <div class="card-header border-bottom border-light border-opacity-10 py-3">
-                    <h5 class="mb-0 text-center">Distribution des Notes</h5>
-                </div>
-                <div class="card-body">
-                    <canvas id="chartEtoiles" height="300"></canvas>
-                </div>
+<!-- LIGNE 1 : KPI -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card bg-dark text-light border-secondary mb-3">
+            <div class="card-body text-center">
+                <h5 class="card-title text-muted">Total des Avis</h5>
+                <h2 class="fw-bold">{{ stats.total|default(0) }}</h2>
             </div>
         </div>
     </div>
+    <div class="col-md-4">
+        <div class="card bg-dark text-light border-secondary mb-3">
+            <div class="card-body text-center">
+                <h5 class="card-title text-muted">Note Moyenne</h5>
+                <h2 class="text-warning fw-bold">{{ stats.moy_etoiles|default(0)|number_format(1) }} / 5</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-dark text-light border-success mb-3">
+            <div class="card-body text-center">
+                <h5 class="card-title text-success">Taux de Validation</h5>
+                <h2 class="text-success fw-bold">{{ stats.total > 0 ? (stats.valides / stats.total * 100)|round : 0 }} %</h2>
+            </div>
+        </div>
+    </div>
+</div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Chart 1: Doughnut
-            const ctx1 = document.getElementById('chartStatuts').getContext('2d');
-            new Chart(ctx1, {
-                type: 'doughnut',
-                data: {
-                    labels: ['En attente', 'Validé', 'Rejeté'],
-                    datasets: [{
-                        data: [{{ stats.en_attente }}, {{ stats.valides }}, {{ stats.rejetes }}],
-                        backgroundColor: ['#ffc107', '#28a745', '#dc3545'],
-                        borderWidth: 0
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { position: 'bottom', labels: { color: '#fff' } }
-                    }
-                }
-            });
+<!-- LIGNE 2 : Charts -->
+<div class="row mb-4 g-3">
+    <div class="col-md-6">
+        <div class="card bg-dark text-light border-secondary h-100">
+            <div class="card-header border-secondary">
+                Répartition des Statuts
+            </div>
+            <div class="card-body" style="height: 300px;">
+                <canvas id="chartStatuts"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card bg-dark text-light border-secondary h-100">
+            <div class="card-header border-secondary">
+                Évolution sur 7 Jours
+            </div>
+            <div class="card-body" style="height: 300px;">
+                <canvas id="chartEvol"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
 
-            // Chart 2: Line
-            const ctx2 = document.getElementById('chartEvol').getContext('2d');
-            new Chart(ctx2, {
-                type: 'line',
-                data: {
-                    labels: {{ avisParJour.labels | json_encode | raw }},
-                    datasets: [{
-                        label: 'Avis soumis',
-                        data: {{ avisParJour.data | json_encode | raw }},
-                        borderColor: '#4a9eff',
-                        fill: true,
-                        backgroundColor: 'rgba(74,158,255,0.1)',
-                        tension: 0.3,
-                        pointBackgroundColor: '#4a9eff'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false }
-                    },
-                    scales: {
-                        x: { ticks: { color: '#aaa' }, grid: { color: 'rgba(255,255,255,0.05)' } },
-                        y: { ticks: { color: '#aaa', stepSize: 1 }, grid: { color: 'rgba(255,255,255,0.05)' } }
-                    }
-                }
-            });
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card bg-dark text-light border-secondary">
+            <div class="card-header border-secondary">
+                Distribution des Étoiles
+            </div>
+            <div class="card-body" style="height: 300px;">
+                <canvas id="chartEtoiles"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
 
-            // Chart 3: Bar
-            const ctx3 = document.getElementById('chartEtoiles').getContext('2d');
-            new Chart(ctx3, {
-                type: 'bar',
-                data: {
-                    labels: ['1★','2★','3★','4★','5★'],
-                    datasets: [{
-                        label: 'Nombre d\'avis',
-                        data: {{ etoilesDistrib | json_encode | raw }},
-                        backgroundColor: ['#dc3545', '#ff6b35', '#ffc107', '#20c997', '#28a745'],
-                        borderRadius: 4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false }
-                    },
-                    scales: {
-                        x: { ticks: { color: '#aaa' }, grid: { display: false } },
-                        y: { ticks: { color: '#aaa', stepSize: 1 }, grid: { color: 'rgba(255,255,255,0.05)' } }
-                    }
-                }
-            });
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        Chart.defaults.color = 'rgba(255, 255, 255, 0.7)';
+
+        const ctx1 = document.getElementById('chartStatuts').getContext('2d');
+        new Chart(ctx1, {
+            type: 'pie',
+            data: {
+                labels: ['En attente', 'Validé', 'Rejeté'],
+                datasets: [{
+                    data: [{{ stats.en_attente|default(0) }}, {{ stats.valides|default(0) }}, {{ stats.rejetes|default(0) }}],
+                    backgroundColor: ['#ffc107', '#28a745', '#dc3545']
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false }
         });
-    </script>
+
+        const ctx2 = document.getElementById('chartEvol').getContext('2d');
+        new Chart(ctx2, {
+            type: 'line',
+            data: {
+                labels: {{ avisParJour.labels | default('[]') | json_encode | raw }},
+                datasets: [{
+                    label: 'Nombre d\'avis',
+                    data: {{ avisParJour.data | default('[]') | json_encode | raw }},
+                    borderColor: '#4a9eff',
+                    backgroundColor: 'rgba(74, 158, 255, 0.2)',
+                    fill: true
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false }
+        });
+
+        const ctx3 = document.getElementById('chartEtoiles').getContext('2d');
+        new Chart(ctx3, {
+            type: 'bar',
+            data: {
+                labels: ['1 ★', '2 ★', '3 ★', '4 ★', '5 ★'],
+                datasets: [{
+                    label: 'Avis',
+                    data: {{ etoilesDistrib | default('[]') | json_encode | raw }},
+                    backgroundColor: ['#dc3545', '#fd7e14', '#ffc107', '#20c997', '#28a745']
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { 
+                    x: { grid: { color: 'rgba(255,255,255,0.1)' } },
+                    y: { beginAtZero: true, stepSize: 1, grid: { color: 'rgba(255,255,255,0.1)' } } 
+                }
+            }
+        });
+    });
+</script>
 {% endblock %}

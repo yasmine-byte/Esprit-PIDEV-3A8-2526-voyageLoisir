@@ -18,12 +18,22 @@ class AdminReclamationController extends AbstractController
     {
         $statut = $request->query->get('statut');
         $priorite = $request->query->get('priorite');
+        $recherche = $request->query->get('recherche');
 
-        $criteria = [];
-        if ($statut) $criteria['statut'] = $statut;
-        if ($priorite) $criteria['priorite'] = $priorite;
+        $qb = $reclamationRepository->createQueryBuilder('r')->orderBy('r.dateCreation', 'DESC');
 
-        $reclamations = $reclamationRepository->findBy($criteria, ['dateCreation' => 'DESC']);
+        if ($statut) {
+            $qb->andWhere('r.statut = :statut')->setParameter('statut', $statut);
+        }
+        if ($priorite) {
+            $qb->andWhere('r.priorite = :priorite')->setParameter('priorite', $priorite);
+        }
+        if ($recherche) {
+            $qb->andWhere('r.titre LIKE :recherche OR r.contenu LIKE :recherche')
+               ->setParameter('recherche', '%' . $recherche . '%');
+        }
+
+        $reclamations = $qb->getQuery()->getResult();
 
         $allReclamations = $reclamationRepository->findAll();
         $total = 0;
@@ -59,7 +69,8 @@ class AdminReclamationController extends AbstractController
             'reclamations' => $reclamations,
             'stats' => $stats,
             'currentStatut' => $statut,
-            'currentPriorite' => $priorite
+            'currentPriorite' => $priorite,
+            'currentRecherche' => $recherche
         ]);
     }
 
@@ -99,6 +110,16 @@ class AdminReclamationController extends AbstractController
 
         $referer = $request->headers->get('referer');
         return $referer ? $this->redirect($referer) : $this->redirectToRoute('admin_reclamation_index');
+    }
+
+    #[Route('/{id}/repondre', name: 'admin_reclamation_repondre', methods: ['POST'])]
+    public function repondre(Request $request, Reclamation $reclamation, EntityManagerInterface $entityManager): Response
+    {
+        $reponse = $request->request->get('reponse');
+        $reclamation->setReponse($reponse);
+        $entityManager->flush();
+        $this->addFlash('success', 'Réponse enregistrée avec succès.');
+        return $this->redirectToRoute('admin_reclamation_index');
     }
 
     #[Route('/{id}/delete', name: 'admin_reclamation_delete', methods: ['POST'])]
