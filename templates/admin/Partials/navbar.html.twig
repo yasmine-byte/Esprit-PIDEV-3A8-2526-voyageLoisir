@@ -1,30 +1,31 @@
-<!-- Header / Navbar -->
 <div class="header">
     <div class="header-left">
-        <h1>Dashboard</h1>
-        <p class="header-subtitle">Welcome back! Here's your portfolio overview.</p>
+        <h1>Gestion des Utilisateurs</h1>
+        <p class="header-subtitle">Administration et gestion des comptes utilisateurs</p>
     </div>
     <div class="header-right">
-        <div class="header-search">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="11" cy="11" r="8"/>
-                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-            </svg>
-            <input type="text" placeholder="Search...">
+
+
+        {% if app.user %}
+    <a href="{{ path('admin_user_profile', {'id': app.user.id}) }}" class="user-info-display" style="text-decoration:none;">
+        <div class="user-avatar">
+            {% if app.user.nom and app.user.prenom %}
+                {{ app.user.nom|first }}{{ app.user.prenom|first }}
+            {% else %}
+                {{ app.user.email|first|upper }}
+            {% endif %}
         </div>
-        <button class="notification-btn">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-                <path d="M13.73 21a2 2 0 01-3.46 0"/>
-            </svg>
-            <span class="notification-badge">3</span>
-        </button>
-        <div class="user-menu">
-            <div class="user-avatar">AM</div>
-            <div class="user-info">
-                <span class="user-name">Alex Morgan</span>
-                <span class="user-role">Pro Trader</span>
-            </div>
+        <div class="user-details">
+            <span class="user-name">
+                {% if app.user.nom and app.user.prenom %}
+                    {{ app.user.nom }} {{ app.user.prenom }}
+                {% else %}
+                    {{ app.user.email }}
+                {% endif %}
+            </span>
+            <span class="user-status">Connecté · Voir profil</span>
         </div>
+    </a>
+{% endif %}
     </div>
 </div>
