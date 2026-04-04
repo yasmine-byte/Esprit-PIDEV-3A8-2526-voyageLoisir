@@ -1,0 +1,79 @@
+{% extends 'base_front.html.twig' %}
+
+{% block title %}Ajouter Activité{% endblock %}
+
+{% block body %}
+
+<div class="page-heading header-text"
+     style="
+        background-image: url('{{ asset('assets_front/images/ajout-activite.jpg') }}');
+        background-size: cover;
+        background-position: center;
+     ">
+
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <span class="breadcrumb">
+                    <a href="{{ path('app_home') }}">Home</a> / Ajouter activité
+                </span>
+                <h3 style="color:white;">Ajouter une activité</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="contact-page section">
+    <div class="container">
+        <div class="row">
+
+            <div class="col-lg-6">
+                <div class="section-heading">
+                    <h6>| Nouvelle Activité</h6>
+                    <h2>Créer une activité pour votre plateforme</h2>
+                </div>
+
+                <p>
+                    Remplissez les informations ci-dessous pour ajouter une nouvelle activité.
+                </p>
+
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="item phone">
+                            <img src="{{ asset('assets_front/images/images/phone-icon.png') }}" alt="" style="max-width: 52px;">
+                            <h6>Simple<br><span>Ajout rapide</span></h6>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-12">
+                        <div class="item email">
+                            <img src="{{ asset('assets_front/images/images/email-icon.png') }}" alt="" style="max-width: 52px;">
+                            <h6>Propre<br><span>Design moderne</span></h6>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                {{ form_start(form, {'attr': {'id': 'contact-form'}}) }}
+                    <div class="row">
+                        <div class="col-lg-12">{{ form_row(form.nom) }}</div>
+                        <div class="col-lg-12">{{ form_row(form.description) }}</div>
+                        <div class="col-lg-12">{{ form_row(form.prix) }}</div>
+                        <div class="col-lg-12">{{ form_row(form.type) }}</div>
+                        <div class="col-lg-12">{{ form_row(form.lieu) }}</div>
+                        <div class="col-lg-12">{{ form_row(form.duree) }}</div>
+                        <div class="col-lg-12">{{ form_row(form.imageUrl) }}</div>
+
+                        <div class="col-lg-12">
+                            <button type="submit" class="orange-button">Ajouter</button>
+                        </div>
+                    </div>
+                {{ form_end(form) }}
+            </div>
+
+        </div>
+    </div>
+</div>
+
+{% endblock %}

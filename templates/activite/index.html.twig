@@ -1,0 +1,110 @@
+{% extends 'base_front.html.twig' %}
+
+{% block title %}Activités - Vianova{% endblock %}
+
+{% block body %}
+
+<div id="js-preloader" class="js-preloader">
+  <div class="preloader-inner">
+    <span class="dot"></span>
+    <div class="dots">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+  </div>
+</div>
+
+<div class="page-heading header-text" style="
+  background-image:
+      linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)),
+      url('{{ asset('assets_front/images/images/my-banner.jpg') }}');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-12">
+        <span class="breadcrumb">
+          <a href="{{ path('app_home') }}">Home</a> / Activités
+        </span>
+        <h3>Nos Activités</h3>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section properties">
+  <div class="container">
+
+    <div class="row mb-4">
+      <div class="col-lg-12 text-end">
+        <a href="{{ path('app_activite_new') }}" class="main-button">
+          Ajouter une activité
+        </a>
+      </div>
+    </div>
+
+    <div class="row properties-box">
+      {% for activite in activites %}
+        <div class="col-lg-4 col-md-6 align-self-center mb-30 properties-items">
+          <div class="item">
+
+            <a href="{{ path('app_activite_show', {'id': activite.id}) }}">
+              <img
+                src="{{ activite.imageUrl ? activite.imageUrl : asset('assets_front/images/images/property-01.jpg') }}"
+                alt="{{ activite.nom }}"
+                style="height: 260px; object-fit: cover; width: 100%;">
+            </a>
+
+            <span class="category">
+              {{ activite.type ? activite.type : 'Activité' }}
+            </span>
+
+            <h6>{{ activite.prix }} TND</h6>
+
+            <h4>
+              <a href="{{ path('app_activite_show', {'id': activite.id}) }}">
+                {{ activite.nom }}
+              </a>
+            </h4>
+
+            <ul>
+              <li>Lieu: <span>{{ activite.lieu }}</span></li>
+              <li>Durée: <span>{{ activite.duree }}</span></li>
+              <li>Note AI:
+                <span>{{ activite.aiRating ?? 'N/A' }}</span>
+              </li>
+              <li>Description:
+                <span>
+                  {{ activite.description|slice(0, 60) ~ (activite.description|length > 60 ? '...' : '') }}
+                </span>
+              </li>
+            </ul>
+
+            <div class="main-button mb-2">
+              <a href="{{ path('app_activite_show', {'id': activite.id}) }}">Voir détails</a>
+            </div>
+
+            <div class="d-flex gap-2 mt-2">
+              <a href="{{ path('app_activite_edit', {'id': activite.id}) }}" class="btn btn-dark btn-sm">
+                Modifier
+              </a>
+            </div>
+
+          </div>
+        </div>
+      {% else %}
+        <div class="col-lg-12">
+          <div class="alert alert-info text-center">
+            Aucune activité trouvée.
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+
+  </div>
+</div>
+
+{% endblock %}

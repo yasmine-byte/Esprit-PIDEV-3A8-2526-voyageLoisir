@@ -1,8 +1,59 @@
 {% extends 'base.html.twig' %}
 
-{% block body %}
-    {% include 'admin/Partials/navbar.html.twig' %}
-    {% include 'admin/Partials/sidebar.html.twig' %}
+{% block stylesheets %}
+    {{ parent() }}
 
-    {% block admin_content %}{% endblock %}
+    <link rel="stylesheet" href="{{ asset('assets_back/css/templatemo-crypto-dashboard.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets_back/css/templatemo-crypto-style.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets_back/css/templatemo-crypto-pages.css') }}">
+{% endblock %}
+
+{% block body %}
+    <style>
+        .admin-layout {
+            display: flex;
+            min-height: 100vh;
+            background: #f7f7f9;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 280px;
+            height: 100vh;
+            overflow-y: auto;
+            background: #fff;
+            border-right: 1px solid #ececec;
+            z-index: 1000;
+        }
+
+        .admin-main {
+            margin-left: 280px;
+            width: calc(100% - 280px);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .admin-content {
+            padding: 30px;
+        }
+
+        body {
+            margin: 0;
+        }
+    </style>
+
+    <div class="admin-layout">
+        {% include 'admin/Partials/sidebar.html.twig' %}
+
+        <div class="admin-main">
+            {% include 'admin/Partials/navbar.html.twig' %}
+
+            <div class="admin-content">
+                {% block admin_content %}{% endblock %}
+            </div>
+        </div>
+    </div>
 {% endblock %}

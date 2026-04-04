@@ -1,0 +1,54 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}Gestion Activité{% endblock %}
+
+{% block admin_content %}
+    <h1>Gestion des Activités</h1>
+
+    <a href="{{ path('admin_activite_new') }}" class="btn btn-warning mb-3">
+        Ajouter une activité
+    </a>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nom</th>
+                <th>Type</th>
+                <th>Prix</th>
+                <th>Durée</th>
+                <th>Lieu</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for activite in activites %}
+            <tr>
+                <td>{{ activite.id }}</td>
+                <td>{{ activite.nom }}</td>
+                <td>{{ activite.type }}</td>
+                <td>{{ activite.prix }} TND</td>
+                <td>{{ activite.duree }}</td>
+                <td>{{ activite.lieu }}</td>
+                <td>
+                    <a href="{{ path('admin_activite_edit', {'id': activite.id}) }}" class="btn btn-sm btn-dark">
+                        Modifier
+                    </a>
+
+                    <form method="post"
+                          action="{{ path('admin_activite_delete', {'id': activite.id}) }}"
+                          style="display:inline-block;"
+                          onsubmit="return confirm('Supprimer cette activité ?');">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ activite.id) }}">
+                        <button class="btn btn-sm btn-danger">Supprimer</button>
+                    </form>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="7">Aucune activité trouvée</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

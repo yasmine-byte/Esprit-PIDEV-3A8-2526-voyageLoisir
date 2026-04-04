@@ -1,0 +1,11 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}Ajouter une activité{% endblock %}
+
+{% block admin_content %}
+    <h1>Ajouter une activité</h1>
+
+    {% include 'admin/activite/_form.html.twig' with {'form': form} %}
+
+    <a href="{{ path('admin_activite_index') }}">Retour à la liste</a>
+{% endblock %}
