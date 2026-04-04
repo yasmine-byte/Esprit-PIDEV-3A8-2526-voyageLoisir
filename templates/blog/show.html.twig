@@ -1,0 +1,341 @@
+{% extends 'base_front.html.twig' %}
+
+{% block title %}{{ blog.titre }}{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        :root {
+            --blog-accent: #E8652A;
+            --blog-bg: #FAF8F5;
+            --blog-text: #1E1C1A;
+            --blog-muted: #7A746E;
+            --blog-border: rgba(30, 28, 26, 0.08);
+            --blog-shadow: 0 20px 45px rgba(44, 33, 24, 0.08);
+        }
+
+        body {
+            background: var(--blog-bg);
+            color: var(--blog-text);
+            font-family: "Poppins", sans-serif;
+        }
+
+        .blog-article-page {
+            padding: 150px 0 90px;
+            background:
+                radial-gradient(circle at top left, rgba(232, 101, 42, 0.08), transparent 24%),
+                radial-gradient(circle at right 20%, rgba(205, 190, 175, 0.18), transparent 20%),
+                var(--blog-bg);
+        }
+
+        .blog-article-shell {
+            width: min(1180px, calc(100% - 32px));
+            margin: 0 auto;
+        }
+
+        .blog-article-topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+
+        .blog-back-link,
+        .blog-edit-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 18px;
+            border: 1px solid var(--blog-border);
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.82);
+            color: var(--blog-text);
+            text-decoration: none;
+            font-size: 0.94rem;
+            font-weight: 600;
+        }
+
+        .blog-edit-link {
+            background: var(--blog-accent);
+            border-color: var(--blog-accent);
+            color: #fff;
+        }
+
+        .blog-hero-article {
+            display: grid;
+            grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+            gap: 28px;
+            align-items: stretch;
+            margin-bottom: 34px;
+        }
+
+        .blog-hero-copy,
+        .blog-hero-media {
+            background: rgba(255, 255, 255, 0.88);
+            border: 1px solid var(--blog-border);
+            border-radius: 28px;
+            box-shadow: var(--blog-shadow);
+            overflow: hidden;
+        }
+
+        .blog-hero-copy {
+            padding: 34px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .blog-article-badge {
+            display: inline-flex;
+            align-items: center;
+            width: fit-content;
+            margin-bottom: 18px;
+            padding: 9px 14px;
+            border-radius: 999px;
+            background: rgba(232, 101, 42, 0.12);
+            color: var(--blog-accent);
+            font-size: 0.84rem;
+            font-weight: 700;
+            text-transform: capitalize;
+        }
+
+        .blog-hero-copy h1 {
+            margin: 0 0 18px;
+            font-size: clamp(2.25rem, 4vw, 4.2rem);
+            line-height: 1.03;
+            letter-spacing: -0.04em;
+            font-weight: 700;
+        }
+
+        .blog-article-excerpt {
+            margin: 0 0 24px;
+            color: var(--blog-muted);
+            font-size: 1.04rem;
+            line-height: 1.85;
+        }
+
+        .blog-article-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px 18px;
+            color: var(--blog-muted);
+            font-size: 0.92rem;
+        }
+
+        .blog-article-meta span {
+            position: relative;
+        }
+
+        .blog-article-meta span + span::before {
+            content: "\2022";
+            margin-right: 18px;
+        }
+
+        .blog-hero-media img {
+            width: 100%;
+            height: 100%;
+            min-height: 460px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .blog-article-layout {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 280px;
+            gap: 28px;
+        }
+
+        .blog-article-body,
+        .blog-article-sidebar {
+            background: rgba(255, 255, 255, 0.88);
+            border: 1px solid var(--blog-border);
+            border-radius: 24px;
+            box-shadow: var(--blog-shadow);
+        }
+
+        .blog-article-body {
+            padding: 40px;
+        }
+
+        .blog-article-body p,
+        .blog-article-body div {
+            margin: 0 0 20px;
+            color: #342f2b;
+            font-size: 1.02rem;
+            line-height: 1.95;
+        }
+
+        .blog-article-sidebar {
+            padding: 24px;
+            position: sticky;
+            top: 24px;
+            height: fit-content;
+        }
+
+        .blog-side-block + .blog-side-block {
+            margin-top: 22px;
+            padding-top: 22px;
+            border-top: 1px solid var(--blog-border);
+        }
+
+        .blog-side-label {
+            margin: 0 0 8px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--blog-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        .blog-side-value {
+            margin: 0;
+            color: var(--blog-text);
+            font-size: 1rem;
+            line-height: 1.7;
+            word-break: break-word;
+        }
+
+        .blog-side-value a {
+            color: var(--blog-accent);
+            text-decoration: none;
+        }
+
+        .blog-side-pill {
+            display: inline-flex;
+            padding: 8px 12px;
+            border-radius: 999px;
+            background: rgba(232, 101, 42, 0.12);
+            color: var(--blog-accent);
+            font-size: 0.84rem;
+            font-weight: 700;
+            text-transform: capitalize;
+        }
+
+        .blog-delete-area {
+            margin-top: 18px;
+        }
+
+        .blog-delete-area form button {
+            width: 100%;
+            padding: 12px 16px;
+            border: 0;
+            border-radius: 14px;
+            background: #1e1c1a;
+            color: #fff;
+            font-weight: 600;
+        }
+
+        @media (max-width: 991px) {
+            .blog-article-page {
+                padding-top: 130px;
+            }
+
+            .blog-hero-article,
+            .blog-article-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .blog-article-sidebar {
+                position: static;
+            }
+        }
+
+        @media (max-width: 767px) {
+            .blog-article-shell {
+                width: min(100% - 24px, 1180px);
+            }
+
+            .blog-hero-copy,
+            .blog-article-body,
+            .blog-article-sidebar {
+                padding: 22px;
+            }
+
+            .blog-hero-media img {
+                min-height: 280px;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    {% include 'home/partials/header.html.twig' %}
+
+    {% set coverImage = blog.imageCouverture ?: ('https://picsum.photos/seed/blog-' ~ blog.id ~ '/1200/900') %}
+    {% set readTime = ((blog.contenu|default('')|length / 700)|round(0, 'ceil')) %}
+
+    <main class="blog-article-page">
+        <div class="blog-article-shell">
+            <div class="blog-article-topbar">
+                <a class="blog-back-link" href="{{ path('app_blog_index') }}">&larr; Back to blogs</a>
+                <a class="blog-edit-link" href="{{ path('app_blog_edit', {'id': blog.id}) }}">Edit article</a>
+            </div>
+
+            <section class="blog-hero-article">
+                <div class="blog-hero-copy">
+                    <span class="blog-article-badge">{{ blog.status ?: 'brouillon' }}</span>
+                    <h1>{{ blog.titre }}</h1>
+                    {% if blog.extrait %}
+                        <p class="blog-article-excerpt">{{ blog.extrait }}</p>
+                    {% endif %}
+                    <div class="blog-article-meta">
+                        <span>{{ blog.datePublication ? blog.datePublication|date('F d, Y') : (blog.dateCreation ? blog.dateCreation|date('F d, Y') : 'Recently written') }}</span>
+                        <span>{{ readTime > 0 ? readTime : 1 }} min read</span>
+                        <span>{{ blog.authorId ?: 'Vianova traveler' }}</span>
+                    </div>
+                </div>
+
+                <div class="blog-hero-media">
+                    <img src="{{ coverImage }}" alt="{{ blog.titre }}">
+                </div>
+            </section>
+
+            <section class="blog-article-layout">
+                <article class="blog-article-body">
+                    {% for paragraph in blog.contenu|split('\n') %}
+                        {% if paragraph|trim is not empty %}
+                            <p>{{ paragraph|trim }}</p>
+                        {% endif %}
+                    {% endfor %}
+                </article>
+
+                <aside class="blog-article-sidebar">
+                    <div class="blog-side-block">
+                        <p class="blog-side-label">Status</p>
+                        <span class="blog-side-pill">{{ blog.status ?: 'brouillon' }}</span>
+                    </div>
+
+                    <div class="blog-side-block">
+                        <p class="blog-side-label">Slug</p>
+                        <p class="blog-side-value">{{ blog.slug ?: 'No slug provided' }}</p>
+                    </div>
+
+                    <div class="blog-side-block">
+                        <p class="blog-side-label">Created on</p>
+                        <p class="blog-side-value">{{ blog.dateCreation ? blog.dateCreation|date('Y-m-d H:i') : '-' }}</p>
+                    </div>
+
+                    <div class="blog-side-block">
+                        <p class="blog-side-label">Published on</p>
+                        <p class="blog-side-value">{{ blog.datePublication ? blog.datePublication|date('Y-m-d H:i') : 'Not published yet' }}</p>
+                    </div>
+
+                    <div class="blog-side-block">
+                        <p class="blog-side-label">Cover image</p>
+                        <p class="blog-side-value">
+                            <a href="{{ coverImage }}" target="_blank" rel="noopener noreferrer">Open image</a>
+                        </p>
+                    </div>
+
+                    <div class="blog-delete-area">
+                        {{ include('blog/_delete_form.html.twig') }}
+                    </div>
+                </aside>
+            </section>
+        </div>
+    </main>
+
+    {% include 'home/partials/footer.html.twig' %}
+{% endblock %}

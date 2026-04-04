@@ -1,0 +1,940 @@
+{% extends 'base_front.html.twig' %}
+
+{% block title %}Travel Journal{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        :root {
+            --blog-accent: #E8652A;
+            --blog-bg: #FAF8F5;
+            --blog-text: #1E1C1A;
+            --blog-muted: #7A746E;
+            --blog-border: rgba(30, 28, 26, 0.08);
+            --blog-shadow: 0 20px 45px rgba(44, 33, 24, 0.08);
+            --blog-radius: 16px;
+        }
+
+        body {
+            background: var(--blog-bg);
+            color: var(--blog-text);
+            font-family: "Poppins", sans-serif;
+        }
+
+        .blog-page {
+            padding: 150px 0 90px;
+            background:
+                radial-gradient(circle at top left, rgba(232, 101, 42, 0.08), transparent 28%),
+                radial-gradient(circle at right center, rgba(208, 186, 167, 0.2), transparent 24%),
+                var(--blog-bg);
+        }
+
+        .blog-shell {
+            width: min(1180px, calc(100% - 32px));
+            margin: 0 auto;
+        }
+
+        .blog-hero {
+            position: relative;
+            display: grid;
+            grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+            gap: 48px;
+            align-items: center;
+            padding: 34px 0 88px;
+        }
+
+        .blog-kicker {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 18px;
+            padding: 10px 16px;
+            border: 1px solid rgba(232, 101, 42, 0.18);
+            border-radius: 999px;
+            color: var(--blog-accent);
+            background: rgba(255, 255, 255, 0.7);
+            font-size: 0.88rem;
+            font-weight: 600;
+            letter-spacing: 0.01em;
+        }
+
+        .blog-hero h1 {
+            margin: 0;
+            font-size: clamp(2.85rem, 5vw, 5.2rem);
+            line-height: 1.02;
+            font-weight: 700;
+            letter-spacing: -0.04em;
+            max-width: 10ch;
+        }
+
+        .blog-highlight {
+            color: var(--blog-accent);
+        }
+
+        .blog-hero-copy p {
+            max-width: 560px;
+            margin: 24px 0 0;
+            color: var(--blog-muted);
+            font-size: 1.03rem;
+            line-height: 1.9;
+        }
+
+        .blog-cta {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 30px;
+            padding: 14px 28px;
+            border-radius: 999px;
+            background: var(--blog-accent);
+            color: #fff;
+            font-size: 0.96rem;
+            font-weight: 600;
+            text-decoration: none;
+            box-shadow: 0 18px 30px rgba(232, 101, 42, 0.22);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .blog-cta:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 22px 34px rgba(232, 101, 42, 0.28);
+            color: #fff;
+        }
+
+        .blog-plane {
+            position: absolute;
+            left: 48%;
+            top: 42%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: #fff;
+            color: var(--blog-accent);
+            box-shadow: var(--blog-shadow);
+            font-size: 1.35rem;
+            transform: rotate(-14deg);
+        }
+
+        .blog-plane::before {
+            content: "";
+            position: absolute;
+            width: 92px;
+            height: 92px;
+            border: 1px dashed rgba(232, 101, 42, 0.28);
+            border-radius: 50%;
+        }
+
+        .blog-collage {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 20px;
+            align-items: start;
+        }
+
+        .blog-photo-card {
+            overflow: hidden;
+            border-radius: 24px;
+            background: #fff;
+            box-shadow: var(--blog-shadow);
+            border: 1px solid rgba(255, 255, 255, 0.72);
+        }
+
+        .blog-photo-card img {
+            width: 100%;
+            height: 100%;
+            display: block;
+            object-fit: cover;
+        }
+
+        .blog-photo-card--tall {
+            grid-row: span 2;
+            min-height: 460px;
+            transform: translateY(26px);
+        }
+
+        .blog-photo-card--top {
+            min-height: 220px;
+        }
+
+        .blog-photo-card--bottom {
+            min-height: 280px;
+            transform: translateY(-12px);
+        }
+
+        .blog-section {
+            padding-top: 24px;
+        }
+
+        .blog-section-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            margin-bottom: 28px;
+        }
+
+        .blog-section-head h2 {
+            margin: 0;
+            font-size: clamp(2rem, 3vw, 2.8rem);
+            line-height: 1.1;
+            font-weight: 700;
+            letter-spacing: -0.03em;
+        }
+
+        .blog-pill-link,
+        .blog-filter-chip {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 20px;
+            border: 1px solid var(--blog-border);
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.82);
+            color: var(--blog-text);
+            font-size: 0.92rem;
+            font-weight: 500;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+
+        .blog-create-trigger {
+            background: var(--blog-accent);
+            border-color: var(--blog-accent);
+            color: #fff;
+            box-shadow: 0 16px 30px rgba(232, 101, 42, 0.22);
+        }
+
+        .blog-create-trigger:hover {
+            color: #fff;
+            border-color: var(--blog-accent);
+            box-shadow: 0 20px 36px rgba(232, 101, 42, 0.28);
+        }
+
+        .blog-flash-stack {
+            display: grid;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .blog-flash {
+            padding: 16px 18px;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(232, 101, 42, 0.2);
+            color: var(--blog-text);
+            box-shadow: var(--blog-shadow);
+        }
+
+        .blog-pill-link:hover,
+        .blog-filter-chip:hover {
+            color: var(--blog-accent);
+            border-color: rgba(232, 101, 42, 0.28);
+        }
+
+        .blog-filter-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 28px;
+            flex-wrap: wrap;
+        }
+
+        .blog-filter-list {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .blog-filter-chip.is-active {
+            background: var(--blog-accent);
+            border-color: var(--blog-accent);
+            color: #fff;
+        }
+
+        .blog-destinations-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 22px;
+        }
+
+        .blog-destination-card,
+        .blog-story-card,
+        .blog-story-compact {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid var(--blog-border);
+            border-radius: var(--blog-radius);
+            box-shadow: var(--blog-shadow);
+        }
+
+        .blog-destination-card {
+            overflow: hidden;
+            padding: 12px 12px 18px;
+        }
+
+        .blog-destination-card img {
+            width: 100%;
+            aspect-ratio: 0.82;
+            border-radius: 14px;
+            object-fit: cover;
+            display: block;
+            margin-bottom: 16px;
+        }
+
+        .blog-destination-card h3,
+        .blog-story-card h3,
+        .blog-story-compact h3 {
+            margin: 0;
+            font-weight: 700;
+            color: var(--blog-text);
+            letter-spacing: -0.02em;
+        }
+
+        .blog-destination-card h3 {
+            font-size: 1.1rem;
+            margin-bottom: 6px;
+        }
+
+        .blog-destination-card p,
+        .blog-story-card p,
+        .blog-story-compact p {
+            margin: 0;
+            color: var(--blog-muted);
+        }
+
+        .blog-stories-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.9fr);
+            gap: 24px;
+        }
+
+        .blog-story-card {
+            overflow: hidden;
+        }
+
+        .blog-story-card img {
+            width: 100%;
+            height: 330px;
+            display: block;
+            object-fit: cover;
+        }
+
+        .blog-story-body {
+            padding: 26px;
+        }
+
+        .blog-tag {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 16px;
+            padding: 7px 13px;
+            border-radius: 999px;
+            background: rgba(232, 101, 42, 0.12);
+            color: var(--blog-accent);
+            font-size: 0.82rem;
+            font-weight: 600;
+        }
+
+        .blog-story-card h3 {
+            font-size: clamp(1.5rem, 2.5vw, 2rem);
+            line-height: 1.2;
+            margin-bottom: 14px;
+        }
+
+        .blog-meta {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            font-size: 0.9rem;
+            color: var(--blog-muted);
+        }
+
+        .blog-meta span + span::before {
+            content: "\2022";
+            margin-right: 10px;
+        }
+
+        .blog-story-stack {
+            display: grid;
+            gap: 18px;
+        }
+
+        .blog-story-compact {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 132px;
+            gap: 18px;
+            align-items: center;
+            padding: 18px;
+        }
+
+        .blog-story-compact img {
+            width: 132px;
+            height: 112px;
+            border-radius: 14px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .blog-story-compact .blog-tag {
+            margin-bottom: 12px;
+            background: transparent;
+            padding: 0;
+            border-radius: 0;
+        }
+
+        .blog-story-compact h3 {
+            font-size: 1.12rem;
+            line-height: 1.35;
+            margin-bottom: 10px;
+        }
+
+        .blog-hidden-link {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .blog-hidden-link:hover {
+            color: inherit;
+        }
+
+        .blog-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 1200;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+
+        .blog-modal.is-open {
+            display: flex;
+        }
+
+        .blog-modal-backdrop {
+            position: absolute;
+            inset: 0;
+            background: rgba(30, 28, 26, 0.52);
+            backdrop-filter: blur(4px);
+        }
+
+        .blog-modal-panel {
+            position: relative;
+            z-index: 1;
+            width: min(760px, 100%);
+            max-height: min(88vh, 980px);
+            overflow: auto;
+            padding: 28px;
+            border-radius: 24px;
+            background: #fffaf7;
+            box-shadow: 0 30px 80px rgba(30, 28, 26, 0.18);
+        }
+
+        .blog-modal-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .blog-modal-header h3 {
+            margin: 0 0 8px;
+            font-size: clamp(1.5rem, 3vw, 2rem);
+            font-weight: 700;
+            letter-spacing: -0.03em;
+        }
+
+        .blog-modal-header p {
+            margin: 0;
+            color: var(--blog-muted);
+            line-height: 1.7;
+        }
+
+        .blog-modal-close {
+            width: 42px;
+            height: 42px;
+            border: 0;
+            border-radius: 50%;
+            background: rgba(232, 101, 42, 0.12);
+            color: var(--blog-accent);
+            font-size: 1.4rem;
+            line-height: 1;
+        }
+
+        .blog-compose-form {
+            display: grid;
+            gap: 20px;
+        }
+
+        .blog-form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 18px;
+        }
+
+        .blog-form-field {
+            display: grid;
+            gap: 8px;
+        }
+
+        .blog-form-field--full {
+            grid-column: 1 / -1;
+        }
+
+        .blog-compose-form label {
+            margin: 0;
+            font-size: 0.92rem;
+            font-weight: 600;
+            color: var(--blog-text);
+        }
+
+        .blog-compose-form input,
+        .blog-compose-form textarea {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1px solid rgba(30, 28, 26, 0.12);
+            border-radius: 14px;
+            background: #fff;
+            color: var(--blog-text);
+            font-size: 0.96rem;
+            line-height: 1.5;
+        }
+
+        .blog-compose-form input:focus,
+        .blog-compose-form textarea:focus {
+            outline: none;
+            border-color: rgba(232, 101, 42, 0.5);
+            box-shadow: 0 0 0 4px rgba(232, 101, 42, 0.12);
+        }
+
+        .blog-compose-form ul {
+            margin: 0;
+            padding-left: 18px;
+            color: #b33d16;
+            font-size: 0.88rem;
+        }
+
+        .blog-form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .blog-form-btn {
+            padding: 13px 22px;
+            border: 1px solid transparent;
+            border-radius: 999px;
+            font-size: 0.94rem;
+            font-weight: 600;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .blog-form-btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .blog-form-btn--primary {
+            background: var(--blog-accent);
+            color: #fff;
+            box-shadow: 0 16px 28px rgba(232, 101, 42, 0.22);
+        }
+
+        .blog-form-btn--secondary {
+            background: #fff;
+            color: var(--blog-text);
+            border-color: rgba(30, 28, 26, 0.1);
+        }
+
+        @media (max-width: 1199px) {
+            .blog-plane {
+                left: 50%;
+                top: 47%;
+            }
+
+            .blog-destinations-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 991px) {
+            .blog-page {
+                padding-top: 130px;
+            }
+
+            .blog-hero,
+            .blog-stories-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .blog-plane {
+                position: static;
+                margin: -8px auto 8px;
+            }
+
+            .blog-collage {
+                max-width: 620px;
+                margin: 0 auto;
+            }
+        }
+
+        @media (max-width: 767px) {
+            .blog-shell {
+                width: min(100% - 24px, 1180px);
+            }
+
+            .blog-hero {
+                gap: 28px;
+                padding-bottom: 62px;
+            }
+
+            .blog-kicker {
+                font-size: 0.8rem;
+            }
+
+            .blog-hero-copy p {
+                font-size: 0.98rem;
+                line-height: 1.8;
+            }
+
+            .blog-section-head {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .blog-filter-row {
+                align-items: stretch;
+            }
+
+            .blog-filter-list {
+                gap: 10px;
+            }
+
+            .blog-pill-link {
+                width: 100%;
+            }
+
+            .blog-destinations-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .blog-collage {
+                grid-template-columns: 1fr;
+            }
+
+            .blog-photo-card--tall,
+            .blog-photo-card--bottom {
+                transform: none;
+            }
+
+            .blog-photo-card--tall,
+            .blog-photo-card--top,
+            .blog-photo-card--bottom {
+                min-height: 260px;
+                grid-row: auto;
+            }
+
+            .blog-story-card img {
+                height: 250px;
+            }
+
+            .blog-story-body {
+                padding: 22px;
+            }
+
+            .blog-story-compact {
+                grid-template-columns: 1fr;
+            }
+
+            .blog-story-compact img {
+                width: 100%;
+                height: 180px;
+                order: -1;
+            }
+
+            .blog-form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .blog-modal {
+                padding: 16px;
+            }
+
+            .blog-modal-panel {
+                padding: 22px;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+{% include 'home/partials/header.html.twig' %}
+
+{% set destinations = [
+    {
+        title: 'Golden Bridge Ba Na Hills',
+        country: 'Vietnam',
+        image: 'https://picsum.photos/seed/golden-bridge-vietnam/700/900'
+    },
+    {
+        title: 'Dubrovnik',
+        country: 'Croatia',
+        image: 'https://picsum.photos/seed/dubrovnik-croatia/700/900'
+    },
+    {
+        title: 'Hot Air Balloon Cappadocia',
+        country: 'Turkey',
+        image: 'https://picsum.photos/seed/cappadocia-turkey/700/900'
+    },
+    {
+        title: 'Sydney Harbour Bridge',
+        country: 'Australia',
+        image: 'https://picsum.photos/seed/sydney-australia/700/900'
+    }
+] %}
+
+{% set fallbackStories = [
+    {
+        category: 'Food and Drinks',
+        title: 'A slow tasting journey through hidden kitchens, rooftop aperitifs, and unforgettable local pours',
+        date: 'April 02, 2026',
+        readTime: '8 min read',
+        image: 'https://picsum.photos/seed/food-drinks-travel/1200/800',
+        link: '#'
+    },
+    {
+        category: 'Traveling',
+        title: 'The sunrise train rides that turned a simple itinerary into the highlight of the season',
+        date: 'March 28, 2026',
+        readTime: '5 min read',
+        image: 'https://picsum.photos/seed/traveling-journal/500/400',
+        link: '#'
+    },
+    {
+        category: 'Hotels',
+        title: 'Inside design-forward stays where heritage buildings meet quiet luxury',
+        date: 'March 22, 2026',
+        readTime: '6 min read',
+        image: 'https://picsum.photos/seed/hotel-story/500/400',
+        link: '#'
+    },
+    {
+        category: 'Travel Budget',
+        title: 'How to build a dream route with smarter bookings and longer local moments',
+        date: 'March 18, 2026',
+        readTime: '4 min read',
+        image: 'https://picsum.photos/seed/travel-budget-guide/500/400',
+        link: '#'
+    }
+] %}
+
+{% set storyCategories = ['Food and Drinks', 'Traveling', 'Hotels', 'Travel Budget'] %}
+{% set storyImages = [
+    'https://picsum.photos/seed/food-drink-feature/1200/800',
+    'https://picsum.photos/seed/travel-mini-1/500/400',
+    'https://picsum.photos/seed/travel-mini-2/500/400',
+    'https://picsum.photos/seed/travel-mini-3/500/400'
+] %}
+{% set stories = [] %}
+
+{% for i in 0..3 %}
+    {% set blog = blogs[i] ?? null %}
+    {% if blog %}
+        {% set stories = stories|merge([{
+            category: storyCategories[i],
+            title: blog.titre,
+            date: blog.datePublication ? blog.datePublication|date('F d, Y') : (blog.dateCreation ? blog.dateCreation|date('F d, Y') : 'Recently published'),
+            readTime: ((blog.contenu|default('')|length / 700)|round(0, 'ceil')) ~ ' min read',
+            image: storyImages[i],
+            link: path('app_blog_show', {'id': blog.id})
+        }]) %}
+    {% else %}
+        {% set stories = stories|merge([fallbackStories[i]]) %}
+    {% endif %}
+{% endfor %}
+
+<main class="blog-page">
+    <div class="blog-shell">
+        {% for label, messages in app.flashes %}
+            <div class="blog-flash-stack">
+                {% for message in messages %}
+                    <div class="blog-flash">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endfor %}
+
+        <section class="blog-hero">
+            <div class="blog-hero-copy">
+                <span class="blog-kicker">Curated escapes for curious travelers</span>
+                <h1>Discover the World's <span class="blog-highlight">Hidden</span> Wonders</h1>
+                <p>
+                    Explore thoughtfully crafted stories, extraordinary places, and local rituals that turn
+                    every getaway into a richer experience. From quiet castles to vibrant temples and cinematic
+                    landscapes, this journal is built for travelers who want something memorable.
+                </p>
+                <div style="display:flex; gap:14px; flex-wrap:wrap; align-items:center; margin-top:30px;">
+                    <a class="blog-cta" href="#top-destinations">Discover trip</a>
+                    <button type="button" class="blog-pill-link blog-create-trigger" data-blog-modal-open>Share your blog</button>
+                </div>
+            </div>
+
+            <div class="blog-plane" aria-hidden="true">&#9992;</div>
+
+            <div class="blog-collage" aria-label="Travel photo collage">
+                <div class="blog-photo-card blog-photo-card--tall">
+                    <img src="https://picsum.photos/seed/chateau-travel-card/900/1200" alt="Historic castle destination">
+                </div>
+                <div class="blog-photo-card blog-photo-card--top">
+                    <img src="https://picsum.photos/seed/asian-temple-card/800/600" alt="Asian temple destination">
+                </div>
+                <div class="blog-photo-card blog-photo-card--bottom">
+                    <img src="https://picsum.photos/seed/landscape-travel-card/800/900" alt="Scenic landscape destination">
+                </div>
+            </div>
+        </section>
+
+        <section class="blog-section" id="top-destinations">
+            <div class="blog-section-head">
+                <h2>Top Destinations</h2>
+            </div>
+
+            <div class="blog-filter-row">
+                <div class="blog-filter-list">
+                    <span class="blog-filter-chip is-active">Popular</span>
+                    <span class="blog-filter-chip">USA</span>
+                    <span class="blog-filter-chip">Europe</span>
+                    <span class="blog-filter-chip">Asia</span>
+                    <span class="blog-filter-chip">Africa &amp; Middle East</span>
+                    <span class="blog-filter-chip">Australia &amp; The Pacific</span>
+                    <span class="blog-filter-chip">Canada</span>
+                    <span class="blog-filter-chip">More &#9662;</span>
+                </div>
+
+                <a class="blog-pill-link" href="{{ path('app_properties') }}">Explore all destinations</a>
+            </div>
+
+            <div class="blog-destinations-grid">
+                {% for destination in destinations %}
+                    <article class="blog-destination-card">
+                        <img src="{{ destination.image }}" alt="{{ destination.title }}">
+                        <h3>{{ destination.title }}</h3>
+                        <p>{{ destination.country }}</p>
+                    </article>
+                {% endfor %}
+            </div>
+        </section>
+
+        <section class="blog-section" style="padding-top: 84px;">
+            <div class="blog-section-head">
+                <h2>Latest Stories</h2>
+                <a class="blog-pill-link" href="#latest-stories">Read more articles</a>
+            </div>
+
+            <div class="blog-stories-grid" id="latest-stories">
+                <article class="blog-story-card">
+                    <a class="blog-hidden-link" href="{{ stories[0].link }}">
+                        <img src="{{ stories[0].image }}" alt="{{ stories[0].title }}">
+                        <div class="blog-story-body">
+                            <span class="blog-tag">{{ stories[0].category }}</span>
+                            <h3>{{ stories[0].title }}</h3>
+                            <div class="blog-meta">
+                                <span>{{ stories[0].date }}</span>
+                                <span>{{ stories[0].readTime }}</span>
+                            </div>
+                        </div>
+                    </a>
+                </article>
+
+                <div class="blog-story-stack">
+                    {% for story in stories|slice(1, 3) %}
+                        <article class="blog-story-compact">
+                            <div>
+                                <a class="blog-hidden-link" href="{{ story.link }}">
+                                    <span class="blog-tag">{{ story.category }}</span>
+                                    <h3>{{ story.title }}</h3>
+                                    <div class="blog-meta">
+                                        <span>{{ story.date }}</span>
+                                        <span>{{ story.readTime }}</span>
+                                    </div>
+                                </a>
+                            </div>
+                            <a class="blog-hidden-link" href="{{ story.link }}">
+                                <img src="{{ story.image }}" alt="{{ story.title }}">
+                            </a>
+                        </article>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+    </div>
+</main>
+
+<div class="blog-modal{% if show_blog_modal|default(false) %} is-open{% endif %}" id="blogComposeModal" aria-hidden="{% if show_blog_modal|default(false) %}false{% else %}true{% endif %}">
+    <div class="blog-modal-backdrop" data-blog-modal-close></div>
+    <div class="blog-modal-panel" role="dialog" aria-modal="true" aria-labelledby="blogComposeTitle">
+        <div class="blog-modal-header">
+            <div>
+                <h3 id="blogComposeTitle">Write your travel blog</h3>
+                <p>Users can add a title, content, cover image, excerpt, and slug. New entries start as <strong>brouillon</strong> unless published directly.</p>
+            </div>
+            <button type="button" class="blog-modal-close" aria-label="Close" data-blog-modal-close>&times;</button>
+        </div>
+
+        {{ include('blog/_form.html.twig', { form: blog_form, form_class: 'blog-compose-form' }) }}
+    </div>
+</div>
+
+{% include 'home/partials/footer.html.twig' %}
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        (function () {
+            const modal = document.getElementById('blogComposeModal');
+            if (!modal) {
+                return;
+            }
+
+            const openButtons = document.querySelectorAll('[data-blog-modal-open]');
+            const closeButtons = document.querySelectorAll('[data-blog-modal-close]');
+
+            const openModal = function () {
+                modal.classList.add('is-open');
+                modal.setAttribute('aria-hidden', 'false');
+                document.body.style.overflow = 'hidden';
+            };
+
+            const closeModal = function () {
+                modal.classList.remove('is-open');
+                modal.setAttribute('aria-hidden', 'true');
+                document.body.style.overflow = '';
+            };
+
+            openButtons.forEach(function (button) {
+                button.addEventListener('click', openModal);
+            });
+
+            closeButtons.forEach(function (button) {
+                button.addEventListener('click', closeModal);
+            });
+
+            document.addEventListener('keydown', function (event) {
+                if (event.key === 'Escape' && modal.classList.contains('is-open')) {
+                    closeModal();
+                }
+            });
+
+            if (modal.classList.contains('is-open')) {
+                document.body.style.overflow = 'hidden';
+            }
+        })();
+    </script>
+{% endblock %}

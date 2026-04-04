@@ -1,0 +1,263 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}View Blog{% endblock %}
+
+{% block admin_content %}
+    <style>
+        .admin-blog-view {
+            display: grid;
+            gap: 24px;
+        }
+
+        .admin-blog-view-topbar,
+        .admin-blog-view-hero,
+        .admin-blog-view-card {
+            background: #fff;
+            border-radius: 24px;
+            box-shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
+        }
+
+        .admin-blog-view-topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 22px 24px;
+            flex-wrap: wrap;
+        }
+
+        .admin-back-link,
+        .admin-blog-action,
+        .admin-blog-delete {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 11px 16px;
+            border-radius: 999px;
+            border: 1px solid #e2e8f0;
+            background: #fff;
+            color: #0f172a;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .admin-blog-action {
+            background: #e8652a;
+            border-color: #e8652a;
+            color: #fff;
+        }
+
+        .admin-blog-delete {
+            background: #fff5f5;
+            border-color: #fecaca;
+            color: #b91c1c;
+        }
+
+        .admin-blog-view-hero {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 360px;
+            overflow: hidden;
+        }
+
+        .admin-blog-copy {
+            padding: 32px;
+        }
+
+        .admin-blog-status {
+            display: inline-flex;
+            margin-bottom: 18px;
+            padding: 8px 12px;
+            border-radius: 999px;
+            background: rgba(232, 101, 42, 0.12);
+            color: #e8652a;
+            font-size: 0.84rem;
+            font-weight: 700;
+            text-transform: capitalize;
+        }
+
+        .admin-blog-copy h1 {
+            margin: 0 0 16px;
+            font-size: clamp(2rem, 4vw, 3.4rem);
+            line-height: 1.05;
+            color: #0f172a;
+        }
+
+        .admin-blog-copy p {
+            margin: 0;
+            color: #64748b;
+            line-height: 1.8;
+        }
+
+        .admin-blog-meta {
+            display: flex;
+            gap: 10px 18px;
+            flex-wrap: wrap;
+            margin-top: 22px;
+            color: #64748b;
+            font-size: 0.92rem;
+        }
+
+        .admin-blog-meta span + span::before {
+            content: "\2022";
+            margin-right: 18px;
+        }
+
+        .admin-blog-cover img {
+            width: 100%;
+            height: 100%;
+            min-height: 320px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .admin-blog-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 320px;
+            gap: 24px;
+        }
+
+        .admin-blog-view-card {
+            padding: 28px;
+        }
+
+        .admin-blog-view-card h2 {
+            margin: 0 0 18px;
+            font-size: 1.35rem;
+            color: #0f172a;
+        }
+
+        .admin-blog-content p {
+            margin: 0 0 18px;
+            color: #334155;
+            line-height: 1.9;
+        }
+
+        .admin-side-block + .admin-side-block {
+            margin-top: 18px;
+            padding-top: 18px;
+            border-top: 1px solid #eef2f7;
+        }
+
+        .admin-side-label {
+            margin: 0 0 8px;
+            font-size: 0.82rem;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        .admin-side-value {
+            margin: 0;
+            color: #0f172a;
+            line-height: 1.7;
+            word-break: break-word;
+        }
+
+        .admin-side-value a {
+            color: #e8652a;
+            text-decoration: none;
+        }
+
+        .admin-inline-delete {
+            margin-top: 20px;
+        }
+
+        @media (max-width: 991px) {
+            .admin-blog-view-hero,
+            .admin-blog-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 767px) {
+            .admin-blog-copy,
+            .admin-blog-view-card,
+            .admin-blog-view-topbar {
+                padding: 22px;
+            }
+        }
+    </style>
+
+    {% set coverImage = blog.imageCouverture ?: ('https://picsum.photos/seed/admin-blog-' ~ blog.id ~ '/1200/900') %}
+    {% set readTime = ((blog.contenu|default('')|length / 700)|round(0, 'ceil')) %}
+
+    <main class="admin-blog-view">
+        <section class="admin-blog-view-topbar">
+            <a class="admin-back-link" href="{{ path('admin_blogs') }}">&larr; Retour vers Gestion Blog</a>
+            <div style="display:flex; gap:12px; flex-wrap:wrap;">
+                <a class="admin-blog-action" href="{{ path('app_blog_edit', {'id': blog.id}) }}">Edit</a>
+                <form method="post" action="{{ path('admin_blog_delete', {'id': blog.id}) }}" onsubmit="return confirm('Delete this blog?');">
+                    <input type="hidden" name="_token" value="{{ csrf_token('admin_delete_blog_' ~ blog.id) }}">
+                    <button class="admin-blog-delete" type="submit">Delete</button>
+                </form>
+            </div>
+        </section>
+
+        <section class="admin-blog-view-hero">
+            <div class="admin-blog-copy">
+                <span class="admin-blog-status">{{ blog.status ?: 'brouillon' }}</span>
+                <h1>{{ blog.titre }}</h1>
+                <p>{{ blog.extrait ?: 'No excerpt provided for this blog yet.' }}</p>
+                <div class="admin-blog-meta">
+                    <span>{{ blog.dateCreation ? blog.dateCreation|date('Y-m-d H:i') : 'No creation date' }}</span>
+                    <span>{{ readTime > 0 ? readTime : 1 }} min read</span>
+                    <span>{{ blog.authorId ?: 'User' }}</span>
+                </div>
+            </div>
+            <div class="admin-blog-cover">
+                <img src="{{ coverImage }}" alt="{{ blog.titre }}">
+            </div>
+        </section>
+
+        <section class="admin-blog-grid">
+            <article class="admin-blog-view-card admin-blog-content">
+                <h2>Blog content</h2>
+                {% for paragraph in blog.contenu|split('\n') %}
+                    {% if paragraph|trim is not empty %}
+                        <p>{{ paragraph|trim }}</p>
+                    {% endif %}
+                {% endfor %}
+            </article>
+
+            <aside class="admin-blog-view-card">
+                <h2>Blog details</h2>
+
+                <div class="admin-side-block">
+                    <p class="admin-side-label">Slug</p>
+                    <p class="admin-side-value">{{ blog.slug ?: 'No slug' }}</p>
+                </div>
+
+                <div class="admin-side-block">
+                    <p class="admin-side-label">Date creation</p>
+                    <p class="admin-side-value">{{ blog.dateCreation ? blog.dateCreation|date('Y-m-d H:i') : '-' }}</p>
+                </div>
+
+                <div class="admin-side-block">
+                    <p class="admin-side-label">Date publication</p>
+                    <p class="admin-side-value">{{ blog.datePublication ? blog.datePublication|date('Y-m-d H:i') : 'Not published yet' }}</p>
+                </div>
+
+                <div class="admin-side-block">
+                    <p class="admin-side-label">Image couverture</p>
+                    <p class="admin-side-value"><a href="{{ coverImage }}" target="_blank" rel="noopener noreferrer">Open image</a></p>
+                </div>
+
+                <div class="admin-side-block">
+                    <p class="admin-side-label">Sentiment</p>
+                    <p class="admin-side-value">
+                        Score: {{ blog.sentimentScore is not null ? blog.sentimentScore : '-' }}<br>
+                        Emoji: {{ blog.sentimentEmoji ?: '-' }}
+                    </p>
+                </div>
+
+                <div class="admin-side-block">
+                    <p class="admin-side-label">Rating</p>
+                    <p class="admin-side-value">
+                        Average: {{ blog.ratingAverage is not null ? blog.ratingAverage : '-' }}<br>
+                        Votes: {{ blog.ratingCount is not null ? blog.ratingCount : 0 }}
+                    </p>
+                </div>
+            </aside>
+        </section>
+    </main>
+{% endblock %}

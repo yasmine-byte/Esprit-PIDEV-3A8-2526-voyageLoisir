@@ -1,0 +1,52 @@
+{{ form_start(form, {
+    attr: {
+        class: form_class|default('blog-compose-form')
+    }
+}) }}
+    {{ form_errors(form) }}
+
+    <div class="blog-form-grid">
+        <div class="blog-form-field blog-form-field--full">
+            {{ form_label(form.titre) }}
+            {{ form_widget(form.titre) }}
+            {{ form_errors(form.titre) }}
+        </div>
+
+        <div class="blog-form-field">
+            {{ form_label(form.slug) }}
+            {{ form_widget(form.slug) }}
+            {{ form_errors(form.slug) }}
+        </div>
+
+        <div class="blog-form-field">
+            {{ form_label(form.imageCouverture) }}
+            {{ form_widget(form.imageCouverture) }}
+            {{ form_errors(form.imageCouverture) }}
+        </div>
+
+        <div class="blog-form-field blog-form-field--full">
+            {{ form_label(form.extrait) }}
+            {{ form_widget(form.extrait) }}
+            {{ form_errors(form.extrait) }}
+        </div>
+
+        <div class="blog-form-field blog-form-field--full">
+            {{ form_label(form.contenu) }}
+            {{ form_widget(form.contenu) }}
+            {{ form_errors(form.contenu) }}
+        </div>
+    </div>
+
+    <div class="blog-form-actions">
+        {{ form_widget(form.saveDraft, {
+            attr: {
+                class: 'blog-form-btn blog-form-btn--secondary'
+            }
+        }) }}
+        {{ form_widget(form.publish, {
+            attr: {
+                class: 'blog-form-btn blog-form-btn--primary'
+            }
+        }) }}
+    </div>
+{{ form_end(form) }}
