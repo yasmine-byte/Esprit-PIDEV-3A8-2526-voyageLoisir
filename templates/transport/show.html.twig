@@ -1,26 +1,33 @@
-{% extends 'base.html.twig' %}
+{% extends "admin/base_admin.html.twig" %}
 
-{% block title %}Transport{% endblock %}
+{% block title %}Transport #{{ transport.id }}{% endblock %}
 
-{% block body %}
-    <h1>Transport</h1>
+{% block admin_content %}
+<div class="page-header">
+    <h1>Detail Transport</h1>
+    <p>Informations du transport</p>
+</div>
 
-    <table class="table">
-        <tbody>
-            <tr>
-                <th>Id</th>
-                <td>{{ transport.id }}</td>
-            </tr>
-            <tr>
-                <th>Type_transport</th>
-                <td>{{ transport.typeTransport }}</td>
-            </tr>
-        </tbody>
+<div class="card" style="max-width:600px">
+    <table class="market-table">
+        <tr>
+            <th>ID</th>
+            <td>{{ transport.id }}</td>
+        </tr>
+        <tr>
+            <th>Type de transport</th>
+            <td>{{ transport.typeTransport }}</td>
+        </tr>
+        <tr>
+            <th>Destination</th>
+            <td>{{ transport.destination ? transport.destination.id ~ " - " ~ transport.destination.nom : "-" }}</td>
+        </tr>
     </table>
 
-    <a href="{{ path('app_transport_index') }}">back to list</a>
-
-    <a href="{{ path('app_transport_edit', {'id': transport.id}) }}">edit</a>
-
-    {{ include('transport/_delete_form.html.twig') }}
+    <div style="margin-top:20px;display:flex;gap:10px">
+        <a href="{{ path("app_transport_index") }}" class="action-btn">Retour</a>
+        <a href="{{ path("app_transport_edit", {"id": transport.id}) }}" class="action-btn">Modifier</a>
+        {{ include("transport/_delete_form.html.twig") }}
+    </div>
+</div>
 {% endblock %}
