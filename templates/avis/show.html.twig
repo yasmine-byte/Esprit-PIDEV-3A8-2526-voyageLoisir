@@ -1,0 +1,83 @@
+{% extends 'base_front.html.twig' %}
+
+{% block title %}Mon avis - Villa Agency{% endblock %}
+
+{% block body %}
+    {% include 'home/partials/header.html.twig' %}
+
+    <div class="page-heading header-text">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12">
+                    <span class="breadcrumb"><a href="{{ path('avis_index') }}">Avis</a> / Détails</span>
+                    <h3>Détails de mon avis</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mt-5 mb-5 pb-5 pt-3" style="min-height: 40vh;">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card shadow-sm border-0 mb-4 p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h4>Avis : {{ avis.type.nom }}</h4>
+                        {% if avis.statut == 'Validé' %}
+                            <span class="badge bg-success py-2 px-3">Validé</span>
+                        {% elseif avis.statut == 'Rejeté' %}
+                            <span class="badge bg-danger py-2 px-3">Rejeté</span>
+                        {% else %}
+                            <span class="badge bg-warning text-dark py-2 px-3">En attente</span>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-sm-3 fw-bold text-muted">Note:</div>
+                        <div class="col-sm-9">
+                            {% for i in 1..5 %}
+                                {% if i <= avis.nbEtoiles %}
+                                    <i class="fas fa-star" style="color: gold;"></i>
+                                {% else %}
+                                    <i class="far fa-star" style="color: #ccc;"></i>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-sm-3 fw-bold text-muted">Date:</div>
+                        <div class="col-sm-9">{{ avis.dateAvis ? avis.dateAvis|date('d/m/Y') : '' }}</div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-sm-3 fw-bold text-muted">Contenu:</div>
+                        <div class="col-sm-9 bg-light p-3 rounded" style="font-size:1.05rem;">
+                            {{ avis.contenu|nl2br }}
+                        </div>
+                    </div>
+
+                    <div class="mt-4 pt-3 border-top d-flex justify-content-between">
+                        {% if avis.statut == 'En attente' %}
+                            <a href="{{ path('avis_edit', {'id': avis.id}) }}" class="btn btn-outline-dark px-4 py-2 rounded-pill">Modifier</a>
+                        {% else %}
+                            <div></div>
+                        {% endif %}
+                        <a href="{{ path('avis_index') }}" class="btn text-white px-4 py-2 rounded-pill" style="background-color: #f35525;">Retour à la liste</a>
+                    </div>
+                </div>
+
+                {% if reclamation %}
+                    <div class="card shadow-sm border-0 mt-4 p-4 border-start border-4 border-danger bg-light">
+                        <h5 class="text-danger mb-3"><i class="fas fa-exclamation-circle"></i> Réclamation automatique liée</h5>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <p class="mb-0">Une réclamation a été générée suite à votre notation. <br>Statut: <span class="badge bg-danger ms-1">{{ reclamation.statut }}</span></p>
+                            <a href="{{ path('reclamation_show', {'id': reclamation.id}) }}" class="btn btn-sm btn-outline-danger mt-2">Détails réclamation</a>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    {% include 'home/partials/footer.html.twig' %}
+{% endblock %}

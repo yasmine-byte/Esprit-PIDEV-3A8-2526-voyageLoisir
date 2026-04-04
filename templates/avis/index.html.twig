@@ -1,0 +1,109 @@
+{% extends 'base_front.html.twig' %}
+
+{% block title %}Nos Avis - Villa Agency{% endblock %}
+
+{% block body %}
+    <!-- ***** Header Area Start ***** -->
+    {% include 'home/partials/header.html.twig' %}
+    <!-- ***** Header Area End ***** -->
+
+    <div class="page-heading header-text">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12">
+                    <span class="breadcrumb"><a href="{{ path('app_home') }}">Home</a> / Avis</span>
+                    <h3>Nos Avis</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mt-5 mb-5 pb-5 pt-3" style="min-height: 50vh;">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4>Tous nos avis</h4>
+            <a href="{{ path('avis_new') }}" class="btn text-white rounded-pill px-4 py-2" style="background-color: #f35525; border-color: #f35525; font-weight:500;">
+                <i class="fas fa-plus"></i> Donner mon avis
+            </a>
+        </div>
+
+        {% for message in app.flashes('success') %}
+            <div class="alert alert-success alert-dismissible fade show">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+
+        {% for message in app.flashes('warning') %}
+            <div class="alert alert-warning alert-dismissible fade show">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+
+        {% for message in app.flashes('danger') %}
+            <div class="alert alert-danger alert-dismissible fade show">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+
+        <div class="table-responsive shadow-sm bg-white rounded p-3">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>Contenu</th>
+                        <th>Étoiles (⭐)</th>
+                        <th>Type</th>
+                        <th>Statut</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for avi in avis %}
+                    <tr>
+                        <td style="max-width:300px;" class="text-truncate">{{ avi.contenu }}</td>
+                        <td>
+                            {% for i in 1..5 %}
+                                {% if i <= avi.nbEtoiles %}
+                                    <i class="fas fa-star" style="color: #f35525;"></i>
+                                {% else %}
+                                    <i class="far fa-star" style="color: #ccc;"></i>
+                                {% endif %}
+                            {% endfor %}
+                        </td>
+                        <td>{{ avi.type.nom }}</td>
+                        <td>
+                            {% if avi.statut == 'Validé' %}
+                                <span class="badge bg-success">Validé</span>
+                            {% elseif avi.statut == 'Rejeté' %}
+                                <span class="badge bg-danger">Rejeté</span>
+                            {% else %}
+                                <span class="badge bg-warning text-dark">En attente</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ avi.dateAvis ? avi.dateAvis|date('d/m/Y') : '' }}</td>
+                        <td>
+                            <a href="{{ path('avis_show', {'id': avi.id}) }}" class="btn btn-sm btn-outline-secondary">Voir</a>
+                            {% if avi.statut == 'En attente' %}
+                                <a href="{{ path('avis_edit', {'id': avi.id}) }}" class="btn btn-sm btn-outline-dark">Modifier</a>
+                                <form method="post" action="{{ path('avis_delete', {'id': avi.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet avis ?');" style="display:inline-block;">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ avi.id) }}">
+                                    <button class="btn btn-sm btn-danger">Supprimer</button>
+                                </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center py-4">Soyez le premier à donner votre avis !</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ***** Footer Start ***** -->
+    {% include 'home/partials/footer.html.twig' %}
+{% endblock %}

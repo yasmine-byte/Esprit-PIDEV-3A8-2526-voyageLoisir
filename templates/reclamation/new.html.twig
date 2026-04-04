@@ -1,0 +1,63 @@
+{% extends 'base_front.html.twig' %}
+
+{% block title %}Nouvelle Réclamation - Villa Agency{% endblock %}
+
+{% block body %}
+    {% include 'home/partials/header.html.twig' %}
+
+    <div class="page-heading header-text">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12">
+                    <span class="breadcrumb"><a href="{{ path('reclamation_index') }}">Réclamations</a> / Nouvelle</span>
+                    <h3>Nouvelle Réclamation</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mt-5 mb-5 pb-5 pt-3">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card shadow-sm border-0 p-4">
+                    <h4 class="mb-4">Décrivez votre problème</h4>
+                    
+                    {{ form_start(form, {'attr': {'novalidate': 'novalidate', 'class': 'needs-validation'}}) }}
+                        
+                        <div class="mb-3">
+                            {{ form_label(form.titre, 'Titre', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                            {{ form_widget(form.titre, {'attr': {'class': 'form-control', 'placeholder': 'Résumé du problème'}}) }}
+                            <div class="text-danger small mt-1">{{ form_errors(form.titre) }}</div>
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form_label(form.type, 'Type de réclamation', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                            {{ form_widget(form.type, {'attr': {'class': 'form-select'}}) }}
+                            <div class="text-danger small mt-1">{{ form_errors(form.type) }}</div>
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form_label(form.priorite, 'Priorité', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                            {{ form_widget(form.priorite, {'attr': {'class': 'form-select'}}) }}
+                            <div class="text-danger small mt-1">{{ form_errors(form.priorite) }}</div>
+                        </div>
+
+                        <div class="mb-4">
+                            {{ form_label(form.contenu, 'Détails de la réclamation', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                            {{ form_widget(form.contenu, {'attr': {'class': 'form-control', 'rows': 5, 'placeholder': 'Expliquez en détail...'}}) }}
+                            <div class="text-danger small mt-1">{{ form_errors(form.contenu) }}</div>
+                        </div>
+
+                        <div class="mt-4 text-center">
+                            <button type="submit" class="btn text-white px-5 py-2 rounded-pill w-100" style="background-color: #f35525; font-weight:600;">
+                                Envoyer la réclamation
+                            </button>
+                        </div>
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% include 'home/partials/footer.html.twig' %}
+{% endblock %}
