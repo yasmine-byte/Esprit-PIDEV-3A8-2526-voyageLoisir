@@ -15,10 +15,19 @@ use Symfony\Component\Routing\Attribute\Route;
 final class VoyageController extends AbstractController
 {
     #[Route(name: 'app_voyage_index', methods: ['GET'])]
-    public function index(VoyageRepository $voyageRepository): Response
+    public function index(Request $request, VoyageRepository $voyageRepository): Response
     {
+        $search = $request->query->get('search', '');
+        $tri    = $request->query->get('tri', 'id');
+        $ordre  = $request->query->get('ordre', 'ASC');
+
+        $voyages = $voyageRepository->findByFilters($search, $tri, $ordre);
+
         return $this->render('voyage/index.html.twig', [
-            'voyages' => $voyageRepository->findAll(),
+            'voyages' => $voyages,
+            'search'  => $search,
+            'tri'     => $tri,
+            'ordre'   => $ordre,
         ]);
     }
 
@@ -32,13 +41,12 @@ final class VoyageController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->persist($voyage);
             $entityManager->flush();
-
             return $this->redirectToRoute('app_voyage_index', [], Response::HTTP_SEE_OTHER);
         }
 
         return $this->render('voyage/new.html.twig', [
             'voyage' => $voyage,
-            'form' => $form,
+            'form'   => $form,
         ]);
     }
 
@@ -58,24 +66,22 @@ final class VoyageController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->flush();
-
             return $this->redirectToRoute('app_voyage_index', [], Response::HTTP_SEE_OTHER);
         }
 
         return $this->render('voyage/edit.html.twig', [
             'voyage' => $voyage,
-            'form' => $form,
+            'form'   => $form,
         ]);
     }
 
     #[Route('/{id}', name: 'app_voyage_delete', methods: ['POST'])]
     public function delete(Request $request, Voyage $voyage, EntityManagerInterface $entityManager): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$voyage->getId(), $request->getPayload()->getString('_token'))) {
+        if ($this->isCsrfTokenValid('delete' . $voyage->getId(), $request->getPayload()->getString('_token'))) {
             $entityManager->remove($voyage);
             $entityManager->flush();
         }
-
         return $this->redirectToRoute('app_voyage_index', [], Response::HTTP_SEE_OTHER);
     }
 }

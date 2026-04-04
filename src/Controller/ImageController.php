@@ -15,12 +15,21 @@ use Symfony\Component\Routing\Attribute\Route;
 class ImageController extends AbstractController
 {
     #[Route("/", name: "app_image_index", methods: ["GET"])]
-    public function index(ImageRepository $repo): Response
-    {
-        return $this->render("image/index.html.twig", [
-            "images" => $repo->findAll(),
-        ]);
-    }
+public function index(Request $request, ImageRepository $repo): Response
+{
+    $search = $request->query->get('search', '');
+    $tri    = $request->query->get('tri', 'i.id');
+    $ordre  = $request->query->get('ordre', 'ASC');
+
+    $images = $repo->findByFilters($search, $tri, $ordre);
+
+    return $this->render("image/index.html.twig", [
+        'images' => $images,
+        'search' => $search,
+        'tri'    => $tri,
+        'ordre'  => $ordre,
+    ]);
+}
 
     #[Route("/new", name: "app_image_new", methods: ["GET", "POST"])]
     public function new(Request $request, EntityManagerInterface $em): Response

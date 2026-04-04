@@ -6,9 +6,6 @@ use App\Entity\Image;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
-/**
- * @extends ServiceEntityRepository<Image>
- */
 class ImageRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
@@ -16,28 +13,28 @@ class ImageRepository extends ServiceEntityRepository
         parent::__construct($registry, Image::class);
     }
 
-    //    /**
-    //     * @return Image[] Returns an array of Image objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('i')
-    //            ->andWhere('i.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('i.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
+    public function findByFilters(string $search, string $tri, string $ordre): array
+    {
+        $allowed = ['i.id', 'd.id', 'd.nom', 'd.pays'];
+        if (!in_array($tri, $allowed)) $tri = 'i.id';
+        $ordre = strtoupper($ordre) === 'DESC' ? 'DESC' : 'ASC';
 
-    //    public function findOneBySomeField($value): ?Image
-    //    {
-    //        return $this->createQueryBuilder('i')
-    //            ->andWhere('i.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+        $qb = $this->createQueryBuilder('i')
+            ->leftJoin('i.destination', 'd')
+            ->addSelect('d');
+
+        if ($search) {
+            if (is_numeric($search)) {
+                $qb->andWhere('i.id = :idImg OR d.id = :idImg')
+                   ->setParameter('idImg', (int) $search);
+            } else {
+                $qb->andWhere('d.nom LIKE :search OR d.pays LIKE :search')
+                   ->setParameter('search', '%' . $search . '%');
+            }
+        }
+
+        $qb->orderBy($tri, $ordre);
+
+        return $qb->getQuery()->getResult();
+    }
 }

@@ -64,6 +64,52 @@
 <div class="section properties">
   <div class="container">
 
+    {# ===== BARRE DE RECHERCHE ===== #}
+    <form method="GET" action="{{ path('app_destinations') }}"
+          style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-bottom:30px;background:rgba(255,255,255,0.05);padding:20px;border-radius:12px">
+
+      <div style="flex:1;min-width:200px;position:relative">
+        <input type="text" name="search" value="{{ search }}"
+               placeholder="🔍 Rechercher une destination ou un pays..."
+               style="width:100%;padding:12px 16px;border-radius:8px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.1);color:#fff;font-size:14px">
+      </div>
+
+      <div style="min-width:160px">
+        <select name="saison"
+                style="width:100%;padding:12px 16px;border-radius:8px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.1);color:#fff;font-size:14px">
+          <option value="">🗓 Toutes les saisons</option>
+          <option value="Printemps" {{ saison == 'Printemps' ? 'selected' : '' }}>🌸 Printemps</option>
+          <option value="Ete"       {{ saison == 'Ete'       ? 'selected' : '' }}>☀️ Été</option>
+          <option value="Automne"   {{ saison == 'Automne'   ? 'selected' : '' }}>🍂 Automne</option>
+          <option value="Hiver"     {{ saison == 'Hiver'     ? 'selected' : '' }}>❄️ Hiver</option>
+        </select>
+      </div>
+
+      <button type="submit"
+              style="padding:12px 24px;border-radius:8px;border:none;background:#f97316;color:#fff;font-size:14px;font-weight:600;cursor:pointer">
+        Rechercher
+      </button>
+
+      {% if search or saison %}
+        <a href="{{ path('app_destinations') }}"
+           style="padding:12px 20px;border-radius:8px;border:1px solid rgba(255,255,255,0.3);color:#ccc;font-size:14px;text-decoration:none">
+          ✕ Réinitialiser
+        </a>
+      {% endif %}
+
+    </form>
+
+    {# ===== RÉSULTAT ===== #}
+    {% if search or saison %}
+      <p style="color:#ccc;font-size:14px;margin-bottom:20px">
+        {{ destinations|length }} résultat{{ destinations|length > 1 ? 's' : '' }}
+        {% if search %} pour "<strong style="color:#f97316">{{ search }}</strong>"{% endif %}
+        {% if saison %} — saison : <strong style="color:#f97316">{{ saison }}</strong>{% endif %}
+      </p>
+    {% endif %}
+
+    {# ===== FILTRE SAISON (tabs) — masqué si recherche active ===== #}
+    {% if not search and not saison %}
     <ul class="properties-filter">
       <li><a class="is_active" href="#!" data-filter="*">Toutes</a></li>
       <li><a href="#!" data-filter=".Printemps">Printemps</a></li>
@@ -71,6 +117,7 @@
       <li><a href="#!" data-filter=".Automne">Automne</a></li>
       <li><a href="#!" data-filter=".Hiver">Hiver</a></li>
     </ul>
+    {% endif %}
 
     <div class="row properties-box">
       {% for destination in destinations %}
@@ -102,14 +149,15 @@
             <li>Statut : <span>{{ destination.statut ? "Actif" : "Inactif" }}</span></li>
           </ul>
           <div class="main-button">
-            <a href="{{ path("app_destination_detail", {"id": destination.id}) }}">Voir les details</a>
+            <a href="{{ path("app_destination_detail", {"id": destination.id}) }}">Voir les détails</a>
           </div>
 
         </div>
       </div>
       {% else %}
       <div class="col-12 text-center" style="padding:60px 0">
-        <h4>Aucune destination disponible.</h4>
+        <h4 style="color:#ccc">Aucune destination trouvée.</h4>
+        <a href="{{ path('app_destinations') }}" style="color:#f97316">Voir toutes les destinations</a>
       </div>
       {% endfor %}
     </div>
