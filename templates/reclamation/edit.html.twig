@@ -54,11 +54,30 @@
                             </button>
                             <a href="{{ path('reclamation_index') }}" class="btn btn-outline-secondary px-4 py-2 rounded-pill w-100">Annuler</a>
                         </div>
-                    {{ form_end(form) }}
+                        <div class="d-none">
+                            {{ form_rest(form) }}
+                        </div>
+                    {{ form_end(form, {'render_rest': false}) }}
                 </div>
             </div>
         </div>
     </div>
 
     {% include 'home/partials/footer.html.twig' %}
+    
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const formObj = document.querySelector('form.needs-validation');
+            if (formObj) {
+                const initialData = new URLSearchParams(new FormData(formObj)).toString();
+                formObj.addEventListener('submit', function(e) {
+                    const currentData = new URLSearchParams(new FormData(formObj)).toString();
+                    if (currentData === initialData) {
+                        e.preventDefault();
+                        alert("Vous devez modifier au moins un champ pour pouvoir enregistrer.");
+                    }
+                });
+            }
+        });
+    </script>
 {% endblock %}

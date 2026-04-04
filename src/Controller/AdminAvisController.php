@@ -18,11 +18,19 @@ class AdminAvisController extends AbstractController
     public function index(Request $request, AvisRepository $avisRepository): Response
     {
         $statut = $request->query->get('statut');
+        $recherche = $request->query->get('recherche');
+        
+        $qb = $avisRepository->createQueryBuilder('a')->orderBy('a.dateAvis', 'DESC');
+        
         if ($statut) {
-            $avisList = $avisRepository->findBy(['statut' => $statut], ['dateAvis' => 'DESC']);
-        } else {
-            $avisList = $avisRepository->findBy([], ['dateAvis' => 'DESC']);
+            $qb->andWhere('a.statut = :statut')->setParameter('statut', $statut);
         }
+        if ($recherche) {
+            $qb->andWhere('a.contenu LIKE :recherche OR a.userId LIKE :recherche')
+               ->setParameter('recherche', '%' . $recherche . '%');
+        }
+        
+        $avisList = $qb->getQuery()->getResult();
 
         $allAvisForStats = $avisRepository->findAll();
         $total = 0;
@@ -54,7 +62,8 @@ class AdminAvisController extends AbstractController
         return $this->render('admin/avis/index.html.twig', [
             'avis_list' => $avisList,
             'stats' => $stats,
-            'currentStatut' => $statut
+            'currentStatut' => $statut,
+            'currentRecherche' => $recherche
         ]);
     }
 
@@ -68,6 +77,7 @@ class AdminAvisController extends AbstractController
         $rejetes = 0;
         
         $etoilesDistrib = [0, 0, 0, 0, 0];
+        $sumEtoiles = 0;
         
         $dailyCountsData = [];
         $dailyCountsLabels = [];
@@ -88,6 +98,7 @@ class AdminAvisController extends AbstractController
             $etoile = $a->getNbEtoiles();
             if ($etoile >= 1 && $etoile <= 5) {
                 $etoilesDistrib[$etoile - 1]++;
+                $sumEtoiles += $etoile;
             }
             
             if ($a->getDateAvis()) {
@@ -98,10 +109,13 @@ class AdminAvisController extends AbstractController
             }
         }
 
+        $totalAvis = count($allAvis);
         $stats = [
+            'total' => $totalAvis,
             'en_attente' => $en_attente,
             'valides' => $valides,
-            'rejetes' => $rejetes
+            'rejetes' => $rejetes,
+            'moy_etoiles' => $totalAvis > 0 ? round($sumEtoiles / $totalAvis, 1) : 0
         ];
 
         return $this->render('admin/avis/stats.html.twig', [
@@ -129,6 +143,16 @@ class AdminAvisController extends AbstractController
         $avis->setStatut('Rejeté');
         $entityManager->flush();
         $this->addFlash('danger', 'Avis rejeté.');
+        return $this->redirectToRoute('admin_avis_index');
+    }
+
+    #[Route('/{id}/repondre', name: 'admin_avis_repondre', methods: ['POST'])]
+    public function repondre(Request $request, Avis $avis, EntityManagerInterface $entityManager): Response
+    {
+        $reponse = $request->request->get('reponse');
+        $avis->setReponse($reponse);
+        $entityManager->flush();
+        $this->addFlash('success', 'Réponse enregistrée avec succès.');
         return $this->redirectToRoute('admin_avis_index');
     }
 
