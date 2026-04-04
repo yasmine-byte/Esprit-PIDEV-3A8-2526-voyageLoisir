@@ -1,6 +1,6 @@
 {% extends 'base_front.html.twig' %}
 
-{% block title %}Nos Avis - Villa Agency{% endblock %}
+{% block title %}Mes Avis - Villa Agency{% endblock %}
 
 {% block body %}
     {% include 'home/partials/header.html.twig' %}
@@ -16,9 +16,8 @@
         </div>
     </div>
 
-    <div class="container mt-5 mb-5 pb-5 pt-3" style="min-height: 50vh;">
+    <div class="container mt-5 mb-5 pb-5 pt-3" style="min-height:50vh;">
 
-        {# Flash messages #}
         {% for message in app.flashes('success') %}
             <div class="alert alert-success alert-dismissible fade show">{{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
         {% endfor %}
@@ -29,105 +28,89 @@
             <div class="alert alert-danger alert-dismissible fade show">{{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
         {% endfor %}
 
-        {# Header + bouton #}
+        {# Header #}
         <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
             <h4 class="mb-0 fw-bold">Tous mes avis</h4>
             <a href="{{ path('avis_new') }}" class="btn text-white rounded-pill px-4 py-2"
                style="background-color:#f35525; font-weight:600;">
-                ✚ Donner mon avis
+                <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16" style="margin-right:5px;"><path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/></svg>
+                Donner mon avis
             </a>
         </div>
 
-        {# Barre de recherche + filtre #}
-        <form method="GET" class="row g-2 mb-4 align-items-center">
-            <div class="col-md-5">
-                <input type="text" name="q" class="form-control rounded-pill"
-                       placeholder="🔍 Rechercher dans vos avis..."
-                       value="{{ app.request.query.get('q') }}">
+        {# Barre de filtres — recherche + statut + étoiles + tri : TOUT AUTO via JS #}
+        <div class="row g-2 mb-4 align-items-center">
+            <div class="col-md-4">
+                <input type="text" id="searchInput" class="form-control rounded-pill"
+                       placeholder="🔍 Rechercher dans vos avis...">
             </div>
             <div class="col-md-3">
-                <select name="statut" class="form-select rounded-pill">
+                <select id="filterStatut" class="form-select rounded-pill">
                     <option value="">Tous les statuts</option>
-                    <option value="En attente" {{ app.request.query.get('statut') == 'En attente' ? 'selected' : '' }}>⏳ En attente</option>
-                    <option value="Validé"     {{ app.request.query.get('statut') == 'Validé'     ? 'selected' : '' }}>✓ Validé</option>
-                    <option value="Rejeté"     {{ app.request.query.get('statut') == 'Rejeté'     ? 'selected' : '' }}>✗ Rejeté</option>
+                    <option value="En attente">⏳ En attente</option>
+                    <option value="Validé">✓ Validé</option>
+                    <option value="Rejeté">✗ Rejeté</option>
                 </select>
             </div>
             <div class="col-md-2">
-                <select name="etoiles" class="form-select rounded-pill">
+                <select id="filterEtoiles" class="form-select rounded-pill">
                     <option value="">Toutes notes</option>
-                    {% for i in 1..5 %}
-                    <option value="{{ i }}" {{ app.request.query.get('etoiles') == i ? 'selected' : '' }}>{{ i }} ★</option>
-                    {% endfor %}
+                    <option value="1">1 ★</option>
+                    <option value="2">2 ★</option>
+                    <option value="3">3 ★</option>
+                    <option value="4">4 ★</option>
+                    <option value="5">5 ★</option>
                 </select>
             </div>
-            <div class="col-md-2 d-flex gap-2">
-                <button type="submit" class="btn btn-dark rounded-pill px-3">Filtrer</button>
-                <a href="{{ path('avis_index') }}" class="btn btn-outline-secondary rounded-pill px-3">↺</a>
-            </div>
-        </form>
-
-        {# Stats rapides #}
-        {% set totalAvis = avis|length %}
-        {% set nbValides = 0 %}
-        {% set nbAttente = 0 %}
-        {% set nbRejetes = 0 %}
-        {% for a in avis %}
-            {% if a.statut == 'Validé' %}   {% set nbValides = nbValides + 1 %} {% endif %}
-            {% if a.statut == 'En attente' %}{% set nbAttente = nbAttente + 1 %} {% endif %}
-            {% if a.statut == 'Rejeté' %}   {% set nbRejetes = nbRejetes + 1 %} {% endif %}
-        {% endfor %}
-
-        {% if totalAvis > 0 %}
-        <div class="row g-3 mb-4">
-            <div class="col-6 col-md-3">
-                <div class="rounded-3 p-3 text-center" style="background:#fff3f0; border:1px solid #f35525;">
-                    <div style="font-size:1.6rem; font-weight:700; color:#f35525;">{{ totalAvis }}</div>
-                    <div style="font-size:0.8rem; color:#888;">Total avis</div>
-                </div>
-            </div>
-            <div class="col-6 col-md-3">
-                <div class="rounded-3 p-3 text-center" style="background:#fff9e6; border:1px solid #ffc107;">
-                    <div style="font-size:1.6rem; font-weight:700; color:#ffc107;">{{ nbAttente }}</div>
-                    <div style="font-size:0.8rem; color:#888;">En attente</div>
-                </div>
-            </div>
-            <div class="col-6 col-md-3">
-                <div class="rounded-3 p-3 text-center" style="background:#edf7ee; border:1px solid #28a745;">
-                    <div style="font-size:1.6rem; font-weight:700; color:#28a745;">{{ nbValides }}</div>
-                    <div style="font-size:0.8rem; color:#888;">Validés</div>
-                </div>
-            </div>
-            <div class="col-6 col-md-3">
-                <div class="rounded-3 p-3 text-center" style="background:#fdf0f0; border:1px solid #dc3545;">
-                    <div style="font-size:1.6rem; font-weight:700; color:#dc3545;">{{ nbRejetes }}</div>
-                    <div style="font-size:0.8rem; color:#888;">Rejetés</div>
-                </div>
+            <div class="col-md-3">
+                <select id="sortSelect" class="form-select rounded-pill">
+                    <option value="">Trier par...</option>
+                    <option value="date-desc">Date ↓ (récent)</option>
+                    <option value="date-asc">Date ↑ (ancien)</option>
+                    <option value="etoiles-desc">Note ↓ (meilleure)</option>
+                    <option value="etoiles-asc">Note ↑ (plus basse)</option>
+                </select>
             </div>
         </div>
-        {% endif %}
+
+        {# Compteur résultats #}
+        <div id="resultCount" class="mb-2" style="font-size:0.85rem; color:#888;"></div>
 
         {# Tableau #}
         <div class="table-responsive shadow-sm bg-white rounded-3 p-3">
-            <table class="table table-hover align-middle mb-0">
+            <table class="table table-hover align-middle mb-0" id="avisTable">
                 <thead style="background:#f8f9fa;">
                     <tr>
-                        <th style="color:#f35525;">Contenu</th>
-                        <th style="color:#f35525;">Note</th>
+                        <th style="color:#f35525; cursor:pointer;" data-col="0" class="sort-th">
+                            Contenu <span class="sort-icon">⇅</span>
+                        </th>
+                        <th style="color:#f35525; cursor:pointer;" data-col="1" class="sort-th">
+                            Note <span class="sort-icon">⇅</span>
+                        </th>
                         <th style="color:#f35525;">Type</th>
-                        <th style="color:#f35525;">Statut</th>
-                        <th style="color:#f35525;">Date</th>
+                        <th style="color:#f35525; cursor:pointer;" data-col="3" class="sort-th">
+                            Statut <span class="sort-icon">⇅</span>
+                        </th>
+                        <th style="color:#f35525; cursor:pointer;" data-col="4" class="sort-th">
+                            Date <span class="sort-icon">⇅</span>
+                        </th>
                         <th style="color:#f35525;">💬 Réponse admin</th>
                         <th style="color:#f35525;">Actions</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody id="avisBody">
                 {% for avi in avis %}
-                    <tr>
-                        <td style="max-width:220px;" class="text-truncate" title="{{ avi.contenu }}">
+                    <tr
+                        data-contenu="{{ avi.contenu|lower }}"
+                        data-statut="{{ avi.statut }}"
+                        data-etoiles="{{ avi.nbEtoiles }}"
+                        data-date="{{ avi.dateAvis ? avi.dateAvis|date('Y-m-d') : '0000-00-00' }}"
+                    >
+                        <td style="max-width:220px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"
+                            title="{{ avi.contenu }}">
                             {{ avi.contenu }}
                         </td>
-                        <td style="white-space:nowrap;">
+                        <td style="white-space:nowrap;" data-val="{{ avi.nbEtoiles }}">
                             {% for i in 1..5 %}
                                 {% if i <= avi.nbEtoiles %}
                                     <span style="color:#f35525;">★</span>
@@ -151,30 +134,62 @@
                         </td>
                         <td style="max-width:200px;">
                             {% if avi.reponse %}
-                                <div style="background:#f0fff4; border-left:3px solid #28a745; border-radius:6px; padding:7px 10px;">
-                                    <div style="font-size:0.7rem; color:#28a745; font-weight:600; margin-bottom:2px;">Réponse de l'admin :</div>
-                                    <div style="font-size:0.83rem; color:#333;">{{ avi.reponse }}</div>
+                                <div style="background:#f0fff4; border-left:3px solid #28a745; border-radius:6px; padding:6px 10px;">
+                                    <div style="font-size:0.7rem; color:#28a745; font-weight:600; margin-bottom:2px;">Réponse admin :</div>
+                                    <div style="font-size:0.82rem; color:#333;">{{ avi.reponse }}</div>
                                 </div>
                             {% else %}
-                                <span style="font-size:0.8rem; color:#bbb; font-style:italic;">En attente de réponse</span>
+                                <span style="font-size:0.8rem; color:#bbb; font-style:italic;">En attente...</span>
                             {% endif %}
                         </td>
                         <td style="white-space:nowrap;">
-                            <a href="{{ path('avis_show', {'id': avi.id}) }}"
-                               class="btn btn-sm btn-outline-secondary rounded-pill">👁 Voir</a>
-                            {% if avi.statut == 'En attente' %}
+                            <div style="display:flex; gap:5px; align-items:center; flex-wrap:nowrap;">
+
+                                {# 👁 Voir — toujours actif #}
+                                <a href="{{ path('avis_show', {'id': avi.id}) }}"
+                                   class="btn btn-sm rounded-pill"
+                                   style="background:#f0f5ff; color:#3a7bd5; border:1px solid #c5d8ff; font-size:0.78rem; padding:4px 10px; font-weight:600;">
+                                    👁 Voir
+                                </a>
+
+                                {# ✏ Modifier — actif si En attente, grisé sinon #}
+                                {% if avi.statut == 'En attente' %}
                                 <a href="{{ path('avis_edit', {'id': avi.id}) }}"
-                                   class="btn btn-sm btn-outline-dark rounded-pill">✏ Modifier</a>
+                                   class="btn btn-sm rounded-pill"
+                                   style="background:#fff8e1; color:#e65100; border:1px solid #ffcc80; font-size:0.78rem; padding:4px 10px; font-weight:600;">
+                                    ✏ Modifier
+                                </a>
+                                {% else %}
+                                <span class="btn btn-sm rounded-pill"
+                                      style="background:#f5f5f5; color:#bbb; border:1px solid #e0e0e0; font-size:0.78rem; padding:4px 10px; font-weight:600; cursor:not-allowed;"
+                                      title="Non modifiable ({{ avi.statut }})">
+                                    ✏ Modifier
+                                </span>
+                                {% endif %}
+
+                                {# 🗑 Supprimer — actif si En attente, grisé sinon #}
+                                {% if avi.statut == 'En attente' %}
                                 <form method="post" action="{{ path('avis_delete', {'id': avi.id}) }}"
-                                      onsubmit="return confirm('Supprimer cet avis ?');" style="display:inline-block;">
+                                      onsubmit="return confirm('Supprimer cet avis ?');" style="display:inline-block; margin:0;">
                                     <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ avi.id) }}">
-                                    <button class="btn btn-sm btn-outline-danger rounded-pill">🗑</button>
+                                    <button type="submit" class="btn btn-sm rounded-pill"
+                                            style="background:#fff0f0; color:#c0392b; border:1px solid #ffb3b3; font-size:0.78rem; padding:4px 10px; font-weight:600;">
+                                        🗑 Supprimer
+                                    </button>
                                 </form>
-                            {% endif %}
+                                {% else %}
+                                <span class="btn btn-sm rounded-pill"
+                                      style="background:#f5f5f5; color:#bbb; border:1px solid #e0e0e0; font-size:0.78rem; padding:4px 10px; font-weight:600; cursor:not-allowed;"
+                                      title="Non supprimable ({{ avi.statut }})">
+                                    🗑 Supprimer
+                                </span>
+                                {% endif %}
+
+                            </div>
                         </td>
                     </tr>
                 {% else %}
-                    <tr>
+                    <tr id="emptyRow">
                         <td colspan="7" class="text-center py-5" style="color:#bbb;">
                             <div style="font-size:2.5rem; margin-bottom:10px;">⭐</div>
                             Vous n'avez pas encore soumis d'avis.<br>
@@ -184,9 +199,85 @@
                 {% endfor %}
                 </tbody>
             </table>
+            <div id="noResults" style="display:none; text-align:center; padding:40px; color:#bbb;">
+                Aucun avis ne correspond à votre recherche.
+            </div>
         </div>
-
     </div>
 
     {% include 'home/partials/footer.html.twig' %}
+
+<script>
+(function() {
+    const searchInput   = document.getElementById('searchInput');
+    const filterStatut  = document.getElementById('filterStatut');
+    const filterEtoiles = document.getElementById('filterEtoiles');
+    const sortSelect    = document.getElementById('sortSelect');
+    const tbody         = document.getElementById('avisBody');
+    const resultCount   = document.getElementById('resultCount');
+    const noResults     = document.getElementById('noResults');
+
+    function getRows() {
+        return Array.from(tbody.querySelectorAll('tr[data-contenu]'));
+    }
+
+    function filterAndSort() {
+        const q       = searchInput   ? searchInput.value.toLowerCase().trim() : '';
+        const statut  = filterStatut  ? filterStatut.value  : '';
+        const etoiles = filterEtoiles ? filterEtoiles.value : '';
+        const sort    = sortSelect    ? sortSelect.value    : '';
+
+        let rows = getRows();
+
+        // Filtrage
+        let visible = 0;
+        rows.forEach(function(row) {
+            const contenu = row.dataset.contenu || '';
+            const rs      = row.dataset.statut  || '';
+            const re      = row.dataset.etoiles || '';
+
+            const okQ = !q       || contenu.includes(q);
+            const okS = !statut  || rs === statut;
+            const okE = !etoiles || re === etoiles;
+
+            if (okQ && okS && okE) {
+                row.style.display = '';
+                visible++;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+
+        // Compteur
+        if (resultCount) {
+            resultCount.textContent = visible + ' avis affiché' + (visible > 1 ? 's' : '');
+        }
+        if (noResults) {
+            noResults.style.display = visible === 0 ? 'block' : 'none';
+        }
+
+        // Tri
+        if (sort) {
+            const visibleRows = rows.filter(r => r.style.display !== 'none');
+            visibleRows.sort(function(a, b) {
+                if (sort === 'date-desc') return b.dataset.date.localeCompare(a.dataset.date);
+                if (sort === 'date-asc')  return a.dataset.date.localeCompare(b.dataset.date);
+                if (sort === 'etoiles-desc') return parseInt(b.dataset.etoiles) - parseInt(a.dataset.etoiles);
+                if (sort === 'etoiles-asc')  return parseInt(a.dataset.etoiles) - parseInt(b.dataset.etoiles);
+                return 0;
+            });
+            visibleRows.forEach(r => tbody.appendChild(r));
+        }
+    }
+
+    // Événements — déclenchement automatique immédiat
+    if (searchInput)   searchInput.addEventListener('input',  filterAndSort);
+    if (filterStatut)  filterStatut.addEventListener('change', filterAndSort);
+    if (filterEtoiles) filterEtoiles.addEventListener('change', filterAndSort);
+    if (sortSelect)    sortSelect.addEventListener('change', filterAndSort);
+
+    // Init
+    filterAndSort();
+})();
+</script>
 {% endblock %}

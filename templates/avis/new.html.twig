@@ -1,144 +1,37 @@
 {% extends 'base_front.html.twig' %}
-
 {% block title %}Donner mon avis - Villa Agency{% endblock %}
-
 {% block body %}
     {% include 'home/partials/header.html.twig' %}
-
     <style>
-        /* Animations CSS Globales */
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes bounce {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.3) rotate(10deg); }
-        }
-        @keyframes slideDown {
-            from { opacity: 0; max-height: 0; padding-top:0; padding-bottom:0; margin:0; border:none; }
-            to { opacity: 1; max-height: 100px; }
-        }
-        @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-        
-        .animate-fade { animation: fadeInUp 0.6s ease forwards; }
-        
-        /* Floating Card */
-        .floating-card {
-            background: #ffffff;
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            padding: 40px;
-            position: relative;
-            z-index: 10;
-            margin-top: -50px;
-        }
-
-        /* Étoiles Créatives */
-        .stars-creative {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin: 20px 0;
-            direction: ltr;
-        }
-        .star-box {
-            font-size: 3rem;
-            color: #e9ecef;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        .star-box:hover {
-            transform: scale(1.15) rotate(5deg);
-        }
-        .star-box.gold {
-            color: #ffc107;
-            text-shadow: 0 0 10px rgba(255, 193, 7, 0.5);
-        }
-        .star-box.bounce-anim {
-            animation: bounce 0.4s ease;
-        }
-
-        #star-message {
-            font-weight: bold;
-            text-align: center;
-            min-height: 25px;
-            font-size: 1.1rem;
-            transition: color 0.3s;
-        }
-
-        .negative-warning {
-            background: #fff3cd;
-            border-left: 5px solid #ffc107;
-            color: #856404;
-            padding: 15px;
-            border-radius: 8px;
-            display: none;
-            overflow: hidden;
-        }
-        .negative-warning.show {
-            display: block;
-            animation: slideDown 0.4s ease forwards;
-        }
-
-        /* Inputs créatifs */
-        .custom-input-wrapper { position: relative; }
-        .custom-select-new {
-            border: 2px solid #e9ecef;
-            border-radius: 12px;
-            padding: 12px 15px;
-            transition: border-color 0.3s;
-            appearance: none;
-            background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%236c757d' class='bi bi-chevron-down' viewBox='0 0 16 16'><path fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/></svg>") no-repeat right 15px center;
-            background-size: 16px;
-        }
-        .custom-select-new:focus { border-color: #f35525; outline: none; box-shadow: 0 0 0 3px rgba(243, 85, 37, 0.1); }
-        
-        .custom-textarea {
-            border: 2px solid #e9ecef;
-            border-radius: 12px;
-            padding: 15px;
-            transition: border-color 0.3s;
-            resize: none;
-        }
-        .custom-textarea:focus { border-color: #f35525; outline: none; box-shadow: 0 0 0 3px rgba(243, 85, 37, 0.1); }
-
-        .char-counter {
-            text-align: right;
-            font-size: 0.85rem;
-            font-weight: 600;
-            margin-top: 5px;
-            color: #28a745;
-        }
-
-        /* Submit Bouton */
-        .btn-submit-creative {
-            background: linear-gradient(45deg, #f35525, #dc3545);
-            color: white;
-            border: none;
-            border-radius: 50px;
-            padding: 15px 40px;
-            font-size: 1.1rem;
-            font-weight: bold;
-            transition: transform 0.3s, box-shadow 0.3s;
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .btn-submit-creative:hover {
-            transform: scale(1.05);
-            box-shadow: 0 10px 20px rgba(243, 85, 37, 0.3);
-            color: white;
-        }
-        .spinner-icon { display: none; animation: spin 1s linear infinite; }
-        .btn-submit-creative.loading .submit-icon { display: none; }
-        .btn-submit-creative.loading .spinner-icon { display: inline-block; }
+        @keyframes fadeInUp{from{opacity:0;transform:translateY(30px);}to{opacity:1;transform:translateY(0);}}
+        @keyframes bounce{0%,100%{transform:scale(1);}50%{transform:scale(1.3) rotate(10deg);}}
+        @keyframes slideDown{from{opacity:0;max-height:0;padding:0;margin:0;border:none;}to{opacity:1;max-height:100px;}}
+        @keyframes spin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
+        .animate-fade{animation:fadeInUp 0.6s ease forwards;}
+        .floating-card{background:#fff;border-radius:20px;box-shadow:0 20px 40px rgba(0,0,0,0.1);padding:40px;position:relative;z-index:10;margin-top:-50px;}
+        .stars-creative{display:flex;justify-content:center;gap:15px;margin:20px 0;}
+        .star-box{font-size:3rem;color:#e9ecef;cursor:pointer;transition:all 0.2s;}
+        .star-box:hover{transform:scale(1.15) rotate(5deg);}
+        .star-box.gold{color:#ffc107;text-shadow:0 0 10px rgba(255,193,7,0.5);}
+        .star-box.bounce-anim{animation:bounce 0.4s ease;}
+        #star-message{font-weight:bold;text-align:center;min-height:25px;font-size:1.1rem;transition:color 0.3s;}
+        .negative-warning{background:#fff3cd;border-left:5px solid #ffc107;color:#856404;padding:15px;border-radius:8px;display:none;overflow:hidden;}
+        .negative-warning.show{display:block;animation:slideDown 0.4s ease forwards;}
+        .custom-select-new{border:2px solid #e9ecef;border-radius:12px;padding:12px 15px;transition:border-color 0.3s;appearance:none;background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%236c757d' viewBox='0 0 16 16'><path fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/></svg>") no-repeat right 15px center;background-size:16px;width:100%;}
+        .custom-select-new:focus{border-color:#f35525;outline:none;box-shadow:0 0 0 3px rgba(243,85,37,0.1);}
+        .custom-textarea{border:2px solid #e9ecef;border-radius:12px;padding:15px;transition:border-color 0.3s;resize:none;width:100%;}
+        .custom-textarea:focus{border-color:#f35525;outline:none;box-shadow:0 0 0 3px rgba(243,85,37,0.1);}
+        .char-counter{text-align:right;font-size:0.85rem;font-weight:600;margin-top:5px;color:#28a745;}
+        .btn-submit-creative{background:linear-gradient(45deg,#f35525,#dc3545);color:#fff;border:none;border-radius:50px;padding:14px 36px;font-size:1rem;font-weight:700;transition:transform 0.3s,box-shadow 0.3s;display:inline-flex;align-items:center;gap:10px;}
+        .btn-submit-creative:hover{transform:scale(1.05);box-shadow:0 10px 20px rgba(243,85,37,0.3);color:#fff;}
+        .btn-cancel-new{background:#fff;color:#888;border:2px solid #e0e0e0;border-radius:50px;padding:14px 36px;font-size:1rem;font-weight:600;transition:all 0.25s;display:inline-flex;align-items:center;gap:8px;text-decoration:none;}
+        .btn-cancel-new:hover{background:#f5f5f5;border-color:#bbb;color:#444;text-decoration:none;}
+        .spinner-icon{display:none;animation:spin 1s linear infinite;}
+        .btn-submit-creative.loading .submit-icon{display:none;}
+        .btn-submit-creative.loading .spinner-icon{display:inline-block;}
     </style>
 
-    <div class="page-heading header-text" style="background-image: url('{{ asset('assets/images/page-heading-bg.jpg') }}'); padding-bottom: 120px;">
+    <div class="page-heading header-text" style="padding-bottom:120px;">
         <div class="container">
             <div class="row">
                 <div class="col-lg-12">
@@ -153,162 +46,88 @@
         <div class="row justify-content-center">
             <div class="col-md-8 col-lg-7">
                 <div class="floating-card animate-fade">
+                    <h4 class="text-center mb-4 fw-bold">Qu'avez-vous pensé de nos services ?</h4>
 
-                    <h4 class="text-center mb-4 font-weight-bold">Qu'avez-vous pensé de nos services ?</h4>
+                    {{ form_start(form, {'attr': {'novalidate': 'novalidate', 'id': 'form-avis'}}) }}
 
-                    {{ form_start(form, {'attr': {'novalidate': 'novalidate', 'id': 'form-avis', 'class': 'needs-validation'}}) }}
-                        
-                        <!-- Etoiles -->
                         <div class="mb-4">
                             <div class="stars-creative" id="starContainer">
-                                <i class="fas fa-star star-box" data-val="1"></i>
-                                <i class="fas fa-star star-box" data-val="2"></i>
-                                <i class="fas fa-star star-box" data-val="3"></i>
-                                <i class="fas fa-star star-box" data-val="4"></i>
-                                <i class="fas fa-star star-box" data-val="5"></i>
+                                <span class="star-box" data-val="1">★</span>
+                                <span class="star-box" data-val="2">★</span>
+                                <span class="star-box" data-val="3">★</span>
+                                <span class="star-box" data-val="4">★</span>
+                                <span class="star-box" data-val="5">★</span>
                             </div>
                             <div id="star-message" class="mb-2"></div>
-                            
                             <div id="negativeWarning" class="negative-warning mt-3">
-                                ⚠️ <strong>Note basse détectée :</strong> Un avis de 1 ou 2 étoiles génèrera automatiquement une réclamation pour que notre équipe puisse améliorer votre expérience.
+                                ⚠️ <strong>Note basse :</strong> Un avis de 1 ou 2 étoiles génèrera automatiquement une réclamation.
                             </div>
-
-                            <div class="d-none">
-                                {{ form_widget(form.nbEtoiles, {'id': 'hidden_etoiles'}) }}
-                            </div>
+                            <div class="d-none">{{ form_widget(form.nbEtoiles, {'id': 'hidden_etoiles'}) }}</div>
                             <div class="text-danger small text-center mt-1 fw-bold">{{ form_errors(form.nbEtoiles) }}</div>
                         </div>
 
-                        <!-- Type -->
-                        <div class="mb-4 custom-input-wrapper" id="step-type-content">
+                        <div class="mb-4">
                             {{ form_label(form.type, 'Catégorie de l\'avis', {'label_attr': {'class': 'form-label fw-bold text-muted'}}) }}
-                            {{ form_widget(form.type, {'attr': {'class': 'form-select custom-select-new w-100'}}) }}
+                            {{ form_widget(form.type, {'attr': {'class': 'form-select custom-select-new'}}) }}
                             <div class="text-danger small mt-1">{{ form_errors(form.type) }}</div>
                         </div>
 
-                        <!-- Contenu -->
-                        <div class="mb-4 custom-input-wrapper">
+                        <div class="mb-4">
                             {{ form_label(form.contenu, 'Dites-nous tout', {'label_attr': {'class': 'form-label fw-bold text-muted'}}) }}
-                            {{ form_widget(form.contenu, {'attr': {'class': 'form-control custom-textarea w-100', 'rows': 5, 'placeholder': 'Racontez-nous votre expérience... Chaque détail compte ! ✍️', 'maxlength': 500, 'id': 'review-text'}}) }}
+                            {{ form_widget(form.contenu, {'attr': {'class': 'form-control custom-textarea', 'rows': 5, 'placeholder': 'Racontez-nous votre expérience... Chaque détail compte ! ✍️', 'maxlength': 500, 'id': 'review-text'}}) }}
                             <div class="char-counter" id="char-count">0 / 500 caractères</div>
                             <div class="text-danger small mt-1">{{ form_errors(form.contenu) }}</div>
                         </div>
 
-                        <!-- Submit -->
-                        <div class="mt-5 text-center">
+                        <div class="mt-5 d-flex justify-content-center gap-3 flex-wrap">
                             <button type="submit" class="btn-submit-creative" id="btn-submit">
                                 <span class="submit-text">Publier mon avis</span>
                                 <i class="fas fa-paper-plane submit-icon"></i>
                                 <i class="fas fa-spinner spinner-icon"></i>
                             </button>
+                            <a href="{{ path('avis_index') }}" class="btn-cancel-new">✕ Annuler</a>
                         </div>
-                        
-                        <!-- Hack to hide the extra blue button generated automatically by FormType -->
-                        <div class="d-none">
-                            {{ form_rest(form) }}
-                        </div>
-                    {{ form_end(form, {'render_rest': false}) }}
 
+                        <div class="d-none">{{ form_rest(form) }}</div>
+                    {{ form_end(form, {'render_rest': false}) }}
                 </div>
             </div>
         </div>
     </div>
 
     {% include 'home/partials/footer.html.twig' %}
-
     <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            // Etoiles JS
-            const stars = document.querySelectorAll('.star-box');
-            const hiddenInput = document.getElementById('hidden_etoiles');
-            const starMessage = document.getElementById('star-message');
-            const warningBox = document.getElementById('negativeWarning');
+    document.addEventListener("DOMContentLoaded", function() {
+        const stars = document.querySelectorAll('.star-box');
+        const hiddenInput = document.getElementById('hidden_etoiles');
+        const starMessage = document.getElementById('star-message');
+        const warningBox  = document.getElementById('negativeWarning');
+        const msgs = {1:{t:"😞 Très déçu(e)",c:"#dc3545"},2:{t:"😕 Déçu(e)",c:"#fd7e14"},3:{t:"😐 Correct",c:"#ffc107"},4:{t:"😊 Satisfait(e)",c:"#0dcaf0"},5:{t:"🤩 Excellent !",c:"#28a745"}};
 
-            const messages = {
-                1: { text: "😞 Très déçu(e)", color: "#dc3545" },
-                2: { text: "😕 Déçu(e)", color: "#fd7e14" },
-                3: { text: "😐 Correct", color: "#ffc107" },
-                4: { text: "😊 Satisfait(e)", color: "#0dcaf0" },
-                5: { text: "🤩 Excellent !", color: "#28a745" }
-            };
-
-            function updateStars(val, isClick = false) {
-                stars.forEach(s => {
-                    let sVal = parseInt(s.getAttribute('data-val'));
-                    if (sVal <= val) {
-                        s.classList.add('gold');
-                        if (isClick) {
-                            s.classList.remove('bounce-anim');
-                            void s.offsetWidth; // trigger reflow
-                            s.classList.add('bounce-anim');
-                        }
-                    } else {
-                        s.classList.remove('gold');
-                    }
-                });
-
-                if (val > 0) {
-                    starMessage.textContent = messages[val].text;
-                    starMessage.style.color = messages[val].color;
-                    
-                    if (val <= 2) {
-                        warningBox.classList.add('show');
-                    } else {
-                        warningBox.classList.remove('show');
-                    }
-                } else {
-                    starMessage.textContent = "";
-                    warningBox.classList.remove('show');
-                }
-            }
-
-            stars.forEach(star => {
-                star.addEventListener('mouseover', function() {
-                    updateStars(parseInt(this.getAttribute('data-val')));
-                });
-                star.addEventListener('mouseout', function() {
-                    const currentVal = parseInt(hiddenInput.value) || 0;
-                    updateStars(currentVal);
-                });
-                star.addEventListener('click', function() {
-                    const val = parseInt(this.getAttribute('data-val'));
-                    hiddenInput.value = val;
-                    updateStars(val, true);
-                });
+        function updateStars(val, click) {
+            stars.forEach(function(s){
+                const sv=parseInt(s.getAttribute('data-val'));
+                s.classList.toggle('gold', sv<=val);
+                if(click && sv<=val){s.classList.remove('bounce-anim');void s.offsetWidth;s.classList.add('bounce-anim');}
             });
+            if(val>0){starMessage.textContent=msgs[val].t;starMessage.style.color=msgs[val].c;warningBox.classList.toggle('show',val<=2);}
+            else{starMessage.textContent='';warningBox.classList.remove('show');}
+        }
 
-            // Initialize if value exists (form errors)
-            if (hiddenInput.value) {
-                updateStars(parseInt(hiddenInput.value));
-            }
-
-            // Compteur de caractères
-            const textarea = document.getElementById('review-text');
-            const charCount = document.getElementById('char-count');
-            
-            textarea.addEventListener('input', function() {
-                const len = this.value.length;
-                charCount.textContent = `${len} / 500 caractères`;
-                
-                if (len < 400) {
-                    charCount.style.color = "#28a745"; // Vert
-                } else if (len < 500) {
-                    charCount.style.color = "#fd7e14"; // Orange
-                } else {
-                    charCount.style.color = "#dc3545"; // Rouge
-                }
-            });
-            // Trigger init
-            textarea.dispatchEvent(new Event('input'));
-
-            // Loading state on submit
-            const form = document.getElementById('form-avis');
-            const btnSubmit = document.getElementById('btn-submit');
-            
-            form.addEventListener('submit', function() {
-                btnSubmit.classList.add('loading');
-                btnSubmit.querySelector('.submit-text').textContent = 'Envoi en cours...';
-            });
+        stars.forEach(function(s){
+            s.addEventListener('mouseover',function(){updateStars(parseInt(this.getAttribute('data-val')));});
+            s.addEventListener('mouseout', function(){updateStars(parseInt(hiddenInput.value)||0);});
+            s.addEventListener('click',    function(){const v=parseInt(this.getAttribute('data-val'));hiddenInput.value=v;updateStars(v,true);});
         });
+        if(hiddenInput.value) updateStars(parseInt(hiddenInput.value));
+
+        const ta=document.getElementById('review-text'), cc=document.getElementById('char-count');
+        ta.addEventListener('input',function(){const l=this.value.length;cc.textContent=l+' / 500 caractères';cc.style.color=l<400?'#28a745':(l<500?'#fd7e14':'#dc3545');});
+        ta.dispatchEvent(new Event('input'));
+
+        document.getElementById('form-avis').addEventListener('submit',function(){
+            const b=document.getElementById('btn-submit');b.classList.add('loading');b.querySelector('.submit-text').textContent='Envoi en cours...';
+        });
+    });
     </script>
 {% endblock %}
