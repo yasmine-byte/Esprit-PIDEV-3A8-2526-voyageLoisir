@@ -11,14 +11,14 @@ class Activite
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column]
+    #[ORM\Column(name: 'id_activite')]
     private ?int $id = null;
 
     #[ORM\Column(length: 100)]
     private ?string $nom = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
-    private ?string $decription = null;
+    private ?string $description = null;
 
     #[ORM\Column(length: 50, nullable: true)]
     private ?string $type = null;
@@ -32,10 +32,10 @@ class Activite
     #[ORM\Column(length: 100, nullable: true)]
     private ?string $lieu = null;
 
-    #[ORM\Column(length: 255, nullable: true)]
+    #[ORM\Column(name: 'image_url', length: 255, nullable: true)]
     private ?string $imageUrl = null;
 
-    #[ORM\Column(nullable: true)]
+    #[ORM\Column(name: 'ai_rating', nullable: true)]
     private ?float $aiRating = null;
 
     public function getId(): ?int
@@ -51,19 +51,17 @@ class Activite
     public function setNom(string $nom): static
     {
         $this->nom = $nom;
-
         return $this;
     }
 
-    public function getDecription(): ?string
+    public function getDescription(): ?string
     {
-        return $this->decription;
+        return $this->description;
     }
 
-    public function setDecription(?string $decription): static
+    public function setDescription(?string $description): static
     {
-        $this->decription = $decription;
-
+        $this->description = $description;
         return $this;
     }
 
@@ -75,7 +73,6 @@ class Activite
     public function setType(?string $type): static
     {
         $this->type = $type;
-
         return $this;
     }
 
@@ -87,7 +84,6 @@ class Activite
     public function setPrix(?float $prix): static
     {
         $this->prix = $prix;
-
         return $this;
     }
 
@@ -99,7 +95,6 @@ class Activite
     public function setDuree(?int $duree): static
     {
         $this->duree = $duree;
-
         return $this;
     }
 
@@ -111,7 +106,6 @@ class Activite
     public function setLieu(?string $lieu): static
     {
         $this->lieu = $lieu;
-
         return $this;
     }
 
@@ -123,7 +117,6 @@ class Activite
     public function setImageUrl(?string $imageUrl): static
     {
         $this->imageUrl = $imageUrl;
-
         return $this;
     }
 
@@ -135,7 +128,6 @@ class Activite
     public function setAiRating(?float $aiRating): static
     {
         $this->aiRating = $aiRating;
-
         return $this;
     }
 }

@@ -5,6 +5,7 @@ namespace App\Controller;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use App\Repository\ActiviteRepository;
 
 class AdminController extends AbstractController
 {
@@ -13,6 +14,13 @@ class AdminController extends AbstractController
     {
         return $this->render('admin/index.html.twig'); // ← corrigé
     }
+    #[Route('/admin/activite', name: 'admin_activite_index')]
+    public function activite(ActiviteRepository $activiteRepository): Response
+    {
+    return $this->render('admin/activite/index.html.twig', [
+        'activites' => $activiteRepository->findAll(),
+    ]);
+}
 
     #[Route('/admin/login', name: 'admin_login')]
     public function login(): Response

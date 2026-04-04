@@ -13,12 +13,13 @@
 <!-- Sidebar -->
 <aside class="sidebar" id="sidebar">
     <div class="logo">
-        <div class="logo-icon">CV</div>
-        <span class="logo-text">CryptoVault</span>
+        <div class="logo-icon">V</div>
+        <span class="logo-text">Vianova</span>
     </div>
 
     <nav class="nav-section">
         <div class="nav-label">Main Menu</div>
+
         <a href="{{ path('app_admin') }}" class="nav-item active">
             <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <rect x="3" y="3" width="7" height="7" rx="1"/>
@@ -28,36 +29,71 @@
             </svg>
             Dashboard
         </a>
+
         <a href="#" class="nav-item">
             <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                <path d="M3 7l9-4 9 4"/>
+                <path d="M5 10v8"/>
+                <path d="M19 10v8"/>
+                <path d="M9 10v8"/>
+                <path d="M15 10v8"/>
+                <path d="M3 21h18"/>
             </svg>
-            Markets
+            Gestion Destination
         </a>
+
         <a href="#" class="nav-item">
             <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
-                <line x1="1" y1="10" x2="23" y2="10"/>
+                <path d="M3 21V8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v13"/>
+                <path d="M9 21V12h6v9"/>
+                <path d="M9 3v3"/>
+                <path d="M15 3v3"/>
             </svg>
-            Wallet
+            Gestion Hébergement
+        </a>
+
+        <a href="{{ path('admin_activite_index') }}"
+   class="nav-item {{ app.request.attributes.get('_route') starts with 'admin_activite' ? 'active' }}">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82..."/>
+        </svg>
+            Gestion Activité
+        </a>
+
+        <a href="#" class="nav-item">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            </svg>
+            Gestion Avis
+        </a>
+
+        <a href="#" class="nav-item">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+            </svg>
+            Gestion Blog
+        </a>
+
+        <a href="{{ path('add_user') }}" class="nav-item">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+            </svg>
+            Gestion User
         </a>
     </nav>
 
     <nav class="nav-section">
         <div class="nav-label">Account</div>
+
         <a href="#" class="nav-item">
             <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <circle cx="12" cy="12" r="3"/>
                 <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/>
             </svg>
             Settings
-        </a>
-        <a href="{{ path('add_user') }}" class="nav-item">
-            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
-                <circle cx="12" cy="7" r="4"/>
-            </svg>
-            Ajouter Utilisateur
         </a>
     </nav>
 
@@ -79,6 +115,7 @@
             </div>
             <div class="theme-switch" id="themeSwitch"></div>
         </div>
+
         <button class="logout-btn">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
