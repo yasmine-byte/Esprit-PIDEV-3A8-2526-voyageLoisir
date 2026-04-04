@@ -5,131 +5,206 @@
 {% block admin_content %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-<div class="row mb-4">
-    <div class="col-12">
-        <h2 class="text-light">Statistiques des Avis</h2>
-        <p class="text-muted">Analyse simple des retours clients.</p>
-    </div>
-</div>
+<style>
+    .stats-page { padding: 30px; }
+    .page-title    { font-size: 1.5rem; font-weight: 700; margin-bottom: 4px; }
+    .page-subtitle { font-size: 0.85rem; opacity: 0.45; margin-bottom: 26px; }
 
-<!-- LIGNE 1 : KPI -->
-<div class="row mb-4">
-    <div class="col-md-4">
-        <div class="card bg-dark text-light border-secondary mb-3">
-            <div class="card-body text-center">
-                <h5 class="card-title text-muted">Total des Avis</h5>
-                <h2 class="fw-bold">{{ stats.total|default(0) }}</h2>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card bg-dark text-light border-secondary mb-3">
-            <div class="card-body text-center">
-                <h5 class="card-title text-muted">Note Moyenne</h5>
-                <h2 class="text-warning fw-bold">{{ stats.moy_etoiles|default(0)|number_format(1) }} / 5</h2>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card bg-dark text-light border-success mb-3">
-            <div class="card-body text-center">
-                <h5 class="card-title text-success">Taux de Validation</h5>
-                <h2 class="text-success fw-bold">{{ stats.total > 0 ? (stats.valides / stats.total * 100)|round : 0 }} %</h2>
-            </div>
-        </div>
-    </div>
-</div>
+    .kpi-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; margin-bottom: 28px; }
+    .kpi-card { border-radius: 16px; padding: 20px 22px; display: flex; align-items: center; gap: 16px; }
+    [data-theme="dark"]  .kpi-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); }
+    [data-theme="light"] .kpi-card { background: #fff; border: 1px solid #e4e4e4; box-shadow: 0 2px 10px rgba(0,0,0,0.06); }
+    .kpi-icon  { width: 52px; height: 52px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; flex-shrink: 0; }
+    .ki-blue   { background: rgba(74,158,255,0.15); }
+    .ki-yellow { background: rgba(255,193,7,0.15); }
+    .ki-green  { background: rgba(40,167,69,0.15); }
+    .ki-purple { background: rgba(111,66,193,0.15); }
+    .kpi-val   { font-size: 2rem; font-weight: 800; line-height: 1; }
+    .kpi-lbl   { font-size: 0.8rem; opacity: 0.5; margin-top: 4px; }
+    .kv-blue   { color: #4a9eff; }
+    .kv-yellow { color: #ffc107; }
+    .kv-green  { color: #28a745; }
+    .kv-purple { color: #6f42c1; }
 
-<!-- LIGNE 2 : Charts -->
-<div class="row mb-4 g-3">
-    <div class="col-md-6">
-        <div class="card bg-dark text-light border-secondary h-100">
-            <div class="card-header border-secondary">
-                Répartition des Statuts
-            </div>
-            <div class="card-body" style="height: 300px;">
-                <canvas id="chartStatuts"></canvas>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-6">
-        <div class="card bg-dark text-light border-secondary h-100">
-            <div class="card-header border-secondary">
-                Évolution sur 7 Jours
-            </div>
-            <div class="card-body" style="height: 300px;">
-                <canvas id="chartEvol"></canvas>
-            </div>
-        </div>
-    </div>
-</div>
+    .charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+    .chart-card { border-radius: 16px; padding: 22px; border: 1px solid; }
+    [data-theme="dark"]  .chart-card { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.08); }
+    [data-theme="light"] .chart-card { background: #fff; border-color: #e4e4e4; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+    .chart-title    { font-size: 0.95rem; font-weight: 700; margin-bottom: 4px; }
+    .chart-subtitle { font-size: 0.78rem; opacity: 0.4; margin-bottom: 18px; }
+    .chart-wrap     { position: relative; height: 240px; }
 
-<div class="row mb-4">
-    <div class="col-md-12">
-        <div class="card bg-dark text-light border-secondary">
-            <div class="card-header border-secondary">
-                Distribution des Étoiles
+    .donut-legend  { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; }
+    .legend-item   { display: flex; align-items: center; gap: 10px; font-size: 0.84rem; }
+    .legend-dot    { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .legend-right  { margin-left: auto; font-weight: 600; font-size: 0.88rem; }
+
+    .back-link { display: inline-block; margin-bottom: 20px; font-size: 0.88rem; text-decoration: none; opacity: 0.6; }
+    .back-link:hover { opacity: 1; }
+    [data-theme="dark"]  .back-link { color: #aaa; }
+    [data-theme="light"] .back-link { color: #555; }
+</style>
+
+<div class="stats-page">
+
+    <a href="{{ path('admin_avis_index') }}" class="back-link">← Retour à la liste</a>
+
+    <div class="page-title">📈 Statistiques des Avis</div>
+    <div class="page-subtitle">Analyse des retours clients · Données en temps réel</div>
+
+    {# KPI #}
+    <div class="kpi-row">
+        <div class="kpi-card">
+            <div class="kpi-icon ki-blue">📊</div>
+            <div>
+                <div class="kpi-val kv-blue">{{ stats.total|default(0) }}</div>
+                <div class="kpi-lbl">Total des avis</div>
             </div>
-            <div class="card-body" style="height: 300px;">
-                <canvas id="chartEtoiles"></canvas>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-icon ki-yellow">★</div>
+            <div>
+                <div class="kpi-val kv-yellow">{{ stats.moy_etoiles|default(0)|number_format(1) }}<span style="font-size:1rem;opacity:0.5;">/5</span></div>
+                <div class="kpi-lbl">Note moyenne</div>
+            </div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-icon ki-green">✓</div>
+            <div>
+                <div class="kpi-val kv-green">{{ stats.total > 0 ? (stats.valides / stats.total * 100)|round : 0 }}<span style="font-size:1rem;opacity:0.5;">%</span></div>
+                <div class="kpi-lbl">Taux de validation</div>
+            </div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-icon ki-purple">⏳</div>
+            <div>
+                <div class="kpi-val kv-purple">{{ stats.en_attente|default(0) }}</div>
+                <div class="kpi-lbl">En attente</div>
             </div>
         </div>
     </div>
+
+    {# Charts ligne 1 #}
+    <div class="charts-row">
+        <div class="chart-card">
+            <div class="chart-title">Répartition des statuts</div>
+            <div class="chart-subtitle">Distribution par statut de modération</div>
+            <div class="chart-wrap"><canvas id="chartDonut"></canvas></div>
+            <div class="donut-legend">
+                <div class="legend-item">
+                    <div class="legend-dot" style="background:#ffc107;"></div>
+                    <span>En attente</span>
+                    <span class="legend-right">{{ stats.en_attente|default(0) }}</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot" style="background:#28a745;"></div>
+                    <span>Validés</span>
+                    <span class="legend-right">{{ stats.valides|default(0) }}</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot" style="background:#dc3545;"></div>
+                    <span>Rejetés</span>
+                    <span class="legend-right">{{ stats.rejetes|default(0) }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="chart-card">
+            <div class="chart-title">Évolution sur 7 jours</div>
+            <div class="chart-subtitle">Nombre d'avis soumis par jour</div>
+            <div class="chart-wrap"><canvas id="chartLine"></canvas></div>
+        </div>
+    </div>
+
+    {# Chart étoiles full width #}
+    <div class="chart-card">
+        <div class="chart-title">Distribution des notes</div>
+        <div class="chart-subtitle">Nombre d'avis par nombre d'étoiles</div>
+        <div class="chart-wrap" style="height:200px;"><canvas id="chartBar"></canvas></div>
+    </div>
+
 </div>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        Chart.defaults.color = 'rgba(255, 255, 255, 0.7)';
+document.addEventListener('DOMContentLoaded', function() {
+    const isDark    = document.documentElement.getAttribute('data-theme') === 'dark';
+    const textColor = isDark ? 'rgba(255,255,255,0.55)' : 'rgba(0,0,0,0.45)';
+    const gridColor = isDark ? 'rgba(255,255,255,0.07)'  : 'rgba(0,0,0,0.07)';
+    Chart.defaults.font.size = 12;
 
-        const ctx1 = document.getElementById('chartStatuts').getContext('2d');
-        new Chart(ctx1, {
-            type: 'pie',
-            data: {
-                labels: ['En attente', 'Validé', 'Rejeté'],
-                datasets: [{
-                    data: [{{ stats.en_attente|default(0) }}, {{ stats.valides|default(0) }}, {{ stats.rejetes|default(0) }}],
-                    backgroundColor: ['#ffc107', '#28a745', '#dc3545']
-                }]
-            },
-            options: { responsive: true, maintainAspectRatio: false }
-        });
-
-        const ctx2 = document.getElementById('chartEvol').getContext('2d');
-        new Chart(ctx2, {
-            type: 'line',
-            data: {
-                labels: {{ avisParJour.labels | default('[]') | json_encode | raw }},
-                datasets: [{
-                    label: 'Nombre d\'avis',
-                    data: {{ avisParJour.data | default('[]') | json_encode | raw }},
-                    borderColor: '#4a9eff',
-                    backgroundColor: 'rgba(74, 158, 255, 0.2)',
-                    fill: true
-                }]
-            },
-            options: { responsive: true, maintainAspectRatio: false }
-        });
-
-        const ctx3 = document.getElementById('chartEtoiles').getContext('2d');
-        new Chart(ctx3, {
-            type: 'bar',
-            data: {
-                labels: ['1 ★', '2 ★', '3 ★', '4 ★', '5 ★'],
-                datasets: [{
-                    label: 'Avis',
-                    data: {{ etoilesDistrib | default('[]') | json_encode | raw }},
-                    backgroundColor: ['#dc3545', '#fd7e14', '#ffc107', '#20c997', '#28a745']
-                }]
-            },
-            options: {
-                responsive: true, maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: { 
-                    x: { grid: { color: 'rgba(255,255,255,0.1)' } },
-                    y: { beginAtZero: true, stepSize: 1, grid: { color: 'rgba(255,255,255,0.1)' } } 
+    /* Donut */
+    new Chart(document.getElementById('chartDonut'), {
+        type: 'doughnut',
+        data: {
+            labels: ['En attente','Validé','Rejeté'],
+            datasets: [{
+                data: [{{ stats.en_attente|default(0) }}, {{ stats.valides|default(0) }}, {{ stats.rejetes|default(0) }}],
+                backgroundColor: ['#ffc107','#28a745','#dc3545'],
+                borderWidth: 0, hoverOffset: 6
+            }]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false, cutout: '68%',
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: function(ctx) {
+                            const total = ctx.dataset.data.reduce((a,b)=>a+b,0);
+                            const pct = total > 0 ? Math.round(ctx.parsed/total*100) : 0;
+                            return ' '+ctx.label+' : '+ctx.parsed+' ('+pct+'%)';
+                        }
+                    }
                 }
             }
-        });
+        }
     });
+
+    /* Line */
+    new Chart(document.getElementById('chartLine'), {
+        type: 'line',
+        data: {
+            labels: {{ avisParJour.labels|default([])|json_encode|raw }},
+            datasets: [{
+                label: "Avis soumis",
+                data: {{ avisParJour.data|default([])|json_encode|raw }},
+                borderColor: '#4a9eff',
+                backgroundColor: 'rgba(74,158,255,0.1)',
+                borderWidth: 2.5, fill: true, tension: 0.4,
+                pointBackgroundColor: '#4a9eff', pointRadius: 5, pointHoverRadius: 8
+            }]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                x: { ticks:{color:textColor}, grid:{color:gridColor} },
+                y: { beginAtZero:true, ticks:{color:textColor,stepSize:1}, grid:{color:gridColor} }
+            }
+        }
+    });
+
+    /* Bar */
+    new Chart(document.getElementById('chartBar'), {
+        type: 'bar',
+        data: {
+            labels: ['1 ★','2 ★','3 ★','4 ★','5 ★'],
+            datasets: [{
+                label: "Nombre d'avis",
+                data: {{ etoilesDistrib|default([])|json_encode|raw }},
+                backgroundColor: ['#dc3545','#fd7e14','#ffc107','#20c997','#28a745'],
+                borderRadius: 8, borderSkipped: false
+            }]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                x: { ticks:{color:textColor}, grid:{display:false} },
+                y: { beginAtZero:true, ticks:{color:textColor,stepSize:1}, grid:{color:gridColor} }
+            }
+        }
+    });
+});
 </script>
 {% endblock %}

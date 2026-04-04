@@ -3,107 +3,190 @@
 {% block title %}Nos Avis - Villa Agency{% endblock %}
 
 {% block body %}
-    <!-- ***** Header Area Start ***** -->
     {% include 'home/partials/header.html.twig' %}
-    <!-- ***** Header Area End ***** -->
 
     <div class="page-heading header-text">
         <div class="container">
             <div class="row">
                 <div class="col-lg-12">
                     <span class="breadcrumb"><a href="{{ path('app_home') }}">Home</a> / Avis</span>
-                    <h3>Nos Avis</h3>
+                    <h3>Mes Avis</h3>
                 </div>
             </div>
         </div>
     </div>
 
     <div class="container mt-5 mb-5 pb-5 pt-3" style="min-height: 50vh;">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h4>Tous nos avis</h4>
-            <a href="{{ path('avis_new') }}" class="btn text-white rounded-pill px-4 py-2" style="background-color: #f35525; border-color: #f35525; font-weight:500;">
-                <i class="fas fa-plus"></i> Donner mon avis
+
+        {# Flash messages #}
+        {% for message in app.flashes('success') %}
+            <div class="alert alert-success alert-dismissible fade show">{{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+        {% endfor %}
+        {% for message in app.flashes('warning') %}
+            <div class="alert alert-warning alert-dismissible fade show">{{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+        {% endfor %}
+        {% for message in app.flashes('danger') %}
+            <div class="alert alert-danger alert-dismissible fade show">{{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+        {% endfor %}
+
+        {# Header + bouton #}
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+            <h4 class="mb-0 fw-bold">Tous mes avis</h4>
+            <a href="{{ path('avis_new') }}" class="btn text-white rounded-pill px-4 py-2"
+               style="background-color:#f35525; font-weight:600;">
+                ✚ Donner mon avis
             </a>
         </div>
 
-        {% for message in app.flashes('success') %}
-            <div class="alert alert-success alert-dismissible fade show">
-                {{ message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        {# Barre de recherche + filtre #}
+        <form method="GET" class="row g-2 mb-4 align-items-center">
+            <div class="col-md-5">
+                <input type="text" name="q" class="form-control rounded-pill"
+                       placeholder="🔍 Rechercher dans vos avis..."
+                       value="{{ app.request.query.get('q') }}">
             </div>
+            <div class="col-md-3">
+                <select name="statut" class="form-select rounded-pill">
+                    <option value="">Tous les statuts</option>
+                    <option value="En attente" {{ app.request.query.get('statut') == 'En attente' ? 'selected' : '' }}>⏳ En attente</option>
+                    <option value="Validé"     {{ app.request.query.get('statut') == 'Validé'     ? 'selected' : '' }}>✓ Validé</option>
+                    <option value="Rejeté"     {{ app.request.query.get('statut') == 'Rejeté'     ? 'selected' : '' }}>✗ Rejeté</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select name="etoiles" class="form-select rounded-pill">
+                    <option value="">Toutes notes</option>
+                    {% for i in 1..5 %}
+                    <option value="{{ i }}" {{ app.request.query.get('etoiles') == i ? 'selected' : '' }}>{{ i }} ★</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-dark rounded-pill px-3">Filtrer</button>
+                <a href="{{ path('avis_index') }}" class="btn btn-outline-secondary rounded-pill px-3">↺</a>
+            </div>
+        </form>
+
+        {# Stats rapides #}
+        {% set totalAvis = avis|length %}
+        {% set nbValides = 0 %}
+        {% set nbAttente = 0 %}
+        {% set nbRejetes = 0 %}
+        {% for a in avis %}
+            {% if a.statut == 'Validé' %}   {% set nbValides = nbValides + 1 %} {% endif %}
+            {% if a.statut == 'En attente' %}{% set nbAttente = nbAttente + 1 %} {% endif %}
+            {% if a.statut == 'Rejeté' %}   {% set nbRejetes = nbRejetes + 1 %} {% endif %}
         {% endfor %}
 
-        {% for message in app.flashes('warning') %}
-            <div class="alert alert-warning alert-dismissible fade show">
-                {{ message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        {% if totalAvis > 0 %}
+        <div class="row g-3 mb-4">
+            <div class="col-6 col-md-3">
+                <div class="rounded-3 p-3 text-center" style="background:#fff3f0; border:1px solid #f35525;">
+                    <div style="font-size:1.6rem; font-weight:700; color:#f35525;">{{ totalAvis }}</div>
+                    <div style="font-size:0.8rem; color:#888;">Total avis</div>
+                </div>
             </div>
-        {% endfor %}
-
-        {% for message in app.flashes('danger') %}
-            <div class="alert alert-danger alert-dismissible fade show">
-                {{ message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            <div class="col-6 col-md-3">
+                <div class="rounded-3 p-3 text-center" style="background:#fff9e6; border:1px solid #ffc107;">
+                    <div style="font-size:1.6rem; font-weight:700; color:#ffc107;">{{ nbAttente }}</div>
+                    <div style="font-size:0.8rem; color:#888;">En attente</div>
+                </div>
             </div>
-        {% endfor %}
+            <div class="col-6 col-md-3">
+                <div class="rounded-3 p-3 text-center" style="background:#edf7ee; border:1px solid #28a745;">
+                    <div style="font-size:1.6rem; font-weight:700; color:#28a745;">{{ nbValides }}</div>
+                    <div style="font-size:0.8rem; color:#888;">Validés</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="rounded-3 p-3 text-center" style="background:#fdf0f0; border:1px solid #dc3545;">
+                    <div style="font-size:1.6rem; font-weight:700; color:#dc3545;">{{ nbRejetes }}</div>
+                    <div style="font-size:0.8rem; color:#888;">Rejetés</div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
 
-        <div class="table-responsive shadow-sm bg-white rounded p-3">
-            <table class="table table-hover align-middle">
-                <thead>
+        {# Tableau #}
+        <div class="table-responsive shadow-sm bg-white rounded-3 p-3">
+            <table class="table table-hover align-middle mb-0">
+                <thead style="background:#f8f9fa;">
                     <tr>
-                        <th>Contenu</th>
-                        <th>Étoiles (⭐)</th>
-                        <th>Type</th>
-                        <th>Statut</th>
-                        <th>Date</th>
-                        <th>Actions</th>
+                        <th style="color:#f35525;">Contenu</th>
+                        <th style="color:#f35525;">Note</th>
+                        <th style="color:#f35525;">Type</th>
+                        <th style="color:#f35525;">Statut</th>
+                        <th style="color:#f35525;">Date</th>
+                        <th style="color:#f35525;">💬 Réponse admin</th>
+                        <th style="color:#f35525;">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                 {% for avi in avis %}
                     <tr>
-                        <td style="max-width:300px;" class="text-truncate">{{ avi.contenu }}</td>
-                        <td>
+                        <td style="max-width:220px;" class="text-truncate" title="{{ avi.contenu }}">
+                            {{ avi.contenu }}
+                        </td>
+                        <td style="white-space:nowrap;">
                             {% for i in 1..5 %}
                                 {% if i <= avi.nbEtoiles %}
-                                    <i class="fas fa-star" style="color: #f35525;"></i>
+                                    <span style="color:#f35525;">★</span>
                                 {% else %}
-                                    <i class="far fa-star" style="color: #ccc;"></i>
+                                    <span style="color:#ddd;">★</span>
                                 {% endif %}
                             {% endfor %}
                         </td>
-                        <td>{{ avi.type.nom }}</td>
+                        <td>{{ avi.type ? avi.type.nom : '—' }}</td>
                         <td>
                             {% if avi.statut == 'Validé' %}
-                                <span class="badge bg-success">Validé</span>
+                                <span class="badge rounded-pill bg-success">✓ Validé</span>
                             {% elseif avi.statut == 'Rejeté' %}
-                                <span class="badge bg-danger">Rejeté</span>
+                                <span class="badge rounded-pill bg-danger">✗ Rejeté</span>
                             {% else %}
-                                <span class="badge bg-warning text-dark">En attente</span>
+                                <span class="badge rounded-pill bg-warning text-dark">⏳ En attente</span>
                             {% endif %}
                         </td>
-                        <td>{{ avi.dateAvis ? avi.dateAvis|date('d/m/Y') : '' }}</td>
-                        <td>
-                            <a href="{{ path('avis_show', {'id': avi.id}) }}" class="btn btn-sm btn-outline-secondary">Voir</a>
+                        <td style="white-space:nowrap; font-size:0.85rem; color:#888;">
+                            {{ avi.dateAvis ? avi.dateAvis|date('d/m/Y') : '—' }}
+                        </td>
+                        <td style="max-width:200px;">
+                            {% if avi.reponse %}
+                                <div style="background:#f0fff4; border-left:3px solid #28a745; border-radius:6px; padding:7px 10px;">
+                                    <div style="font-size:0.7rem; color:#28a745; font-weight:600; margin-bottom:2px;">Réponse de l'admin :</div>
+                                    <div style="font-size:0.83rem; color:#333;">{{ avi.reponse }}</div>
+                                </div>
+                            {% else %}
+                                <span style="font-size:0.8rem; color:#bbb; font-style:italic;">En attente de réponse</span>
+                            {% endif %}
+                        </td>
+                        <td style="white-space:nowrap;">
+                            <a href="{{ path('avis_show', {'id': avi.id}) }}"
+                               class="btn btn-sm btn-outline-secondary rounded-pill">👁 Voir</a>
                             {% if avi.statut == 'En attente' %}
-                                <a href="{{ path('avis_edit', {'id': avi.id}) }}" class="btn btn-sm btn-outline-dark">Modifier</a>
-                                <form method="post" action="{{ path('avis_delete', {'id': avi.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet avis ?');" style="display:inline-block;">
+                                <a href="{{ path('avis_edit', {'id': avi.id}) }}"
+                                   class="btn btn-sm btn-outline-dark rounded-pill">✏ Modifier</a>
+                                <form method="post" action="{{ path('avis_delete', {'id': avi.id}) }}"
+                                      onsubmit="return confirm('Supprimer cet avis ?');" style="display:inline-block;">
                                     <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ avi.id) }}">
-                                    <button class="btn btn-sm btn-danger">Supprimer</button>
+                                    <button class="btn btn-sm btn-outline-danger rounded-pill">🗑</button>
                                 </form>
                             {% endif %}
                         </td>
                     </tr>
                 {% else %}
                     <tr>
-                        <td colspan="6" class="text-center py-4">Soyez le premier à donner votre avis !</td>
+                        <td colspan="7" class="text-center py-5" style="color:#bbb;">
+                            <div style="font-size:2.5rem; margin-bottom:10px;">⭐</div>
+                            Vous n'avez pas encore soumis d'avis.<br>
+                            <a href="{{ path('avis_new') }}" style="color:#f35525;">Donnez votre premier avis !</a>
+                        </td>
                     </tr>
                 {% endfor %}
                 </tbody>
             </table>
         </div>
+
     </div>
 
-    <!-- ***** Footer Start ***** -->
     {% include 'home/partials/footer.html.twig' %}
 {% endblock %}

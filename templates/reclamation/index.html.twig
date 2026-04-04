@@ -17,101 +17,197 @@
     </div>
 
     <div class="container mt-5 mb-5 pb-5 pt-3" style="min-height: 50vh;">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h4>Toutes vos réclamations</h4>
-            <a href="{{ path('reclamation_new') }}" class="btn text-white rounded-pill px-4 py-2" style="background-color: #f35525; border-color: #f35525; font-weight:500;">
-                <i class="fas fa-plus"></i> Nouvelle réclamation
+
+        {# Flash messages #}
+        {% for message in app.flashes('success') %}
+            <div class="alert alert-success alert-dismissible fade show">{{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+        {% endfor %}
+        {% for message in app.flashes('warning') %}
+            <div class="alert alert-warning alert-dismissible fade show">{{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+        {% endfor %}
+        {% for message in app.flashes('danger') %}
+            <div class="alert alert-danger alert-dismissible fade show">{{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+        {% endfor %}
+
+        {# Header + bouton #}
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+            <h4 class="mb-0 fw-bold">Toutes mes réclamations</h4>
+            <a href="{{ path('reclamation_new') }}" class="btn text-white rounded-pill px-4 py-2"
+               style="background-color:#f35525; font-weight:600;">
+                ✚ Nouvelle réclamation
             </a>
         </div>
 
-        {% for message in app.flashes('success') %}
-            <div class="alert alert-success alert-dismissible fade show">
-                {{ message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        {# Barre de recherche + filtres #}
+        <form method="GET" class="row g-2 mb-4 align-items-center">
+            <div class="col-md-4">
+                <input type="text" name="q" class="form-control rounded-pill"
+                       placeholder="🔍 Rechercher..."
+                       value="{{ app.request.query.get('q') }}">
             </div>
+            <div class="col-md-3">
+                <select name="statut" class="form-select rounded-pill">
+                    <option value="">Tous les statuts</option>
+                    <option value="En attente" {{ app.request.query.get('statut') == 'En attente' ? 'selected' : '' }}>⏳ En attente</option>
+                    <option value="En cours"   {{ app.request.query.get('statut') == 'En cours'   ? 'selected' : '' }}>🔄 En cours</option>
+                    <option value="Traitée"    {{ app.request.query.get('statut') == 'Traitée'    ? 'selected' : '' }}>✓ Traitée</option>
+                    <option value="Fermée"     {{ app.request.query.get('statut') == 'Fermée'     ? 'selected' : '' }}>🔒 Fermée</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select name="priorite" class="form-select rounded-pill">
+                    <option value="">Toutes priorités</option>
+                    <option value="Basse"   {{ app.request.query.get('priorite') == 'Basse'   ? 'selected' : '' }}>Basse</option>
+                    <option value="Moyenne" {{ app.request.query.get('priorite') == 'Moyenne' ? 'selected' : '' }}>Moyenne</option>
+                    <option value="Haute"   {{ app.request.query.get('priorite') == 'Haute'   ? 'selected' : '' }}>Haute</option>
+                    <option value="Urgente" {{ app.request.query.get('priorite') == 'Urgente' ? 'selected' : '' }}>🚨 Urgente</option>
+                </select>
+            </div>
+            <div class="col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-dark rounded-pill px-3">Filtrer</button>
+                <a href="{{ path('reclamation_index') }}" class="btn btn-outline-secondary rounded-pill px-3">↺</a>
+            </div>
+        </form>
+
+        {# Stats rapides #}
+        {% set total = reclamations|length %}
+        {% set nbAttente = 0 %}
+        {% set nbEnCours = 0 %}
+        {% set nbTraitees = 0 %}
+        {% set nbFermees  = 0 %}
+        {% for r in reclamations %}
+            {% if r.statut == 'En attente' %}{% set nbAttente = nbAttente + 1 %}{% endif %}
+            {% if r.statut == 'En cours'   %}{% set nbEnCours = nbEnCours + 1 %}{% endif %}
+            {% if r.statut == 'Traitée'    %}{% set nbTraitees = nbTraitees + 1 %}{% endif %}
+            {% if r.statut == 'Fermée'     %}{% set nbFermees  = nbFermees  + 1 %}{% endif %}
         {% endfor %}
 
-        {% for message in app.flashes('warning') %}
-            <div class="alert alert-warning alert-dismissible fade show">
-                {{ message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        {% if total > 0 %}
+        <div class="row g-3 mb-4">
+            <div class="col-6 col-md-3">
+                <div class="rounded-3 p-3 text-center" style="background:#fff3f0; border:1px solid #f35525;">
+                    <div style="font-size:1.6rem; font-weight:700; color:#f35525;">{{ total }}</div>
+                    <div style="font-size:0.8rem; color:#888;">Total</div>
+                </div>
             </div>
-        {% endfor %}
-
-        {% for message in app.flashes('danger') %}
-            <div class="alert alert-danger alert-dismissible fade show">
-                {{ message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            <div class="col-6 col-md-3">
+                <div class="rounded-3 p-3 text-center" style="background:#fff9e6; border:1px solid #ffc107;">
+                    <div style="font-size:1.6rem; font-weight:700; color:#ffc107;">{{ nbAttente }}</div>
+                    <div style="font-size:0.8rem; color:#888;">En attente</div>
+                </div>
             </div>
-        {% endfor %}
+            <div class="col-6 col-md-3">
+                <div class="rounded-3 p-3 text-center" style="background:#e8f4fd; border:1px solid #17a2b8;">
+                    <div style="font-size:1.6rem; font-weight:700; color:#17a2b8;">{{ nbEnCours }}</div>
+                    <div style="font-size:0.8rem; color:#888;">En cours</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="rounded-3 p-3 text-center" style="background:#edf7ee; border:1px solid #28a745;">
+                    <div style="font-size:1.6rem; font-weight:700; color:#28a745;">{{ nbTraitees }}</div>
+                    <div style="font-size:0.8rem; color:#888;">Traitées</div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
 
-        <div class="table-responsive shadow-sm bg-white p-3 rounded">
-            <table class="table table-hover align-middle">
-                <thead>
+        {# Tableau #}
+        <div class="table-responsive shadow-sm bg-white rounded-3 p-3">
+            <table class="table table-hover align-middle mb-0">
+                <thead style="background:#f8f9fa;">
                     <tr>
-                        <th>Titre</th>
-                        <th>Type</th>
-                        <th>Priorité</th>
-                        <th>Statut</th>
-                        <th>Avis lié</th>
-                        <th>Date</th>
-                        <th>Actions</th>
+                        <th style="color:#f35525;">Titre</th>
+                        <th style="color:#f35525;">Type</th>
+                        <th style="color:#f35525;">Priorité</th>
+                        <th style="color:#f35525;">Statut</th>
+                        <th style="color:#f35525;">Avis lié</th>
+                        <th style="color:#f35525;">Date</th>
+                        <th style="color:#f35525;">💬 Réponse admin</th>
+                        <th style="color:#f35525;">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                 {% for rec in reclamations %}
                     <tr>
-                        <td class="fw-bold">{{ rec.titre }}</td>
-                        <td>{{ rec.type.nom }}</td>
+                        <td class="fw-semibold" style="max-width:160px;" class="text-truncate" title="{{ rec.titre }}">
+                            {{ rec.titre }}
+                        </td>
+                        <td style="font-size:0.85rem;">{{ rec.type ? rec.type.nom : '—' }}</td>
                         <td>
                             {% if rec.priorite == 'Basse' %}
-                                <span class="badge bg-secondary">Basse</span>
+                                <span class="badge rounded-pill bg-secondary">Basse</span>
                             {% elseif rec.priorite == 'Moyenne' %}
-                                <span class="badge bg-info text-dark">Moyenne</span>
+                                <span class="badge rounded-pill bg-info text-dark">Moyenne</span>
                             {% elseif rec.priorite == 'Haute' %}
-                                <span class="badge bg-warning text-dark">Haute</span>
-                            {% elseif rec.priorite == 'Urgente' %}
-                                <span class="badge bg-danger">Urgente</span>
+                                <span class="badge rounded-pill bg-warning text-dark">⚠ Haute</span>
+                            {% else %}
+                                <span class="badge rounded-pill bg-danger">🚨 Urgente</span>
                             {% endif %}
                         </td>
                         <td>
-                            {% if rec.statut == 'Fermée' %}
-                                <span class="badge bg-secondary">Fermée</span>
-                            {% elseif rec.statut == 'Traitée' %}
-                                <span class="badge bg-success">Traitée</span>
+                            {% if rec.statut == 'En attente' %}
+                                <span class="badge rounded-pill bg-warning text-dark">⏳ En attente</span>
                             {% elseif rec.statut == 'En cours' %}
-                                <span class="badge bg-primary">En cours</span>
+                                <span class="badge rounded-pill bg-primary">🔄 En cours</span>
+                            {% elseif rec.statut == 'Traitée' %}
+                                <span class="badge rounded-pill bg-success">✓ Traitée</span>
                             {% else %}
-                                <span class="badge bg-warning text-dark">En attente</span>
+                                <span class="badge rounded-pill bg-secondary">🔒 Fermée</span>
                             {% endif %}
                         </td>
                         <td>
                             {% if rec.avis %}
-                                <a href="{{ path('avis_show', {'id': rec.avis.id}) }}" class="badge rounded-pill border bg-light text-dark text-decoration-none">Voir l'avis</a>
+                                <a href="{{ path('avis_show', {'id': rec.avis.id}) }}"
+                                   class="badge rounded-pill text-decoration-none"
+                                   style="background:#fff3f0; color:#f35525; border:1px solid #f35525;">
+                                    Avis #{{ rec.avis.id }}
+                                </a>
                             {% else %}
-                                <span class="text-muted">-</span>
+                                <span style="font-size:0.8rem; color:#bbb;">Manuel</span>
                             {% endif %}
                         </td>
-                        <td>{{ rec.dateCreation ? rec.dateCreation|date('d/m/Y') : '' }}</td>
-                        <td>
-                            <a href="{{ path('reclamation_show', {'id': rec.id}) }}" class="btn btn-sm btn-outline-secondary">Voir</a>
-                            {% if rec.statut != 'Fermée' %}
-                                <a href="{{ path('reclamation_edit', {'id': rec.id}) }}" class="btn btn-sm btn-outline-dark">Modifier</a>
+                        <td style="white-space:nowrap; font-size:0.85rem; color:#888;">
+                            {{ rec.dateCreation ? rec.dateCreation|date('d/m/Y') : '—' }}
+                        </td>
+                        <td style="max-width:200px;">
+                            {% if rec.reponse %}
+                                <div style="background:#f0fff4; border-left:3px solid #28a745; border-radius:6px; padding:7px 10px;">
+                                    <div style="font-size:0.7rem; color:#28a745; font-weight:600; margin-bottom:2px;">Réponse de l'admin :</div>
+                                    <div style="font-size:0.83rem; color:#333;">{{ rec.reponse }}</div>
+                                </div>
+                            {% else %}
+                                <span style="font-size:0.8rem; color:#bbb; font-style:italic;">En attente de réponse</span>
                             {% endif %}
-                            <form method="post" action="{{ path('reclamation_delete', {'id': rec.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ?');" style="display:inline-block;">
-                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ rec.id) }}">
-                                <button class="btn btn-sm btn-danger">Supprimer</button>
-                            </form>
+                        </td>
+                        <td style="white-space:nowrap;">
+                            <a href="{{ path('reclamation_show', {'id': rec.id}) }}"
+                               class="btn btn-sm btn-outline-secondary rounded-pill">👁 Voir</a>
+                            {% if rec.statut != 'Fermée' and rec.statut != 'Traitée' %}
+                                <a href="{{ path('reclamation_edit', {'id': rec.id}) }}"
+                                   class="btn btn-sm btn-outline-dark rounded-pill">✏ Modifier</a>
+                            {% endif %}
+                            {% if rec.statut == 'En attente' %}
+                                <form method="post" action="{{ path('reclamation_delete', {'id': rec.id}) }}"
+                                      onsubmit="return confirm('Supprimer cette réclamation ?');" style="display:inline-block;">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ rec.id) }}">
+                                    <button class="btn btn-sm btn-outline-danger rounded-pill">🗑</button>
+                                </form>
+                            {% endif %}
                         </td>
                     </tr>
                 {% else %}
                     <tr>
-                        <td colspan="7" class="text-center py-4">Aucune réclamation trouvée.</td>
+                        <td colspan="8" class="text-center py-5" style="color:#bbb;">
+                            <div style="font-size:2.5rem; margin-bottom:10px;">📋</div>
+                            Aucune réclamation trouvée.<br>
+                            <a href="{{ path('reclamation_new') }}" style="color:#f35525;">Créer une réclamation</a>
+                        </td>
                     </tr>
                 {% endfor %}
                 </tbody>
             </table>
         </div>
+
     </div>
 
     {% include 'home/partials/footer.html.twig' %}
