@@ -1,0 +1,135 @@
+{% extends 'base_front.html.twig' %}
+
+{% block title %}Donner mon avis - Villa Agency{% endblock %}
+
+{% block body %}
+    {% include 'home/partials/header.html.twig' %}
+
+    <div class="page-heading header-text">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12">
+                    <span class="breadcrumb"><a href="{{ path('avis_index') }}">Avis</a> / Nouveau</span>
+                    <h3>Donner mon avis</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mt-5 mb-5 pb-5 pt-3">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card shadow-sm border-0 p-4">
+                    <h4 class="mb-4">Votre avis nous intéresse</h4>
+                    
+                    {{ form_start(form, {'attr': {'novalidate': 'novalidate', 'class': 'needs-validation'}}) }}
+                        
+                        <div class="mb-3">
+                            {{ form_label(form.type, 'Type d\'avis', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                            {{ form_widget(form.type, {'attr': {'class': 'form-select'}}) }}
+                            <div class="text-danger small mt-1">{{ form_errors(form.type) }}</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form_label(form.contenu, 'Votre message', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                            {{ form_widget(form.contenu, {'attr': {'class': 'form-control', 'rows': 4}}) }}
+                            <div class="text-danger small mt-1">{{ form_errors(form.contenu) }}</div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Note</label>
+                            <div class="star-rating mb-2" id="star-rating">
+                                <i class="far fa-star fa-2x star" data-value="1"></i>
+                                <i class="far fa-star fa-2x star" data-value="2"></i>
+                                <i class="far fa-star fa-2x star" data-value="3"></i>
+                                <i class="far fa-star fa-2x star" data-value="4"></i>
+                                <i class="far fa-star fa-2x star" data-value="5"></i>
+                            </div>
+                            <div id="negative-warning" class="text-white bg-warning mt-2 d-none fw-bold p-2 rounded" style="font-size: 0.9em;">
+                                <i class="fas fa-exclamation-triangle"></i> Attention : un avis négatif créera automatiquement une réclamation.
+                            </div>
+                            <div class="d-none">
+                                {{ form_widget(form.nbEtoiles) }}
+                            </div>
+                            <div class="text-danger small mt-1">{{ form_errors(form.nbEtoiles) }}</div>
+                        </div>
+
+                        <div class="mt-4 text-center">
+                            <button type="submit" class="btn text-white px-5 py-2 rounded-pill w-100" style="background-color: #f35525; font-weight:600;">
+                                Soumettre
+                            </button>
+                        </div>
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% include 'home/partials/footer.html.twig' %}
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const stars = document.querySelectorAll('.star');
+            const hiddenSelect = document.getElementById('{{ form.nbEtoiles.vars.id }}');
+            const warning = document.getElementById('negative-warning');
+
+            if (hiddenSelect.value) {
+                updateStars(hiddenSelect.value);
+                checkWarning(hiddenSelect.value);
+            }
+
+            stars.forEach(star => {
+                star.addEventListener('click', function() {
+                    const val = this.getAttribute('data-value');
+                    hiddenSelect.value = val;
+                    updateStars(val);
+                    checkWarning(val);
+                });
+                star.addEventListener('mouseover', function() {
+                    highlightStars(this.getAttribute('data-value'));
+                });
+                star.addEventListener('mouseout', function() {
+                    updateStars(hiddenSelect.value || 0);
+                });
+            });
+
+            function updateStars(value) {
+                stars.forEach(s => {
+                    s.classList.remove('fas', 'far');
+                    if (parseInt(s.getAttribute('data-value')) <= parseInt(value)) {
+                        s.classList.add('fas');
+                        s.style.color = '#f35525';
+                    } else {
+                        s.classList.add('far');
+                        s.style.color = '#ccc';
+                    }
+                });
+            }
+
+            function highlightStars(value) {
+                stars.forEach(s => {
+                    s.classList.remove('fas', 'far');
+                    if (parseInt(s.getAttribute('data-value')) <= parseInt(value)) {
+                        s.classList.add('fas');
+                        s.style.color = '#f35525';
+                    } else {
+                        s.classList.add('far');
+                        s.style.color = '#ccc';
+                    }
+                });
+            }
+
+            function checkWarning(value) {
+                if (value && parseInt(value) <= 2) {
+                    warning.classList.remove('d-none');
+                } else {
+                    warning.classList.add('d-none');
+                }
+            }
+        });
+    </script>
+    <style>
+        .star-rating .star { cursor: pointer; transition: transform 0.2s; }
+        .star-rating .star:hover { transform: scale(1.1); }
+    </style>
+{% endblock %}

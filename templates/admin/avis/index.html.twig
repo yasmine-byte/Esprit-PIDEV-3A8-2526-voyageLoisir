@@ -1,0 +1,148 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}Gestion des Avis{% endblock %}
+
+{% block admin_content %}
+    <h2 class="mb-4 text-light">Gestion des Avis</h2>
+
+    {# Flash messages #}
+    {% for label, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="alert alert-{{ label == 'danger' ? 'danger' : 'success' }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endfor %}
+
+    {# Stats Cards #}
+    <div class="row mb-4">
+        <div class="col-md">
+            <div class="card text-white bg-primary mb-3 shadow-sm" style="border:none;">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="fas fa-star me-2"></i>Total Avis</h5>
+                    <p class="card-text fs-4 fw-bold">{{ stats.total }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md">
+            <div class="card text-dark bg-warning mb-3 shadow-sm" style="border:none;">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="fas fa-clock me-2"></i>En attente</h5>
+                    <p class="card-text fs-4 fw-bold">{{ stats.en_attente }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md">
+            <div class="card text-white bg-success mb-3 shadow-sm" style="border:none;">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="fas fa-check me-2"></i>Validés</h5>
+                    <p class="card-text fs-4 fw-bold">{{ stats.valides }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md">
+            <div class="card text-white bg-danger mb-3 shadow-sm" style="border:none;">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="fas fa-times me-2"></i>Rejetés</h5>
+                    <p class="card-text fs-4 fw-bold">{{ stats.rejetes }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md">
+            <div class="card text-white mb-3 shadow-sm" style="background-color: #6f42c1; border:none;">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="fas fa-star-half-alt me-2"></i>Moyenne</h5>
+                    <p class="card-text fs-4 fw-bold">{{ stats.moy_etoiles }} / 5</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# Filtres #}
+    <div class="card mb-4" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);">
+        <div class="card-body">
+            <form method="GET" class="d-flex align-items-center gap-3">
+                <label for="statut" class="text-light fw-bold">Filtrer par statut :</label>
+                <select name="statut" id="statut" class="form-select w-auto bg-dark text-light" style="border-color: rgba(255,255,255,0.2);">
+                    <option value="">Tous</option>
+                    <option value="En attente" {{ currentStatut == 'En attente' ? 'selected' : '' }}>En attente</option>
+                    <option value="Validé" {{ currentStatut == 'Validé' ? 'selected' : '' }}>Validé</option>
+                    <option value="Rejeté" {{ currentStatut == 'Rejeté' ? 'selected' : '' }}>Rejeté</option>
+                </select>
+                <button type="submit" class="btn btn-outline-light">Filtrer</button>
+            </form>
+        </div>
+    </div>
+
+    {# Tableau #}
+    <div class="table-responsive">
+        <table class="table table-dark table-hover align-middle" style="background: rgba(0,0,0,0.2);">
+            <thead class="table-active">
+                <tr>
+                    <th>ID</th>
+                    <th>User ID</th>
+                    <th>Contenu</th>
+                    <th>Étoiles</th>
+                    <th>Type</th>
+                    <th>Statut</th>
+                    <th>Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for avis in avis_list %}
+                    <tr>
+                        <td class="fw-bold">#{{ avis.id }}</td>
+                        <td>{{ avis.userId }}</td>
+                        <td title="{{ avis.contenu }}">{{ avis.contenu|length > 50 ? avis.contenu|slice(0, 50) ~ '...' : avis.contenu }}</td>
+                        <td class="text-warning">
+                            {% for i in 1..5 %}
+                                {% if i <= avis.nbEtoiles %}
+                                    <i class="fas fa-star"></i>
+                                {% else %}
+                                    <i class="far fa-star"></i>
+                                {% endif %}
+                            {% endfor %}
+                        </td>
+                        <td>{{ avis.type.nom }}</td>
+                        <td>
+                            {% if avis.statut == 'En attente' %}
+                                <span class="badge bg-warning text-dark">En attente</span>
+                            {% elseif avis.statut == 'Validé' %}
+                                <span class="badge bg-success">Validé</span>
+                            {% else %}
+                                <span class="badge bg-danger">Rejeté</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ avis.dateAvis ? avis.dateAvis|date('d/m/Y') : '' }}</td>
+                        <td>
+                            <div class="d-flex gap-1">
+                                {% if avis.statut != 'Validé' %}
+                                    <form method="POST" action="{{ path('admin_avis_valider', {'id': avis.id}) }}">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('valider' ~ avis.id) }}">
+                                        <button type="submit" class="btn btn-sm btn-success" title="Valider"><i class="fas fa-check"></i></button>
+                                    </form>
+                                {% endif %}
+                                {% if avis.statut != 'Rejeté' %}
+                                    <form method="POST" action="{{ path('admin_avis_rejeter', {'id': avis.id}) }}">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('rejeter' ~ avis.id) }}">
+                                        <button type="submit" class="btn btn-sm btn-warning" title="Rejeter"><i class="fas fa-times"></i></button>
+                                    </form>
+                                {% endif %}
+                                <form method="POST" action="{{ path('admin_avis_delete', {'id': avis.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet avis ?');">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ avis.id) }}">
+                                    <button type="submit" class="btn btn-sm btn-danger" title="Supprimer"><i class="fas fa-trash"></i></button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="8" class="text-center py-4">Aucun avis trouvé.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

@@ -1,0 +1,127 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}Statistiques des Avis{% endblock %}
+
+{% block admin_content %}
+    <h2 class="mb-4 text-light">Statistiques des Avis</h2>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <div class="row">
+        {# Graphique 1 : Camembert #}
+        <div class="col-md-4 mb-4">
+            <div class="card bg-dark text-light shadow-sm" style="border: 1px solid rgba(255,255,255,0.1);">
+                <div class="card-header border-bottom border-light border-opacity-10 py-3">
+                    <h5 class="mb-0 text-center">Répartition par Statut</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="chartStatuts" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+
+        {# Graphique 2 : Courbe 7 jours #}
+        <div class="col-md-4 mb-4">
+            <div class="card bg-dark text-light shadow-sm" style="border: 1px solid rgba(255,255,255,0.1);">
+                <div class="card-header border-bottom border-light border-opacity-10 py-3">
+                    <h5 class="mb-0 text-center">Avis (7 derniers jours)</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="chartEvol" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+
+        {# Graphique 3 : Bar chart des étoiles #}
+        <div class="col-md-4 mb-4">
+            <div class="card bg-dark text-light shadow-sm" style="border: 1px solid rgba(255,255,255,0.1);">
+                <div class="card-header border-bottom border-light border-opacity-10 py-3">
+                    <h5 class="mb-0 text-center">Distribution des Notes</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="chartEtoiles" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Chart 1: Doughnut
+            const ctx1 = document.getElementById('chartStatuts').getContext('2d');
+            new Chart(ctx1, {
+                type: 'doughnut',
+                data: {
+                    labels: ['En attente', 'Validé', 'Rejeté'],
+                    datasets: [{
+                        data: [{{ stats.en_attente }}, {{ stats.valides }}, {{ stats.rejetes }}],
+                        backgroundColor: ['#ffc107', '#28a745', '#dc3545'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { color: '#fff' } }
+                    }
+                }
+            });
+
+            // Chart 2: Line
+            const ctx2 = document.getElementById('chartEvol').getContext('2d');
+            new Chart(ctx2, {
+                type: 'line',
+                data: {
+                    labels: {{ avisParJour.labels | json_encode | raw }},
+                    datasets: [{
+                        label: 'Avis soumis',
+                        data: {{ avisParJour.data | json_encode | raw }},
+                        borderColor: '#4a9eff',
+                        fill: true,
+                        backgroundColor: 'rgba(74,158,255,0.1)',
+                        tension: 0.3,
+                        pointBackgroundColor: '#4a9eff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: { ticks: { color: '#aaa' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+                        y: { ticks: { color: '#aaa', stepSize: 1 }, grid: { color: 'rgba(255,255,255,0.05)' } }
+                    }
+                }
+            });
+
+            // Chart 3: Bar
+            const ctx3 = document.getElementById('chartEtoiles').getContext('2d');
+            new Chart(ctx3, {
+                type: 'bar',
+                data: {
+                    labels: ['1★','2★','3★','4★','5★'],
+                    datasets: [{
+                        label: 'Nombre d\'avis',
+                        data: {{ etoilesDistrib | json_encode | raw }},
+                        backgroundColor: ['#dc3545', '#ff6b35', '#ffc107', '#20c997', '#28a745'],
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: { ticks: { color: '#aaa' }, grid: { display: false } },
+                        y: { ticks: { color: '#aaa', stepSize: 1 }, grid: { color: 'rgba(255,255,255,0.05)' } }
+                    }
+                }
+            });
+        });
+    </script>
+{% endblock %}
