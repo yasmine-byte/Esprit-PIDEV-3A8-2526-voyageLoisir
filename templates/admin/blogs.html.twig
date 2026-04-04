@@ -15,6 +15,8 @@
             border-radius: 24px;
             box-shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
             overflow: hidden;
+            display: flex;
+            flex-direction: column;
         }
 
         .admin-blogs-hero {
@@ -55,7 +57,7 @@
 
         .admin-stats-grid {
             display: grid;
-            grid-template-columns: repeat(4, minmax(0, 1fr));
+            grid-template-columns: repeat(6, minmax(0, 1fr));
             gap: 16px;
         }
 
@@ -90,6 +92,33 @@
             padding: 24px 28px;
             border-bottom: 1px solid #eef2f7;
             flex-wrap: wrap;
+        }
+
+        .admin-filter-tabs {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            width: 100%;
+        }
+
+        .admin-filter-tab {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 16px;
+            border-radius: 999px;
+            border: 1px solid #e2e8f0;
+            background: #fff;
+            color: #475569;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .admin-filter-tab.is-active {
+            background: #e8652a;
+            border-color: #e8652a;
+            color: #fff;
         }
 
         .admin-toolbar form {
@@ -175,12 +204,19 @@
 
         .admin-blogs-table-wrap {
             overflow: auto;
+            max-height: calc(100vh - 420px);
         }
 
         .admin-blogs-table {
             width: 100%;
             min-width: 1320px;
             border-collapse: collapse;
+        }
+
+        .admin-blogs-table thead th {
+            position: sticky;
+            top: 0;
+            z-index: 2;
         }
 
         .admin-blogs-table th,
@@ -228,6 +264,34 @@
             color: #047857;
         }
 
+        .admin-blogs-status--pending {
+            background: #fff7ed;
+            color: #c2410c;
+        }
+
+        .admin-blogs-quality {
+            display: inline-flex;
+            padding: 8px 12px;
+            border-radius: 999px;
+            font-size: 0.82rem;
+            font-weight: 700;
+        }
+
+        .admin-blogs-quality--ready {
+            background: #ecfdf5;
+            color: #047857;
+        }
+
+        .admin-blogs-quality--review {
+            background: #fffbeb;
+            color: #b45309;
+        }
+
+        .admin-blogs-quality--incomplete {
+            background: #fef2f2;
+            color: #b91c1c;
+        }
+
         .admin-blogs-actions {
             display: flex;
             gap: 10px;
@@ -238,9 +302,135 @@
             margin: 0;
         }
 
+        .admin-inline-form--workflow {
+            display: inline-flex;
+        }
+
         .admin-blogs-empty {
             padding: 36px 28px;
             color: #64748b;
+        }
+
+        .admin-comments-section {
+            padding: 28px;
+            display: grid;
+            gap: 22px;
+            border-top: 1px solid #eef2f7;
+            background: linear-gradient(180deg, #ffffff 0%, #fffaf6 100%);
+        }
+
+        .admin-comments-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .admin-comments-head h2 {
+            margin: 0 0 6px;
+            color: #0f172a;
+            font-size: 1.5rem;
+        }
+
+        .admin-comments-head p {
+            margin: 0;
+            color: #64748b;
+            max-width: 720px;
+        }
+
+        .admin-comments-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 16px;
+            border-radius: 999px;
+            background: #fff4ed;
+            color: #e8652a;
+            font-weight: 700;
+        }
+
+        .admin-comment-groups {
+            display: grid;
+            gap: 18px;
+        }
+
+        .admin-comment-group {
+            padding: 22px;
+            border: 1px solid #eef2f7;
+            border-radius: 20px;
+            background: #fff;
+            box-shadow: 0 14px 32px rgba(15, 23, 42, 0.05);
+        }
+
+        .admin-comment-group-head {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 14px;
+            margin-bottom: 18px;
+            flex-wrap: wrap;
+        }
+
+        .admin-comment-group-head h3 {
+            margin: 0 0 6px;
+            color: #0f172a;
+            font-size: 1.1rem;
+        }
+
+        .admin-comment-group-head p {
+            margin: 0;
+            color: #64748b;
+        }
+
+        .admin-comment-count {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 12px;
+            border-radius: 999px;
+            background: #f8fafc;
+            color: #334155;
+            font-weight: 700;
+            font-size: 0.86rem;
+        }
+
+        .admin-comment-list {
+            display: grid;
+            gap: 14px;
+        }
+
+        .admin-comment-card {
+            padding: 16px 18px;
+            border-radius: 16px;
+            background: #fffaf6;
+            border: 1px solid #fde7d8;
+        }
+
+        .admin-comment-card-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+
+        .admin-comment-card-head strong {
+            color: #0f172a;
+        }
+
+        .admin-comment-card-head span,
+        .admin-comment-card small {
+            color: #64748b;
+        }
+
+        .admin-comment-empty {
+            padding: 16px 18px;
+            border-radius: 16px;
+            background: #f8fafc;
+            color: #64748b;
+            border: 1px dashed #cbd5e1;
         }
 
         @media (max-width: 1199px) {
@@ -267,6 +457,10 @@
             .admin-sort-wrap,
             .admin-toolbar-btn {
                 width: 100%;
+            }
+
+            .admin-blogs-table-wrap {
+                max-height: calc(100vh - 360px);
             }
         }
     </style>
@@ -295,8 +489,16 @@
                     <p class="admin-stat-value">{{ stats.drafts }}</p>
                 </article>
                 <article class="admin-stat-card">
+                    <p class="admin-stat-label">Demandes</p>
+                    <p class="admin-stat-value">{{ stats.pending }}</p>
+                </article>
+                <article class="admin-stat-card">
                     <p class="admin-stat-label">Lecture moyenne</p>
                     <p class="admin-stat-value">{{ stats.avg_read_time ?: 0 }}m</p>
+                </article>
+                <article class="admin-stat-card">
+                    <p class="admin-stat-label">Content ready</p>
+                    <p class="admin-stat-value">{{ stats.ready }}</p>
                 </article>
             </div>
         </section>
@@ -304,6 +506,13 @@
         <section class="admin-blogs-card">
             <div class="admin-toolbar">
                 <form method="get" action="{{ path('admin_blogs') }}">
+                    <div class="admin-filter-tabs">
+                        <a class="admin-filter-tab {{ status_filter == 'all' ? 'is-active' : '' }}" href="{{ path('admin_blogs', { q: search, sort: sort, status: 'all' }) }}">All</a>
+                        <a class="admin-filter-tab {{ status_filter == 'draft' ? 'is-active' : '' }}" href="{{ path('admin_blogs', { q: search, sort: sort, status: 'draft' }) }}">Brouillons</a>
+                        <a class="admin-filter-tab {{ status_filter == 'pending' ? 'is-active' : '' }}" href="{{ path('admin_blogs', { q: search, sort: sort, status: 'pending' }) }}">En attente</a>
+                        <a class="admin-filter-tab {{ status_filter == 'published' ? 'is-active' : '' }}" href="{{ path('admin_blogs', { q: search, sort: sort, status: 'published' }) }}">Publies</a>
+                    </div>
+
                     <label class="admin-search">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <circle cx="11" cy="11" r="8"></circle>
@@ -322,7 +531,10 @@
                         </select>
                     </label>
 
+                    <input type="hidden" name="status" value="{{ status_filter }}">
+
                     <button class="admin-toolbar-btn admin-toolbar-btn--primary" type="submit">Search</button>
+                    <a class="admin-toolbar-btn" href="#admin-blog-comments">Voir commentaires</a>
                     <a class="admin-toolbar-btn" href="{{ path('admin_blogs') }}">Reset</a>
                 </form>
             </div>
@@ -352,6 +564,7 @@
                                 <th>Auteur</th>
                                 <th>Date creation</th>
                                 <th>Date publication</th>
+                                <th>Business</th>
                                 <th>Sentiment</th>
                                 <th>Rating</th>
                                 <th>Actions</th>
@@ -359,7 +572,21 @@
                         </thead>
                         <tbody>
                             {% for blog in blogs %}
-                                {% set statusClass = blog.status == 'publie' ? 'admin-blogs-status--publie' : 'admin-blogs-status--brouillon' %}
+                                {% set statusLabel = blog.status ? 'publie' : 'brouillon' %}
+                                {% if blog.publicationRequested and not blog.status %}
+                                    {% set statusLabel = 'en attente' %}
+                                {% endif %}
+                                {% set statusClass = statusLabel == 'publie'
+                                    ? 'admin-blogs-status--publie'
+                                    : (statusLabel == 'en attente' ? 'admin-blogs-status--pending' : 'admin-blogs-status--brouillon')
+                                %}
+                                {% set metrics = blog_metrics[blog.id] ?? null %}
+                                {% set qualityClass = metrics.quality_label == 'Ready'
+                                    ? 'admin-blogs-quality--ready'
+                                    : (metrics.quality_label == 'Needs review'
+                                        ? 'admin-blogs-quality--review'
+                                        : 'admin-blogs-quality--incomplete')
+                                %}
                                 <tr>
                                     <td>#{{ blog.id }}</td>
                                     <td>
@@ -367,7 +594,10 @@
                                         <small>{{ blog.contenu|slice(0, 90) }}{% if blog.contenu|length > 90 %}...{% endif %}</small>
                                     </td>
                                     <td>{{ blog.slug ?: '-' }}</td>
-                                    <td><span class="admin-blogs-status {{ statusClass }}">{{ blog.status ?: 'brouillon' }}</span></td>
+                                    <td>
+                                        <span class="admin-blogs-status {{ statusClass }}">{{ statusLabel }}</span><br>
+                                        <small>Status value: {{ blog.status ? 1 : 0 }}</small>
+                                    </td>
                                     <td>
                                         {% if blog.imageCouverture %}
                                             <a href="{{ blog.imageCouverture }}" target="_blank" rel="noopener noreferrer">Open image</a>
@@ -381,6 +611,12 @@
                                     <td>{{ blog.dateCreation ? blog.dateCreation|date('Y-m-d H:i') : '-' }}</td>
                                     <td>{{ blog.datePublication ? blog.datePublication|date('Y-m-d H:i') : '-' }}</td>
                                     <td>
+                                        <span class="admin-blogs-quality {{ qualityClass }}">{{ metrics.quality_label }}</span><br>
+                                        <small>{{ metrics.completeness }}% complete</small><br>
+                                        <small>{{ metrics.views }} views · {{ metrics.comments }} comments</small><br>
+                                        <small>{{ metrics.read_time }} min read</small>
+                                    </td>
+                                    <td>
                                         {{ blog.sentimentScore is not null ? blog.sentimentScore : '-' }}
                                         {% if blog.sentimentEmoji %}
                                             <br><small>{{ blog.sentimentEmoji }}</small>
@@ -393,6 +629,25 @@
                                     <td>
                                         <div class="admin-blogs-actions">
                                             <a class="admin-blogs-link admin-blogs-link--primary" href="{{ path('admin_blog_show', {'id': blog.id}) }}">View</a>
+                                            <a class="admin-blogs-link" href="#blog-comments-{{ blog.id }}">Commentaires</a>
+                                            <form class="admin-inline-form admin-inline-form--workflow" method="post" action="{{ path('admin_blog_workflow', {'id': blog.id}) }}">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('admin_workflow_blog_' ~ blog.id) }}">
+                                                <input type="hidden" name="action" value="{{ blog.status ? 'draft' : 'publish' }}">
+                                                <input type="hidden" name="q" value="{{ search }}">
+                                                <input type="hidden" name="sort" value="{{ sort }}">
+                                                <input type="hidden" name="status" value="{{ status_filter }}">
+                                                <button class="admin-blogs-link" type="submit">{{ blog.status ? 'Unpublish' : 'Approve' }}</button>
+                                            </form>
+                                            {% if not blog.status and not blog.publicationRequested %}
+                                                <form class="admin-inline-form admin-inline-form--workflow" method="post" action="{{ path('admin_blog_workflow', {'id': blog.id}) }}">
+                                                    <input type="hidden" name="_token" value="{{ csrf_token('admin_workflow_blog_' ~ blog.id) }}">
+                                                    <input type="hidden" name="action" value="request">
+                                                    <input type="hidden" name="q" value="{{ search }}">
+                                                    <input type="hidden" name="sort" value="{{ sort }}">
+                                                    <input type="hidden" name="status" value="{{ status_filter }}">
+                                                    <button class="admin-blogs-link" type="submit">Mark pending</button>
+                                                </form>
+                                            {% endif %}
                                             <a class="admin-blogs-link" href="{{ path('app_blog_edit', {'id': blog.id}) }}">Edit</a>
                                             <form class="admin-inline-form" method="post" action="{{ path('admin_blog_delete', {'id': blog.id}) }}" onsubmit="return confirm('Delete this blog?');">
                                                 <input type="hidden" name="_token" value="{{ csrf_token('admin_delete_blog_' ~ blog.id) }}">
@@ -406,6 +661,48 @@
                     </table>
                 </div>
             {% endif %}
+
+            <section class="admin-comments-section" id="admin-blog-comments">
+                <div class="admin-comments-head">
+                    <div>
+                        <h2>Commentaires par blog</h2>
+                        <p>Retrouve en un coup d'oeil tous les commentaires rattaches a chaque article visible dans cette liste admin.</p>
+                    </div>
+                    <div class="admin-comments-badge">{{ stats.comments_total }} commentaires</div>
+                </div>
+
+                <div class="admin-comment-groups">
+                    {% for blog in blogs %}
+                        {% set blogComments = comments_by_blog[blog.id] ?? [] %}
+                        <article class="admin-comment-group" id="blog-comments-{{ blog.id }}">
+                            <div class="admin-comment-group-head">
+                                <div>
+                                    <h3>#{{ blog.id }} - {{ blog.titre }}</h3>
+                                    <p>{{ blog.authorId ?: 'Auteur inconnu' }}</p>
+                                </div>
+                                <div class="admin-comment-count">{{ blogComments|length }} commentaire{{ blogComments|length > 1 ? 's' : '' }}</div>
+                            </div>
+
+                            {% if blogComments is empty %}
+                                <div class="admin-comment-empty">Aucun commentaire pour ce blog pour le moment.</div>
+                            {% else %}
+                                <div class="admin-comment-list">
+                                    {% for comment in blogComments %}
+                                        <article class="admin-comment-card">
+                                            <div class="admin-comment-card-head">
+                                                <strong>{{ comment.nomuser }}</strong>
+                                                <span>{{ comment.dateCreation ? comment.dateCreation|date('Y-m-d H:i') : 'Date inconnue' }}</span>
+                                            </div>
+                                            <p>{{ comment.contenu }}</p>
+                                            <small>{{ comment.likesCount ?: 0 }} like{{ (comment.likesCount ?: 0) > 1 ? 's' : '' }}</small>
+                                        </article>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </article>
+                    {% endfor %}
+                </div>
+            </section>
         </section>
     </main>
 {% endblock %}

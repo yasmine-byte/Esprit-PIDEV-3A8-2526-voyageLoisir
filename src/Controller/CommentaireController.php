@@ -7,6 +7,7 @@ use App\Form\CommentaireType;
 use App\Repository\CommentaireRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -77,5 +78,33 @@ final class CommentaireController extends AbstractController
         }
 
         return $this->redirectToRoute('app_commentaire_index', [], Response::HTTP_SEE_OTHER);
+    }
+
+    #[Route('/{id}/like', name: 'app_commentaire_like', methods: ['POST'])]
+    public function like(Request $request, Commentaire $commentaire, EntityManagerInterface $entityManager): JsonResponse
+    {
+        if (!$this->isCsrfTokenValid('like_comment_' . $commentaire->getId(), (string) $request->request->get('_token'))) {
+            return $this->json(['message' => 'Invalid like token.'], Response::HTTP_FORBIDDEN);
+        }
+
+        $session = $request->getSession();
+        $key = sprintf('comment_liked_%d', $commentaire->getId());
+
+        if ($session->has($key)) {
+            return $this->json([
+                'likesCount' => $commentaire->getLikesCount() ?? 0,
+                'alreadyLiked' => true,
+            ]);
+        }
+
+        $commentaire->setLikesCount(($commentaire->getLikesCount() ?? 0) + 1);
+        $entityManager->flush();
+
+        $session->set($key, true);
+
+        return $this->json([
+            'likesCount' => $commentaire->getLikesCount() ?? 0,
+            'alreadyLiked' => false,
+        ]);
     }
 }

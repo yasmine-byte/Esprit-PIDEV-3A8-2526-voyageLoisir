@@ -237,41 +237,57 @@
   <section class="reviews-section">
     <div class="container">
       <div class="reviews-heading">
-        <h2>Reviews</h2>
-        <p>Curated journeys, cinematic moments, and travelers who came back with stories worth keeping.</p>
+        <h2>Blogs</h2>
+        <p>Fresh travel stories, destination ideas, and highlights from our latest published blogs.</p>
       </div>
 
       <div class="reviews-carousel-shell">
         <div class="reviews-track" id="reviews-track">
-        {% for review in reviews %}
+        {% for blog in blogs %}
           <article class="review-card">
             <div class="review-card-image">
-              <img src="{{ asset(review.image) }}" alt="{{ review.title }}">
-              <div class="review-rating-badge">&#9733; {{ review.rating }}</div>
+              <img src="{{ blog.image }}" alt="{{ blog.title }}" onerror="this.src='https://picsum.photos/seed/blog-home-fallback-{{ blog.id }}/900/650'">
+              <div class="review-rating-badge">{% if blog.rating > 0 %}&#9733; {{ blog.rating }}{% else %}Blog{% endif %}</div>
             </div>
             <div class="review-content">
-              <h3>{{ review.title }}</h3>
-              <span class="review-trip">{{ review.slug }}</span>
-              <p>{{ review.text }}</p>
+              <h3>{{ blog.title }}</h3>
+              <span class="review-trip">
+                {{ blog.published_at ? blog.published_at|date('M d, Y') : 'Recently published' }}
+                {% if blog.slug %} - {{ blog.slug }}{% endif %}
+              </span>
+              <p>{{ blog.excerpt }}</p>
               <div class="review-author">
-                <img src="{{ asset(review.avatar) }}" alt="{{ review.name }}">
-                <span>{{ review.name }}</span>
+                <span>{{ blog.author }}</span>
+                <a href="{{ path('app_blog_show', {'id': blog.id}) }}">Read more</a>
               </div>
             </div>
           </article>
         {% endfor %}
+        {% if blogs is empty %}
+          <article class="review-card">
+            <div class="review-content">
+              <h3>No blogs available yet</h3>
+              <span class="review-trip">Publishing queue</span>
+              <p>Once blog posts are published, they will appear here on the home page.</p>
+              <div class="review-author">
+                <span>VoyageLoisir</span>
+                <a href="{{ path('app_blog_index') }}">Browse blog area</a>
+              </div>
+            </div>
+          </article>
+        {% endif %}
         </div>
       </div>
 
       <div class="reviews-controls">
-        <button class="reviews-arrow" id="reviews-prev" type="button" aria-label="Previous reviews">&#8249;</button>
-        <button class="reviews-arrow" id="reviews-next" type="button" aria-label="Next reviews">&#8250;</button>
+        <button class="reviews-arrow" id="reviews-prev" type="button" aria-label="Previous blogs">&#8249;</button>
+        <button class="reviews-arrow" id="reviews-next" type="button" aria-label="Next blogs">&#8250;</button>
       </div>
 
-      <div class="reviews-dots" id="reviews-dots" aria-label="Reviews pagination"></div>
+      <div class="reviews-dots" id="reviews-dots" aria-label="Blogs pagination"></div>
 
       <div class="reviews-action">
-        <a href="{{ path('app_contact') }}">Feedback Please</a>
+        <a href="{{ path('app_blog_index') }}">Explore all blogs</a>
       </div>
     </div>
   </section>
@@ -333,7 +349,7 @@
           dot.type = 'button';
           dot.className = 'reviews-dot';
           dot.dataset.index = String(index);
-          dot.setAttribute('aria-label', `Go to review slide ${index + 1}`);
+          dot.setAttribute('aria-label', `Go to blog slide ${index + 1}`);
           dotsWrap.appendChild(dot);
         }
 
