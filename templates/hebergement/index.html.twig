@@ -4,13 +4,21 @@
 
     <div class="page-header">
         <h1>Gestion des Hébergements</h1>
-        <p>{{ hebergements|length }} hébergement(s) enregistré(s)</p>
+        <p>{{ hebergements|length }} hébergement(s) trouvé(s)</p>
     </div>
 
-    <div style="margin-bottom:20px;">
-        <a href="{{ path('app_hebergement_new') }}" style="background:var(--accent-primary); color:#fff; padding:10px 20px; border-radius:8px; text-decoration:none; font-weight:600; display:inline-flex; align-items:center; gap:8px;">
+    <div style="display:flex; gap:12px; margin-bottom:20px; align-items:center;">
+        <a href="{{ path('app_hebergement_new') }}" style="background:var(--accent-gradient); color:#1c1c1e; padding:10px 20px; border-radius:8px; text-decoration:none; font-weight:600; white-space:nowrap;">
             + Nouvel Hébergement
         </a>
+        <form method="get" action="{{ path('app_hebergement_index') }}" style="display:flex; gap:8px; flex:1;">
+            <input type="text" name="q" value="{{ q }}" placeholder="Rechercher par description..."
+                   class="form-input" style="flex:1; padding:10px 14px;">
+            <button type="submit" class="btn primary" style="padding:10px 20px;">🔍 Rechercher</button>
+            {% if q %}
+            <a href="{{ path('app_hebergement_index') }}" class="btn" style="padding:10px 16px;">✕</a>
+            {% endif %}
+        </form>
     </div>
 
     <div class="card">
@@ -29,15 +37,9 @@
             {% for hebergement in hebergements %}
                 <tr>
                     <td>{{ hebergement.id }}</td>
-                    <td style="max-width:250px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
-                        {{ hebergement.description }}
-                    </td>
+                    <td style="max-width:250px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ hebergement.description }}</td>
                     <td class="price-cell">{{ hebergement.prix }} TND</td>
-                    <td>
-                        <span style="background:var(--bg-secondary); color:var(--accent-primary); padding:4px 12px; border-radius:20px; font-size:12px; font-weight:600;">
-                            {{ hebergement.type ? hebergement.type.nom : 'N/A' }}
-                        </span>
-                    </td>
+                    <td><span style="background:var(--bg-secondary); color:var(--accent-copper); padding:4px 12px; border-radius:20px; font-size:12px; font-weight:600;">{{ hebergement.type ? hebergement.type.nom : 'N/A' }}</span></td>
                     <td>{{ hebergement.no|length }}</td>
                     <td>
                         <div style="display:flex; gap:8px;">
@@ -48,16 +50,10 @@
                     </td>
                 </tr>
             {% else %}
-                <tr>
-                    <td colspan="6" style="text-align:center; padding:40px; color:var(--text-secondary);">
-                        Aucun hébergement trouvé
-                    </td>
-                </tr>
+                <tr><td colspan="6" style="text-align:center; padding:40px; color:var(--text-secondary);">Aucun hébergement trouvé</td></tr>
             {% endfor %}
             </tbody>
         </table>
     </div>
-
     <footer class="copyright">Copyright &copy; 2026 Voyage</footer>
-
 {% endblock %}

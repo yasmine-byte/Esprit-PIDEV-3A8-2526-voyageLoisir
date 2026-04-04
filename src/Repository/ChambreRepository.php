@@ -1,14 +1,10 @@
 <?php
-
 namespace App\Repository;
 
 use App\Entity\Chambre;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
-/**
- * @extends ServiceEntityRepository<Chambre>
- */
 class ChambreRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
@@ -16,28 +12,22 @@ class ChambreRepository extends ServiceEntityRepository
         parent::__construct($registry, Chambre::class);
     }
 
-    //    /**
-    //     * @return Chambre[] Returns an array of Chambre objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('c')
-    //            ->andWhere('c.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('c.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
+    public function search(?string $query = null, ?string $typeChambre = null): array
+    {
+        $qb = $this->createQueryBuilder('c')
+            ->leftJoin('c.hebergement', 'h')
+            ->addSelect('h');
 
-    //    public function findOneBySomeField($value): ?Chambre
-    //    {
-    //        return $this->createQueryBuilder('c')
-    //            ->andWhere('c.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+        if ($query) {
+            $qb->andWhere('c.numero LIKE :q OR c.equipements LIKE :q OR h.description LIKE :q')
+               ->setParameter('q', '%' . $query . '%');
+        }
+
+        if ($typeChambre) {
+            $qb->andWhere('c.typeChambre = :type')
+               ->setParameter('type', $typeChambre);
+        }
+
+        return $qb->orderBy('c.id', 'DESC')->getQuery()->getResult();
+    }
 }

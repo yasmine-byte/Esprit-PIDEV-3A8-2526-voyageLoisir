@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Controller;
 
 use App\Entity\Type;
@@ -15,10 +14,14 @@ use Symfony\Component\Routing\Attribute\Route;
 final class TypeController extends AbstractController
 {
     #[Route(name: 'app_type_index', methods: ['GET'])]
-    public function index(TypeRepository $typeRepository): Response
+    public function index(Request $request, TypeRepository $typeRepository): Response
     {
+        $query = $request->query->get('q');
+        $types = $typeRepository->search($query);
+
         return $this->render('type/index.html.twig', [
-            'types' => $typeRepository->findAll(),
+            'types' => $types,
+            'q' => $query,
         ]);
     }
 
@@ -36,18 +39,13 @@ final class TypeController extends AbstractController
             return $this->redirectToRoute('app_type_index', [], Response::HTTP_SEE_OTHER);
         }
 
-        return $this->render('type/new.html.twig', [
-            'type' => $type,
-            'form' => $form,
-        ]);
+        return $this->render('type/new.html.twig', ['type' => $type, 'form' => $form]);
     }
 
     #[Route('/{id}', name: 'app_type_show', methods: ['GET'])]
     public function show(Type $type): Response
     {
-        return $this->render('type/show.html.twig', [
-            'type' => $type,
-        ]);
+        return $this->render('type/show.html.twig', ['type' => $type]);
     }
 
     #[Route('/{id}/edit', name: 'app_type_edit', methods: ['GET', 'POST'])]
@@ -62,10 +60,7 @@ final class TypeController extends AbstractController
             return $this->redirectToRoute('app_type_index', [], Response::HTTP_SEE_OTHER);
         }
 
-        return $this->render('type/edit.html.twig', [
-            'type' => $type,
-            'form' => $form,
-        ]);
+        return $this->render('type/edit.html.twig', ['type' => $type, 'form' => $form]);
     }
 
     #[Route('/{id}', name: 'app_type_delete', methods: ['POST'])]
@@ -76,7 +71,6 @@ final class TypeController extends AbstractController
             $entityManager->flush();
             $this->addFlash('success', 'Type supprimé avec succès !');
         }
-
         return $this->redirectToRoute('app_type_index', [], Response::HTTP_SEE_OTHER);
     }
 }
