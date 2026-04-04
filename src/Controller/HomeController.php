@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Repository\DestinationRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
@@ -34,10 +35,17 @@ class HomeController extends AbstractController
     }
 
     #[Route("/destinations", name: "app_destinations")]
-    public function destinations(DestinationRepository $repo): Response
+    public function destinations(Request $request, DestinationRepository $repo): Response
     {
+        $search = $request->query->get('search', '');
+        $saison = $request->query->get('saison', '');
+
+        $destinations = $repo->findByFilters($search, $saison, '', 'id', 'ASC');
+
         return $this->render("home/destinations.html.twig", [
-            "destinations" => $repo->findAll(),
+            "destinations" => $destinations,
+            "search"       => $search,
+            "saison"       => $saison,
         ]);
     }
 

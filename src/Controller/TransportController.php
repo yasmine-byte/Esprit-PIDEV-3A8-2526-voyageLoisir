@@ -15,10 +15,21 @@ use Symfony\Component\Routing\Attribute\Route;
 final class TransportController extends AbstractController
 {
     #[Route(name: 'app_transport_index', methods: ['GET'])]
-    public function index(TransportRepository $transportRepository): Response
+    public function index(Request $request, TransportRepository $transportRepository): Response
     {
+        $search = $request->query->get('search', '');
+        $type   = $request->query->get('type', '');
+        $tri    = $request->query->get('tri', 't.id');
+        $ordre  = $request->query->get('ordre', 'ASC');
+
+        $transports = $transportRepository->findByFilters($search, $type, $tri, $ordre);
+
         return $this->render('transport/index.html.twig', [
-            'transports' => $transportRepository->findAll(),
+            'transports' => $transports,
+            'search'     => $search,
+            'type'       => $type,
+            'tri'        => $tri,
+            'ordre'      => $ordre,
         ]);
     }
 
@@ -32,13 +43,12 @@ final class TransportController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->persist($transport);
             $entityManager->flush();
-
             return $this->redirectToRoute('app_transport_index', [], Response::HTTP_SEE_OTHER);
         }
 
         return $this->render('transport/new.html.twig', [
             'transport' => $transport,
-            'form' => $form,
+            'form'      => $form,
         ]);
     }
 
@@ -58,24 +68,22 @@ final class TransportController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->flush();
-
             return $this->redirectToRoute('app_transport_index', [], Response::HTTP_SEE_OTHER);
         }
 
         return $this->render('transport/edit.html.twig', [
             'transport' => $transport,
-            'form' => $form,
+            'form'      => $form,
         ]);
     }
 
     #[Route('/{id}', name: 'app_transport_delete', methods: ['POST'])]
     public function delete(Request $request, Transport $transport, EntityManagerInterface $entityManager): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$transport->getId(), $request->getPayload()->getString('_token'))) {
+        if ($this->isCsrfTokenValid('delete' . $transport->getId(), $request->getPayload()->getString('_token'))) {
             $entityManager->remove($transport);
             $entityManager->flush();
         }
-
         return $this->redirectToRoute('app_transport_index', [], Response::HTTP_SEE_OTHER);
     }
 }

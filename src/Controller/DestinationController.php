@@ -15,10 +15,23 @@ use Symfony\Component\Routing\Attribute\Route;
 final class DestinationController extends AbstractController
 {
     #[Route(name: 'app_destination_index', methods: ['GET'])]
-    public function index(DestinationRepository $destinationRepository): Response
+    public function index(Request $request, DestinationRepository $destinationRepository): Response
     {
+        $search = $request->query->get('search', '');
+        $saison = $request->query->get('saison', '');
+        $statut = $request->query->get('statut', '');
+        $tri    = $request->query->get('tri', 'id');
+        $ordre  = $request->query->get('ordre', 'ASC');
+
+        $destinations = $destinationRepository->findByFilters($search, $saison, $statut, $tri, $ordre);
+
         return $this->render('destination/index.html.twig', [
-            'destinations' => $destinationRepository->findAll(),
+            'destinations' => $destinations,
+            'search'       => $search,
+            'saison'       => $saison,
+            'statut'       => $statut,
+            'tri'          => $tri,
+            'ordre'        => $ordre,
         ]);
     }
 
@@ -32,13 +45,12 @@ final class DestinationController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->persist($destination);
             $entityManager->flush();
-
             return $this->redirectToRoute('app_destination_index', [], Response::HTTP_SEE_OTHER);
         }
 
         return $this->render('destination/new.html.twig', [
             'destination' => $destination,
-            'form' => $form,
+            'form'        => $form,
         ]);
     }
 
@@ -58,24 +70,22 @@ final class DestinationController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->flush();
-
             return $this->redirectToRoute('app_destination_index', [], Response::HTTP_SEE_OTHER);
         }
 
         return $this->render('destination/edit.html.twig', [
             'destination' => $destination,
-            'form' => $form,
+            'form'        => $form,
         ]);
     }
 
     #[Route('/{id}', name: 'app_destination_delete', methods: ['POST'])]
     public function delete(Request $request, Destination $destination, EntityManagerInterface $entityManager): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$destination->getId(), $request->getPayload()->getString('_token'))) {
+        if ($this->isCsrfTokenValid('delete' . $destination->getId(), $request->getPayload()->getString('_token'))) {
             $entityManager->remove($destination);
             $entityManager->flush();
         }
-
         return $this->redirectToRoute('app_destination_index', [], Response::HTTP_SEE_OTHER);
     }
 }
