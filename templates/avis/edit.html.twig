@@ -1,11 +1,35 @@
 {% extends 'base_front.html.twig' %}
-
 {% block title %}Modifier mon avis - Villa Agency{% endblock %}
-
 {% block body %}
     {% include 'home/partials/header.html.twig' %}
+    <style>
+        @keyframes fadeInUp{from{opacity:0;transform:translateY(30px);}to{opacity:1;transform:translateY(0);}}
+        @keyframes bounce{0%,100%{transform:scale(1);}50%{transform:scale(1.3) rotate(10deg);}}
+        @keyframes spin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
+        .animate-fade{animation:fadeInUp 0.6s ease forwards;}
+        .floating-card{background:#fff;border-radius:20px;box-shadow:0 20px 40px rgba(0,0,0,0.1);padding:40px;position:relative;z-index:10;margin-top:-50px;}
+        .edit-badge{display:inline-block;background:#fff3f0;color:#f35525;border:1px solid #f35525;border-radius:20px;padding:4px 14px;font-size:0.82rem;font-weight:600;margin-bottom:16px;}
+        .stars-creative{display:flex;justify-content:center;gap:15px;margin:20px 0;}
+        .star-box{font-size:3rem;color:#e9ecef;cursor:pointer;transition:all 0.2s;}
+        .star-box:hover{transform:scale(1.15) rotate(5deg);}
+        .star-box.gold{color:#ffc107;text-shadow:0 0 10px rgba(255,193,7,0.5);}
+        .star-box.bounce-anim{animation:bounce 0.4s ease;}
+        #star-message{font-weight:bold;text-align:center;min-height:25px;font-size:1.1rem;transition:color 0.3s;}
+        .custom-select-new{border:2px solid #e9ecef;border-radius:12px;padding:12px 15px;transition:border-color 0.3s;appearance:none;background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%236c757d' viewBox='0 0 16 16'><path fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/></svg>") no-repeat right 15px center;background-size:16px;width:100%;}
+        .custom-select-new:focus{border-color:#f35525;outline:none;box-shadow:0 0 0 3px rgba(243,85,37,0.1);}
+        .custom-textarea{border:2px solid #e9ecef;border-radius:12px;padding:15px;transition:border-color 0.3s;resize:none;width:100%;}
+        .custom-textarea:focus{border-color:#f35525;outline:none;box-shadow:0 0 0 3px rgba(243,85,37,0.1);}
+        .char-counter{text-align:right;font-size:0.85rem;font-weight:600;margin-top:5px;color:#28a745;}
+        .btn-submit-creative{background:linear-gradient(45deg,#f35525,#dc3545);color:#fff;border:none;border-radius:50px;padding:14px 36px;font-size:1rem;font-weight:700;transition:transform 0.3s,box-shadow 0.3s;display:inline-flex;align-items:center;gap:10px;}
+        .btn-submit-creative:hover{transform:scale(1.05);box-shadow:0 10px 20px rgba(243,85,37,0.3);color:#fff;}
+        .btn-cancel-new{background:#fff;color:#888;border:2px solid #e0e0e0;border-radius:50px;padding:14px 36px;font-size:1rem;font-weight:600;transition:all 0.25s;display:inline-flex;align-items:center;gap:8px;text-decoration:none;}
+        .btn-cancel-new:hover{background:#f5f5f5;border-color:#bbb;color:#444;text-decoration:none;}
+        .spinner-icon{display:none;animation:spin 1s linear infinite;}
+        .btn-submit-creative.loading .submit-icon{display:none;}
+        .btn-submit-creative.loading .spinner-icon{display:inline-block;}
+    </style>
 
-    <div class="page-heading header-text">
+    <div class="page-heading header-text" style="padding-bottom:120px;">
         <div class="container">
             <div class="row">
                 <div class="col-lg-12">
@@ -16,50 +40,58 @@
         </div>
     </div>
 
-    <div class="container mt-5 mb-5 pb-5 pt-3">
+    <div class="container mb-5">
         <div class="row justify-content-center">
-            <div class="col-md-6">
-                <div class="card shadow-sm border-0 p-4">
-                    <h4 class="mb-4">Mise à jour de l'avis</h4>
-                    
-                    {{ form_start(form, {'attr': {'novalidate': 'novalidate', 'class': 'needs-validation'}}) }}
-                        
-                        <div class="mb-3">
-                            {{ form_label(form.type, 'Type d\'avis', {'label_attr': {'class': 'form-label fw-bold'}}) }}
-                            {{ form_widget(form.type, {'attr': {'class': 'form-select'}}) }}
-                            <div class="text-danger small mt-1">{{ form_errors(form.type) }}</div>
-                        </div>
-                        
-                        <div class="mb-3">
-                            {{ form_label(form.contenu, 'Votre message', {'label_attr': {'class': 'form-label fw-bold'}}) }}
-                            {{ form_widget(form.contenu, {'attr': {'class': 'form-control', 'rows': 4}}) }}
-                            <div class="text-danger small mt-1">{{ form_errors(form.contenu) }}</div>
-                        </div>
-                        
+            <div class="col-md-8 col-lg-7">
+                <div class="floating-card animate-fade">
+                    <div class="text-center mb-1">
+                        <span class="edit-badge">✏ Modification de votre avis</span>
+                    </div>
+                    <h4 class="text-center mb-4 fw-bold">Mettre à jour votre avis</h4>
+
+                    {{ form_start(form, {'attr': {'novalidate': 'novalidate', 'id': 'form-edit-avis'}}) }}
+
+                        {# Étoiles #}
                         <div class="mb-4">
-                            <label class="form-label fw-bold">Note</label>
-                            <div class="star-rating mb-2" id="star-rating">
-                                <i class="far fa-star fa-2x star" data-value="1"></i>
-                                <i class="far fa-star fa-2x star" data-value="2"></i>
-                                <i class="far fa-star fa-2x star" data-value="3"></i>
-                                <i class="far fa-star fa-2x star" data-value="4"></i>
-                                <i class="far fa-star fa-2x star" data-value="5"></i>
+                            <label class="form-label fw-bold text-muted d-block text-center mb-1">Votre note</label>
+                            <div class="stars-creative" id="starContainer">
+                                <span class="star-box" data-val="1">★</span>
+                                <span class="star-box" data-val="2">★</span>
+                                <span class="star-box" data-val="3">★</span>
+                                <span class="star-box" data-val="4">★</span>
+                                <span class="star-box" data-val="5">★</span>
                             </div>
-                            <div class="d-none">
-                                {{ form_widget(form.nbEtoiles) }}
-                            </div>
-                            <div class="text-danger small mt-1">{{ form_errors(form.nbEtoiles) }}</div>
+                            <div id="star-message" class="mb-2"></div>
+                            <div class="d-none">{{ form_widget(form.nbEtoiles, {'id': 'hidden_etoiles'}) }}</div>
+                            <div class="text-danger small text-center mt-1 fw-bold">{{ form_errors(form.nbEtoiles) }}</div>
                         </div>
 
-                        <div class="mt-4 d-flex gap-2">
-                            <button type="submit" class="btn text-white px-5 py-2 rounded-pill w-100" style="background-color: #f35525; font-weight:600;">
-                                Enregistrer
+                        {# Type #}
+                        <div class="mb-4">
+                            {{ form_label(form.type, 'Catégorie de l\'avis', {'label_attr': {'class': 'form-label fw-bold text-muted'}}) }}
+                            {{ form_widget(form.type, {'attr': {'class': 'form-select custom-select-new'}}) }}
+                            <div class="text-danger small mt-1">{{ form_errors(form.type) }}</div>
+                        </div>
+
+                        {# Contenu #}
+                        <div class="mb-4">
+                            {{ form_label(form.contenu, 'Votre message', {'label_attr': {'class': 'form-label fw-bold text-muted'}}) }}
+                            {{ form_widget(form.contenu, {'attr': {'class': 'form-control custom-textarea', 'rows': 5, 'placeholder': 'Racontez-nous votre expérience... ✍️', 'maxlength': 500, 'id': 'review-text'}}) }}
+                            <div class="char-counter" id="char-count">0 / 500 caractères</div>
+                            <div class="text-danger small mt-1">{{ form_errors(form.contenu) }}</div>
+                        </div>
+
+                        {# Boutons #}
+                        <div class="mt-5 d-flex justify-content-center gap-3 flex-wrap">
+                            <button type="submit" class="btn-submit-creative" id="btn-submit">
+                                <span class="submit-text">Enregistrer les modifications</span>
+                                <i class="fas fa-save submit-icon"></i>
+                                <i class="fas fa-spinner spinner-icon"></i>
                             </button>
-                            <a href="{{ path('avis_index') }}" class="btn btn-outline-secondary px-4 py-2 rounded-pill w-100">Annuler</a>
+                            <a href="{{ path('avis_index') }}" class="btn-cancel-new">✕ Annuler</a>
                         </div>
-                        <div class="d-none">
-                            {{ form_rest(form) }}
-                        </div>
+
+                        <div class="d-none">{{ form_rest(form) }}</div>
                     {{ form_end(form, {'render_rest': false}) }}
                 </div>
             </div>
@@ -67,72 +99,70 @@
     </div>
 
     {% include 'home/partials/footer.html.twig' %}
-
     <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            const stars = document.querySelectorAll('.star');
-            const hiddenSelect = document.getElementById('{{ form.nbEtoiles.vars.id }}');
+    document.addEventListener("DOMContentLoaded", function() {
+        const stars = document.querySelectorAll('.star-box');
+        const hiddenInput = document.getElementById('hidden_etoiles');
+        const starMessage = document.getElementById('star-message');
+        const msgs = {1:{t:"😞 Très déçu(e)",c:"#dc3545"},2:{t:"😕 Déçu(e)",c:"#fd7e14"},3:{t:"😐 Correct",c:"#ffc107"},4:{t:"😊 Satisfait(e)",c:"#0dcaf0"},5:{t:"🤩 Excellent !",c:"#28a745"}};
 
-            if (hiddenSelect.value) {
-                updateStars(hiddenSelect.value);
-            }
-
-            stars.forEach(star => {
-                star.addEventListener('click', function() {
-                    const val = this.getAttribute('data-value');
-                    hiddenSelect.value = val;
-                    updateStars(val);
-                });
-                star.addEventListener('mouseover', function() {
-                    highlightStars(this.getAttribute('data-value'));
-                });
-                star.addEventListener('mouseout', function() {
-                    updateStars(hiddenSelect.value || 0);
-                });
+        function updateStars(val, click) {
+            stars.forEach(function(s){
+                const sv=parseInt(s.getAttribute('data-val'));
+                s.classList.toggle('gold', sv<=val);
+                if(click && sv<=val){s.classList.remove('bounce-anim');void s.offsetWidth;s.classList.add('bounce-anim');}
             });
+            if(val>0){starMessage.textContent=msgs[val].t;starMessage.style.color=msgs[val].c;}
+            else{starMessage.textContent='';}
+        }
 
-            function updateStars(value) {
-                stars.forEach(s => {
-                    s.classList.remove('fas', 'far');
-                    if (parseInt(s.getAttribute('data-value')) <= parseInt(value)) {
-                        s.classList.add('fas');
-                        s.style.color = '#f35525';
-                    } else {
-                        s.classList.add('far');
-                        s.style.color = '#ccc';
-                    }
-                });
-            }
-
-            function highlightStars(value) {
-                stars.forEach(s => {
-                    s.classList.remove('fas', 'far');
-                    if (parseInt(s.getAttribute('data-value')) <= parseInt(value)) {
-                        s.classList.add('fas');
-                        s.style.color = '#f35525';
-                    } else {
-                        s.classList.add('far');
-                        s.style.color = '#ccc';
-                    }
-                });
-            }
-            
-            // Vérifier si le formulaire a été modifié avant l'envoi
-            const formObj = document.querySelector('form.needs-validation');
-            if (formObj) {
-                const initialData = new URLSearchParams(new FormData(formObj)).toString();
-                formObj.addEventListener('submit', function(e) {
-                    const currentData = new URLSearchParams(new FormData(formObj)).toString();
-                    if (currentData === initialData) {
-                        e.preventDefault();
-                        alert("Vous devez modifier au moins un champ pour pouvoir enregistrer.");
-                    }
-                });
-            }
+        stars.forEach(function(s){
+            s.addEventListener('mouseover',function(){updateStars(parseInt(this.getAttribute('data-val')));});
+            s.addEventListener('mouseout', function(){updateStars(parseInt(hiddenInput.value)||0);});
+            s.addEventListener('click',    function(){const v=parseInt(this.getAttribute('data-val'));hiddenInput.value=v;updateStars(v,true);});
         });
+        if(hiddenInput.value) updateStars(parseInt(hiddenInput.value));
+
+        const ta=document.getElementById('review-text'), cc=document.getElementById('char-count');
+        ta.addEventListener('input',function(){const l=this.value.length;cc.textContent=l+' / 500 caractères';cc.style.color=l<400?'#28a745':(l<500?'#fd7e14':'#dc3545');});
+        ta.dispatchEvent(new Event('input'));
+
+        const formEl = document.getElementById('form-edit-avis');
+        if (formEl) {
+            let initE = '';
+            let initT = '';
+            let initC = '';
+            setTimeout(function() { 
+                const hE = document.getElementById('hidden_etoiles');
+                const tS = formEl.querySelector('.custom-select-new');
+                const cT = document.getElementById('review-text');
+                if(hE) initE = hE.value;
+                if(tS) initT = tS.value;
+                if(cT) initC = cT.value;
+            }, 100);
+
+            formEl.addEventListener('submit', function(e) {
+                const hE = document.getElementById('hidden_etoiles');
+                const tS = formEl.querySelector('.custom-select-new');
+                const cT = document.getElementById('review-text');
+                
+                const curE = hE ? hE.value : '';
+                const curT = tS ? tS.value : '';
+                const curC = cT ? cT.value : '';
+
+                if (initE === curE && initT === curT && initC === curC) {
+                    e.preventDefault();
+                    alert("Vous n'avez effectué aucune modification. Veuillez modifier au moins un champ avant d'enregistrer.");
+                    return;
+                }
+                const b=document.getElementById('btn-submit');
+                if (b) {
+                    b.classList.add('loading');
+                    const st = b.querySelector('.submit-text');
+                    if (st) st.textContent='Enregistrement...';
+                }
+            });
+        }
+    });
     </script>
-    <style>
-        .star-rating .star { cursor: pointer; transition: transform 0.2s; }
-        .star-rating .star:hover { transform: scale(1.1); }
-    </style>
 {% endblock %}
