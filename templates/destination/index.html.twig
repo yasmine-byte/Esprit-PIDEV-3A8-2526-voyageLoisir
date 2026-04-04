@@ -3,6 +3,16 @@
 {% block title %}Destinations{% endblock %}
 
 {% block admin_content %}
+<style>
+.market-table td .action-btn {
+    padding: 5px 10px !important;
+    font-size: 12px !important;
+    display: inline-flex !important;
+}
+.market-table td form { display: inline !important; }
+.market-table td { padding: 10px 12px !important; }
+</style>
+
 <div class="page-header">
     <h1>Destinations</h1>
     <p>Gérer toutes les destinations</p>
@@ -93,6 +103,7 @@
 
     {% set params = {search: search, saison: saison, statut: statut} %}
 
+    <div style="overflow-x:auto">
     <table class="market-table">
         <thead>
             <tr>
@@ -127,6 +138,9 @@
                     </a>
                 </th>
                 <th>Statut</th>
+                <th>ID Voyage</th>
+                <th>Latitude</th>
+                <th>Longitude</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -145,7 +159,10 @@
                         <span class="transaction-status" style="background:#ff4444">Inactif</span>
                     {% endif %}
                 </td>
-                <td>
+                <td>{{ destination.voyage ? destination.voyage.id : '-' }}</td>
+                <td>{{ destination.latitude ?? '-' }}</td>
+                <td>{{ destination.longitude ?? '-' }}</td>
+                <td style="white-space:nowrap">
                     <a href="{{ path('app_destination_show', {'id': destination.id}) }}" class="action-btn">Voir</a>
                     <a href="{{ path('app_destination_edit', {'id': destination.id}) }}" class="action-btn">Modifier</a>
                     {{ include('destination/_delete_form.html.twig') }}
@@ -153,13 +170,14 @@
             </tr>
             {% else %}
             <tr>
-                <td colspan="7" style="text-align:center;color:#888;padding:30px">
+                <td colspan="10" style="text-align:center;color:#888;padding:30px">
                     Aucune destination trouvée
                 </td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
+    </div>
 </div>
 
 <footer class="copyright">Copyright &copy; 2026 VoyageLoisir</footer>

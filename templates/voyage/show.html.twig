@@ -1,42 +1,45 @@
-{% extends 'base.html.twig' %}
+{% extends "admin/base_admin.html.twig" %}
 
-{% block title %}Voyage{% endblock %}
+{% block title %}Voyage #{{ voyage.id }}{% endblock %}
 
-{% block body %}
-    <h1>Voyage</h1>
+{% block admin_content %}
+<div class="page-header">
+    <h1>Detail Voyage</h1>
+    <p>Informations du voyage</p>
+</div>
 
-    <table class="table">
-        <tbody>
-            <tr>
-                <th>Id</th>
-                <td>{{ voyage.id }}</td>
-            </tr>
-            <tr>
-                <th>Date_depart</th>
-                <td>{{ voyage.dateDepart ? voyage.dateDepart|date('Y-m-d') : '' }}</td>
-            </tr>
-            <tr>
-                <th>Date_arrivee</th>
-                <td>{{ voyage.dateArrivee ? voyage.dateArrivee|date('Y-m-d') : '' }}</td>
-            </tr>
-            <tr>
-                <th>Point_depart</th>
-                <td>{{ voyage.pointDepart }}</td>
-            </tr>
-            <tr>
-                <th>Point_arrivee</th>
-                <td>{{ voyage.pointArrivee }}</td>
-            </tr>
-            <tr>
-                <th>Prix</th>
-                <td>{{ voyage.prix }}</td>
-            </tr>
-        </tbody>
+<div class="card" style="max-width:600px">
+    <table class="market-table">
+        <tr>
+            <th>ID</th>
+            <td>{{ voyage.id }}</td>
+        </tr>
+        <tr>
+            <th>Date de depart</th>
+            <td>{{ voyage.dateDepart ? voyage.dateDepart|date("d/m/Y") : "-" }}</td>
+        </tr>
+        <tr>
+            <th>Date d arrivee</th>
+            <td>{{ voyage.dateArrivee ? voyage.dateArrivee|date("d/m/Y") : "-" }}</td>
+        </tr>
+        <tr>
+            <th>Point de depart</th>
+            <td>{{ voyage.pointDepart ?? "-" }}</td>
+        </tr>
+        <tr>
+            <th>Point d arrivee</th>
+            <td>{{ voyage.pointArrivee ?? "-" }}</td>
+        </tr>
+        <tr>
+            <th>Prix</th>
+            <td>{{ voyage.prix ? voyage.prix ~ " EUR" : "-" }}</td>
+        </tr>
     </table>
 
-    <a href="{{ path('app_voyage_index') }}">back to list</a>
-
-    <a href="{{ path('app_voyage_edit', {'id': voyage.id}) }}">edit</a>
-
-    {{ include('voyage/_delete_form.html.twig') }}
+    <div style="margin-top:20px;display:flex;gap:10px">
+        <a href="{{ path("app_voyage_index") }}" class="action-btn">Retour</a>
+        <a href="{{ path("app_voyage_edit", {"id": voyage.id}) }}" class="action-btn">Modifier</a>
+        {{ include("voyage/_delete_form.html.twig") }}
+    </div>
+</div>
 {% endblock %}
