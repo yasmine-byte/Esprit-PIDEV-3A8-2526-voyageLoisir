@@ -83,7 +83,6 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            margin-top: 30px;
             padding: 14px 28px;
             border-radius: 999px;
             background: var(--blog-accent);
@@ -99,6 +98,14 @@
             transform: translateY(-2px);
             box-shadow: 0 22px 34px rgba(232, 101, 42, 0.28);
             color: #fff;
+        }
+
+        .blog-hero-actions {
+            display: flex;
+            gap: 14px;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-top: 30px;
         }
 
         .blog-plane {
@@ -205,12 +212,15 @@
             border-color: var(--blog-accent);
             color: #fff;
             box-shadow: 0 16px 30px rgba(232, 101, 42, 0.22);
+            transform: translateY(0);
+            animation: blogSharePulse 2.8s ease-in-out infinite;
         }
 
         .blog-create-trigger:hover {
             color: #fff;
             border-color: var(--blog-accent);
             box-shadow: 0 20px 36px rgba(232, 101, 42, 0.28);
+            transform: translateY(-2px);
         }
 
         .blog-flash-stack {
@@ -226,6 +236,29 @@
             border: 1px solid rgba(232, 101, 42, 0.2);
             color: var(--blog-text);
             box-shadow: var(--blog-shadow);
+        }
+
+        .blog-flash--pending {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: #fff7ed;
+            border-color: rgba(232, 101, 42, 0.35);
+            color: #9a3412;
+            font-weight: 600;
+        }
+
+        .blog-pending-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 12px;
+            border-radius: 999px;
+            background: rgba(232, 101, 42, 0.14);
+            color: var(--blog-accent);
+            font-size: 0.82rem;
+            font-weight: 700;
+            white-space: nowrap;
         }
 
         .blog-pill-link:hover,
@@ -299,6 +332,20 @@
             margin-bottom: 6px;
         }
 
+        .blog-card-stats {
+            display: flex;
+            gap: 14px;
+            flex-wrap: wrap;
+            margin-top: 14px;
+            color: var(--blog-muted);
+            font-size: 0.88rem;
+        }
+
+        .blog-card-stats strong {
+            color: var(--blog-text);
+            font-weight: 700;
+        }
+
         .blog-destination-card p,
         .blog-story-card p,
         .blog-story-compact p {
@@ -344,6 +391,10 @@
             font-size: clamp(1.5rem, 2.5vw, 2rem);
             line-height: 1.2;
             margin-bottom: 14px;
+        }
+
+        .blog-story-card .blog-card-stats {
+            margin-top: 18px;
         }
 
         .blog-meta {
@@ -392,6 +443,10 @@
             font-size: 1.12rem;
             line-height: 1.35;
             margin-bottom: 10px;
+        }
+
+        .blog-story-compact .blog-card-stats {
+            margin-top: 12px;
         }
 
         .blog-hidden-link {
@@ -553,6 +608,15 @@
             border-color: rgba(30, 28, 26, 0.1);
         }
 
+        @keyframes blogSharePulse {
+            0%, 100% {
+                box-shadow: 0 16px 30px rgba(232, 101, 42, 0.22);
+            }
+            50% {
+                box-shadow: 0 22px 38px rgba(232, 101, 42, 0.34);
+            }
+        }
+
         @media (max-width: 1199px) {
             .blog-plane {
                 left: 50%;
@@ -677,83 +741,63 @@
 {% block body %}
 {% include 'home/partials/header.html.twig' %}
 
-{% set destinations = [
-    {
-        title: 'Golden Bridge Ba Na Hills',
-        country: 'Vietnam',
-        image: 'https://picsum.photos/seed/golden-bridge-vietnam/700/900'
-    },
-    {
-        title: 'Dubrovnik',
-        country: 'Croatia',
-        image: 'https://picsum.photos/seed/dubrovnik-croatia/700/900'
-    },
-    {
-        title: 'Hot Air Balloon Cappadocia',
-        country: 'Turkey',
-        image: 'https://picsum.photos/seed/cappadocia-turkey/700/900'
-    },
-    {
-        title: 'Sydney Harbour Bridge',
-        country: 'Australia',
-        image: 'https://picsum.photos/seed/sydney-australia/700/900'
-    }
-] %}
-
 {% set fallbackStories = [
     {
-        category: 'Food and Drinks',
+        category: 'Fresh Pick',
         title: 'A slow tasting journey through hidden kitchens, rooftop aperitifs, and unforgettable local pours',
         date: 'April 02, 2026',
         readTime: '8 min read',
         image: 'https://picsum.photos/seed/food-drinks-travel/1200/800',
-        link: '#'
+        link: '#',
+        rating: '4.8',
+        views: '126'
     },
     {
-        category: 'Traveling',
+        category: 'Most Viewed',
         title: 'The sunrise train rides that turned a simple itinerary into the highlight of the season',
         date: 'March 28, 2026',
         readTime: '5 min read',
         image: 'https://picsum.photos/seed/traveling-journal/500/400',
-        link: '#'
+        link: '#',
+        rating: '4.6',
+        views: '89'
     },
     {
-        category: 'Hotels',
+        category: 'Top Rated',
         title: 'Inside design-forward stays where heritage buildings meet quiet luxury',
         date: 'March 22, 2026',
         readTime: '6 min read',
         image: 'https://picsum.photos/seed/hotel-story/500/400',
-        link: '#'
+        link: '#',
+        rating: '4.9',
+        views: '73'
     },
     {
-        category: 'Travel Budget',
+        category: 'Trending',
         title: 'How to build a dream route with smarter bookings and longer local moments',
         date: 'March 18, 2026',
         readTime: '4 min read',
         image: 'https://picsum.photos/seed/travel-budget-guide/500/400',
-        link: '#'
+        link: '#',
+        rating: '4.4',
+        views: '52'
     }
-] %}
-
-{% set storyCategories = ['Food and Drinks', 'Traveling', 'Hotels', 'Travel Budget'] %}
-{% set storyImages = [
-    'https://picsum.photos/seed/food-drink-feature/1200/800',
-    'https://picsum.photos/seed/travel-mini-1/500/400',
-    'https://picsum.photos/seed/travel-mini-2/500/400',
-    'https://picsum.photos/seed/travel-mini-3/500/400'
 ] %}
 {% set stories = [] %}
 
 {% for i in 0..3 %}
-    {% set blog = blogs[i] ?? null %}
+    {% set blog = latestStories[i] ?? null %}
     {% if blog %}
+        {% set metrics = blog_metrics[blog.id] ?? {} %}
         {% set stories = stories|merge([{
-            category: storyCategories[i],
+            category: metrics.category|default('Fresh Pick'),
             title: blog.titre,
             date: blog.datePublication ? blog.datePublication|date('F d, Y') : (blog.dateCreation ? blog.dateCreation|date('F d, Y') : 'Recently published'),
-            readTime: ((blog.contenu|default('')|length / 700)|round(0, 'ceil')) ~ ' min read',
-            image: storyImages[i],
-            link: path('app_blog_show', {'id': blog.id})
+            readTime: metrics.read_time|default(1) ~ ' min read',
+            image: metrics.cover_image|default('https://picsum.photos/seed/blog-fallback-' ~ blog.id ~ '/1200/900'),
+            link: path('app_blog_show', {'id': blog.id}),
+            rating: metrics.rating_average|default(0),
+            views: metrics.views|default(0)
         }]) %}
     {% else %}
         {% set stories = stories|merge([fallbackStories[i]]) %}
@@ -765,7 +809,12 @@
         {% for label, messages in app.flashes %}
             <div class="blog-flash-stack">
                 {% for message in messages %}
-                    <div class="blog-flash">{{ message }}</div>
+                    <div class="blog-flash{% if label == 'pending' %} blog-flash--pending{% endif %}">
+                        {% if label == 'pending' %}
+                            <span class="blog-pending-badge">En attente de validation admin</span>
+                        {% endif %}
+                        <span>{{ message }}</span>
+                    </div>
                 {% endfor %}
             </div>
         {% endfor %}
@@ -779,7 +828,7 @@
                     every getaway into a richer experience. From quiet castles to vibrant temples and cinematic
                     landscapes, this journal is built for travelers who want something memorable.
                 </p>
-                <div style="display:flex; gap:14px; flex-wrap:wrap; align-items:center; margin-top:30px;">
+                <div class="blog-hero-actions">
                     <a class="blog-cta" href="#top-destinations">Discover trip</a>
                     <button type="button" class="blog-pill-link blog-create-trigger" data-blog-modal-open>Share your blog</button>
                 </div>
@@ -802,30 +851,35 @@
 
         <section class="blog-section" id="top-destinations">
             <div class="blog-section-head">
-                <h2>Top Destinations</h2>
+                <h2>You Might Also Like</h2>
             </div>
 
             <div class="blog-filter-row">
                 <div class="blog-filter-list">
-                    <span class="blog-filter-chip is-active">Popular</span>
-                    <span class="blog-filter-chip">USA</span>
-                    <span class="blog-filter-chip">Europe</span>
-                    <span class="blog-filter-chip">Asia</span>
-                    <span class="blog-filter-chip">Africa &amp; Middle East</span>
-                    <span class="blog-filter-chip">Australia &amp; The Pacific</span>
-                    <span class="blog-filter-chip">Canada</span>
-                    <span class="blog-filter-chip">More &#9662;</span>
+                    <span class="blog-filter-chip is-active">Top Rated</span>
+                    <span class="blog-filter-chip">Most Viewed</span>
+                    <span class="blog-filter-chip">Freshly Approved</span>
+                    <span class="blog-filter-chip">Trending Now</span>
+                    <span class="blog-filter-chip">Readers' Picks</span>
                 </div>
 
-                <a class="blog-pill-link" href="{{ path('app_properties') }}">Explore all destinations</a>
+                <a class="blog-pill-link" href="{{ path('app_blog_index') }}">Explore all blogs</a>
             </div>
 
             <div class="blog-destinations-grid">
-                {% for destination in destinations %}
+                {% for blog in topBlogs %}
+                    {% set metrics = blog_metrics[blog.id] ?? {} %}
                     <article class="blog-destination-card">
-                        <img src="{{ destination.image }}" alt="{{ destination.title }}">
-                        <h3>{{ destination.title }}</h3>
-                        <p>{{ destination.country }}</p>
+                        <a class="blog-hidden-link" href="{{ path('app_blog_show', {'id': blog.id}) }}">
+                            <img src="{{ metrics.cover_image|default('https://picsum.photos/seed/blog-top-' ~ blog.id ~ '/900/1100') }}" alt="{{ blog.titre }}" onerror="this.src='https://picsum.photos/seed/blog-top-fallback-{{ blog.id }}/900/1100'">
+                            <span class="blog-tag">{{ metrics.category|default('Top Rated') }}</span>
+                            <h3>{{ blog.titre }}</h3>
+                            <p>{{ blog.extrait ?: 'A curated story picked for readers who enjoy highly rated travel journals.' }}</p>
+                            <div class="blog-card-stats">
+                                <span><strong>{{ metrics.rating_average|default(0) }}</strong> rating</span>
+                                <span><strong>{{ metrics.views|default(0) }}</strong> views</span>
+                            </div>
+                        </a>
                     </article>
                 {% endfor %}
             </div>
@@ -840,13 +894,17 @@
             <div class="blog-stories-grid" id="latest-stories">
                 <article class="blog-story-card">
                     <a class="blog-hidden-link" href="{{ stories[0].link }}">
-                        <img src="{{ stories[0].image }}" alt="{{ stories[0].title }}">
+                        <img src="{{ stories[0].image }}" alt="{{ stories[0].title }}" onerror="this.src='https://picsum.photos/seed/story-feature-fallback/1200/800'">
                         <div class="blog-story-body">
                             <span class="blog-tag">{{ stories[0].category }}</span>
                             <h3>{{ stories[0].title }}</h3>
                             <div class="blog-meta">
                                 <span>{{ stories[0].date }}</span>
                                 <span>{{ stories[0].readTime }}</span>
+                            </div>
+                            <div class="blog-card-stats">
+                                <span><strong>{{ stories[0].rating }}</strong> rating</span>
+                                <span><strong>{{ stories[0].views }}</strong> views</span>
                             </div>
                         </div>
                     </a>
@@ -863,10 +921,14 @@
                                         <span>{{ story.date }}</span>
                                         <span>{{ story.readTime }}</span>
                                     </div>
+                                    <div class="blog-card-stats">
+                                        <span><strong>{{ story.rating }}</strong> rating</span>
+                                        <span><strong>{{ story.views }}</strong> views</span>
+                                    </div>
                                 </a>
                             </div>
                             <a class="blog-hidden-link" href="{{ story.link }}">
-                                <img src="{{ story.image }}" alt="{{ story.title }}">
+                                <img src="{{ story.image }}" alt="{{ story.title }}" onerror="this.src='https://picsum.photos/seed/story-mini-fallback/500/400'">
                             </a>
                         </article>
                     {% endfor %}
@@ -882,7 +944,7 @@
         <div class="blog-modal-header">
             <div>
                 <h3 id="blogComposeTitle">Write your travel blog</h3>
-                <p>Users can add a title, content, cover image, excerpt, and slug. New entries start as <strong>brouillon</strong> unless published directly.</p>
+                <p>Users can add a title, content, cover image, excerpt, and slug. A publish request stays pending until an admin approves it.</p>
             </div>
             <button type="button" class="blog-modal-close" aria-label="Close" data-blog-modal-close>&times;</button>
         </div>
