@@ -91,4 +91,5 @@ final class ReservationActiviteController extends AbstractController
 
         return $this->redirectToRoute('app_reservation_activite_index', [], Response::HTTP_SEE_OTHER);
     }
+    
 }

@@ -16,7 +16,7 @@
 
 .activities-search-bar {
   display: grid;
-  grid-template-columns: 1.2fr 1fr 1fr 1fr auto;
+grid-template-columns: 1.2fr 1fr 1fr 1fr 1fr auto;
   background: #fdfcf9;
   border: 1px solid #e7dcc8;
   border-radius: 22px;
@@ -218,6 +218,14 @@
       <input type="number" min="1" name="duree_max" placeholder="Ex: 120 min"
              value="{{ app.request.get('duree_max') }}">
     </div>
+    <div class="search-segment">
+  <label>Trier par prix</label>
+  <select name="sort">
+    <option value="">Par défaut</option>
+    <option value="prix_asc" {{ current_sort == 'prix_asc' ? 'selected' : '' }}>Prix croissant</option>
+    <option value="prix_desc" {{ current_sort == 'prix_desc' ? 'selected' : '' }}>Prix décroissant</option>
+  </select>
+</div>
 
     <button type="submit" class="search-main-btn">
       Rechercher

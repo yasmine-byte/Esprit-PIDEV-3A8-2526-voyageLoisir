@@ -15,45 +15,51 @@ use Symfony\Component\Routing\Attribute\Route;
 final class ActiviteController extends AbstractController
 {
     #[Route(name: 'app_activite_index', methods: ['GET'])]
-    public function index(Request $request, ActiviteRepository $activiteRepository): Response
-    {
-        $lieu = $request->query->get('lieu');
-        $type = $request->query->get('type');
-        $prixMax = $request->query->get('prix_max');
-        $dureeMax = $request->query->get('duree_max');
+public function index(Request $request, ActiviteRepository $activiteRepository): Response
+{
+    $lieu = $request->query->get('lieu');
+    $type = $request->query->get('type');
+    $prixMax = $request->query->get('prix_max');
+    $dureeMax = $request->query->get('duree_max');
+    $sort = $request->query->get('sort');
 
-        $qb = $activiteRepository->createQueryBuilder('a');
+    $qb = $activiteRepository->createQueryBuilder('a');
 
-        if (!empty($lieu)) {
-            $qb->andWhere('a.lieu LIKE :lieu')
-               ->setParameter('lieu', '%' . $lieu . '%');
-        }
-
-        if (!empty($type)) {
-            $qb->andWhere('a.type LIKE :type')
-               ->setParameter('type', '%' . $type . '%');
-        }
-
-        if (!empty($prixMax)) {
-            $qb->andWhere('a.prix <= :prixMax')
-               ->setParameter('prixMax', (float) $prixMax);
-        }
-
-        if (!empty($dureeMax)) {
-            $qb->andWhere('a.duree <= :dureeMax')
-               ->setParameter('dureeMax', (int) $dureeMax);
-        }
-
-        $activites = $qb
-            ->orderBy('a.id', 'DESC')
-            ->getQuery()
-            ->getResult();
-
-        return $this->render('activite/index.html.twig', [
-            'activites' => $activites,
-        ]);
+    if (!empty($lieu)) {
+        $qb->andWhere('a.lieu LIKE :lieu')
+           ->setParameter('lieu', '%' . $lieu . '%');
     }
 
+    if (!empty($type)) {
+        $qb->andWhere('a.type LIKE :type')
+           ->setParameter('type', '%' . $type . '%');
+    }
+
+    if (!empty($prixMax)) {
+        $qb->andWhere('a.prix <= :prixMax')
+           ->setParameter('prixMax', (float) $prixMax);
+    }
+
+    if (!empty($dureeMax)) {
+        $qb->andWhere('a.duree <= :dureeMax')
+           ->setParameter('dureeMax', (int) $dureeMax);
+    }
+
+    if ($sort === 'prix_asc') {
+        $qb->orderBy('a.prix', 'ASC');
+    } elseif ($sort === 'prix_desc') {
+        $qb->orderBy('a.prix', 'DESC');
+    } else {
+        $qb->orderBy('a.id', 'DESC');
+    }
+
+    $activites = $qb->getQuery()->getResult();
+
+    return $this->render('activite/index.html.twig', [
+        'activites' => $activites,
+        'current_sort' => $sort,
+    ]);
+}
     #[Route('/new', name: 'app_activite_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
