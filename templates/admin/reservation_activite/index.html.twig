@@ -1,0 +1,300 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}Gestion Réservations{% endblock %}
+
+{% block admin_content %}
+
+<style>
+.reservations-section {
+    margin-top: 10px;
+}
+
+.reservations-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 18px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+}
+
+.reservations-header-text h2 {
+    margin: 0;
+    font-size: 46px;
+    line-height: 1.1;
+    font-weight: 700;
+    color: #1e1e1e;
+}
+
+.reservations-header-text p {
+    margin: 8px 0 0;
+    font-size: 18px;
+    color: #7a7a7a;
+}
+
+.reservations-table-card {
+    background: #ffffff;
+    border: 1px solid #ececec;
+    border-radius: 22px;
+    padding: 18px 22px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
+    overflow-x: auto;
+}
+
+.reservations-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 1050px;
+}
+
+.reservations-table thead th {
+    padding: 18px 14px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #9a9a9a;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    border-bottom: 1px solid #ececec;
+    text-align: left;
+}
+
+.reservations-table tbody td {
+    padding: 20px 14px;
+    border-bottom: 1px solid #ececec;
+    vertical-align: middle;
+    color: #1e1e1e;
+    font-size: 16px;
+}
+
+.reservations-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.reservations-table tbody tr:hover {
+    background: rgba(231, 182, 123, 0.06);
+}
+
+.reservation-main-cell {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-width: 280px;
+}
+
+.reservation-icon {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #e7b67b, #d89b5b);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+.reservation-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.reservation-name {
+    font-size: 17px;
+    font-weight: 600;
+    color: #1e1e1e;
+    line-height: 1.2;
+}
+
+.reservation-sub {
+    font-size: 14px;
+    color: #7f7f7f;
+}
+
+.reservation-total {
+    font-weight: 700;
+    color: #1e1e1e;
+}
+
+.reservation-status {
+    display: inline-block;
+    padding: 8px 14px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.status-attente {
+    background: #fff4df;
+    color: #b7791f;
+}
+
+.status-confirmee {
+    background: #e8f8ee;
+    color: #1f8b4c;
+}
+
+.status-annulee {
+    background: #fff1f1;
+    color: #d9534f;
+}
+
+.reservations-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.reservations-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 100px;
+    padding: 10px 16px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    border: 1px solid #e7e7e7;
+    transition: 0.25s ease;
+    cursor: pointer;
+}
+
+.reservations-btn-edit {
+    background: #f3f3f3;
+    color: #1e1e1e;
+}
+
+.reservations-btn-edit:hover {
+    background: #efefef;
+    color: #1e1e1e;
+}
+
+.reservations-btn-add {
+    background: #e7b67b;
+    color: #1c1c1c;
+    border-color: #e7b67b;
+}
+
+.reservations-btn-add:hover {
+    background: #dca867;
+    color: #1c1c1c;
+}
+
+.reservations-btn-delete {
+    background: #ffffff;
+    color: #d9534f;
+    border-color: #f1d0cf;
+}
+
+.reservations-btn-delete:hover {
+    background: #fff5f5;
+    color: #c9302c;
+}
+
+.reservations-empty {
+    text-align: center;
+    color: #7a7a7a;
+    padding: 32px 12px;
+    font-size: 16px;
+}
+</style>
+
+<div class="reservations-section">
+
+    <div class="reservations-header">
+        <div class="reservations-header-text">
+            <h2>Gestion des Réservations</h2>
+            <p>Gérez toutes les réservations de votre plateforme</p>
+        </div>
+    </div>
+
+    <div class="reservations-table-card">
+        <table class="reservations-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Activité</th>
+                    <th>Date</th>
+                    <th>Personnes</th>
+                    <th>Statut</th>
+                    <th>Total</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+
+            <tbody>
+            {% for reservation in reservation_activites %}
+                <tr>
+                    <td>{{ reservation.id }}</td>
+
+                    <td>
+                        <div class="reservation-main-cell">
+                            <div class="reservation-icon">
+                                {{ reservation.activite ? reservation.activite.nom|slice(0,1)|upper : 'R' }}
+                            </div>
+
+                            <div class="reservation-info">
+                                <div class="reservation-name">
+                                    {{ reservation.activite ? reservation.activite.nom : 'Activité supprimée' }}
+                                </div>
+                                <div class="reservation-sub">
+                                    {{ reservation.activite and reservation.activite.type ? reservation.activite.type : 'Réservation' }}
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+
+                    <td>{{ reservation.dateReservation ? reservation.dateReservation|date('Y-m-d') : 'N/A' }}</td>
+                    <td>{{ reservation.nombrePersonnes }}</td>
+
+                    <td>
+                        <span class="reservation-status
+                            {% if reservation.statut == 'EN_ATTENTE' %}status-attente{% endif %}
+                            {% if reservation.statut == 'CONFIRMEE' %}status-confirmee{% endif %}
+                            {% if reservation.statut == 'ANNULEE' %}status-annulee{% endif %}
+                        ">
+                            {{ reservation.statut }}
+                        </span>
+                    </td>
+
+                    <td class="reservation-total">{{ reservation.total }} TND</td>
+
+                    <td>
+                        <div class="reservations-actions">
+                            <a href="{{ path('admin_reservation_activite_edit', {'id': reservation.id}) }}" class="reservations-btn reservations-btn-edit">
+                                Modifier
+                            </a>
+
+                            {% if reservation.activite %}
+                                <a href="{{ path('admin_reservation_activite_new', {'id': reservation.activite.id}) }}" class="reservations-btn reservations-btn-add">
+                                    Ajouter
+                                </a>
+                            {% endif %}
+
+                            <form method="post"
+                                  action="{{ path('admin_reservation_activite_delete', {'id': reservation.id}) }}"
+                                  onsubmit="return confirm('Supprimer cette réservation ?');"
+                                  style="display:inline;">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ reservation.id) }}">
+                                <button type="submit" class="reservations-btn reservations-btn-delete">
+                                    Supprimer
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="7" class="reservations-empty">Aucune réservation trouvée</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+{% endblock %}

@@ -15,10 +15,42 @@ use Symfony\Component\Routing\Attribute\Route;
 final class ActiviteController extends AbstractController
 {
     #[Route(name: 'app_activite_index', methods: ['GET'])]
-    public function index(ActiviteRepository $activiteRepository): Response
+    public function index(Request $request, ActiviteRepository $activiteRepository): Response
     {
+        $lieu = $request->query->get('lieu');
+        $type = $request->query->get('type');
+        $prixMax = $request->query->get('prix_max');
+        $dureeMax = $request->query->get('duree_max');
+
+        $qb = $activiteRepository->createQueryBuilder('a');
+
+        if (!empty($lieu)) {
+            $qb->andWhere('a.lieu LIKE :lieu')
+               ->setParameter('lieu', '%' . $lieu . '%');
+        }
+
+        if (!empty($type)) {
+            $qb->andWhere('a.type LIKE :type')
+               ->setParameter('type', '%' . $type . '%');
+        }
+
+        if (!empty($prixMax)) {
+            $qb->andWhere('a.prix <= :prixMax')
+               ->setParameter('prixMax', (float) $prixMax);
+        }
+
+        if (!empty($dureeMax)) {
+            $qb->andWhere('a.duree <= :dureeMax')
+               ->setParameter('dureeMax', (int) $dureeMax);
+        }
+
+        $activites = $qb
+            ->orderBy('a.id', 'DESC')
+            ->getQuery()
+            ->getResult();
+
         return $this->render('activite/index.html.twig', [
-            'activites' => $activiteRepository->findAll(),
+            'activites' => $activites,
         ]);
     }
 
@@ -71,7 +103,7 @@ final class ActiviteController extends AbstractController
     #[Route('/{id}', name: 'app_activite_delete', methods: ['POST'])]
     public function delete(Request $request, Activite $activite, EntityManagerInterface $entityManager): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$activite->getId(), $request->getPayload()->getString('_token'))) {
+        if ($this->isCsrfTokenValid('delete' . $activite->getId(), $request->getPayload()->getString('_token'))) {
             $entityManager->remove($activite);
             $entityManager->flush();
         }

@@ -17,8 +17,21 @@ class AdminActiviteController extends AbstractController
     #[Route('', name: 'admin_activite_index', methods: ['GET'])]
     public function index(ActiviteRepository $activiteRepository): Response
     {
+        $activites = $activiteRepository->findAll();
+
+        $totalActivites = count($activites);
+
+        $totalPrix = 0;
+        foreach ($activites as $activite) {
+            $totalPrix += (float) ($activite->getPrix() ?? 0);
+        }
+
+        $prixMoyen = $totalActivites > 0 ? $totalPrix / $totalActivites : 0;
+
         return $this->render('admin/activite/index.html.twig', [
-            'activites' => $activiteRepository->findAll(),
+            'activites' => $activites,
+            'totalActivites' => $totalActivites,
+            'prixMoyen' => $prixMoyen,
         ]);
     }
 
@@ -38,7 +51,7 @@ class AdminActiviteController extends AbstractController
 
         return $this->render('admin/activite/new.html.twig', [
             'activite' => $activite,
-            'form' => $form,
+            'form' => $form->createView(),
         ]);
     }
 
@@ -56,14 +69,14 @@ class AdminActiviteController extends AbstractController
 
         return $this->render('admin/activite/edit.html.twig', [
             'activite' => $activite,
-            'form' => $form,
+            'form' => $form->createView(),
         ]);
     }
 
     #[Route('/{id}', name: 'admin_activite_delete', methods: ['POST'])]
     public function delete(Request $request, Activite $activite, EntityManagerInterface $entityManager): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$activite->getId(), $request->request->get('_token'))) {
+        if ($this->isCsrfTokenValid('delete' . $activite->getId(), $request->request->get('_token'))) {
             $entityManager->remove($activite);
             $entityManager->flush();
         }
