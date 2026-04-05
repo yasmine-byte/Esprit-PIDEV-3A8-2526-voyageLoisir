@@ -2,6 +2,8 @@
 
 namespace App\Controller;
 
+use App\Repository\UsersRepository;
+use App\Repository\RoleRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -9,15 +11,29 @@ use Symfony\Component\Routing\Attribute\Route;
 class AdminController extends AbstractController
 {
     #[Route('/admin', name: 'app_admin')]
-    public function index(): Response
+    public function index(UsersRepository $usersRepository, RoleRepository $roleRepository): Response
     {
-        return $this->render('admin/index.html.twig'); // ← corrigé
-    }
+        $allUsers      = $usersRepository->findAll();
+        $activeUsers   = array_filter($allUsers, fn($u) => $u->isActive() === true);
+        $inactiveUsers = array_filter($allUsers, fn($u) => $u->isActive() !== true);
+        $roles         = $roleRepository->findAll();
+        $latestUsers   = $usersRepository->findBy([], ['createdAt' => 'DESC'], 5);
+        $monthlyData   = $usersRepository->countByMonth();
 
-    #[Route('/admin/login', name: 'admin_login')]
-    public function login(): Response
-    {
-        return $this->render('admin/login.html.twig');
+        $roleStats = [];
+        foreach ($roles as $role) {
+            $roleStats[$role->getName()] = count($role->getNo());
+        }
+
+        return $this->render('admin/dashboard.html.twig', [
+            'totalUsers'    => count($allUsers),
+            'activeUsers'   => count($activeUsers),
+            'inactiveUsers' => count($inactiveUsers),
+            'totalRoles'    => count($roles),
+            'latestUsers'   => $latestUsers,
+            'monthlyData'   => $monthlyData,
+            'roleStats'     => $roleStats,
+        ]);
     }
 
     #[Route('/admin/markets', name: 'admin_markets')]
@@ -31,18 +47,4 @@ class AdminController extends AbstractController
     {
         return $this->render('admin/wallet.html.twig');
     }
-
-    #[Route('/admin/settings', name: 'admin_settings')]
-    public function settings(): Response
-    {
-        return $this->render('admin/settings.html.twig');
-    }
-
-    #[Route('/admin/add-user', name: 'add_user')]
-    public function addUser(): Response
-    {
-        return $this->render('admin/add-user.html.twig');
-    }
-
-    
 }

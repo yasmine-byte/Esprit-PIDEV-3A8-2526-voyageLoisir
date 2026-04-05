@@ -6,9 +6,12 @@ use App\Repository\UsersRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Security\Core\User\EquatableInterface;
+use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 #[ORM\Entity(repositoryClass: UsersRepository::class)]
-class Users
+class Users implements UserInterface, PasswordAuthenticatedUserInterface, EquatableInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -42,7 +45,12 @@ class Users
     /**
      * @var Collection<int, Role>
      */
-    #[ORM\ManyToMany(targetEntity: Role::class, inversedBy: 'no')]
+    #[ORM\ManyToMany(targetEntity: Role::class, inversedBy: 'no', fetch: 'EAGER')]
+    #[ORM\JoinTable(
+        name: 'users_role',
+        joinColumns: [new ORM\JoinColumn(name: 'users_id', referencedColumnName: 'id')],
+        inverseJoinColumns: [new ORM\JoinColumn(name: 'role_id', referencedColumnName: 'id')]
+    )]
     private Collection $roles;
 
     public function __construct()
@@ -50,128 +58,74 @@ class Users
         $this->roles = new ArrayCollection();
     }
 
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
+    public function getId(): ?int { return $this->id; }
 
-    public function getNom(): ?string
-    {
-        return $this->nom;
-    }
+    public function getNom(): ?string { return $this->nom; }
+    public function setNom(string $nom): static { $this->nom = $nom; return $this; }
 
-    public function setNom(string $nom): static
-    {
-        $this->nom = $nom;
+    public function getPrenom(): ?string { return $this->prenom; }
+    public function setPrenom(string $prenom): static { $this->prenom = $prenom; return $this; }
 
-        return $this;
-    }
+    public function getEmail(): ?string { return $this->email; }
+    public function setEmail(string $email): static { $this->email = $email; return $this; }
 
-    public function getPrenom(): ?string
-    {
-        return $this->prenom;
-    }
+    public function getTelephone(): ?string { return $this->telephone; }
+    public function setTelephone(?string $telephone): static { $this->telephone = $telephone; return $this; }
 
-    public function setPrenom(string $prenom): static
-    {
-        $this->prenom = $prenom;
+    public function getPasswordHash(): ?string { return $this->passwordHash; }
+    public function setPasswordHash(string $passwordHash): static { $this->passwordHash = $passwordHash; return $this; }
 
-        return $this;
-    }
+    public function isActive(): ?bool { return $this->isActive; }
+    public function setIsActive(?bool $isActive): static { $this->isActive = $isActive; return $this; }
 
-    public function getEmail(): ?string
-    {
-        return $this->email;
-    }
+    public function getCreatedAt(): ?\DateTime { return $this->createdAt; }
+    public function setCreatedAt(?\DateTime $createdAt): static { $this->createdAt = $createdAt; return $this; }
 
-    public function setEmail(string $email): static
-    {
-        $this->email = $email;
-
-        return $this;
-    }
-
-    public function getTelephone(): ?string
-    {
-        return $this->telephone;
-    }
-
-    public function setTelephone(?string $telephone): static
-    {
-        $this->telephone = $telephone;
-
-        return $this;
-    }
-
-    public function getPasswordHash(): ?string
-    {
-        return $this->passwordHash;
-    }
-
-    public function setPasswordHash(string $passwordHash): static
-    {
-        $this->passwordHash = $passwordHash;
-
-        return $this;
-    }
-
-    public function isActive(): ?bool
-    {
-        return $this->isActive;
-    }
-
-    public function setIsActive(?bool $isActive): static
-    {
-        $this->isActive = $isActive;
-
-        return $this;
-    }
-
-    public function getCreatedAt(): ?\DateTime
-    {
-        return $this->createdAt;
-    }
-
-    public function setCreatedAt(?\DateTime $createdAt): static
-    {
-        $this->createdAt = $createdAt;
-
-        return $this;
-    }
-
-    public function getUpdatedAt(): ?\DateTime
-    {
-        return $this->updatedAt;
-    }
-
-    public function setUpdatedAt(?\DateTime $updatedAt): static
-    {
-        $this->updatedAt = $updatedAt;
-
-        return $this;
-    }
+    public function getUpdatedAt(): ?\DateTime { return $this->updatedAt; }
+    public function setUpdatedAt(?\DateTime $updatedAt): static { $this->updatedAt = $updatedAt; return $this; }
 
     /**
      * @return Collection<int, Role>
      */
-    public function getRoles(): Collection
-    {
-        return $this->roles;
-    }
+    public function getRolesCollection(): Collection { return $this->roles; }
 
     public function addRole(Role $role): static
     {
         if (!$this->roles->contains($role)) {
             $this->roles->add($role);
         }
-
         return $this;
     }
 
     public function removeRole(Role $role): static
     {
         $this->roles->removeElement($role);
-
         return $this;
+    }
+
+    public function getUserIdentifier(): string
+    {
+        return (string) $this->email;
+    }
+
+    // ✅ Simplifié — tout utilisateur connecté a ROLE_USER
+    public function getRoles(): array
+    {
+        return ['ROLE_USER'];
+    }
+
+    public function eraseCredentials(): void {}
+
+    public function getPassword(): string
+    {
+        return $this->passwordHash;
+    }
+
+    public function isEqualTo(UserInterface $user): bool
+    {
+        if (!$user instanceof Users) {
+            return false;
+        }
+        return $this->email === $user->getEmail();
     }
 }
