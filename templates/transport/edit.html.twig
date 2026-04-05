@@ -1,0 +1,16 @@
+﻿{% extends 'admin/base_admin.html.twig' %}
+{% block title %}Modifier Transport{% endblock %}
+
+{% block admin_content %}
+<div class="page-header">
+    <h1>Modifier Transport</h1>
+    <p>Mettre à jour les informations</p>
+</div>
+
+<div class="card">
+    {{ include('transport/_form.html.twig', {'button_label': 'Modifier'}) }}
+    <a href="{{ path('app_transport_index') }}" class="action-btn" style="margin-top:10px">Retour</a>
+</div>
+
+<footer class="copyright">Copyright &copy; 2026 VoyageLoisir</footer>
+{% endblock %}
