@@ -20,4 +20,40 @@
         <script src="{{ asset('assets_back/js/js/templatemo-crypto-script.js') }}"></script>
     {% endblock %}
 </body>
+{# Flash messages popup #}
+{% for message in app.flashes('success') %}
+<div id="flashPopup" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:9999; display:flex; align-items:center; justify-content:center;">
+    <div style="background:#fff; border-radius:16px; padding:40px; max-width:450px; text-align:center; box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+        <div style="width:70px; height:70px; background:#22c55e20; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 20px;">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2">
+                <polyline points="20 6 9 17 4 12"/>
+            </svg>
+        </div>
+        <h4 style="color:#1c1c1e; margin-bottom:12px;">Succès !</h4>
+        <p style="color:#6e6e6e; margin-bottom:24px;">{{ message }}</p>
+        <button onclick="document.getElementById('flashPopup').style.display='none'"
+                style="background:#22c55e; color:#fff; padding:12px 30px; border:none; border-radius:8px; font-size:16px; font-weight:600; cursor:pointer;">
+            OK
+        </button>
+    </div>
+</div>
+{% endfor %}
+
+{% for message in app.flashes('error') %}
+<div id="flashPopupError" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:9999; display:flex; align-items:center; justify-content:center;">
+    <div style="background:#fff; border-radius:16px; padding:40px; max-width:450px; text-align:center; box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+        <div style="width:70px; height:70px; background:#ef444420; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 20px;">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+        </div>
+        <h4 style="color:#1c1c1e; margin-bottom:12px;">Erreur !</h4>
+        <p style="color:#6e6e6e; margin-bottom:24px;">{{ message }}</p>
+        <button onclick="document.getElementById('flashPopupError').style.display='none'"
+                style="background:#ef4444; color:#fff; padding:12px 30px; border:none; border-radius:8px; font-size:16px; font-weight:600; cursor:pointer;">
+            Fermer
+        </button>
+    </div>
+</div>
+{% endfor %}
 </html>
