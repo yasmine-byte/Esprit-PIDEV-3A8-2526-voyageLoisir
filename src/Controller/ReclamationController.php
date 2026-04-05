@@ -27,37 +27,49 @@ class ReclamationController extends AbstractController
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
         $reclamation = new Reclamation();
-        $form = $this->createForm(ReclamationType::class, $reclamation);
+        $form        = $this->createForm(ReclamationType::class, $reclamation);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
             $reclamation->setUserId(1);
             $reclamation->setDateCreation(new \DateTime());
             $reclamation->setStatut('En attente');
-            $reclamation->setTypeFeedback('Négatif'); // Par defaut pour manuelle
+            $reclamation->setTypeFeedback('Négatif');
 
             $entityManager->persist($reclamation);
             $entityManager->flush();
 
             $this->addFlash('success', 'Réclamation créée et envoyée avec succès.');
 
+            // Notification admin
+            $session = $request->getSession();
+            $notifs  = $session->get('admin_notifications', []);
+            $priorite = $reclamation->getPriorite();
+            $icon     = $priorite === 'Urgente' ? '🚨' : '📋';
+            $type     = $priorite === 'Urgente' ? 'danger' : 'warning';
+            $notifs[] = [
+                'type'    => $type,
+                'icon'    => $icon,
+                'message' => 'Nouvelle réclamation : "' . mb_substr($reclamation->getTitre(), 0, 40) . '" — Priorité : ' . $priorite,
+                'time'    => (new \DateTime())->format('H:i'),
+            ];
+            $session->set('admin_notifications', $notifs);
+
             return $this->redirectToRoute('reclamation_index', [], Response::HTTP_SEE_OTHER);
         }
 
         return $this->render('reclamation/new.html.twig', [
             'reclamation' => $reclamation,
-            'form' => $form->createView(),
+            'form'        => $form->createView(),
         ]);
     }
 
     #[Route('/{id}', name: 'reclamation_show', methods: ['GET'])]
     public function show(Reclamation $reclamation): Response
     {
-        $avis = $reclamation->getAvis();
-
         return $this->render('reclamation/show.html.twig', [
             'reclamation' => $reclamation,
-            'avis' => $avis,
+            'avis'        => $reclamation->getAvis(),
         ]);
     }
 
@@ -75,24 +87,35 @@ class ReclamationController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->flush();
             $this->addFlash('success', 'Réclamation modifiée avec succès.');
+
+            // Notification admin
+            $session = $request->getSession();
+            $notifs  = $session->get('admin_notifications', []);
+            $notifs[] = [
+                'type'    => 'info',
+                'icon'    => '✏️',
+                'message' => 'La réclamation #' . $reclamation->getId() . ' a été modifiée par le client.',
+                'time'    => (new \DateTime())->format('H:i'),
+            ];
+            $session->set('admin_notifications', $notifs);
+
             return $this->redirectToRoute('reclamation_index', [], Response::HTTP_SEE_OTHER);
         }
 
         return $this->render('reclamation/edit.html.twig', [
             'reclamation' => $reclamation,
-            'form' => $form->createView(),
+            'form'        => $form->createView(),
         ]);
     }
 
     #[Route('/{id}', name: 'reclamation_delete', methods: ['POST'])]
     public function delete(Request $request, Reclamation $reclamation, EntityManagerInterface $entityManager): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$reclamation->getId(), $request->request->get('_token'))) {
+        if ($this->isCsrfTokenValid('delete' . $reclamation->getId(), $request->request->get('_token'))) {
             $entityManager->remove($reclamation);
             $entityManager->flush();
             $this->addFlash('success', 'Réclamation supprimée avec succès.');
         }
-
         return $this->redirectToRoute('reclamation_index', [], Response::HTTP_SEE_OTHER);
     }
 }

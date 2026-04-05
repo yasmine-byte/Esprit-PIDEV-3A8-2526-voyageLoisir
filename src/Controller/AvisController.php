@@ -10,6 +10,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Routing\Attribute\Route;
 
 #[Route('/avis')]
@@ -19,7 +20,6 @@ class AvisController extends AbstractController
     public function index(AvisRepository $avisRepository): Response
     {
         $userId = 1;
-        
         return $this->render('avis/index.html.twig', [
             'avis' => $avisRepository->findBy(['userId' => $userId]),
         ]);
@@ -39,8 +39,11 @@ class AvisController extends AbstractController
 
             $entityManager->persist($avis);
 
+            // Notification admin en session
+            $session = $request->getSession();
+            $notifs = $session->get('admin_notifications', []);
+
             if ($avis->getNbEtoiles() <= 2) {
-                // Generate a reclamation automatically
                 $reclamation = new Reclamation();
                 $reclamation->setAvis($avis);
                 $reclamation->setContenu($avis->getContenu());
@@ -51,16 +54,32 @@ class AvisController extends AbstractController
                 $reclamation->setUserId($avis->getUserId());
                 $reclamation->setType($avis->getType());
                 $reclamation->setDateCreation(new \DateTime());
-                
                 $entityManager->persist($reclamation);
-                
+
                 $this->addFlash('warning', 'Votre avis négatif a généré une réclamation automatique.');
+
+                // Notif admin : réclamation + avis
+                $notifs[] = [
+                    'type'    => 'danger',
+                    'icon'    => '🚨',
+                    'message' => 'Nouveau avis négatif (' . $avis->getNbEtoiles() . '★) + réclamation générée automatiquement.',
+                    'time'    => (new \DateTime())->format('H:i'),
+                ];
             } else {
                 $this->addFlash('success', 'Votre avis a été soumis avec succès.');
+
+                // Notif admin : nouvel avis positif
+                $notifs[] = [
+                    'type'    => 'success',
+                    'icon'    => '⭐',
+                    'message' => 'Nouvel avis positif soumis (' . $avis->getNbEtoiles() . '★) — en attente de validation.',
+                    'time'    => (new \DateTime())->format('H:i'),
+                ];
             }
 
-            $entityManager->flush();
+            $session->set('admin_notifications', $notifs);
 
+            $entityManager->flush();
             return $this->redirectToRoute('avis_index', [], Response::HTTP_SEE_OTHER);
         }
 
@@ -74,9 +93,8 @@ class AvisController extends AbstractController
     public function show(Avis $avis, EntityManagerInterface $entityManager): Response
     {
         $reclamation = $entityManager->getRepository(Reclamation::class)->findOneBy(['avis' => $avis]);
-        
         return $this->render('avis/show.html.twig', [
-            'avis' => $avis,
+            'avis'        => $avis,
             'reclamation' => $reclamation,
         ]);
     }
@@ -95,6 +113,18 @@ class AvisController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->flush();
             $this->addFlash('success', 'Avis modifié avec succès.');
+
+            // Notification admin : avis modifié
+            $session = $request->getSession();
+            $notifs  = $session->get('admin_notifications', []);
+            $notifs[] = [
+                'type'    => 'info',
+                'icon'    => '✏️',
+                'message' => 'Un client a modifié son avis #' . $avis->getId() . ' (' . $avis->getNbEtoiles() . '★).',
+                'time'    => (new \DateTime())->format('H:i'),
+            ];
+            $session->set('admin_notifications', $notifs);
+
             return $this->redirectToRoute('avis_index', [], Response::HTTP_SEE_OTHER);
         }
 
@@ -112,7 +142,7 @@ class AvisController extends AbstractController
             return $this->redirectToRoute('avis_index');
         }
 
-        if ($this->isCsrfTokenValid('delete'.$avis->getId(), $request->request->get('_token'))) {
+        if ($this->isCsrfTokenValid('delete' . $avis->getId(), $request->request->get('_token'))) {
             $reclamation = $entityManager->getRepository(Reclamation::class)->findOneBy(['avis' => $avis]);
             if ($reclamation) {
                 $reclamation->setAvis(null);
