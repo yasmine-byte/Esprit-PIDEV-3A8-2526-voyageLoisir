@@ -37,21 +37,7 @@
                     Modifiez les informations ci-dessous pour mettre à jour l’activité.
                 </p>
 
-                <div class="row">
-                    <div class="col-lg-12">
-                        <div class="item phone">
-                            <img src="{{ asset('assets_front/images/images/phone-icon.png') }}" alt="" style="max-width: 52px;">
-                            <h6>Rapide<br><span>Mise à jour simple</span></h6>
-                        </div>
-                    </div>
-
-                    <div class="col-lg-12">
-                        <div class="item email">
-                            <img src="{{ asset('assets_front/images/images/email-icon.png') }}" alt="" style="max-width: 52px;">
-                            <h6>Propre<br><span>Design moderne</span></h6>
-                        </div>
-                    </div>
-                </div>
+            
             </div>
 
             <div class="col-lg-6">
@@ -79,7 +65,7 @@
                         </div>
                     </div>
 
-{{ form_end(form) }}
+                {{ form_end(form, {'render_rest': false}) }}
             </div>
 
         </div>

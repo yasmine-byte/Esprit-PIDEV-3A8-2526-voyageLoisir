@@ -19,7 +19,6 @@ class ActiviteType extends AbstractType
             ->add('duree')
             ->add('lieu')
             ->add('imageUrl')
-            ->add('aiRating')
         ;
     }
 

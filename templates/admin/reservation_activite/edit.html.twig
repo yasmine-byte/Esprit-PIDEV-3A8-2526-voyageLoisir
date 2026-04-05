@@ -1,6 +1,6 @@
 {% extends 'admin/base_admin.html.twig' %}
 
-{% block title %}Ajouter une activité{% endblock %}
+{% block title %}Modifier une réservation{% endblock %}
 
 {% block admin_content %}
 
@@ -68,7 +68,7 @@
 }
 
 .admin-form-card textarea {
-    min-height: 140px;
+    min-height: 120px;
     resize: vertical;
 }
 
@@ -142,46 +142,36 @@
 
 <div class="admin-form-wrapper">
     <div class="admin-form-header">
-        <h2>Ajouter une activité</h2>
-        <p>Remplissez les informations pour créer une nouvelle activité.</p>
+        <h2>Modifier une réservation</h2>
+        <p>Mettez à jour les informations de cette réservation.</p>
     </div>
 
     <div class="admin-form-card">
         {{ form_start(form) }}
 
             <div class="admin-form-grid">
+                {% if form.activite is defined %}
+                    <div class="full-width">
+                        {{ form_row(form.activite) }}
+                    </div>
+                {% endif %}
+
                 <div>
-                    {{ form_row(form.nom) }}
+                    {{ form_row(form.dateReservation) }}
                 </div>
 
                 <div>
-                    {{ form_row(form.type) }}
+                    {{ form_row(form.nombrePersonnes) }}
                 </div>
 
                 <div class="full-width">
-                    {{ form_row(form.description) }}
-                </div>
-
-                <div>
-                    {{ form_row(form.prix) }}
-                </div>
-
-                <div>
-                    {{ form_row(form.duree) }}
-                </div>
-
-                <div>
-                    {{ form_row(form.lieu) }}
-                </div>
-
-                <div>
-                    {{ form_row(form.imageUrl) }}
+                    {{ form_row(form.statut) }}
                 </div>
             </div>
 
             <div class="admin-form-actions">
-                <button type="submit" class="admin-save-btn">Ajouter</button>
-                <a href="{{ path('admin_activite_index') }}" class="admin-back-btn">Retour à la liste</a>
+                <button type="submit" class="admin-save-btn">Mettre à jour</button>
+                <a href="{{ path('admin_reservation_activite_index') }}" class="admin-back-btn">Retour à la liste</a>
             </div>
 
         {{ form_end(form) }}

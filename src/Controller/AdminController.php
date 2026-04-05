@@ -2,25 +2,39 @@
 
 namespace App\Controller;
 
+use App\Repository\ActiviteRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-use App\Repository\ActiviteRepository;
 
 class AdminController extends AbstractController
 {
     #[Route('/admin', name: 'app_admin')]
     public function index(): Response
     {
-        return $this->render('admin/index.html.twig'); // ← corrigé
+        return $this->render('admin/index.html.twig');
     }
+
     #[Route('/admin/activite', name: 'admin_activite_index')]
     public function activite(ActiviteRepository $activiteRepository): Response
     {
-    return $this->render('admin/activite/index.html.twig', [
-        'activites' => $activiteRepository->findAll(),
-    ]);
-}
+        $activites = $activiteRepository->findAll();
+
+        $totalActivites = count($activites);
+
+        $totalPrix = 0;
+        foreach ($activites as $activite) {
+            $totalPrix += (float) ($activite->getPrix() ?? 0);
+        }
+
+        $prixMoyen = $totalActivites > 0 ? $totalPrix / $totalActivites : 0;
+
+        return $this->render('admin/activite/index.html.twig', [
+            'activites' => $activites,
+            'totalActivites' => $totalActivites,
+            'prixMoyen' => $prixMoyen,
+        ]);
+    }
 
     #[Route('/admin/login', name: 'admin_login')]
     public function login(): Response
@@ -51,6 +65,4 @@ class AdminController extends AbstractController
     {
         return $this->render('admin/add-user.html.twig');
     }
-
-    
 }
