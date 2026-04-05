@@ -28,9 +28,55 @@ final class AdminReservationActiviteController extends AbstractController
             $reservationActivites = $reservationActiviteRepository->findAll();
         }
 
+        $events = [];
+
+        foreach ($reservationActivites as $reservation) {
+            $color = '#3788d8';
+
+            if ($reservation->getStatut() === 'CONFIRMEE') {
+                $color = '#1f8b4c';
+            } elseif ($reservation->getStatut() === 'EN_ATTENTE') {
+                $color = '#d89b5b';
+            } elseif ($reservation->getStatut() === 'ANNULEE') {
+                $color = '#d9534f';
+            }
+
+            $events[] = [
+                'title' => $reservation->getActivite()
+                    ? $reservation->getActivite()->getNom() . ' (' . $reservation->getNombrePersonnes() . ' pers)'
+                    : 'Réservation #' . $reservation->getId(),
+                'start' => $reservation->getDateReservation()
+                    ? $reservation->getDateReservation()->format('Y-m-d')
+                    : null,
+                'color' => $color,
+            ];
+        }
+
+        $todayCount = 0;
+        $pendingCount = 0;
+
+        $today = new \DateTime();
+        $todayStr = $today->format('Y-m-d');
+
+        foreach ($reservationActivites as $reservation) {
+            if (
+                $reservation->getDateReservation() &&
+                $reservation->getDateReservation()->format('Y-m-d') === $todayStr
+            ) {
+                $todayCount++;
+            }
+
+            if ($reservation->getStatut() === 'EN_ATTENTE') {
+                $pendingCount++;
+            }
+        }
+
         return $this->render('admin/reservation_activite/index.html.twig', [
             'reservation_activites' => $reservationActivites,
             'activite_id' => $activiteId,
+            'events' => $events,
+            'todayCount' => $todayCount,
+            'pendingCount' => $pendingCount,
         ]);
     }
 
