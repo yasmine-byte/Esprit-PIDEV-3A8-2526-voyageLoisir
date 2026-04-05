@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Repository\VoyageRepository;
 use Doctrine\ORM\Mapping as ORM;
+use App\Entity\Users;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: VoyageRepository::class)]
@@ -40,6 +41,14 @@ class Voyage
     #[Assert\LessThanOrEqual(value: 99999, message: "Max 99 999 EUR.")]
     private ?float $prix = null;
 
+    #[ORM\ManyToOne(targetEntity: Users::class)]
+    #[ORM\JoinColumn(nullable: true, onDelete: "SET NULL")]
+    private ?Users $created_by = null;
+
+    #[ORM\ManyToOne(targetEntity: Users::class)]
+    #[ORM\JoinColumn(nullable: true, onDelete: "SET NULL")]
+    private ?Users $reserved_by = null;
+
     public function getId(): ?int { return $this->id; }
     public function getDateDepart(): ?\DateTimeInterface { return $this->date_depart; }
     public function setDateDepart(?\DateTimeInterface $d): static { $this->date_depart = $d; return $this; }
@@ -51,4 +60,10 @@ class Voyage
     public function setPointArrivee(?string $v): static { $this->point_arrivee = $v; return $this; }
     public function getPrix(): ?float { return $this->prix; }
     public function setPrix(?float $v): static { $this->prix = $v; return $this; }
+
+    public function getCreatedBy(): ?Users { return $this->created_by; }
+    public function setCreatedBy(?Users $u): static { $this->created_by = $u; return $this; }
+
+    public function getReservedBy(): ?Users { return $this->reserved_by; }
+    public function setReservedBy(?Users $u): static { $this->reserved_by = $u; return $this; }
 }
