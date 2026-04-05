@@ -1,0 +1,122 @@
+{{ form_start(form, {'attr': {'id': 'form-image'}}) }}
+
+<div style="margin-bottom:20px">
+    <label class="form-label">Images * (selectionnez plusieurs fichiers)</label>
+    {{ form_widget(form.url_image, {'attr': {'class': 'form-input', 'id': 'f-img', 'onchange': 'lvImages(this)'}}) }}
+    <small id="msg-img" style="display:block;min-height:16px;font-size:12px;margin-top:3px">
+        Formats : jpg, png, gif, webp - max 5 Mo par image - maintenez CTRL pour selectionner plusieurs
+    </small>
+    <div id="preview-wrap" style="display:none;margin-top:12px">
+        <div id="preview-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px"></div>
+        <small id="img-count" style="display:block;font-size:12px;color:#888;margin-top:6px"></small>
+    </div>
+    {% for err in form.url_image.vars.errors %}
+        <small style="display:block;color:#E24B4A;font-size:12px;margin-top:2px">{{ err.message }}</small>
+    {% endfor %}
+</div>
+
+<div style="margin-bottom:20px">
+    <label class="form-label">Destination *</label>
+    {{ form_widget(form.destination, {'attr': {'class': 'form-select', 'id': 'f-dest', 'onchange': 'lvDest(this)'}}) }}
+    <small id="msg-dest" style="display:block;min-height:16px;font-size:12px;margin-top:3px"></small>
+    {% for err in form.destination.vars.errors %}
+        <small style="display:block;color:#E24B4A;font-size:12px;margin-top:2px">{{ err.message }}</small>
+    {% endfor %}
+</div>
+
+<button type="submit" class="btn primary">Sauvegarder</button>
+{{ form_end(form) }}
+
+<script>
+function ok(id, msg) {
+    var el = document.getElementById(id);
+    var m  = document.getElementById("msg-" + id.replace("f-",""));
+    if (el) el.style.borderColor = "#1D9E75";
+    if (m)  { m.style.color = "#1D9E75"; m.textContent = "OK - " + msg; }
+}
+function er(id, msg) {
+    var el = document.getElementById(id);
+    var m  = document.getElementById("msg-" + id.replace("f-",""));
+    if (el) el.style.borderColor = "#E24B4A";
+    if (m)  { m.style.color = "#E24B4A"; m.textContent = "Erreur - " + msg; }
+}
+
+function lvImages(input) {
+    var files   = input.files;
+    var wrap    = document.getElementById("preview-wrap");
+    var grid    = document.getElementById("preview-grid");
+    var count   = document.getElementById("img-count");
+    var allowed = ["image/jpeg","image/png","image/gif","image/webp"];
+    var max     = 5 * 1024 * 1024;
+
+    grid.innerHTML = "";
+
+    if (!files || files.length === 0) {
+        wrap.style.display = "none";
+        er("f-img", "Aucun fichier selectionne");
+        return;
+    }
+
+    var errors  = [];
+    var totalOk = 0;
+
+    for (var i = 0; i < files.length; i++) {
+        var f = files[i];
+        if (!allowed.includes(f.type)) {
+            errors.push(f.name + " : format non accepte");
+            continue;
+        }
+        if (f.size > max) {
+            errors.push(f.name + " : trop lourd (" + (f.size/1024/1024).toFixed(1) + " Mo)");
+            continue;
+        }
+        totalOk++;
+        (function(file) {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                var div = document.createElement("div");
+                div.style.cssText = "position:relative;border-radius:6px;overflow:hidden;border:1px solid #444";
+                var img = document.createElement("img");
+                img.src = e.target.result;
+                img.style.cssText = "width:100%;height:80px;object-fit:cover;display:block";
+                var label = document.createElement("small");
+                label.textContent = file.name.length > 12 ? file.name.substring(0,12)+"..." : file.name;
+                label.style.cssText = "display:block;font-size:10px;padding:2px 4px;background:#000;color:#fff;text-align:center";
+                div.appendChild(img);
+                div.appendChild(label);
+                grid.appendChild(div);
+            };
+            reader.readAsDataURL(file);
+        })(f);
+    }
+
+    wrap.style.display = "block";
+
+    if (errors.length > 0) {
+        er("f-img", errors.join(" | "));
+    } else {
+        ok("f-img", totalOk + " image(s) valide(s)");
+    }
+    count.textContent = totalOk + " image(s) selectionnee(s) sur " + files.length;
+}
+
+function lvDest(el) {
+    if (!el.value) { er("f-dest", "La destination est obligatoire"); return; }
+    ok("f-dest", "Destination selectionnee");
+}
+
+document.getElementById("form-image").addEventListener("submit", function(e) {
+    var valide = true;
+    var img  = document.getElementById("f-img");
+    var dest = document.getElementById("f-dest");
+    if (!img.files || img.files.length === 0) {
+        er("f-img", "Au moins une image est obligatoire");
+        valide = false;
+    }
+    if (!dest.value) {
+        er("f-dest", "La destination est obligatoire");
+        valide = false;
+    }
+    if (!valide) e.preventDefault();
+});
+</script>

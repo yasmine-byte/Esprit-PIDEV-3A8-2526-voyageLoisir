@@ -1,0 +1,26 @@
+{% extends 'admin/base_admin.html.twig' %}
+{% block title %}Détail Type{% endblock %}
+{% block admin_content %}
+
+    <div class="page-header">
+        <h1>Type #{{ type.id }}</h1>
+        <p><a href="{{ path('app_type_index') }}" style="color:var(--accent-copper);">← Retour à la liste</a></p>
+    </div>
+
+    <div class="card" style="max-width:400px;">
+        <div class="card-header">
+            <h3 class="card-title">Informations</h3>
+        </div>
+        <div>
+            <div style="color:var(--text-secondary); font-size:12px; font-weight:600; text-transform:uppercase; margin-bottom:6px;">Nom</div>
+            <div style="font-size:22px; font-weight:700;">{{ type.nom }}</div>
+        </div>
+        <div style="display:flex; gap:12px; margin-top:24px;">
+            <a href="{{ path('app_type_edit', {'id': type.id}) }}" style="background:#f59e0b20; color:#f59e0b; padding:8px 20px; border-radius:8px; text-decoration:none; font-weight:600;">Modifier</a>
+            {{ include('type/_delete_form.html.twig') }}
+        </div>
+    </div>
+
+    <footer class="copyright">Copyright &copy; 2026 Voyage</footer>
+
+{% endblock %}

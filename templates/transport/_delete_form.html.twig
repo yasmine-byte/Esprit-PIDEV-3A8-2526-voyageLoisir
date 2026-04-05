@@ -1,0 +1,6 @@
+<form method="post" action="{{ path('app_transport_delete', {'id': transport.id}) }}"
+      onsubmit="return confirm('Confirmer la suppression ?');"
+      style="display:inline">
+    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ transport.id) }}">
+    <button class="action-btn" style="color:#c27878;border-color:#c27878;background:none;cursor:pointer">Supprimer</button>
+</form>

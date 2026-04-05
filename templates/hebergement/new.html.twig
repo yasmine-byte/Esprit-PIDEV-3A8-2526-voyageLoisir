@@ -1,0 +1,16 @@
+{% extends 'admin/base_admin.html.twig' %}
+{% block title %}Nouvel Hébergement{% endblock %}
+{% block admin_content %}
+
+    <div class="page-header">
+        <h1>Nouvel Hébergement</h1>
+        <p><a href="{{ path('app_hebergement_index') }}" style="color:var(--accent-primary);">← Retour à la liste</a></p>
+    </div>
+
+    <div class="card" style="max-width:700px;">
+        {{ include('hebergement/_form.html.twig', {'button_label': "Créer l'hébergement"}) }}
+    </div>
+
+    <footer class="copyright">Copyright &copy; 2026 Voyage</footer>
+
+{% endblock %}

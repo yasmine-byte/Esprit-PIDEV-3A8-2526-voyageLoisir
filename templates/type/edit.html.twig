@@ -1,0 +1,20 @@
+{% extends 'admin/base_admin.html.twig' %}
+{% block title %}Modifier Type{% endblock %}
+{% block admin_content %}
+
+    <div class="page-header">
+        <h1>Modifier Type #{{ type.id }}</h1>
+        <p><a href="{{ path('app_type_index') }}" style="color:var(--accent-copper);">← Retour à la liste</a></p>
+    </div>
+
+    <div class="card" style="max-width:500px;">
+        {{ include('type/_form.html.twig', {'button_label': 'Mettre à jour'}) }}
+    </div>
+
+    <div style="margin-top:16px; max-width:500px;">
+        {{ include('type/_delete_form.html.twig') }}
+    </div>
+
+    <footer class="copyright">Copyright &copy; 2026 Voyage</footer>
+
+{% endblock %}

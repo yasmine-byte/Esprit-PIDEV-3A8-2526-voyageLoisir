@@ -7,26 +7,26 @@
 
   <div class="main-banner">
     <div class="owl-carousel owl-banner">
-      <div class="item item-1">
-        <div class="header-text">
-          <span class="category">Toronto, <em>Canada</em></span>
-          <h2>Hurry!<br>Get the Best Villa for you</h2>
+        <div class="item" style="background-image: url('{{ asset('assets_front/images/images/banner-01.jpg') }}'); background-size:cover; background-position:center;">
+            <div class="header-text">
+                <span class="category">Tunis, <em>Tunisie</em></span>
+                <h2>Bienvenue sur<br>Vianova Voyage</h2>
+            </div>
         </div>
-      </div>
-      <div class="item item-2">
-        <div class="header-text">
-          <span class="category">Melbourne, <em>Australia</em></span>
-          <h2>Be Quick!<br>Get the best villa in town</h2>
+        <div class="item" style="background-image: url('{{ asset('assets_front/images/images/banner-02.jpg') }}'); background-size:cover; background-position:center;">
+            <div class="header-text">
+                <span class="category">Sousse, <em>Tunisie</em></span>
+                <h2>Trouvez<br>l'hébergement idéal</h2>
+            </div>
         </div>
-      </div>
-      <div class="item item-3">
-        <div class="header-text">
-          <span class="category">Miami, <em>South Florida</em></span>
-          <h2>Act Now!<br>Get the highest level penthouse</h2>
+        <div class="item" style="background-image: url('{{ asset('assets_front/images/images/banner-03.jpg') }}'); background-size:cover; background-position:center;">
+            <div class="header-text">
+                <span class="category">Djerba, <em>Tunisie</em></span>
+                <h2>Réservez<br>dès maintenant !</h2>
+            </div>
         </div>
-      </div>
     </div>
-  </div>
+</div>
 
   <div class="featured section">
     <div class="container">
@@ -139,60 +139,42 @@
 
   <div class="properties section">
     <div class="container">
-      <div class="row">
-        <div class="col-lg-4 offset-lg-4">
-          <div class="section-heading text-center">
-            <h6>| Properties</h6>
-            <h2>We Provide The Best Property You Like</h2>
-          </div>
+        <div class="row">
+            <div class="col-lg-4 offset-lg-4">
+                <div class="section-heading text-center">
+                    <h6>| Hébergements</h6>
+                    <h2>Nos Meilleurs Hébergements</h2>
+                </div>
+            </div>
         </div>
-      </div>
-      <div class="row">
-        <div class="col-lg-4 col-md-6">
-          <div class="item">
-            <img src="{{ asset('assets_front/images/images/property-01.jpg') }}" alt="">
-            <span class="category">Luxury Villa</span>
-            <h6>$2.264.000</h6>
-            <h4>18 New Street Miami, OR 97219</h4>
-            <ul>
-              <li>Bedrooms: <span>8</span></li>
-              <li>Bathrooms: <span>8</span></li>
-              <li>Area: <span>545m2</span></li>
-            </ul>
-            <div class="main-button"><a href="#">Schedule a visit</a></div>
-          </div>
+        <div class="row">
+            {% for hebergement in hebergements %}
+            <div class="col-lg-4 col-md-6">
+                <div class="item">
+                    {% if hebergement.imagePath %}
+                        <img src="{{ asset('uploads/hebergements/' ~ hebergement.imagePath) }}" alt="{{ hebergement.description }}">
+                    {% else %}
+                        <img src="{{ asset('assets_front/images/images/property-01.jpg') }}" alt="">
+                    {% endif %}
+                    <span class="category">{{ hebergement.type ? hebergement.type.nom : 'Hébergement' }}</span>
+                    <h6>{{ hebergement.prix }} TND</h6>
+                    <h4>{{ hebergement.description|slice(0,40) }}</h4>
+                    <ul>
+                        <li>Chambres: <span>{{ hebergement.no|length }}</span></li>
+                    </ul>
+                    <div class="main-button">
+                        <a href="{{ path('app_property_details', {'id': hebergement.id}) }}">Voir & Réserver</a>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="col-12 text-center">
+                <p>Aucun hébergement disponible pour le moment.</p>
+            </div>
+            {% endfor %}
         </div>
-        <div class="col-lg-4 col-md-6">
-          <div class="item">
-            <img src="{{ asset('assets_front/images/images/property-02.jpg') }}" alt="">
-            <span class="category">Luxury Villa</span>
-            <h6>$1.180.000</h6>
-            <h4>54 Mid Street Florida, OR 27001</h4>
-            <ul>
-              <li>Bedrooms: <span>6</span></li>
-              <li>Bathrooms: <span>5</span></li>
-              <li>Area: <span>450m2</span></li>
-            </ul>
-            <div class="main-button"><a href="#">Schedule a visit</a></div>
-          </div>
-        </div>
-        <div class="col-lg-4 col-md-6">
-          <div class="item">
-            <img src="{{ asset('assets_front/images/images/property-03.jpg') }}" alt="">
-            <span class="category">Luxury Villa</span>
-            <h6>$1.460.000</h6>
-            <h4>26 Old Street Miami, OR 38540</h4>
-            <ul>
-              <li>Bedrooms: <span>5</span></li>
-              <li>Bathrooms: <span>4</span></li>
-              <li>Area: <span>225m2</span></li>
-            </ul>
-            <div class="main-button"><a href="#">Schedule a visit</a></div>
-          </div>
-        </div>
-      </div>
     </div>
-  </div>
+</div>
 
 
 {% endblock %}
