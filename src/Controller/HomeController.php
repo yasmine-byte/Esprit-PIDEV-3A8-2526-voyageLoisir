@@ -1,6 +1,7 @@
 <?php
 namespace App\Controller;
 
+use App\Repository\DestinationRepository;
 use App\Repository\HebergementRepository;
 use App\Repository\TypeRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -67,5 +68,30 @@ class HomeController extends AbstractController
     public function contact(): Response
     {
         return $this->render('home/contact.html.twig');
+    }
+
+    #[Route('/destinations', name: 'app_destinations')]
+    public function destinations(Request $request, DestinationRepository $repo): Response
+    {
+        $search = $request->query->get('search', '');
+        $saison = $request->query->get('saison', '');
+        $destinations = $repo->findByFilters($search, $saison, '', 'id', 'ASC');
+        return $this->render('home/destinations.html.twig', [
+            'destinations' => $destinations,
+            'search' => $search,
+            'saison' => $saison,
+        ]);
+    }
+
+    #[Route('/destinations/{id}', name: 'app_destination_detail')]
+    public function destinationDetail(int $id, DestinationRepository $repo): Response
+    {
+        $destination = $repo->find($id);
+        if (!$destination) {
+            return $this->redirectToRoute('app_destinations');
+        }
+        return $this->render('home/destination-detail.html.twig', [
+            'destination' => $destination,
+        ]);
     }
 }

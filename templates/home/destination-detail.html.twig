@@ -1,0 +1,523 @@
+{% extends "base_front.html.twig" %}
+
+{% block title %}{{ destination.nom }} - VoyageLoisir{% endblock %}
+
+{% block body %}
+
+<div id="js-preloader" class="js-preloader">
+  <div class="preloader-inner">
+    <span class="dot"></span>
+    <div class="dots"><span></span><span></span><span></span></div>
+  </div>
+</div>
+
+<div class="sub-header">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8 col-md-8">
+        <ul class="info">
+          <li><i class="fa fa-envelope"></i> info@voyageloisir.com</li>
+          <li><i class="fa fa-map"></i> Tunis, Tunisie</li>
+        </ul>
+      </div>
+      <div class="col-lg-4 col-md-4">
+        <ul class="social-links">
+          <li><a href="#"><i class="fab fa-facebook"></i></a></li>
+          <li><a href="#"><i class="fab fa-twitter"></i></a></li>
+          <li><a href="#"><i class="fab fa-linkedin"></i></a></li>
+          <li><a href="#"><i class="fab fa-instagram"></i></a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<header class="header-area header-sticky">
+  <div class="container">
+    <div class="row">
+      <div class="col-12">
+        <nav class="main-nav">
+          <a href="{{ path("app_home") }}" class="logo"><h1>VoyageLoisir</h1></a>
+          <ul class="nav">
+            <li><a href="{{ path("app_home") }}">Accueil</a></li>
+            <li><a href="{{ path("app_destinations") }}" class="active">Destinations</a></li>
+            <li><a href="{{ path("app_contact") }}">Contact</a></li>
+          </ul>
+          <a class="menu-trigger"><span>Menu</span></a>
+        </nav>
+      </div>
+    </div>
+  </div>
+</header>
+
+{# ===== HERO SLIDER ===== #}
+<style>
+.dslide { position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;opacity:0;transition:opacity 1s ease;z-index:0; }
+.dslide.active { opacity:1;z-index:1; }
+</style>
+<div style="position:relative;width:100%;height:520px;overflow:hidden;background:#222">
+
+  {% if destination.images|length > 0 %}
+    {% for image in destination.images %}
+      <img src="{{ asset(image.urlImage) }}"
+           alt="{{ destination.nom }}"
+           class="dslide{% if loop.first %} active{% endif %}">
+    {% endfor %}
+  {% else %}
+    <img src="{{ asset("assets_front/images/images/single-property.jpg") }}"
+         alt="{{ destination.nom }}"
+         class="dslide active">
+  {% endif %}
+
+  <div style="position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,0.2) 0%,rgba(0,0,0,0.65) 100%);z-index:2"></div>
+
+  <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px;z-index:3">
+    <span style="color:#f97316;font-size:14px;font-weight:600;letter-spacing:3px;text-transform:uppercase;margin-bottom:14px">{{ destination.pays }}</span>
+    <h1 style="color:#fff;font-size:52px;font-weight:700;margin-bottom:12px;text-shadow:0 2px 8px rgba(0,0,0,0.4)">{{ destination.nom }}</h1>
+    <p style="color:rgba(255,255,255,0.85);font-size:17px;max-width:520px;margin-bottom:0">
+      {{ destination.meilleureSaison ? "Meilleure saison : " ~ destination.meilleureSaison : "" }}
+    </p>
+    <div style="margin-top:20px">
+      <a href="{{ path("app_destinations") }}" style="color:rgba(255,255,255,0.7);font-size:13px;text-decoration:none">Accueil</a>
+      <span style="color:rgba(255,255,255,0.5);margin:0 8px">/</span>
+      <a href="{{ path("app_destinations") }}" style="color:rgba(255,255,255,0.7);font-size:13px;text-decoration:none">Destinations</a>
+      <span style="color:rgba(255,255,255,0.5);margin:0 8px">/</span>
+      <span style="color:#f97316;font-size:13px">{{ destination.nom }}</span>
+    </div>
+  </div>
+
+  <div style="position:absolute;bottom:20px;left:50%;transform:translateX(-50%);display:flex;gap:8px;z-index:4" id="detail-dots"></div>
+
+</div>
+
+<script>
+(function() {
+    var cur = 0;
+    var timer = null;
+
+    function init() {
+        var slides = document.querySelectorAll(".dslide");
+        var dc     = document.getElementById("detail-dots");
+        if (!slides || slides.length <= 1) return;
+
+        var dots = [];
+        for (var i = 0; i < slides.length; i++) {
+            (function(idx) {
+                var d = document.createElement("div");
+                d.style.cssText = "width:10px;height:10px;border-radius:50%;cursor:pointer;transition:background 0.3s;background:" + (idx===0 ? "#f97316" : "rgba(255,255,255,0.5)");
+                d.addEventListener("click", function() { go(idx, slides, dots); });
+                dc.appendChild(d);
+                dots.push(d);
+            })(i);
+        }
+
+        timer = setInterval(function() {
+            go((cur + 1) % slides.length, slides, dots);
+        }, 7000);
+
+        function go(i, slides, dots) {
+            slides[cur].classList.remove("active");
+            dots[cur].style.background = "rgba(255,255,255,0.5)";
+            cur = i;
+            slides[cur].classList.add("active");
+            dots[cur].style.background = "#f97316";
+            clearInterval(timer);
+            timer = setInterval(function() { go((cur+1) % slides.length, slides, dots); }, 7000);
+        }
+    }
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", init);
+    } else {
+        init();
+    }
+})();
+</script>
+
+{# ===== CONTENU ===== #}
+<div class="single-property section">
+  <div class="container">
+    <div class="row">
+
+      <div class="col-lg-8">
+
+
+        {# ===== NOTE AUTOMATIQUE ===== #}
+        {% set note_visites = 0 %}
+        {% if destination.nbVisites >= 10000 %}
+            {% set note_visites = 2.5 %}
+        {% elseif destination.nbVisites >= 5000 %}
+            {% set note_visites = 2 %}
+        {% elseif destination.nbVisites >= 2000 %}
+            {% set note_visites = 1.5 %}
+        {% elseif destination.nbVisites >= 1000 %}
+            {% set note_visites = 1 %}
+        {% elseif destination.nbVisites >= 500 %}
+            {% set note_visites = 0.5 %}
+        {% endif %}
+
+        {% set note_saison = 0 %}
+        {% if destination.meilleureSaison == "Ete" %}
+            {% set note_saison = 2.5 %}
+        {% elseif destination.meilleureSaison == "Printemps" %}
+            {% set note_saison = 2 %}
+        {% elseif destination.meilleureSaison == "Automne" %}
+            {% set note_saison = 1.5 %}
+        {% elseif destination.meilleureSaison == "Hiver" %}
+            {% set note_saison = 1 %}
+        {% endif %}
+
+        {% set note_totale = note_visites + note_saison %}
+        {% if note_totale > 5 %}{% set note_totale = 5 %}{% endif %}
+        {% set etoiles_pleines = note_totale|round(0, "floor") %}
+        {% set demi_etoile = ((note_totale - etoiles_pleines) >= 0.5) ? 1 : 0 %}
+        {% set etoiles_vides = 5 - etoiles_pleines - demi_etoile %}
+
+        <div style="margin-bottom:30px;padding:20px;background:#fff3e0;border-radius:12px;border:1px solid #ffe0b2">
+          <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap">
+            <div style="text-align:center;min-width:70px">
+              <div style="font-size:42px;font-weight:700;color:#f97316;line-height:1">{{ note_totale|number_format(1) }}</div>
+              <div style="font-size:12px;color:#888;margin-top:4px">sur 5</div>
+            </div>
+            <div>
+              <div style="display:flex;gap:4px;margin-bottom:8px">
+                {% for i in 1..etoiles_pleines %}
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="#f97316"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                {% endfor %}
+                {% if demi_etoile %}
+                  <svg width="24" height="24" viewBox="0 0 24 24"><defs><linearGradient id="half"><stop offset="50%" stop-color="#f97316"/><stop offset="50%" stop-color="#ddd"/></linearGradient></defs><path fill="url(#half)" d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                {% endif %}
+                {% for i in 1..etoiles_vides %}
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="#ddd"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                {% endfor %}
+              </div>
+              <div style="display:flex;gap:16px;flex-wrap:wrap">
+                <div style="font-size:12px;color:#666">
+                  <span style="font-weight:600;color:#f97316">Visites</span> :
+                  {% if destination.nbVisites >= 10000 %} Tres populaire
+                  {% elseif destination.nbVisites >= 5000 %} Populaire
+                  {% elseif destination.nbVisites >= 2000 %} Bien visite
+                  {% elseif destination.nbVisites >= 1000 %} Connu
+                  {% elseif destination.nbVisites >= 500 %}  Emergent
+                  {% else %} Peu connu
+                  {% endif %}
+                  ({{ destination.nbVisites ?? 0 }})
+                </div>
+                <div style="font-size:12px;color:#666">
+                  <span style="font-weight:600;color:#f97316">Saison</span> :
+                  {% if destination.meilleureSaison == "Ete" %} Excellente
+                  {% elseif destination.meilleureSaison == "Printemps" %} Tres bonne
+                  {% elseif destination.meilleureSaison == "Automne" %} Bonne
+                  {% elseif destination.meilleureSaison == "Hiver" %} Correcte
+                  {% else %} -
+                  {% endif %}
+                  ({{ destination.meilleureSaison ?? "-" }})
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="main-content" style="margin-bottom:30px">
+          <span class="category">{{ destination.pays }}</span>
+          <h4>{{ destination.nom }} - {{ destination.pays }}</h4>
+          <p>{{ destination.description ?? "Aucune description disponible." }}</p>
+        </div>
+
+        {# ===== GALERIE EN GRILLE ===== #}
+        {% if destination.images|length > 0 %}
+        <div style="margin-bottom:30px">
+          <h5 style="margin-bottom:16px">Galerie photos</h5>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
+            {% for image in destination.images %}
+              <div style="overflow:hidden;border-radius:10px;cursor:pointer" onclick="openLightbox({{ loop.index0 }})">
+                <img src="{{ asset(image.urlImage) }}"
+                     alt="{{ destination.nom }}"
+                     style="width:100%;height:130px;object-fit:cover;transition:transform 0.3s"
+                     onmouseover="this.style.transform='scale(1.06)'"
+                     onmouseout="this.style.transform='scale(1)'">
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+
+        {# ===== LIGHTBOX ===== #}
+        <div id="lightbox" onclick="closeLightbox()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:9999;align-items:center;justify-content:center">
+          <button onclick="prevLight(event)" style="position:absolute;left:20px;top:50%;transform:translateY(-50%);background:rgba(255,255,255,0.15);border:none;color:#fff;font-size:28px;width:48px;height:48px;border-radius:50%;cursor:pointer">&#8249;</button>
+          <img id="lightbox-img" src="" alt="" style="max-width:90vw;max-height:85vh;border-radius:10px;object-fit:contain">
+          <button onclick="nextLight(event)" style="position:absolute;right:20px;top:50%;transform:translateY(-50%);background:rgba(255,255,255,0.15);border:none;color:#fff;font-size:28px;width:48px;height:48px;border-radius:50%;cursor:pointer">&#8250;</button>
+          <span onclick="closeLightbox()" style="position:absolute;top:20px;right:24px;color:#fff;font-size:28px;cursor:pointer">&#10005;</span>
+          <div id="lightbox-count" style="position:absolute;bottom:20px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,0.7);font-size:13px"></div>
+        </div>
+
+        <script>
+        var imgUrls = [{% for image in destination.images %}"{{ asset(image.urlImage) }}"{% if not loop.last %},{% endif %}{% endfor %}];
+        var lbCurrent = 0;
+        function openLightbox(i) {
+            lbCurrent = i;
+            document.getElementById("lightbox").style.display = "flex";
+            document.getElementById("lightbox-img").src = imgUrls[i];
+            document.getElementById("lightbox-count").textContent = (i+1) + " / " + imgUrls.length;
+        }
+        function closeLightbox() { document.getElementById("lightbox").style.display = "none"; }
+        function prevLight(e) { e.stopPropagation(); lbCurrent=(lbCurrent-1+imgUrls.length)%imgUrls.length; openLightbox(lbCurrent); }
+        function nextLight(e) { e.stopPropagation(); lbCurrent=(lbCurrent+1)%imgUrls.length; openLightbox(lbCurrent); }
+        document.addEventListener("keydown", function(e) {
+            if (document.getElementById("lightbox").style.display==="flex") {
+                if (e.key==="ArrowLeft") prevLight({stopPropagation:function(){}});
+                if (e.key==="ArrowRight") nextLight({stopPropagation:function(){}});
+                if (e.key==="Escape") closeLightbox();
+            }
+        });
+        </script>
+
+
+        {# ===== METEO VOYAGE ===== #}
+        {% if destination.latitude and destination.longitude %}
+        <div style="margin-bottom:30px">
+          <h5 style="margin-bottom:15px">Meteo pendant le voyage</h5>
+          {% if destination.voyage and destination.voyage.dateDepart and destination.voyage.dateArrivee %}
+          <div style="background:#fff3e0;border-radius:10px;padding:12px 16px;margin-bottom:14px;border:1px solid #ffe0b2;font-size:13px;color:#555">
+            Voyage du <strong style="color:#f97316">{{ destination.voyage.dateDepart|date("d/m/Y") }}</strong>
+            au <strong style="color:#f97316">{{ destination.voyage.dateArrivee|date("d/m/Y") }}</strong>
+            | <strong>{{ destination.voyage.pointDepart ?? "" }}</strong> vers <strong>{{ destination.voyage.pointArrivee ?? "" }}</strong>
+          </div>
+          {% endif %}
+          <div id="meteo-loading" style="text-align:center;color:#888;padding:20px;font-size:14px">Chargement...</div>
+          <div id="meteo-days" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px"></div>
+          <div id="meteo-msg" style="display:none;text-align:center;font-size:13px;padding:10px;margin-top:8px;border-radius:8px"></div>
+          <div style="margin-top:8px;text-align:right"><small style="color:#bbb;font-size:11px">Source : Open-Meteo.com</small></div>
+        </div>
+
+        <script>
+        (function() {
+            var lat  = {{ destination.latitude }};
+            var lng  = {{ destination.longitude }};
+            {% if destination.voyage and destination.voyage.dateDepart and destination.voyage.dateArrivee %}
+            var startDate = "{{ destination.voyage.dateDepart|date("Y-m-d") }}";
+            var endDate   = "{{ destination.voyage.dateArrivee|date("Y-m-d") }}";
+            {% else %}
+            var startDate = null; var endDate = null;
+            {% endif %}
+
+            var WC = {0:"Ciel clair",1:"Princ. clair",2:"Part. nuageux",3:"Couvert",45:"Brouillard",48:"Brouillard",51:"Bruine",53:"Bruine",55:"Bruine dense",61:"Pluie legere",63:"Pluie",65:"Pluie forte",71:"Neige legere",73:"Neige",75:"Neige forte",80:"Averses",81:"Averses",82:"Averses",95:"Orage",96:"Orage",99:"Orage fort"};
+            var DAYS = ["Dim","Lun","Mar","Mer","Jeu","Ven","Sam"];
+
+            function fmt(d) {
+                return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
+            }
+            function iconType(c) {
+                if(c===0)return"sun";if(c<=2)return"partly";if(c===3)return"cloud";if(c<=48)return"fog";if(c<=67)return"rain";if(c<=77)return"snow";if(c<=82)return"shower";return"storm";
+            }
+            function svgIcon(t,s){s=s||36;var ic={sun:"<svg width='"+s+"' height='"+s+"' viewBox='0 0 48 48' fill='none'><circle cx='24' cy='24' r='10' fill='#f97316'/><g stroke='#f97316' stroke-width='2.5' stroke-linecap='round'><line x1='24' y1='4' x2='24' y2='10'/><line x1='24' y1='38' x2='24' y2='44'/><line x1='4' y1='24' x2='10' y2='24'/><line x1='38' y1='24' x2='44' y2='24'/></g></svg>",partly:"<svg width='"+s+"' height='"+s+"' viewBox='0 0 48 48' fill='none'><circle cx='20' cy='20' r='8' fill='#f97316'/><rect x='10' y='26' width='28' height='12' rx='6' fill='#90caf9'/></svg>",cloud:"<svg width='"+s+"' height='"+s+"' viewBox='0 0 48 48' fill='none'><rect x='6' y='18' width='36' height='18' rx='9' fill='#90caf9'/><ellipse cx='20' cy='20' rx='10' ry='8' fill='#bbdefb'/></svg>",fog:"<svg width='"+s+"' height='"+s+"' viewBox='0 0 48 48' fill='none'><g stroke='#90a4ae' stroke-width='3' stroke-linecap='round'><line x1='8' y1='16' x2='40' y2='16'/><line x1='8' y1='24' x2='40' y2='24'/><line x1='8' y1='32' x2='40' y2='32'/></g></svg>",rain:"<svg width='"+s+"' height='"+s+"' viewBox='0 0 48 48' fill='none'><rect x='8' y='10' width='32' height='16' rx='8' fill='#90caf9'/><g stroke='#1976d2' stroke-width='2.5' stroke-linecap='round'><line x1='16' y1='32' x2='14' y2='40'/><line x1='24' y1='32' x2='22' y2='40'/><line x1='32' y1='32' x2='30' y2='40'/></g></svg>",snow:"<svg width='"+s+"' height='"+s+"' viewBox='0 0 48 48' fill='none'><rect x='8' y='10' width='32' height='16' rx='8' fill='#bbdefb'/><g fill='#90caf9'><circle cx='16' cy='36' r='3'/><circle cx='24' cy='36' r='3'/><circle cx='32' cy='36' r='3'/></g></svg>",shower:"<svg width='"+s+"' height='"+s+"' viewBox='0 0 48 48' fill='none'><circle cx='22' cy='14' r='7' fill='#f97316'/><rect x='8' y='18' width='32' height='12' rx='6' fill='#90caf9'/><g stroke='#1976d2' stroke-width='2.5' stroke-linecap='round'><line x1='16' y1='34' x2='14' y2='42'/><line x1='24' y1='34' x2='22' y2='42'/><line x1='32' y1='34' x2='30' y2='42'/></g></svg>",storm:"<svg width='"+s+"' height='"+s+"' viewBox='0 0 48 48' fill='none'><rect x='6' y='8' width='36' height='16' rx='8' fill='#546e7a'/><polyline points='26,26 20,36 25,36 19,46' stroke='#fdd835' stroke-width='3' fill='none'/></svg>"};return ic[t]||ic["sun"];}
+
+            function showMsg(txt, color) {
+                var m = document.getElementById("meteo-msg");
+                m.style.display = "block";
+                m.style.color   = color || "#E24B4A";
+                m.style.background = color === "#BA7517" ? "#fff8e1" : "#ffebee";
+                m.textContent   = txt;
+            }
+
+            var loading = document.getElementById("meteo-loading");
+
+            if (!startDate || !endDate) {
+                loading.style.display = "none";
+                showMsg("Aucun voyage associe a cette destination.", "#E24B4A");
+                return;
+            }
+
+            var today   = new Date(); today.setHours(0,0,0,0);
+            var maxDate = new Date(today); maxDate.setDate(today.getDate() + 14);
+            var sDate   = new Date(startDate);
+            var eDate   = new Date(endDate);
+
+            if (sDate > maxDate) {
+                loading.style.display = "none";
+                showMsg("Meteo non disponible - le voyage commence apres le " + fmt(maxDate) + ".", "#E24B4A");
+                return;
+            }
+            if (sDate < today) sDate = today;
+            var partiel = false;
+            if (eDate > maxDate) { eDate = maxDate; partiel = true; }
+
+            var url = "https://api.open-meteo.com/v1/forecast"
+                + "?latitude="  + lat + "&longitude=" + lng
+                + "&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_sum,windspeed_10m_max"
+                + "&timezone=auto&start_date=" + fmt(sDate) + "&end_date=" + fmt(eDate);
+
+            fetch(url)
+                .then(function(r){return r.json();})
+                .then(function(data){
+                    loading.style.display = "none";
+                    if (data.error) { showMsg("Erreur API : " + (data.reason||"inconnue"), "#E24B4A"); return; }
+                    var daily = data.daily;
+                    if (!daily||!daily.time||daily.time.length===0) { showMsg("Aucune donnee disponible.", "#E24B4A"); return; }
+                    var daysDiv = document.getElementById("meteo-days");
+                    daysDiv.innerHTML = "";
+                    for (var i=0;i<daily.time.length;i++) {
+                        var d=new Date(daily.time[i]),code=daily.weathercode[i];
+                        var tmax=Math.round(daily.temperature_2m_max[i]),tmin=Math.round(daily.temperature_2m_min[i]);
+                        var pluie=Math.round(daily.precipitation_sum[i]),vent=Math.round(daily.windspeed_10m_max[i]);
+                        var card=document.createElement("div");
+                        card.style.cssText="background:#fff;border-radius:10px;padding:14px 10px;text-align:center;border:1px solid #eee;transition:box-shadow 0.2s";
+                        card.onmouseover=function(){this.style.boxShadow="0 4px 16px rgba(249,115,22,0.15)";};
+                        card.onmouseout=function(){this.style.boxShadow="none";};
+                        card.innerHTML="<div style='font-size:13px;font-weight:700;color:#333'>"+DAYS[d.getDay()]+"</div>"
+                            +"<div style='font-size:11px;color:#aaa;margin-bottom:8px'>"+d.getDate()+"/"+(d.getMonth()+1)+"</div>"
+                            +"<div style='display:flex;justify-content:center;margin-bottom:6px'>"+svgIcon(iconType(code),36)+"</div>"
+                            +"<div style='font-size:11px;color:#666;margin-bottom:8px;min-height:28px'>"+(WC[code]||"")+"</div>"
+                            +"<div style='font-size:16px;font-weight:700;color:#f97316'>"+tmax+" C</div>"
+                            +"<div style='font-size:12px;color:#90a4ae;margin-bottom:6px'>"+tmin+" C</div>"
+                            +"<div style='font-size:11px;color:#64b5f6'>Pluie : "+pluie+" mm</div>"
+                            +"<div style='font-size:11px;color:#78909c'>Vent : "+vent+" km/h</div>";
+                        daysDiv.appendChild(card);
+                    }
+                    if (partiel) showMsg("Affichage partiel - meteo disponible jusqu au "+fmt(maxDate)+" seulement.", "#BA7517");
+                })
+                .catch(function(e){ loading.style.display="none"; showMsg("Erreur reseau : "+e.message, "#E24B4A"); });
+        })();
+        </script>
+        {% endif %}
+
+        {% if destination.videoPath %}
+          <div style="margin-bottom:30px">
+            <h5 style="margin-bottom:15px">Video de presentation</h5>
+            <video controls style="width:100%;border-radius:10px;max-height:360px">
+              <source src="{{ asset(destination.videoPath) }}" type="video/mp4">
+            </video>
+          </div>
+        {% endif %}
+
+        {% if destination.latitude and destination.longitude %}
+          <div style="margin-bottom:30px">
+            <h5 style="margin-bottom:15px">Localisation</h5>
+            <iframe src="https://www.google.com/maps?q={{ destination.latitude }},{{ destination.longitude }}&z=12&output=embed"
+              width="100%" height="300" frameborder="0" style="border:0;border-radius:10px" allowfullscreen=""></iframe>
+          </div>
+        {% endif %}
+
+      </div>
+
+      <div class="col-lg-4">
+
+        <div class="info-table">
+          <ul>
+            <li>
+              <img src="{{ asset("assets_front/images/images/info-icon-01.png") }}" alt="" style="max-width:52px">
+              <h4>{{ destination.pays }}<br><span>Pays</span></h4>
+            </li>
+            <li>
+              <img src="{{ asset("assets_front/images/images/info-icon-02.png") }}" alt="" style="max-width:52px">
+              <h4>{{ destination.meilleureSaison ?? "-" }}<br><span>Meilleure saison</span></h4>
+            </li>
+            <li>
+              <img src="{{ asset("assets_front/images/images/info-icon-03.png") }}" alt="" style="max-width:52px">
+              <h4>{{ destination.nbVisites ?? 0 }}<br><span>Visites</span></h4>
+            </li>
+            <li>
+              <img src="{{ asset("assets_front/images/images/info-icon-04.png") }}" alt="" style="max-width:52px">
+              <h4>{{ destination.statut ? "Actif" : "Inactif" }}<br><span>Statut</span></h4>
+            </li>
+          </ul>
+        </div>
+
+        {% if destination.voyage %}
+          <div class="info-table" style="margin-top:20px">
+            <ul>
+              <li style="display:block;padding:15px">
+                <h5 style="margin-bottom:12px;border-bottom:1px solid #eee;padding-bottom:8px">Voyage associe</h5>
+                <p style="margin:6px 0">Depart : <strong>{{ destination.voyage.pointDepart ?? "-" }}</strong></p>
+                <p style="margin:6px 0">Arrivee : <strong>{{ destination.voyage.pointArrivee ?? "-" }}</strong></p>
+                <p style="margin:6px 0">Date depart : <strong>{{ destination.voyage.dateDepart ? destination.voyage.dateDepart|date("d/m/Y") : "-" }}</strong></p>
+                <p style="margin:6px 0">Date arrivee : <strong>{{ destination.voyage.dateArrivee ? destination.voyage.dateArrivee|date("d/m/Y") : "-" }}</strong></p>
+                <p style="margin:6px 0">Prix : <strong>{{ destination.voyage.prix ? destination.voyage.prix ~ " EUR" : "-" }}</strong></p>
+              </li>
+            </ul>
+          </div>
+        {% endif %}
+
+        {% if destination.transports|length > 0 %}
+          <div class="info-table" style="margin-top:20px">
+            <ul>
+              <li style="display:block;padding:15px">
+                <h5 style="margin-bottom:12px;border-bottom:1px solid #eee;padding-bottom:8px">Transports disponibles</h5>
+                {% for transport in destination.transports %}
+                  <p style="margin:6px 0">
+                    {% if transport.typeTransport == "Avion" %}<i class="fa fa-plane" style="color:#f97316;margin-right:6px"></i>
+                    {% elseif transport.typeTransport == "Bus" %}<i class="fa fa-bus" style="color:#f97316;margin-right:6px"></i>
+                    {% elseif transport.typeTransport == "Train" %}<i class="fa fa-train" style="color:#f97316;margin-right:6px"></i>
+                    {% elseif transport.typeTransport == "Voiture" %}<i class="fa fa-car" style="color:#f97316;margin-right:6px"></i>
+                    {% endif %}
+                    <strong>{{ transport.typeTransport }}</strong>
+                  </p>
+                {% endfor %}
+              </li>
+            </ul>
+          </div>
+        {% endif %}
+
+
+        <div class="info-table" style="margin-top:20px">
+          <ul>
+            <li style="display:block;padding:15px;text-align:center">
+              <h5 style="margin-bottom:12px;border-bottom:1px solid #eee;padding-bottom:8px;text-align:left">Partager cette destination</h5>
+              <div id="qrcode" style="display:inline-block;padding:10px;background:#fff;border-radius:8px;border:1px solid #eee;margin-bottom:10px"></div>
+              <div style="font-size:12px;color:#888;margin-bottom:12px">Scannez pour partager</div>
+              <button onclick="downloadQR()" style="width:100%;padding:10px;background:#f97316;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer">
+                Telecharger le QR Code
+              </button>
+            </li>
+          </ul>
+        </div>
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+        <script>
+        var pageUrl = window.location.href.replace("127.0.0.1", "192.168.0.182");
+        var qr = new QRCode(document.getElementById("qrcode"), {
+            text        : pageUrl,
+            width       : 150,
+            height      : 150,
+            colorDark   : "#1a1a1a",
+            colorLight  : "#ffffff",
+            correctLevel: QRCode.CorrectLevel.H
+        });
+
+        function downloadQR() {
+            setTimeout(function() {
+                var canvas = document.querySelector("#qrcode canvas");
+                var img    = document.querySelector("#qrcode img");
+                var link   = document.createElement("a");
+                link.download = "qrcode-{{ destination.nom|replace({" ": "-"}) }}.png";
+                if (canvas) {
+                    link.href = canvas.toDataURL("image/png");
+                } else if (img) {
+                    link.href = img.src;
+                }
+                link.click();
+            }, 500);
+        }
+        </script>
+
+        <div class="main-button" style="margin-top:20px">
+          <a href="{{ path("app_contact") }}">Reserver cette destination</a>
+        </div>
+        <div style="margin-top:15px;text-align:center">
+          <a href="{{ path("app_destinations") }}" style="color:#888;font-size:13px">Retour aux destinations</a>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="container">
+    <div class="col-lg-12">
+      <p>Copyright &copy; 2026 VoyageLoisir. Design: <a href="https://templatemo.com" target="_blank">TemplateMo</a></p>
+    </div>
+  </div>
+</footer>
+
+{% endblock %}
