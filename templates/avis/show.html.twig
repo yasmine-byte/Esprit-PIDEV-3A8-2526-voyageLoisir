@@ -1,7 +1,5 @@
 {% extends 'base_front.html.twig' %}
-
 {% block title %}Mon avis - Villa Agency{% endblock %}
-
 {% block body %}
     {% include 'home/partials/header.html.twig' %}
 
@@ -16,58 +14,158 @@
         </div>
     </div>
 
-    <div class="container mt-5 mb-5 pb-5 pt-3" style="min-height: 40vh;">
-        <div class="row justify-content-center">
-            <div class="col-md-8">
-                <div class="card shadow-sm border-0 mb-4 p-4">
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <h4>Avis : {{ avis.type.nom }}</h4>
-                        {% if avis.statut == 'Validé' %}
-                            <span class="badge bg-success py-2 px-3">Validé</span>
-                        {% elseif avis.statut == 'Rejeté' %}
-                            <span class="badge bg-danger py-2 px-3">Rejeté</span>
-                        {% else %}
-                            <span class="badge bg-warning text-dark py-2 px-3">En attente</span>
-                        {% endif %}
-                    </div>
-                    
-                    <div class="row mb-3">
-                        <div class="col-sm-3 fw-bold text-muted">Note:</div>
-                        <div class="col-sm-9">
-                            {% for i in 1..5 %}
-                                {% if i <= avis.nbEtoiles %}
-                                    <i class="fas fa-star" style="color: gold;"></i>
-                                {% else %}
-                                    <i class="far fa-star" style="color: #ccc;"></i>
-                                {% endif %}
-                            {% endfor %}
-                        </div>
-                    </div>
-                    
-                    <div class="row mb-3">
-                        <div class="col-sm-3 fw-bold text-muted">Date:</div>
-                        <div class="col-sm-9">{{ avis.dateAvis ? avis.dateAvis|date('d/m/Y') : '' }}</div>
-                    </div>
-                    
-                    <div class="row mb-3">
-                        <div class="col-sm-3 fw-bold text-muted">Contenu:</div>
-                        <div class="col-sm-9 bg-light p-3 rounded" style="font-size:1.05rem;">
-                            {{ avis.contenu|nl2br }}
-                        </div>
-                    </div>
+    <style>
+        .show-card {
+            background: #fff;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            padding: 36px;
+            max-width: 680px;
+            margin: 0 auto;
+        }
+        .show-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 28px;
+            border-bottom: 2px solid #f8f8f8;
+            padding-bottom: 20px;
+        }
+        .show-type { font-size: 1.3rem; font-weight: 700; color: #222; }
+        .badge-statut { padding: 6px 16px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; }
+        .badge-attente  { background: #fff3cd; color: #856404; border: 1px solid #ffc107; }
+        .badge-valide   { background: #d4edda; color: #155724; border: 1px solid #28a745; }
+        .badge-rejete   { background: #f8d7da; color: #721c24; border: 1px solid #dc3545; }
 
-                    <div class="mt-4 pt-3 border-top d-flex justify-content-between">
-                        {% if avis.statut == 'En attente' %}
-                            <a href="{{ path('avis_edit', {'id': avis.id}) }}" class="btn btn-outline-dark px-4 py-2 rounded-pill">Modifier</a>
-                        {% else %}
-                            <div></div>
-                        {% endif %}
-                        <a href="{{ path('avis_index') }}" class="btn text-white px-4 py-2 rounded-pill" style="background-color: #f35525;">Retour à la liste</a>
+        .info-row { display: flex; align-items: flex-start; gap: 16px; margin-bottom: 22px; }
+        .info-lbl { font-size: 0.82rem; font-weight: 700; color: #aaa; text-transform: uppercase; letter-spacing: 0.05em; min-width: 90px; padding-top: 2px; }
+        .info-val { font-size: 0.95rem; color: #333; flex: 1; }
+
+        /* Étoiles show */
+        .stars-show { display: flex; gap: 4px; }
+        .star-show { font-size: 1.8rem; line-height: 1; }
+        .star-show.on  { color: #f35525; }
+        .star-show.off { color: #e0e0e0; }
+
+        /* Contenu */
+        .contenu-box {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 14px 18px;
+            font-size: 0.95rem;
+            color: #444;
+            line-height: 1.6;
+            border-left: 4px solid #f35525;
+        }
+
+        /* Réponse admin */
+        .reponse-card {
+            background: #f0fff4;
+            border: 1px solid #b2dfdb;
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-top: 24px;
+        }
+        .reponse-label {
+            font-size: 0.75rem; font-weight: 700; color: #28a745;
+            text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px;
+        }
+        .reponse-text { font-size: 0.92rem; color: #155724; font-style: italic; }
+
+        /* Boutons */
+        .btn-modifier {
+            background: transparent;
+            color: #333;
+            border: 2px solid #e0e0e0;
+            border-radius: 50px;
+            padding: 10px 28px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .btn-modifier:hover { border-color: #f35525; color: #f35525; }
+        .btn-retour {
+            background: #f35525;
+            color: #fff;
+            border: none;
+            border-radius: 50px;
+            padding: 10px 28px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .btn-retour:hover { background: #d44620; color: #fff; }
+    </style>
+
+    <div class="container mt-5 mb-5 pb-5 pt-3" style="min-height:40vh;">
+
+        {% for message in app.flashes('success') %}
+            <div class="alert alert-success alert-dismissible fade show mb-4">{{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+        {% endfor %}
+
+        <div class="show-card">
+
+            {# En-tête #}
+            <div class="show-header">
+                <div class="show-type">Avis : {{ avis.type ? avis.type.nom : '—' }}</div>
+                {% if avis.statut == 'Validé' %}
+                    <span class="badge-statut badge-valide">✓ Validé</span>
+                {% elseif avis.statut == 'Rejeté' %}
+                    <span class="badge-statut badge-rejete">✗ Rejeté</span>
+                {% else %}
+                    <span class="badge-statut badge-attente">⏳ En attente</span>
+                {% endif %}
+            </div>
+
+            {# Note étoiles #}
+            <div class="info-row">
+                <span class="info-lbl">Note</span>
+                <div class="info-val">
+                    <div class="stars-show">
+                        {% for i in 1..5 %}
+                            <span class="star-show {{ i <= avis.nbEtoiles ? 'on' : 'off' }}">★</span>
+                        {% endfor %}
+                    </div>
+                    <div style="font-size:0.78rem; color:#aaa; margin-top:4px;">
+                        {{ avis.nbEtoiles }}/5 étoiles
                     </div>
                 </div>
-
-
             </div>
+
+            {# Date #}
+            <div class="info-row">
+                <span class="info-lbl">Date</span>
+                <span class="info-val">{{ avis.dateAvis ? avis.dateAvis|date('d/m/Y') : '—' }}</span>
+            </div>
+
+            {# Contenu #}
+            <div class="info-row" style="align-items:flex-start;">
+                <span class="info-lbl">Contenu</span>
+                <div class="info-val">
+                    <div class="contenu-box">{{ avis.contenu|nl2br }}</div>
+                </div>
+            </div>
+
+            {# Réponse admin #}
+            {% if avis.reponse %}
+            <div class="reponse-card">
+                <div class="reponse-label">💬 Réponse de l'administrateur</div>
+                <div class="reponse-text">{{ avis.reponse }}</div>
+            </div>
+            {% endif %}
+
+            {# Boutons #}
+            <div class="mt-4 pt-3" style="border-top:1px solid #f0f0f0; display:flex; justify-content:space-between; align-items:center;">
+                {% if avis.statut == 'En attente' %}
+                    <a href="{{ path('avis_edit', {'id': avis.id}) }}" class="btn-modifier">✏ Modifier</a>
+                {% else %}
+                    <div></div>
+                {% endif %}
+                <a href="{{ path('avis_index') }}" class="btn-retour">← Retour à la liste</a>
+            </div>
+
         </div>
     </div>
 

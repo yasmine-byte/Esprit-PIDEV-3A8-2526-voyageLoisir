@@ -43,6 +43,4 @@ class AdminController extends AbstractController
     {
         return $this->render('admin/add-user.html.twig');
     }
-
-    
 }
