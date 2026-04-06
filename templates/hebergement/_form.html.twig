@@ -1,0 +1,44 @@
+{{ form_start(form, {'attr': {'novalidate': 'novalidate', 'enctype': 'multipart/form-data'}}) }}
+
+<div style="display:grid; gap:20px;">
+
+    <div>
+        {{ form_label(form.description, 'Description', {'label_attr': {'style': 'display:block; color:var(--text-secondary); font-size:13px; font-weight:600; margin-bottom:8px;'}}) }}
+        {{ form_widget(form.description, {'attr': {'style': 'width:100%; background:var(--bg-secondary); border:1px solid var(--border-color); border-radius:8px; padding:10px 14px; color:var(--text-primary); font-size:14px; resize:vertical; min-height:100px;', 'placeholder': 'Décrivez l\'hébergement...'}}) }}
+        {{ form_errors(form.description) }}
+    </div>
+
+    <div>
+        {{ form_label(form.prix, 'Prix (TND)', {'label_attr': {'style': 'display:block; color:var(--text-secondary); font-size:13px; font-weight:600; margin-bottom:8px;'}}) }}
+        {{ form_widget(form.prix, {'attr': {'style': 'width:100%; background:var(--bg-secondary); border:1px solid var(--border-color); border-radius:8px; padding:10px 14px; color:var(--text-primary); font-size:14px;', 'placeholder': 'Ex: 150.00'}}) }}
+        {{ form_errors(form.prix) }}
+    </div>
+
+    <div>
+    {{ form_label(form.imageFile, 'Image (JPG, PNG)', {'label_attr': {'style': 'display:block; color:var(--text-secondary); font-size:13px; font-weight:600; margin-bottom:8px;'}}) }}
+    {{ form_widget(form.imageFile) }}
+    {{ form_errors(form.imageFile) }}
+</div>
+
+    <div>
+        {{ form_label(form.type, 'Type d\'hébergement', {'label_attr': {'style': 'display:block; color:var(--text-secondary); font-size:13px; font-weight:600; margin-bottom:8px;'}}) }}
+        {{ form_widget(form.type, {'attr': {'style': 'width:100%; background:var(--bg-secondary); border:1px solid var(--border-color); border-radius:8px; padding:10px 14px; color:var(--text-primary); font-size:14px;'}}) }}
+        {{ form_errors(form.type) }}
+    </div>
+
+</div>
+
+<div style="margin-top:28px; display:flex; gap:12px;">
+    <button type="submit" style="background:var(--accent-primary); color:#fff; padding:10px 28px; border:none; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer;">
+        {{ button_label|default('Enregistrer') }}
+    </button>
+    <a href="{{ path('app_hebergement_index') }}" style="background:var(--bg-secondary); color:var(--text-secondary); padding:10px 28px; border-radius:8px; text-decoration:none; font-size:14px; font-weight:600;">
+        Annuler
+    </a>
+</div>
+
+{{ form_end(form) }}
+
+<style>
+.form-error { color: #ef4444; font-size: 12px; margin-top: 4px; display: block; }
+</style>

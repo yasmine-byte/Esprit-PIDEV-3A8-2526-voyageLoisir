@@ -1,0 +1,31 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}Détail Destination{% endblock %}
+
+{% block admin_content %}
+<div class="page-header">
+    <h1>{{ destination.nom }}</h1>
+    <p>{{ destination.pays }}</p>
+</div>
+
+<div class="card">
+    <table class="market-table">
+        <tr><th>Nom</th><td>{{ destination.nom }}</td></tr>
+        <tr><th>Pays</th><td>{{ destination.pays }}</td></tr>
+        <tr><th>Description</th><td>{{ destination.description }}</td></tr>
+        <tr><th>Meilleure Saison</th><td>{{ destination.meilleureSaison }}</td></tr>
+        <tr><th>Latitude</th><td>{{ destination.latitude }}</td></tr>
+        <tr><th>Longitude</th><td>{{ destination.longitude }}</td></tr>
+        <tr><th>Nb Visites</th><td>{{ destination.nbVisites }}</td></tr>
+        <tr><th>Statut</th><td>{{ destination.statut ? 'Actif' : 'Inactif' }}</td></tr>
+    </table>
+
+    <div style="margin-top:20px">
+        <a href="{{ path('app_destination_edit', {'id': destination.id}) }}" class="action-btn primary">Modifier</a>
+        {{ include('destination/_delete_form.html.twig') }}
+        <a href="{{ path('app_destination_index') }}" class="action-btn">Retour</a>
+    </div>
+</div>
+
+<footer class="copyright">Copyright &copy; 2026 VoyageLoisir</footer>
+{% endblock %}

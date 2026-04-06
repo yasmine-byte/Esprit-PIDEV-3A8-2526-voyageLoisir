@@ -1,7 +1,7 @@
 {% extends 'base_front.html.twig' %}
 {% block title %}Nouvelle Réclamation - Villa Agency{% endblock %}
 {% block body %}
-    {% include 'home/partials/header.html.twig' %}
+    
     <style>
         @keyframes fadeInUp{from{opacity:0;transform:translateY(30px);}to{opacity:1;transform:translateY(0);}}
         @keyframes spin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
@@ -112,7 +112,7 @@
         </div>
     </div>
 
-    {% include 'home/partials/footer.html.twig' %}
+    
     <script>
     document.addEventListener('DOMContentLoaded', function() {
         const inputTitre    = document.getElementById('input-titre');

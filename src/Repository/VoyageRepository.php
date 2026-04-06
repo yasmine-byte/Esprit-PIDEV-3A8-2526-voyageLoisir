@@ -6,9 +6,6 @@ use App\Entity\Voyage;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
-/**
- * @extends ServiceEntityRepository<Voyage>
- */
 class VoyageRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
@@ -16,28 +13,27 @@ class VoyageRepository extends ServiceEntityRepository
         parent::__construct($registry, Voyage::class);
     }
 
-    //    /**
-    //     * @return Voyage[] Returns an array of Voyage objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('v')
-    //            ->andWhere('v.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('v.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
+    public function findByFilters(string $search, string $tri, string $ordre): array
+    {
+        $allowed = ['id', 'date_depart', 'date_arrivee', 'point_depart', 'point_arrivee', 'prix'];
+        if (!in_array($tri, $allowed)) $tri = 'id';
+        $ordre = strtoupper($ordre) === 'DESC' ? 'DESC' : 'ASC';
 
-    //    public function findOneBySomeField($value): ?Voyage
-    //    {
-    //        return $this->createQueryBuilder('v')
-    //            ->andWhere('v.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+        $qb = $this->createQueryBuilder('v');
+
+        if ($search) {
+            if (is_numeric($search)) {
+                $qb->andWhere('v.point_depart LIKE :search OR v.point_arrivee LIKE :search OR v.id = :id')
+                   ->setParameter('search', '%' . $search . '%')
+                   ->setParameter('id', (int) $search);
+            } else {
+                $qb->andWhere('v.point_depart LIKE :search OR v.point_arrivee LIKE :search')
+                   ->setParameter('search', '%' . $search . '%');
+            }
+        }
+
+        $qb->orderBy('v.' . $tri, $ordre);
+
+        return $qb->getQuery()->getResult();
+    }
 }

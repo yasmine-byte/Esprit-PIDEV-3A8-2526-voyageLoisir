@@ -6,9 +6,6 @@ use App\Entity\Destination;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
-/**
- * @extends ServiceEntityRepository<Destination>
- */
 class DestinationRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
@@ -16,28 +13,37 @@ class DestinationRepository extends ServiceEntityRepository
         parent::__construct($registry, Destination::class);
     }
 
-    //    /**
-    //     * @return Destination[] Returns an array of Destination objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('d')
-    //            ->andWhere('d.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('d.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
+    public function findByFilters(string $search, string $saison, string $statut, string $tri, string $ordre): array
+    {
+        $allowed = ['id', 'nom', 'pays', 'meilleure_saison', 'nb_visites'];
+        if (!in_array($tri, $allowed)) $tri = 'id';
+        $ordre = strtoupper($ordre) === 'DESC' ? 'DESC' : 'ASC';
 
-    //    public function findOneBySomeField($value): ?Destination
-    //    {
-    //        return $this->createQueryBuilder('d')
-    //            ->andWhere('d.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+        $qb = $this->createQueryBuilder('d');
+
+        if ($search) {
+            if (is_numeric($search)) {
+                $qb->andWhere('d.nom LIKE :search OR d.pays LIKE :search OR d.id = :id')
+                   ->setParameter('search', '%' . $search . '%')
+                   ->setParameter('id', (int) $search);
+            } else {
+                $qb->andWhere('d.nom LIKE :search OR d.pays LIKE :search')
+                   ->setParameter('search', '%' . $search . '%');
+            }
+        }
+
+        if ($saison) {
+            $qb->andWhere('d.meilleure_saison = :saison')
+               ->setParameter('saison', $saison);
+        }
+
+        if ($statut !== '') {
+            $qb->andWhere('d.statut = :statut')
+               ->setParameter('statut', (bool) $statut);
+        }
+
+        $qb->orderBy('d.' . $tri, $ordre);
+
+        return $qb->getQuery()->getResult();
+    }
 }
