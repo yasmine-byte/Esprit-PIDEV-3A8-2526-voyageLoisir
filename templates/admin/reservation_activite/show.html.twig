@@ -1,0 +1,20 @@
+{% extends 'base_front.html.twig' %}
+
+{% block title %}Détails réservation{% endblock %}
+
+{% block body %}
+
+<div class="container mt-5">
+    <h2>Détails de la réservation</h2>
+
+    <p>Date: {{ reservation_activite.dateReservation|date('Y-m-d') }}</p>
+    <p>Personnes: {{ reservation_activite.nombrePersonnes }}</p>
+    <p>Statut: {{ reservation_activite.statut }}</p>
+    <p>Total: {{ reservation_activite.total }} TND</p>
+
+    <a href="{{ path('admin_reservation_activite_index') }}" class="btn btn-dark mt-3">
+        Retour
+    </a>
+</div>
+
+{% endblock %}

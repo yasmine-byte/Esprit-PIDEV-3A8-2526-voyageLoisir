@@ -1,0 +1,311 @@
+{% extends 'base_front.html.twig' %}
+
+{% block title %}Activités - Vianova{% endblock %}
+
+{% block body %}
+
+<style>
+/* ===== SEARCH BAR ===== */
+
+.activities-search-wrapper {
+  margin-top: 65px;
+  margin-bottom: 60px;
+  position: relative;
+  z-index: 20;
+}
+
+.activities-search-bar {
+  display: grid;
+grid-template-columns: 1.2fr 1fr 1fr 1fr 1fr auto;
+  background: #fdfcf9;
+  border: 1px solid #e7dcc8;
+  border-radius: 22px;
+  overflow: hidden;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.08);
+}
+
+.search-segment {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 18px 24px;
+  border-right: 1px solid #e7dcc8;
+  min-height: 85px;
+  background: #fdfcf9;
+}
+
+.search-segment:last-of-type {
+  border-right: none;
+}
+
+.search-segment label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #9c907f;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.search-segment input,
+.search-segment select {
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 18px;
+  font-weight: 600;
+  color: #2b2b2b;
+  width: 100%;
+  box-shadow: none;
+}
+
+.search-segment input::placeholder,
+.search-segment select {
+  color: #4a4a4a;
+  opacity: 0.85;
+}
+
+.search-main-btn {
+  border: none;
+  background: #1f1f1f;
+  color: #ffffff;
+  font-size: 22px;
+  font-weight: 700;
+  padding: 0 36px;
+  min-width: 200px;
+  transition: 0.25s ease;
+}
+
+.search-main-btn:hover {
+  background: #000000;
+}
+
+/* ===== ADD BUTTON ===== */
+
+.btn-add-activite {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px 42px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, #d6a96c, #c79352);
+  color: #1c1c1c;
+  font-size: 18px;
+  font-weight: 700;
+  text-decoration: none;
+  border: none;
+  transition: all 0.25s ease;
+}
+
+.btn-add-activite:hover {
+  background: linear-gradient(135deg, #c79352, #b88343);
+  color: #1c1c1c;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.12);
+}
+
+.btn-add-activite:active {
+  transform: scale(0.96);
+}
+
+/* ===== KEEP ORIGINAL CARD DESIGN, ONLY MAKE HEIGHTS EQUAL ===== */
+
+.properties-box {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.properties-items {
+  display: flex;
+  align-self: stretch;
+}
+
+.properties-items .item {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.properties-items .item img {
+  height: 260px;
+  object-fit: cover;
+  width: 100%;
+}
+
+.properties-items .item h4 {
+  min-height: 72px;
+}
+
+.properties-items .item ul {
+  min-height: 140px;
+}
+
+.properties-items .item .d-flex {
+  margin-top: auto;
+}
+
+/* ===== RESPONSIVE ===== */
+
+@media (max-width: 991px) {
+  .activities-search-bar {
+    grid-template-columns: 1fr;
+  }
+
+  .search-segment {
+    border-right: none;
+    border-bottom: 1px solid #e7dcc8;
+  }
+
+  .search-main-btn {
+    min-height: 64px;
+    width: 100%;
+  }
+
+  .activities-search-wrapper {
+    margin-top: 35px;
+  }
+
+  .properties-items .item h4,
+  .properties-items .item ul {
+    min-height: unset;
+  }
+}
+</style>
+
+<div class="page-heading header-text" style="
+  background-image:
+      linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)),
+      url('{{ asset('assets_front/images/images/my-banner.jpg') }}');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-12">
+        <span class="breadcrumb">
+          <a href="{{ path('app_home') }}">Home</a> / Activités
+        </span>
+        <h3>Nos Activités</h3>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container activities-search-wrapper">
+  <form method="get" class="activities-search-bar">
+
+    <div class="search-segment">
+      <label>Lieu</label>
+      <input type="text" name="lieu" placeholder="Ex: Tunis, Sousse..."
+             value="{{ app.request.get('lieu') }}">
+    </div>
+
+    <div class="search-segment">
+      <label>Type</label>
+      <input type="text" name="type" placeholder="Ex: Culture, Sport..."
+             value="{{ app.request.get('type') }}">
+    </div>
+
+    <div class="search-segment">
+      <label>Prix max</label>
+      <input type="number" step="0.01" min="0" name="prix_max" placeholder="Ex: 100"
+             value="{{ app.request.get('prix_max') }}">
+    </div>
+
+    <div class="search-segment">
+      <label>Durée max</label>
+      <input type="number" min="1" name="duree_max" placeholder="Ex: 120 min"
+             value="{{ app.request.get('duree_max') }}">
+    </div>
+    <div class="search-segment">
+  <label>Trier par prix</label>
+  <select name="sort">
+    <option value="">Par défaut</option>
+    <option value="prix_asc" {{ current_sort == 'prix_asc' ? 'selected' : '' }}>Prix croissant</option>
+    <option value="prix_desc" {{ current_sort == 'prix_desc' ? 'selected' : '' }}>Prix décroissant</option>
+  </select>
+</div>
+
+    <button type="submit" class="search-main-btn">
+      Rechercher
+    </button>
+
+  </form>
+</div>
+
+<div class="section properties">
+  <div class="container">
+
+    <div class="row mb-4">
+      <div class="col-lg-12 text-end">
+        <a href="{{ path('app_activite_new') }}" class="btn-add-activite">
+          Ajouter
+        </a>
+      </div>
+    </div>
+
+    <div class="row properties-box">
+      {% for activite in activites %}
+        <div class="col-lg-4 col-md-6 align-self-center mb-30 properties-items">
+          <div class="item">
+
+            <a href="{{ path('app_activite_show', {'id': activite.id}) }}">
+              <img
+                src="{{ activite.imageUrl ? activite.imageUrl : asset('assets_front/images/images/property-01.jpg') }}"
+                alt="{{ activite.nom }}"
+                style="height: 260px; object-fit: cover; width: 100%;">
+            </a>
+
+            <span class="category">
+              {{ activite.type ? activite.type : 'Activité' }}
+            </span>
+
+            <h6>{{ activite.prix }} TND</h6>
+
+            <h4>
+              <a href="{{ path('app_activite_show', {'id': activite.id}) }}">
+                {{ activite.nom }}
+              </a>
+            </h4>
+
+            <ul>
+              <li>Lieu: <span>{{ activite.lieu }}</span></li>
+              <li>Durée: <span>{{ activite.duree }} min</span></li>
+              <li>Note AI: <span>{{ activite.aiRating ?? 'N/A' }}</span></li>
+              <li>Description:
+                <span>
+                  {{ activite.description|slice(0, 60) ~ (activite.description|length > 60 ? '...' : '') }}
+                </span>
+              </li>
+            </ul>
+
+            <div class="d-flex flex-column gap-2 mt-3">
+              <a href="{{ path('app_activite_show', {'id': activite.id}) }}" class="main-button text-center">
+                Voir détails
+              </a>
+
+              <a href="{{ path('app_reservation_activite_new', {'id': activite.id}) }}" class="btn btn-warning btn-sm">
+                Réserver cette activité
+              </a>
+
+              <a href="{{ path('app_activite_edit', {'id': activite.id}) }}" class="btn btn-dark btn-sm">
+                Modifier
+              </a>
+            </div>
+
+          </div>
+        </div>
+      {% else %}
+        <div class="col-lg-12">
+          <div class="alert alert-info text-center">
+            Aucune activité trouvée.
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+
+  </div>
+</div>
+
+{% endblock %}

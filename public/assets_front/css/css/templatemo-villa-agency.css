@@ -1007,15 +1007,15 @@ Banner Style
 }
 
 .main-banner .item-1 {
-  background-image: url(../images/banner-01.jpg);
+  background-image: url('/assets_front/images/banner-01.jpg');
 }
 
 .main-banner .item-2 {
-  background-image: url(../images/banner-02.jpg);
+  background-image: url('/assets_front/images/banner-02.jpg');
 }
 
 .main-banner .item-3 {
-  background-image: url(../images/banner-03.jpg);
+  background-image: url('/assets_front/images/banner-03.jpg');
 }
 
 .main-banner .item span.category {
@@ -2087,4 +2087,13 @@ body {
   .contact-page .section-heading {
     margin-right: 100px;
   }
+}
+
+.nav li:last-child a {
+  display: inline-block;
+  padding: 10px 20px;
+  background-color: #1e1e1e;
+  color: #fff;
+  border-radius: 30px;
+  white-space: nowrap;
 }

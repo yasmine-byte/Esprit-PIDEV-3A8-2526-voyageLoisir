@@ -1,0 +1,53 @@
+﻿php :  Updating database 
+schema...
+At line:1 char:1
++ php bin/console 
+doctrine:schema:update 
+--force 2>&1 | Out-File 
+-Encod ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          
+    : NotSpecified: ( Upda  
+  ting database schema...   
+ :String) [], RemoteExce    
+ption
+    + FullyQualifiedErrorId 
+    : NativeCommandError
+ 
+
+
+In ExceptionConverter.php 
+line 102:
+                            
+  An exception occurred wh  
+  ile executing a query: S  
+  QLSTATE[HY000]: General   
+  error: 1553 Cannot drop   
+  index 'PRIMARY': needed   
+  in a foreign key constra  
+  int                       
+                            
+
+In Exception.php line 24:
+                            
+  SQLSTATE[HY000]: General  
+   error: 1553 Cannot drop  
+   index 'PRIMARY': needed  
+   in a foreign key constr  
+  aint                      
+                            
+
+In Connection.php line 27:
+                            
+  SQLSTATE[HY000]: General  
+   error: 1553 Cannot drop  
+   index 'PRIMARY': needed  
+   in a foreign key constr  
+  aint                      
+                            
+
+doctrine:schema:update 
+[--em EM] [--complete] 
+[--dump-sql] [-f|--force]
+

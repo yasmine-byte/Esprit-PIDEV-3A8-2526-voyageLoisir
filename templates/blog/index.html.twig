@@ -739,8 +739,6 @@
 {% endblock %}
 
 {% block body %}
-{% include 'home/partials/header.html.twig' %}
-
 {% set fallbackStories = [
     {
         category: 'Fresh Pick',
@@ -952,8 +950,6 @@
         {{ include('blog/_form.html.twig', { form: blog_form, form_class: 'blog-compose-form' }) }}
     </div>
 </div>
-
-{% include 'home/partials/footer.html.twig' %}
 {% endblock %}
 
 {% block javascripts %}
