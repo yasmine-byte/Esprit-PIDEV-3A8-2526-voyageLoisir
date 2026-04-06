@@ -1,0 +1,198 @@
+{% extends "base_front.html.twig" %}
+
+{% block title %}Destinations - Vianova{% endblock %}
+
+{% block body %}
+
+{# ===== HERO BANNER SLIDER ===== #}
+<div style="position:relative;width:100%;height:520px;overflow:hidden">
+
+  {% set slideIndex = 0 %}
+  {% for destination in destinations %}
+    {% for image in destination.images %}
+      <img src="{{ asset(image.urlImage) }}"
+           alt="{{ destination.nom }}"
+           class="hero-slide"
+           style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;opacity:{{ slideIndex == 0 ? '1' : '0' }};transition:opacity 1s ease">
+      {% set slideIndex = slideIndex + 1 %}
+    {% endfor %}
+  {% endfor %}
+
+  <div style="position:absolute;inset:0;background:linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.6) 100%);z-index:1"></div>
+
+  <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px;z-index:2">
+    <span style="color:#f97316;font-size:14px;font-weight:600;letter-spacing:3px;text-transform:uppercase;margin-bottom:16px">
+      Explorez le Monde
+    </span>
+    <h1 style="color:#fff;font-size:52px;font-weight:700;margin-bottom:16px;text-shadow:0 2px 8px rgba(0,0,0,0.3)">
+      Nos Destinations
+    </h1>
+    <p style="color:rgba(255,255,255,0.85);font-size:18px;max-width:560px;margin-bottom:36px">
+      Découvrez les plus beaux endroits du monde et planifiez votre prochain voyage
+    </p>
+
+    <form method="GET" action="{{ path('app_destinations') }}"
+          style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:center;width:100%;max-width:680px">
+      <div style="flex:1;min-width:220px">
+        <input type="text" name="search" value="{{ search }}"
+               placeholder="🔍 Destination, pays..."
+               style="width:100%;padding:14px 20px;border-radius:8px;border:none;background:#fff;color:#333;font-size:15px;box-shadow:0 4px 20px rgba(0,0,0,0.2)">
+      </div>
+      <div style="min-width:160px">
+        <select name="saison"
+                style="width:100%;padding:14px 16px;border-radius:8px;border:none;background:#fff;color:#333;font-size:15px;box-shadow:0 4px 20px rgba(0,0,0,0.2)">
+          <option value="">Toutes les saisons</option>
+          <option value="Printemps" {{ saison == 'Printemps' ? 'selected' : '' }}>🌸 Printemps</option>
+          <option value="Ete"       {{ saison == 'Ete'       ? 'selected' : '' }}>☀️ Été</option>
+          <option value="Automne"   {{ saison == 'Automne'   ? 'selected' : '' }}>🍂 Automne</option>
+          <option value="Hiver"     {{ saison == 'Hiver'     ? 'selected' : '' }}>❄️ Hiver</option>
+        </select>
+      </div>
+      <button type="submit"
+              style="padding:14px 28px;border-radius:8px;border:none;background:#f97316;color:#fff;font-size:15px;font-weight:600;cursor:pointer;box-shadow:0 4px 20px rgba(249,115,22,0.4);white-space:nowrap">
+        Rechercher
+      </button>
+    </form>
+
+    <div style="margin-top:24px">
+      <a href="{{ path('app_home') }}" style="color:rgba(255,255,255,0.7);font-size:13px;text-decoration:none">Accueil</a>
+      <span style="color:rgba(255,255,255,0.5);margin:0 8px">/</span>
+      <span style="color:#f97316;font-size:13px">Destinations</span>
+    </div>
+  </div>
+
+  <div style="position:absolute;bottom:20px;left:50%;transform:translateX(-50%);display:flex;gap:8px;z-index:3" id="hero-dots"></div>
+</div>
+
+<script>
+(function() {
+    var slides = document.querySelectorAll('.hero-slide');
+    var dotsContainer = document.getElementById('hero-dots');
+    var current = 0;
+    if (slides.length === 0) return;
+    slides.forEach(function(_, i) {
+        var dot = document.createElement('div');
+        dot.style.cssText = 'width:10px;height:10px;border-radius:50%;background:' + (i === 0 ? '#f97316' : 'rgba(255,255,255,0.5)') + ';cursor:pointer;transition:background 0.3s';
+        dot.addEventListener('click', function() { goTo(i); });
+        dotsContainer.appendChild(dot);
+    });
+    function goTo(index) {
+        slides[current].style.opacity = '0';
+        dotsContainer.children[current].style.background = 'rgba(255,255,255,0.5)';
+        current = index;
+        slides[current].style.opacity = '1';
+        dotsContainer.children[current].style.background = '#f97316';
+    }
+    setInterval(function() { goTo((current + 1) % slides.length); }, 7000);
+})();
+</script>
+
+{# ===== SECTION DESTINATIONS ===== #}
+<div class="section properties">
+  <div class="container">
+
+    {% if search or saison %}
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px">
+        <p style="color:#555;font-size:15px;margin:0">
+          <strong style="color:#f97316">{{ destinations|length }}</strong>
+          résultat{{ destinations|length > 1 ? 's' : '' }}
+          {% if search %} pour "<strong>{{ search }}</strong>"{% endif %}
+          {% if saison %} — <strong>{{ saison }}</strong>{% endif %}
+        </p>
+        <a href="{{ path('app_destinations') }}"
+           style="padding:8px 16px;border-radius:6px;border:1px solid #ddd;color:#666;font-size:13px;text-decoration:none">
+          ✕ Réinitialiser
+        </a>
+      </div>
+    {% endif %}
+
+    {% if not search and not saison %}
+    <ul class="properties-filter">
+      <li><a class="is_active" href="#!" data-filter="*">Toutes</a></li>
+      <li><a href="#!" data-filter=".Printemps">Printemps</a></li>
+      <li><a href="#!" data-filter=".Ete">Ete</a></li>
+      <li><a href="#!" data-filter=".Automne">Automne</a></li>
+      <li><a href="#!" data-filter=".Hiver">Hiver</a></li>
+    </ul>
+    {% endif %}
+
+    <div class="row properties-box">
+      {% for destination in destinations %}
+      <div class="col-lg-4 col-md-6 align-self-center mb-30 properties-items {{ destination.meilleureSaison }}">
+        <div class="item">
+          {% if destination.images|length > 0 %}
+            <a href="{{ path('app_destination_detail', {'id': destination.id}) }}">
+              <img src="{{ asset(destination.images[0].urlImage) }}" alt="{{ destination.nom }}"
+                   style="height:220px;object-fit:cover;width:100%">
+            </a>
+          {% else %}
+            <a href="{{ path('app_destination_detail', {'id': destination.id}) }}">
+              <img src="{{ asset('assets_front/images/images/property-01.jpg') }}" alt="{{ destination.nom }}"
+                   style="height:220px;object-fit:cover;width:100%">
+            </a>
+          {% endif %}
+
+          {% set nv = 0 %}
+          {% if destination.nbVisites >= 10000 %}{% set nv = 2.5 %}
+          {% elseif destination.nbVisites >= 5000 %}{% set nv = 2 %}
+          {% elseif destination.nbVisites >= 2000 %}{% set nv = 1.5 %}
+          {% elseif destination.nbVisites >= 1000 %}{% set nv = 1 %}
+          {% elseif destination.nbVisites >= 500 %}{% set nv = 0.5 %}
+          {% endif %}
+          {% set ns = 0 %}
+          {% if destination.meilleureSaison == "Ete" %}{% set ns = 2.5 %}
+          {% elseif destination.meilleureSaison == "Printemps" %}{% set ns = 2 %}
+          {% elseif destination.meilleureSaison == "Automne" %}{% set ns = 1.5 %}
+          {% elseif destination.meilleureSaison == "Hiver" %}{% set ns = 1 %}
+          {% endif %}
+          {% set nt = nv + ns %}
+          {% if nt > 5 %}{% set nt = 5 %}{% endif %}
+          {% set ep = nt|round(0, "floor") %}
+          {% set de = ((nt - ep) >= 0.5) ? 1 : 0 %}
+          {% set ev = 5 - ep - de %}
+
+          <span class="category">{{ destination.meilleureSaison ?? "-" }}</span>
+
+          <div style="display:flex;align-items:center;gap:8px;margin:8px 0">
+            <div style="display:flex;gap:2px">
+              {% for i in 1..ep %}
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="#f97316"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              {% endfor %}
+              {% if de %}
+                <svg width="16" height="16" viewBox="0 0 24 24"><defs><linearGradient id="h{{ destination.id }}"><stop offset="50%" stop-color="#f97316"/><stop offset="50%" stop-color="#ddd"/></linearGradient></defs><path fill="url(#h{{ destination.id }})" d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              {% endif %}
+              {% for i in 1..ev %}
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="#ddd"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              {% endfor %}
+            </div>
+            <span style="font-size:12px;font-weight:600;color:#f97316">{{ nt|number_format(1) }}</span>
+            <span style="font-size:12px;color:#888">{{ destination.nbVisites ?? 0 }} visites</span>
+          </div>
+
+          <h4>
+            <a href="{{ path('app_destination_detail', {'id': destination.id}) }}">
+              {{ destination.nom }} - {{ destination.pays }}
+            </a>
+          </h4>
+          <ul>
+            <li>Pays : <span>{{ destination.pays }}</span></li>
+            <li>Saison : <span>{{ destination.meilleureSaison ?? "-" }}</span></li>
+            <li>Statut : <span>{{ destination.statut ? "Actif" : "Inactif" }}</span></li>
+          </ul>
+          <div class="main-button">
+            <a href="{{ path('app_destination_detail', {'id': destination.id}) }}">Voir les détails</a>
+          </div>
+        </div>
+      </div>
+      {% else %}
+      <div class="col-12 text-center" style="padding:60px 0">
+        <h4>Aucune destination trouvée.</h4>
+        <a href="{{ path('app_destinations') }}" style="color:#f97316">Voir toutes les destinations</a>
+      </div>
+      {% endfor %}
+    </div>
+
+  </div>
+</div>
+
+{% endblock %}

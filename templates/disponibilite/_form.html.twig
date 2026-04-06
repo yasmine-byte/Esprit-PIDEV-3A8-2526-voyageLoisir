@@ -1,0 +1,40 @@
+{{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+<div style="display:grid; gap:20px;">
+
+    <div>
+        {{ form_label(form.hebergement, 'Hébergement', {'label_attr': {'class': 'form-label'}}) }}
+        {{ form_widget(form.hebergement, {'attr': {'class': 'form-select'}}) }}
+        <div style="color:#ef4444; font-size:12px; margin-top:4px;">{{ form_errors(form.hebergement) }}</div>
+    </div>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+        <div>
+            {{ form_label(form.dateDebut, 'Date de début', {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.dateDebut, {'attr': {'class': 'form-input'}}) }}
+            <div style="color:#ef4444; font-size:12px; margin-top:4px;">{{ form_errors(form.dateDebut) }}</div>
+        </div>
+        <div>
+            {{ form_label(form.dateFin, 'Date de fin', {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.dateFin, {'attr': {'class': 'form-input'}}) }}
+            <div style="color:#ef4444; font-size:12px; margin-top:4px;">{{ form_errors(form.dateFin) }}</div>
+        </div>
+    </div>
+
+    <div style="display:flex; align-items:center; gap:12px; background:var(--bg-secondary); padding:16px; border-radius:8px;">
+        {{ form_widget(form.disponible) }}
+        {{ form_label(form.disponible, 'Disponible', {'label_attr': {'style': 'color:var(--text-primary); font-weight:600; cursor:pointer;'}}) }}
+        <div style="color:#ef4444; font-size:12px;">{{ form_errors(form.disponible) }}</div>
+    </div>
+
+</div>
+
+<div style="margin-top:28px; display:flex; gap:12px;">
+    <button type="submit" class="btn primary">
+        {{ button_label|default('Enregistrer') }}
+    </button>
+    <a href="{{ path('app_disponibilite_index') }}" class="btn">
+        Annuler
+    </a>
+</div>
+
+{{ form_end(form) }}

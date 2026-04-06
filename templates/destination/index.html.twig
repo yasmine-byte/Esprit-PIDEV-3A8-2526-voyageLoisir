@@ -1,0 +1,184 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}Destinations{% endblock %}
+
+{% block admin_content %}
+<style>
+.market-table td .action-btn {
+    padding: 5px 10px !important;
+    font-size: 12px !important;
+    display: inline-flex !important;
+}
+.market-table td form { display: inline !important; }
+.market-table td { padding: 10px 12px !important; }
+</style>
+
+<div class="page-header">
+    <h1>Destinations</h1>
+    <p>Gérer toutes les destinations</p>
+</div>
+
+{# ===== FILTRES ===== #}
+<div class="card" style="margin-bottom:20px">
+    <div class="card-header">
+        <h3 class="card-title">Filtres & Recherche</h3>
+    </div>
+    <form method="GET" action="{{ path('app_destination_index') }}"
+          style="display:flex;flex-wrap:wrap;gap:12px;padding:16px;align-items:flex-end">
+
+        <div style="flex:1;min-width:180px">
+            <label style="display:block;font-size:12px;margin-bottom:4px;color:#888">Recherche (nom, pays, ID)</label>
+            <input type="text" name="search" value="{{ search }}"
+                   placeholder="Rechercher..."
+                   style="width:100%;padding:8px 12px;border-radius:6px;border:1px solid #333;background:#1a1a2e;color:#fff;font-size:13px">
+        </div>
+
+        <div style="min-width:150px">
+            <label style="display:block;font-size:12px;margin-bottom:4px;color:#888">Saison</label>
+            <select name="saison"
+                    style="width:100%;padding:8px 12px;border-radius:6px;border:1px solid #333;background:#1a1a2e;color:#fff;font-size:13px">
+                <option value="">Toutes</option>
+                <option value="Printemps" {{ saison == 'Printemps' ? 'selected' : '' }}>Printemps</option>
+                <option value="Ete"       {{ saison == 'Ete'       ? 'selected' : '' }}>Été</option>
+                <option value="Automne"   {{ saison == 'Automne'   ? 'selected' : '' }}>Automne</option>
+                <option value="Hiver"     {{ saison == 'Hiver'     ? 'selected' : '' }}>Hiver</option>
+            </select>
+        </div>
+
+        <div style="min-width:130px">
+            <label style="display:block;font-size:12px;margin-bottom:4px;color:#888">Statut</label>
+            <select name="statut"
+                    style="width:100%;padding:8px 12px;border-radius:6px;border:1px solid #333;background:#1a1a2e;color:#fff;font-size:13px">
+                <option value="">Tous</option>
+                <option value="1" {{ statut == '1' ? 'selected' : '' }}>Actif</option>
+                <option value="0" {{ statut == '0' ? 'selected' : '' }}>Inactif</option>
+            </select>
+        </div>
+
+        <div style="min-width:150px">
+            <label style="display:block;font-size:12px;margin-bottom:4px;color:#888">Trier par</label>
+            <select name="tri"
+                    style="width:100%;padding:8px 12px;border-radius:6px;border:1px solid #333;background:#1a1a2e;color:#fff;font-size:13px">
+                <option value="id"               {{ tri == 'id'               ? 'selected' : '' }}>ID</option>
+                <option value="nom"              {{ tri == 'nom'              ? 'selected' : '' }}>Nom</option>
+                <option value="pays"             {{ tri == 'pays'             ? 'selected' : '' }}>Pays</option>
+                <option value="nb_visites"       {{ tri == 'nb_visites'       ? 'selected' : '' }}>Nb Visites</option>
+                <option value="meilleure_saison" {{ tri == 'meilleure_saison' ? 'selected' : '' }}>Saison</option>
+            </select>
+        </div>
+
+        <div style="min-width:120px">
+            <label style="display:block;font-size:12px;margin-bottom:4px;color:#888">Ordre</label>
+            <select name="ordre"
+                    style="width:100%;padding:8px 12px;border-radius:6px;border:1px solid #333;background:#1a1a2e;color:#fff;font-size:13px">
+                <option value="ASC"  {{ ordre == 'ASC'  ? 'selected' : '' }}>▲ Croissant</option>
+                <option value="DESC" {{ ordre == 'DESC' ? 'selected' : '' }}>▼ Décroissant</option>
+            </select>
+        </div>
+
+        <div style="display:flex;gap:8px">
+            <button type="submit"
+                    style="padding:8px 18px;border-radius:6px;border:none;background:#6c63ff;color:#fff;font-size:13px;cursor:pointer;font-weight:600">
+                🔍 Filtrer
+            </button>
+            <a href="{{ path('app_destination_index') }}"
+               style="padding:8px 18px;border-radius:6px;border:1px solid #555;color:#aaa;font-size:13px;text-decoration:none;display:flex;align-items:center">
+                ✕ Reset
+            </a>
+        </div>
+    </form>
+</div>
+
+{# ===== TABLEAU ===== #}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">
+            Liste des Destinations
+            <span style="font-size:13px;color:#888;font-weight:normal;margin-left:8px">
+                ({{ destinations|length }} résultat{{ destinations|length > 1 ? 's' : '' }})
+            </span>
+        </h3>
+        <a href="{{ path('app_destination_new') }}" class="action-btn primary">+ Ajouter</a>
+    </div>
+
+    {% set params = {search: search, saison: saison, statut: statut} %}
+
+    <div style="overflow-x:auto">
+    <table class="market-table">
+        <thead>
+            <tr>
+                <th>
+                    <a href="{{ path('app_destination_index', params|merge({tri: 'id', ordre: (tri == 'id' and ordre == 'ASC') ? 'DESC' : 'ASC'})) }}"
+                       style="color:inherit;text-decoration:none;white-space:nowrap">
+                        ID {% if tri == 'id' %}{{ ordre == 'ASC' ? '▲' : '▼' }}{% endif %}
+                    </a>
+                </th>
+                <th>
+                    <a href="{{ path('app_destination_index', params|merge({tri: 'nom', ordre: (tri == 'nom' and ordre == 'ASC') ? 'DESC' : 'ASC'})) }}"
+                       style="color:inherit;text-decoration:none;white-space:nowrap">
+                        Nom {% if tri == 'nom' %}{{ ordre == 'ASC' ? '▲' : '▼' }}{% endif %}
+                    </a>
+                </th>
+                <th>
+                    <a href="{{ path('app_destination_index', params|merge({tri: 'pays', ordre: (tri == 'pays' and ordre == 'ASC') ? 'DESC' : 'ASC'})) }}"
+                       style="color:inherit;text-decoration:none;white-space:nowrap">
+                        Pays {% if tri == 'pays' %}{{ ordre == 'ASC' ? '▲' : '▼' }}{% endif %}
+                    </a>
+                </th>
+                <th>
+                    <a href="{{ path('app_destination_index', params|merge({tri: 'meilleure_saison', ordre: (tri == 'meilleure_saison' and ordre == 'ASC') ? 'DESC' : 'ASC'})) }}"
+                       style="color:inherit;text-decoration:none;white-space:nowrap">
+                        Saison {% if tri == 'meilleure_saison' %}{{ ordre == 'ASC' ? '▲' : '▼' }}{% endif %}
+                    </a>
+                </th>
+                <th>
+                    <a href="{{ path('app_destination_index', params|merge({tri: 'nb_visites', ordre: (tri == 'nb_visites' and ordre == 'ASC') ? 'DESC' : 'ASC'})) }}"
+                       style="color:inherit;text-decoration:none;white-space:nowrap">
+                        Nb Visites {% if tri == 'nb_visites' %}{{ ordre == 'ASC' ? '▲' : '▼' }}{% endif %}
+                    </a>
+                </th>
+                <th>Statut</th>
+                <th>ID Voyage</th>
+                <th>Latitude</th>
+                <th>Longitude</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for destination in destinations %}
+            <tr>
+                <td>{{ destination.id }}</td>
+                <td>{{ destination.nom }}</td>
+                <td>{{ destination.pays }}</td>
+                <td>{{ destination.meilleureSaison }}</td>
+                <td>{{ destination.nbVisites }}</td>
+                <td>
+                    {% if destination.statut %}
+                        <span class="transaction-status completed">Actif</span>
+                    {% else %}
+                        <span class="transaction-status" style="background:#ff4444">Inactif</span>
+                    {% endif %}
+                </td>
+                <td>{{ destination.voyage ? destination.voyage.id : '-' }}</td>
+                <td>{{ destination.latitude ?? '-' }}</td>
+                <td>{{ destination.longitude ?? '-' }}</td>
+                <td style="white-space:nowrap">
+                    <a href="{{ path('app_destination_show', {'id': destination.id}) }}" class="action-btn">Voir</a>
+                    <a href="{{ path('app_destination_edit', {'id': destination.id}) }}" class="action-btn">Modifier</a>
+                    {{ include('destination/_delete_form.html.twig') }}
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="10" style="text-align:center;color:#888;padding:30px">
+                    Aucune destination trouvée
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </div>
+</div>
+
+<footer class="copyright">Copyright &copy; 2026 VoyageLoisir</footer>
+{% endblock %}

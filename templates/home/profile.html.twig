@@ -1,0 +1,106 @@
+{% extends "base_front.html.twig" %}
+{% block title %}Mon Profil - ViaNoVa{% endblock %}
+{% block body %}
+
+<div class="page-heading header-text">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-12">
+        <span class="breadcrumb"><a href="{{ path("app_home") }}">Accueil</a> / Mon Profil</span>
+        <h3>Mon Profil</h3>
+        <p style="font-size:12px;color:#ccc">Roles : {{ app.user.roles|join(", ") }}</p>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="section">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-6">
+        <div style="background:#fff;border-radius:16px;padding:30px;border:1px solid #eee;text-align:center">
+          <div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#e8a87c,#d4845a);color:#fff;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:700;margin:0 auto 20px">
+            {{ user.prenom|first|upper }}{{ user.nom|first|upper }}
+          </div>
+          <h4 style="margin-bottom:4px">{{ user.prenom }} {{ user.nom }}</h4>
+          <p style="color:#888;font-size:14px;margin-bottom:24px">{{ user.email }}</p>
+          <table style="width:100%;text-align:left;font-size:14px">
+            <tr style="border-bottom:1px solid #eee">
+              <td style="padding:10px 0;color:#888;width:40%">Nom</td>
+              <td style="padding:10px 0;font-weight:600">{{ user.nom }}</td>
+            </tr>
+            <tr style="border-bottom:1px solid #eee">
+              <td style="padding:10px 0;color:#888">Prenom</td>
+              <td style="padding:10px 0;font-weight:600">{{ user.prenom }}</td>
+            </tr>
+            <tr style="border-bottom:1px solid #eee">
+              <td style="padding:10px 0;color:#888">Email</td>
+              <td style="padding:10px 0;font-weight:600">{{ user.email }}</td>
+            </tr>
+            {% if user.telephone %}
+            <tr style="border-bottom:1px solid #eee">
+              <td style="padding:10px 0;color:#888">Telephone</td>
+              <td style="padding:10px 0;font-weight:600">{{ user.telephone }}</td>
+            </tr>
+            {% endif %}
+            <tr>
+              <td style="padding:10px 0;color:#888">Statut</td>
+              <td style="padding:10px 0">
+                <span style="background:{% if user.isActive %}#E1F5EE{% else %}#ffebee{% endif %};color:{% if user.isActive %}#085041{% else %}#E24B4A{% endif %};padding:3px 10px;border-radius:10px;font-size:12px;font-weight:600">
+                  {{ user.isActive ? "Actif" : "Inactif" }}
+                </span>
+              </td>
+            </tr>
+          </table>
+          <div style="margin-top:24px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+            {% if "ROLE_ADMIN" in app.user.roles %}
+            <a href="{{ path('app_destination_index') }}" style="display:inline-block;padding:10px 24px;background:#f97316;color:#fff;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px">
+              Dashboard Admin
+            </a>
+            {% endif %}
+            <a href="{{ path('front_logout') }}" style="display:inline-block;padding:10px 24px;background:#E24B4A;color:#fff;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px">
+              Deconnexion
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="section" style="padding-top:0">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-6">
+        <h5 style="margin-bottom:16px">Mes Reservations</h5>
+        {% if reservations is defined and reservations|length > 0 %}
+          {% for voyage in reservations %}
+            <div style="background:#fff;border-radius:12px;padding:16px;border:1px solid #eee;margin-bottom:12px">
+              <div style="display:flex;justify-content:space-between;align-items:center">
+                <div>
+                  <strong style="font-size:15px">{{ voyage.pointDepart ?? "-" }} vers {{ voyage.pointArrivee ?? "-" }}</strong>
+                  <div style="font-size:13px;color:#888;margin-top:4px">
+                    Du {{ voyage.dateDepart ? voyage.dateDepart|date("d/m/Y") : "-" }}
+                    au {{ voyage.dateArrivee ? voyage.dateArrivee|date("d/m/Y") : "-" }}
+                  </div>
+                </div>
+                <div style="font-size:16px;font-weight:700;color:#f97316">
+                  {{ voyage.prix ? voyage.prix ~ " EUR" : "-" }}
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        {% else %}
+          <p style="color:#888;font-size:14px">Aucune reservation pour le moment.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="container">
+    <div class="col-lg-12">
+      <p>Copyright &copy; 2026 ViaNoVa. Design: <a href="https://templatemo.com" target="_blank">TemplateMo</a></p>
+    </div>
+  </div>
+</footer>
+{% endblock %}

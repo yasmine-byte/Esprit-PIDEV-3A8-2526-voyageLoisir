@@ -1,14 +1,10 @@
 <?php
-
 namespace App\Repository;
 
 use App\Entity\Disponibilite;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
-/**
- * @extends ServiceEntityRepository<Disponibilite>
- */
 class DisponibiliteRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
@@ -16,28 +12,23 @@ class DisponibiliteRepository extends ServiceEntityRepository
         parent::__construct($registry, Disponibilite::class);
     }
 
-    //    /**
-    //     * @return Disponibilite[] Returns an array of Disponibilite objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('d')
-    //            ->andWhere('d.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('d.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
+    public function search(?string $query = null, ?string $statut = null): array
+    {
+        $qb = $this->createQueryBuilder('d')
+            ->leftJoin('d.hebergement', 'h')
+            ->addSelect('h');
 
-    //    public function findOneBySomeField($value): ?Disponibilite
-    //    {
-    //        return $this->createQueryBuilder('d')
-    //            ->andWhere('d.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+        if ($query) {
+            $qb->andWhere('h.description LIKE :q')
+               ->setParameter('q', '%' . $query . '%');
+        }
+
+        if ($statut === 'disponible') {
+            $qb->andWhere('d.disponible = true');
+        } elseif ($statut === 'indisponible') {
+            $qb->andWhere('d.disponible = false');
+        }
+
+        return $qb->orderBy('d.id', 'DESC')->getQuery()->getResult();
+    }
 }

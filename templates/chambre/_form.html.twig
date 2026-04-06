@@ -1,0 +1,53 @@
+{{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+<div style="display:grid; gap:20px;">
+
+    <div>
+        {{ form_label(form.hebergement, 'Hébergement', {'label_attr': {'class': 'form-label'}}) }}
+        {{ form_widget(form.hebergement, {'attr': {'class': 'form-select'}}) }}
+        <div style="color:#ef4444; font-size:12px; margin-top:4px;">{{ form_errors(form.hebergement) }}</div>
+    </div>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+        <div>
+            {{ form_label(form.numero, 'Numéro', {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.numero, {'attr': {'class': 'form-input', 'placeholder': 'Ex: 101'}}) }}
+            <div style="color:#ef4444; font-size:12px; margin-top:4px;">{{ form_errors(form.numero) }}</div>
+        </div>
+        <div>
+            {{ form_label(form.typeChambre, 'Type de chambre', {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.typeChambre, {'attr': {'class': 'form-select'}}) }}
+            <div style="color:#ef4444; font-size:12px; margin-top:4px;">{{ form_errors(form.typeChambre) }}</div>
+        </div>
+    </div>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+        <div>
+            {{ form_label(form.prixNuit, 'Prix / nuit (TND)', {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.prixNuit, {'attr': {'class': 'form-input', 'placeholder': 'Ex: 80.00'}}) }}
+            <div style="color:#ef4444; font-size:12px; margin-top:4px;">{{ form_errors(form.prixNuit) }}</div>
+        </div>
+        <div>
+            {{ form_label(form.capacite, 'Capacité (personnes)', {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.capacite, {'attr': {'class': 'form-input', 'placeholder': 'Ex: 2'}}) }}
+            <div style="color:#ef4444; font-size:12px; margin-top:4px;">{{ form_errors(form.capacite) }}</div>
+        </div>
+    </div>
+
+    <div>
+        {{ form_label(form.equipements, 'Équipements', {'label_attr': {'class': 'form-label'}}) }}
+        {{ form_widget(form.equipements, {'attr': {'class': 'form-input', 'placeholder': 'Ex: TV, Climatisation, WiFi, Minibar...', 'rows': 3}}) }}
+        <div style="color:#ef4444; font-size:12px; margin-top:4px;">{{ form_errors(form.equipements) }}</div>
+    </div>
+
+</div>
+
+<div style="margin-top:28px; display:flex; gap:12px;">
+    <button type="submit" class="btn primary">
+        {{ button_label|default('Enregistrer') }}
+    </button>
+    <a href="{{ path('app_chambre_index') }}" class="btn">
+        Annuler
+    </a>
+</div>
+
+{{ form_end(form) }}
