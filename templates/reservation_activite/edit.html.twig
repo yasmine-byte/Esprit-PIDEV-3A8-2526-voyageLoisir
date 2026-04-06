@@ -1,0 +1,107 @@
+{% extends 'base_front.html.twig' %}
+
+{% block title %}Modifier la réservation{% endblock %}
+
+{% block body %}
+
+<div class="page-heading header-text"
+     style="
+        background-image: url('{{ asset('assets_front/images/ajout-activite.jpg') }}');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+     ">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <span class="breadcrumb">
+                    <a href="{{ path('app_home') }}">Home</a> /
+                    <a href="{{ path('app_reservation_activite_index') }}">Réservations</a> /
+                    Modifier réservation
+                </span>
+                <h3 style="color:white;">Modifier la réservation</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="contact-page section">
+    <div class="container">
+        <div class="row">
+
+            <div class="col-lg-6">
+                <div class="section-heading">
+                    <h6>| Modifier Réservation</h6>
+                    <h2>Mettre à jour cette réservation</h2>
+                </div>
+
+                <p>
+                    Modifiez les informations ci-dessous pour mettre à jour votre réservation liée à
+                    <strong>{{ reservation_activite.activite ? reservation_activite.activite.nom : 'cette activité' }}</strong>.
+                </p>
+
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="item phone">
+                            <img src="{{ asset('assets_front/images/images/phone-icon.png') }}" alt="" style="max-width: 52px;">
+                            <h6>{{ reservation_activite.activite and reservation_activite.activite.prix ? reservation_activite.activite.prix ~ ' TND' : 'N/A' }}<br><span>Prix par personne</span></h6>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-12">
+                        <div class="item email">
+                            <img src="{{ asset('assets_front/images/images/email-icon.png') }}" alt="" style="max-width: 52px;">
+                            <h6>{{ reservation_activite.activite and reservation_activite.activite.lieu ? reservation_activite.activite.lieu : 'N/A' }}<br><span>{{ reservation_activite.activite and reservation_activite.activite.duree ? reservation_activite.activite.duree ~ ' min' : 'Durée non disponible' }}</span></h6>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-12 mt-3">
+                        <div class="item email">
+                            <img src="{{ asset('assets_front/images/images/email-icon.png') }}" alt="" style="max-width: 52px;">
+                            <h6>{{ reservation_activite.statut }}<br><span>Statut actuel</span></h6>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                {{ form_start(form, {'attr': {'id': 'contact-form'}}) }}
+
+                    {% if form_errors(form) %}
+                        <div class="alert alert-danger">
+                            {{ form_errors(form) }}
+                        </div>
+                    {% endif %}
+
+                    <div class="row">
+                        <div class="col-lg-12">
+                            {{ form_row(form.dateReservation) }}
+                        </div>
+
+                        <div class="col-lg-12">
+                            {{ form_row(form.nombrePersonnes) }}
+                        </div>
+
+                        <div class="col-lg-12">
+                            {{ form_row(form.statut) }}
+                        </div>
+
+                        <div class="col-lg-12">
+                            <button type="submit" class="orange-button">Enregistrer</button>
+                        </div>
+
+                        <div class="col-lg-12 mt-3">
+                            <a href="{{ path('app_reservation_activite_index') }}" class="btn btn-dark">
+                                Retour à la liste
+                            </a>
+                        </div>
+                    </div>
+
+                {{ form_end(form) }}
+            </div>
+
+        </div>
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,301 @@
+{% extends 'admin/base_admin.html.twig' %}
+{% block title %}Réclamation #{{ reclamation.id }}{% endblock %}
+{% block admin_content %}
+<style>
+.sp { padding: 30px; }
+
+/* Flash */
+.fm { padding:12px 18px; border-radius:10px; margin-bottom:16px; font-size:0.9rem; font-weight:500; }
+[data-theme="dark"]  .fs { background:rgba(40,167,69,0.15);  border:1px solid rgba(40,167,69,0.4);  color:#28a745; }
+[data-theme="dark"]  .fd { background:rgba(220,53,69,0.15);  border:1px solid rgba(220,53,69,0.4);  color:#dc3545; }
+[data-theme="light"] .fs { background:#d4edda; border:1px solid #c3e6cb; color:#155724; }
+[data-theme="light"] .fd { background:#f8d7da; border:1px solid #f5c6cb; color:#721c24; }
+
+/* Header */
+.sh { display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; flex-wrap:wrap; gap:12px; }
+.st { font-size:1.4rem; font-weight:700; }
+.id-pill { display:inline-block; padding:3px 10px; border-radius:8px; font-size:0.82rem; font-weight:700; }
+[data-theme="dark"]  .id-pill { background:rgba(74,158,255,0.15); color:#4a9eff; }
+[data-theme="light"] .id-pill { background:#e8f0fe; color:#3a7bd5; }
+
+.btn-back { display:inline-flex; align-items:center; gap:6px; padding:8px 18px; border-radius:10px; font-size:0.87rem; font-weight:600; text-decoration:none; border:1px solid; transition:all 0.2s; }
+[data-theme="dark"]  .btn-back { border-color:rgba(255,255,255,0.15); color:#aaa; background:transparent; }
+[data-theme="dark"]  .btn-back:hover { background:rgba(255,255,255,0.07); color:#fff; }
+[data-theme="light"] .btn-back { border-color:#ced4da; color:#555; background:#fff; }
+[data-theme="light"] .btn-back:hover { background:#e9ecef; }
+
+/* Grid */
+.sg { display:grid; grid-template-columns:1fr 300px; gap:20px; align-items:start; }
+@media(max-width:900px){ .sg { grid-template-columns:1fr; } }
+
+/* Cards */
+.ic { border-radius:16px; border:1px solid; overflow:hidden; margin-bottom:20px; }
+[data-theme="dark"]  .ic { background:rgba(255,255,255,0.03); border-color:rgba(255,255,255,0.07); }
+[data-theme="light"] .ic { background:#fff; border-color:#e0e0e0; box-shadow:0 2px 10px rgba(0,0,0,0.06); }
+
+.ch { display:flex; align-items:center; gap:10px; padding:15px 20px; border-bottom:1px solid; }
+[data-theme="dark"]  .ch     { border-color:rgba(255,255,255,0.07); background:rgba(74,158,255,0.08); }
+[data-theme="light"] .ch     { border-color:#e8f0ff; background:#f0f5ff; }
+[data-theme="dark"]  .ch.red { background:rgba(220,53,69,0.08);  border-color:rgba(220,53,69,0.15);  }
+[data-theme="light"] .ch.red { background:#fff5f5; border-color:#ffd0d0; }
+[data-theme="dark"]  .ch.grn { background:rgba(40,167,69,0.08);  border-color:rgba(40,167,69,0.15);  }
+[data-theme="light"] .ch.grn { background:#f0fff4; border-color:#b2f0c8; }
+[data-theme="dark"]  .ch.pur { background:rgba(111,66,193,0.08); border-color:rgba(111,66,193,0.15); }
+[data-theme="light"] .ch.pur { background:#f5f0ff; border-color:#d0b2f8; }
+
+.ch-ic { width:34px; height:34px; border-radius:9px; display:flex; align-items:center; justify-content:center; font-size:1rem; flex-shrink:0; }
+.ch-tl { font-size:0.95rem; font-weight:700; }
+[data-theme="dark"]  .ch    .ch-tl { color:#4a9eff; }
+[data-theme="light"] .ch    .ch-tl { color:#3a7bd5; }
+[data-theme="dark"]  .ch.red .ch-tl { color:#dc3545; }
+[data-theme="light"] .ch.red .ch-tl { color:#dc3545; }
+[data-theme="dark"]  .ch.grn .ch-tl { color:#28a745; }
+[data-theme="light"] .ch.grn .ch-tl { color:#28a745; }
+[data-theme="dark"]  .ch.pur .ch-tl { color:#6f42c1; }
+[data-theme="light"] .ch.pur .ch-tl { color:#6f42c1; }
+
+.cbp { padding:20px; }
+
+/* Content box */
+.cbox { border-radius:10px; padding:14px 16px; font-size:0.9rem; line-height:1.6; margin-bottom:18px; }
+[data-theme="dark"]  .cbox { background:rgba(255,255,255,0.04); color:#ccc; border:1px solid rgba(255,255,255,0.06); }
+[data-theme="light"] .cbox { background:#f8f9fa; color:#444; border:1px solid #e9ecef; }
+
+/* Info grid */
+.ig { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+@media(max-width:600px){ .ig { grid-template-columns:1fr; } }
+.ii { display:flex; flex-direction:column; gap:4px; }
+.il { font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; opacity:0.45; }
+.iv { font-size:0.9rem; font-weight:500; }
+[data-theme="dark"]  .iv { color:#ddd; }
+[data-theme="light"] .iv { color:#333; }
+
+/* Badges */
+.badge { display:inline-block; padding:3px 11px; border-radius:20px; font-size:0.73rem; font-weight:600; white-space:nowrap; }
+.ba { background:rgba(255,193,7,0.15);   color:#ffc107; border:1px solid rgba(255,193,7,0.3); }
+.be { background:rgba(23,162,184,0.15);  color:#17a2b8; border:1px solid rgba(23,162,184,0.3); }
+.bt { background:rgba(40,167,69,0.15);   color:#28a745; border:1px solid rgba(40,167,69,0.3); }
+.bf { background:rgba(108,117,125,0.15); color:#6c757d; border:1px solid rgba(108,117,125,0.3); }
+.pb { background:rgba(108,117,125,0.15); color:#6c757d; border:1px solid rgba(108,117,125,0.3); }
+.pm { background:rgba(23,162,184,0.15);  color:#17a2b8; border:1px solid rgba(23,162,184,0.3); }
+.ph { background:rgba(255,193,7,0.15);   color:#ffc107; border:1px solid rgba(255,193,7,0.3); }
+.pu { background:rgba(220,53,69,0.15);   color:#dc3545; border:1px solid rgba(220,53,69,0.3); }
+[data-theme="light"] .ba { background:#fff3cd; color:#856404; border-color:#ffc107; }
+[data-theme="light"] .be { background:#d1ecf1; color:#0c5460; border-color:#17a2b8; }
+[data-theme="light"] .bt { background:#d4edda; color:#155724; border-color:#28a745; }
+[data-theme="light"] .bf { background:#e2e3e5; color:#383d41; border-color:#6c757d; }
+
+/* Stars */
+[data-theme="dark"]  .sf { color:#ffd700; }
+[data-theme="light"] .sf { color:#f35525; }
+[data-theme="dark"]  .se { color:#444; }
+[data-theme="light"] .se { color:#ddd; }
+
+/* Réponse */
+.rep-box { border-radius:10px; padding:14px 16px; font-size:0.88rem; font-style:italic; border-left:4px solid #28a745; }
+[data-theme="dark"]  .rep-box { background:rgba(40,167,69,0.08); color:#28a745; }
+[data-theme="light"] .rep-box { background:#f0fff4; color:#155724; }
+.no-rep { font-size:0.82rem; opacity:0.35; font-style:italic; }
+
+/* Avis lié */
+.avis-blk { border-radius:10px; padding:14px 16px; border:1px solid; }
+[data-theme="dark"]  .avis-blk { background:rgba(220,53,69,0.06); border-color:rgba(220,53,69,0.2); }
+[data-theme="light"] .avis-blk { background:#fff5f5; border-color:#ffd0d0; }
+
+/* Action forms */
+.al { font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; opacity:0.45; margin-bottom:8px; }
+.ar { display:flex; gap:8px; margin-bottom:16px; }
+.sa { flex:1; border-radius:8px; padding:8px 12px; font-size:0.87rem; border:1px solid; outline:none; }
+[data-theme="dark"]  .sa { background:rgba(255,255,255,0.06); border-color:rgba(255,255,255,0.15); color:#ccc; }
+[data-theme="dark"]  .sa option { background:#1a1a2e; }
+[data-theme="light"] .sa { background:#fff; border-color:#ced4da; color:#333; }
+.bok { padding:8px 16px; border-radius:8px; font-size:0.87rem; font-weight:600; border:none; cursor:pointer; color:#fff; }
+.bok-bl { background:#4a9eff; } .bok-bl:hover { background:#2d7dd2; }
+.bok-or { background:#fd7e14; } .bok-or:hover { background:#e67210; }
+
+.rf textarea { width:100%; border-radius:10px; padding:10px 14px; font-size:0.87rem; resize:vertical; min-height:80px; outline:none; border:1px solid; box-sizing:border-box; }
+[data-theme="dark"]  .rf textarea { background:rgba(255,255,255,0.06); border-color:rgba(255,255,255,0.12); color:#fff; }
+[data-theme="light"] .rf textarea { background:#fff; border-color:#ced4da; color:#333; }
+.bsend { width:100%; margin-top:10px; padding:10px; border-radius:10px; border:none; background:#6f42c1; color:#fff; font-weight:600; font-size:0.9rem; cursor:pointer; }
+.bsend:hover { background:#5a189a; }
+
+.dv { height:1px; margin:16px 0; }
+[data-theme="dark"]  .dv { background:rgba(255,255,255,0.07); }
+[data-theme="light"] .dv { background:#e9ecef; }
+
+.bdel { width:100%; padding:10px; border-radius:10px; border:1px solid rgba(220,53,69,0.4); background:rgba(220,53,69,0.1); color:#dc3545; font-weight:600; font-size:0.9rem; cursor:pointer; }
+.bdel:hover { background:rgba(220,53,69,0.2); }
+</style>
+
+<div class="sp">
+
+{% for msg in app.flashes('success') %}<div class="fm fs">✓ {{ msg }}</div>{% endfor %}
+{% for msg in app.flashes('danger') %}<div class="fm fd">✗ {{ msg }}</div>{% endfor %}
+
+<div class="sh">
+    <div class="st">Réclamation <span class="id-pill">#{{ reclamation.id }}</span></div>
+    <a href="{{ path('admin_reclamation_index') }}" class="btn-back">← Retour à la liste</a>
+</div>
+
+<div class="sg">
+
+    {# ── Colonne principale ── #}
+    <div>
+
+        {# Infos principales #}
+        <div class="ic">
+            <div class="ch">
+                <div class="ch-ic" style="background:rgba(74,158,255,0.15);">📋</div>
+                <span class="ch-tl">Informations de la réclamation</span>
+            </div>
+            <div class="cbp">
+                <div class="il" style="margin-bottom:5px;">Titre</div>
+                <div class="iv" style="font-size:1.05rem;font-weight:700;margin-bottom:16px;">{{ reclamation.titre }}</div>
+
+                <div class="il" style="margin-bottom:5px;">Contenu</div>
+                <div class="cbox">{{ reclamation.contenu|nl2br }}</div>
+
+                <div class="ig">
+                    <div class="ii"><span class="il">Type</span><span class="iv">{{ reclamation.type ? reclamation.type.nom : '—' }}</span></div>
+                    <div class="ii"><span class="il">Client</span><span class="iv">👤 Utilisateur #{{ reclamation.userId }}</span></div>
+                    <div class="ii"><span class="il">Date création</span><span class="iv">{{ reclamation.dateCreation ? reclamation.dateCreation|date('d/m/Y à H:i') : '—' }}</span></div>
+                    <div class="ii"><span class="il">Type feedback</span><span class="iv">{{ reclamation.typeFeedback }}</span></div>
+                    <div class="ii">
+                        <span class="il">Priorité</span>
+                        <span class="iv">
+                            {% if reclamation.priorite == 'Basse' %}<span class="badge pb">Basse</span>
+                            {% elseif reclamation.priorite == 'Moyenne' %}<span class="badge pm">Moyenne</span>
+                            {% elseif reclamation.priorite == 'Haute' %}<span class="badge ph">⚠ Haute</span>
+                            {% else %}<span class="badge pu">🚨 Urgente</span>{% endif %}
+                        </span>
+                    </div>
+                    <div class="ii">
+                        <span class="il">Statut</span>
+                        <span class="iv">
+                            {% if reclamation.statut == 'En attente' %}<span class="badge ba">⏳ En attente</span>
+                            {% elseif reclamation.statut == 'En cours' %}<span class="badge be">🔄 En cours</span>
+                            {% elseif reclamation.statut == 'Traitée' %}<span class="badge bt">✓ Traitée</span>
+                            {% else %}<span class="badge bf">🔒 Fermée</span>{% endif %}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# Réponse admin #}
+        <div class="ic">
+            <div class="ch grn">
+                <div class="ch-ic" style="background:rgba(40,167,69,0.15);">💬</div>
+                <span class="ch-tl">Réponse de l'administrateur</span>
+            </div>
+            <div class="cbp">
+                {% if reclamation.reponse %}
+                    <div class="rep-box">{{ reclamation.reponse }}</div>
+                {% else %}
+                    <span class="no-rep">Aucune réponse pour le moment.</span>
+                {% endif %}
+            </div>
+        </div>
+
+        {# Avis lié #}
+        {% if avis %}
+        <div class="ic">
+            <div class="ch red">
+                <div class="ch-ic" style="background:rgba(220,53,69,0.15);">⭐</div>
+                <span class="ch-tl">Avis à l'origine de cette réclamation</span>
+                <span style="margin-left:auto; font-size:0.78rem; opacity:0.5;">Avis #{{ avis.id }}</span>
+            </div>
+            <div class="cbp">
+                <div class="il" style="margin-bottom:5px;">Contenu de l'avis</div>
+                <div class="cbox" style="font-style:italic;">"{{ avis.contenu }}"</div>
+                <div class="ig">
+                    <div class="ii">
+                        <span class="il">Note</span>
+                        <span class="iv">
+                            {% for i in 1..5 %}{% if i <= avis.nbEtoiles %}<span class="sf">★</span>{% else %}<span class="se">★</span>{% endif %}{% endfor %}
+                            ({{ avis.nbEtoiles }}/5)
+                        </span>
+                    </div>
+                    <div class="ii"><span class="il">Type</span><span class="iv">{{ avis.type ? avis.type.nom : '—' }}</span></div>
+                    <div class="ii"><span class="il">Date</span><span class="iv">{{ avis.dateAvis ? avis.dateAvis|date('d/m/Y') : '—' }}</span></div>
+                    <div class="ii">
+                        <span class="il">Statut avis</span>
+                        <span class="iv">
+                            {% if avis.statut == 'En attente' %}<span class="badge ba">⏳ En attente</span>
+                            {% elseif avis.statut == 'Validé' %}<span class="badge bt">✓ Validé</span>
+                            {% else %}<span class="badge" style="background:rgba(220,53,69,0.15);color:#dc3545;border:1px solid rgba(220,53,69,0.3);">✗ Rejeté</span>{% endif %}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+    </div>
+
+    {# ── Colonne actions ── #}
+    <div>
+
+        <div class="ic">
+            <div class="ch">
+                <div class="ch-ic" style="background:rgba(74,158,255,0.15);">⚡</div>
+                <span class="ch-tl">Actions rapides</span>
+            </div>
+            <div class="cbp">
+
+                <form method="POST" action="{{ path('admin_reclamation_statut', {'id': reclamation.id}) }}">
+                    <div class="al">Modifier le statut</div>
+                    <div class="ar">
+                        <select name="statut" class="sa">
+                            <option value="En attente" {{ reclamation.statut == 'En attente' ? 'selected' : '' }}>⏳ En attente</option>
+                            <option value="En cours"   {{ reclamation.statut == 'En cours'   ? 'selected' : '' }}>🔄 En cours</option>
+                            <option value="Traitée"    {{ reclamation.statut == 'Traitée'    ? 'selected' : '' }}>✓ Traitée</option>
+                            <option value="Fermée"     {{ reclamation.statut == 'Fermée'     ? 'selected' : '' }}>🔒 Fermée</option>
+                        </select>
+                        <button type="submit" class="bok bok-bl">OK</button>
+                    </div>
+                </form>
+
+                <div class="dv"></div>
+
+                <form method="POST" action="{{ path('admin_reclamation_priorite', {'id': reclamation.id}) }}">
+                    <div class="al">Changer la priorité</div>
+                    <div class="ar">
+                        <select name="priorite" class="sa">
+                            <option value="Basse"   {{ reclamation.priorite == 'Basse'   ? 'selected' : '' }}>🟢 Basse</option>
+                            <option value="Moyenne" {{ reclamation.priorite == 'Moyenne' ? 'selected' : '' }}>🔵 Moyenne</option>
+                            <option value="Haute"   {{ reclamation.priorite == 'Haute'   ? 'selected' : '' }}>🟠 Haute</option>
+                            <option value="Urgente" {{ reclamation.priorite == 'Urgente' ? 'selected' : '' }}>🔴 Urgente</option>
+                        </select>
+                        <button type="submit" class="bok bok-or">OK</button>
+                    </div>
+                </form>
+
+                <div class="dv"></div>
+
+                <form method="POST" action="{{ path('admin_reclamation_repondre', {'id': reclamation.id}) }}" class="rf">
+                    <div class="al">Répondre au client</div>
+                    <textarea name="reponse" placeholder="Écrivez votre réponse...">{{ reclamation.reponse }}</textarea>
+                    <button type="submit" class="bsend">💬 Envoyer la réponse</button>
+                </form>
+
+            </div>
+        </div>
+
+        <div class="ic">
+            <div class="ch red">
+                <div class="ch-ic" style="background:rgba(220,53,69,0.12);">🗑</div>
+                <span class="ch-tl">Zone de danger</span>
+            </div>
+            <div class="cbp">
+                <form method="POST" action="{{ path('admin_reclamation_delete', {'id': reclamation.id}) }}"
+                      onsubmit="return confirm('Supprimer définitivement ?')">
+                    <button type="submit" class="bdel">🗑 Supprimer cette réclamation</button>
+                </form>
+            </div>
+        </div>
+
+    </div>
+</div>
+</div>
+{% endblock %}

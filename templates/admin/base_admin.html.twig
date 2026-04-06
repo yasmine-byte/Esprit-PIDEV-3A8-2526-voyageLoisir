@@ -1,12 +1,10 @@
 {% extends 'base.html.twig' %}
-
 {% block body %}
-    <div class="dashboard">
-        {% include 'admin/Partials/sidebar.html.twig' %}
-
-        <main class="main-content">
-            {% include 'admin/Partials/navbar.html.twig' %}
-            {% block admin_content %}{% endblock %}
-        </main>
-    </div>
+<div class="dashboard">
+    {% include 'admin/Partials/sidebar.html.twig' %}
+    <main class="main-content">
+        {% include 'admin/Partials/navbar.html.twig' %}
+        {% block admin_content %}{% endblock %}
+    </main>
+</div>
 {% endblock %}

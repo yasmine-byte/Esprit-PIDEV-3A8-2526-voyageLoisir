@@ -1,0 +1,170 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}Profil — {{ user.nom }} {{ user.prenom }}{% endblock %}
+
+{% block admin_content %}
+<div class="page-header">
+    <h1>Profil utilisateur</h1>
+    <a href="{{ path('app_admin') }}" class="btn btn-sm btn-outline">
+        ← Retour
+    </a>
+</div>
+
+<div class="profile-container">
+
+    {# ── CARTE IDENTITÉ ── #}
+    <div class="card profile-card">
+        <div class="profile-avatar-lg">
+            {{ user.nom|first|upper }}{{ user.prenom|first|upper }}
+        </div>
+        <div class="profile-name">{{ user.nom }} {{ user.prenom }}</div>
+        <div class="profile-email">{{ user.email }}</div>
+        <div class="profile-status">
+            <span class="status-badge {{ user.isActive ? 'active' : 'inactive' }}">
+                {{ user.isActive ? '● Actif' : '○ Inactif' }}
+            </span>
+        </div>
+        <div class="profile-roles">
+            {% for role in user.rolesCollection %}
+                <span class="role-badge">{{ role.name }}</span>
+            {% else %}
+                <span class="text-muted">Aucun rôle attribué</span>
+            {% endfor %}
+        </div>
+    </div>
+
+    {# ─── INFORMATIONS DÉTAILLÉES ── #}
+    <div class="card profile-details">
+        <div class="card-header">
+            <h3>📋 Informations personnelles</h3>
+            <a href="{{ path('admin_profile_edit') }}" class="btn btn-sm btn-outline-primary">
+                ✏️ Modifier
+            </a>
+        </div>
+        <div class="card-body">
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="info-label">Nom</div>
+                    <div class="info-value">{{ user.nom }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Prénom</div>
+                    <div class="info-value">{{ user.prenom }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Email</div>
+                    <div class="info-value">{{ user.email }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Téléphone</div>
+                    <div class="info-value">{{ user.telephone ?: 'Non renseigné' }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Statut</div>
+                    <div class="info-value">
+                        <span class="status-badge {{ user.isActive ? 'active' : 'inactive' }}">
+                            {{ user.isActive ? 'Actif' : 'Inactif' }}
+                        </span>
+                    </div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Rôles</div>
+                    <div class="info-value">
+                        {% for role in user.rolesCollection %}
+                            <span class="role-badge">{{ role.name }}</span>
+                        {% else %}
+                            <span class="text-muted">Aucun rôle</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Membre depuis</div>
+                    <div class="info-value">{{ user.createdAt ? user.createdAt|date('d/m/Y') : '—' }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Dernière mise à jour</div>
+                    <div class="info-value">{{ user.updatedAt ? user.updatedAt|date('d/m/Y H:i') : '—' }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# ─── SÉCURITÉ ─────────────────────────────────────────────────────────────── #}
+    <div class="card profile-security">
+        <div class="card-header">
+            <h3>🔐 Sécurité du compte</h3>
+            <a href="{{ path('admin_profile_edit') }}" class="btn btn-sm btn-outline-primary">
+                🔒 Changer le mot de passe
+            </a>
+        </div>
+        <div class="card-body">
+            <div class="info-item">
+                <div class="info-label">Mot de passe</div>
+                <div class="info-value">
+                    <span class="password-mask">••••••••••••••••••</span>
+                    <small class="text-muted">Dernière modification: {{ user.updatedAt ? user.updatedAt|date('d/m/Y') : 'Jamais modifié' }}</small>
+                </div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Authentification</div>
+                <div class="info-value">
+                    <span class="auth-status">✅ Compte protégé</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.profile-container { max-width: 1000px; margin: 0 auto; }
+.profile-card {
+    background: linear-gradient(135deg, var(--accent-gradient) 0%, var(--accent-copper) 100%);
+    color: #1c1c1e;
+    text-align: center;
+    padding: 40px 30px;
+    border-radius: 16px;
+    margin-bottom: 30px;
+}
+.profile-avatar-lg {
+    width: 80px; height: 80px; border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    font-size: 32px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 15px;
+}
+.profile-name { font-size: 24px; font-weight: 600; margin: 0 0 5px 0; }
+.profile-email { font-size: 16px; opacity: 0.9; margin: 0 0 20px 0; }
+.profile-status { margin: 0 0 20px 0; }
+.profile-roles { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+.role-badge { background: rgba(255,255,255,0.2); color: #1c1c1e; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+.text-muted { color: rgba(255,255,255,0.7); font-style: italic; }
+.profile-details, .profile-security { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+.card-header { display: flex; justify-content: space-between; align-items: center; padding: 20px; border-bottom: 1px solid var(--border); }
+.card-header h3 { margin: 0; color: var(--text-primary); font-size: 16px; font-weight: 600; }
+.card-body { padding: 25px; }
+.info-grid { display: grid; gap: 20px; }
+.info-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border); }
+.info-item:last-child { border-bottom: none; }
+.info-label { font-weight: 600; color: var(--text-muted); min-width: 120px; }
+.info-value { color: var(--text-primary); text-align: right; }
+.status-badge { padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+.status-badge.active { background: rgba(52,211,153,0.2); color: #34d399; }
+.status-badge.inactive { background: rgba(239,68,68,0.2); color: #ef4444; }
+.password-mask { font-family: monospace; letter-spacing: 2px; }
+.auth-status { background: rgba(52,211,153,0.2); color: #34d399; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 600; }
+</style>
+
+<style>
+.btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-card); color: var(--text-primary); text-decoration: none; font-size: 13px; cursor: pointer; transition: all .2s; }
+.btn-sm { padding: 6px 12px; font-size: 12px; }
+.btn-outline { border-color: var(--border); }
+.btn-outline:hover { border-color: var(--accent-copper); color: var(--accent-copper); }
+.btn-outline-primary { border-color: var(--accent-copper); color: var(--accent-copper); background: transparent; }
+.btn-outline-primary:hover { background: var(--accent-copper); color: #1c1c1e; }
+
+@media (max-width: 768px) {
+    .profile-container { grid-template-columns: 1fr; }
+    .info-grid { grid-template-columns: 1fr; }
+}
+</style>
+{% endblock %}

@@ -1,0 +1,49 @@
+{% extends 'admin/base_admin.html.twig' %}
+{% block title %}Détail Chambre{% endblock %}
+{% block admin_content %}
+
+    <div class="page-header">
+        <h1>Chambre #{{ chambre.id }}</h1>
+        <p><a href="{{ path('app_chambre_index') }}" style="color:var(--accent-copper);">← Retour à la liste</a></p>
+    </div>
+
+    <div class="card" style="max-width:600px;">
+        <div class="card-header">
+            <h3 class="card-title">Chambre {{ chambre.numero }}</h3>
+            <span style="background:var(--bg-secondary); color:var(--accent-copper); padding:4px 14px; border-radius:20px; font-size:13px; font-weight:600;">
+                {{ chambre.typeChambre }}
+            </span>
+        </div>
+
+        <div style="display:grid; gap:20px;">
+            <div>
+                <div style="color:var(--text-secondary); font-size:12px; font-weight:600; text-transform:uppercase; margin-bottom:6px;">Hébergement</div>
+                <div style="font-weight:600;">{{ chambre.hebergement ? chambre.hebergement.description : 'N/A' }}</div>
+            </div>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+                <div>
+                    <div style="color:var(--text-secondary); font-size:12px; font-weight:600; text-transform:uppercase; margin-bottom:6px;">Prix / nuit</div>
+                    <div class="price-cell" style="font-size:22px; font-weight:700;">{{ chambre.prixNuit }} TND</div>
+                </div>
+                <div>
+                    <div style="color:var(--text-secondary); font-size:12px; font-weight:600; text-transform:uppercase; margin-bottom:6px;">Capacité</div>
+                    <div style="font-size:22px; font-weight:700;">{{ chambre.capacite }} <span style="font-size:14px; color:var(--text-secondary);">personnes</span></div>
+                </div>
+            </div>
+
+            <div>
+                <div style="color:var(--text-secondary); font-size:12px; font-weight:600; text-transform:uppercase; margin-bottom:6px;">Équipements</div>
+                <div style="background:var(--bg-secondary); padding:12px; border-radius:8px;">{{ chambre.equipements }}</div>
+            </div>
+        </div>
+
+        <div style="display:flex; gap:12px; margin-top:24px;">
+            <a href="{{ path('app_chambre_edit', {'id': chambre.id}) }}" style="background:#f59e0b20; color:#f59e0b; padding:8px 20px; border-radius:8px; text-decoration:none; font-weight:600;">Modifier</a>
+            {{ include('chambre/_delete_form.html.twig') }}
+        </div>
+    </div>
+
+    <footer class="copyright">Copyright &copy; 2026 Voyage</footer>
+
+{% endblock %}

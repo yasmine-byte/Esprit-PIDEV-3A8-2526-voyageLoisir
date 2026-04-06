@@ -1,0 +1,277 @@
+{% extends 'base_front.html.twig' %}
+
+{% block title %}Mes Réclamations - Villa Agency{% endblock %}
+
+{% block body %}
+    
+
+    <div class="page-heading header-text">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12">
+                    <span class="breadcrumb"><a href="{{ path('app_home') }}">Home</a> / Réclamations</span>
+                    <h3>Mes Réclamations</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mt-5 mb-5 pb-5 pt-3" style="min-height:50vh;">
+
+        {% for message in app.flashes('success') %}
+            <div class="alert alert-success alert-dismissible fade show">{{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+        {% endfor %}
+        {% for message in app.flashes('warning') %}
+            <div class="alert alert-warning alert-dismissible fade show">{{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+        {% endfor %}
+        {% for message in app.flashes('danger') %}
+            <div class="alert alert-danger alert-dismissible fade show">{{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+        {% endfor %}
+
+        {# Header #}
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+            <h4 class="mb-0 fw-bold">Toutes mes réclamations</h4>
+            <a href="{{ path('reclamation_new') }}" class="btn text-white rounded-pill px-4 py-2"
+               style="background-color:#f35525; font-weight:600;">
+                <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16" style="margin-right:5px;"><path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/></svg>
+                Nouvelle réclamation
+            </a>
+        </div>
+
+        {# Filtres — tout auto via JS #}
+        <div class="row g-2 mb-4 align-items-center">
+            <div class="col-md-4">
+                <input type="text" id="searchInput" class="form-control rounded-pill"
+                       placeholder="🔍 Rechercher...">
+            </div>
+            <div class="col-md-3">
+                <select id="filterStatut" class="form-select rounded-pill">
+                    <option value="">Tous les statuts</option>
+                    <option value="En attente">⏳ En attente</option>
+                    <option value="En cours">🔄 En cours</option>
+                    <option value="Traitée">✓ Traitée</option>
+                    <option value="Fermée">🔒 Fermée</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select id="filterPriorite" class="form-select rounded-pill">
+                    <option value="">Toutes priorités</option>
+                    <option value="Basse">Basse</option>
+                    <option value="Moyenne">Moyenne</option>
+                    <option value="Haute">⚠ Haute</option>
+                    <option value="Urgente">🚨 Urgente</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select id="sortSelect" class="form-select rounded-pill">
+                    <option value="">Trier par...</option>
+                    <option value="date-desc">Date ↓ (récent)</option>
+                    <option value="date-asc">Date ↑ (ancien)</option>
+                    <option value="priorite-desc">Priorité ↓</option>
+                    <option value="priorite-asc">Priorité ↑</option>
+                </select>
+            </div>
+        </div>
+
+        {# Compteur #}
+        <div id="resultCount" class="mb-2" style="font-size:0.85rem; color:#888;"></div>
+
+        {# Tableau #}
+        <div class="table-responsive shadow-sm bg-white rounded-3 p-3">
+            <table class="table table-hover align-middle mb-0" id="reclTable">
+                <thead style="background:#f8f9fa;">
+                    <tr>
+                        <th style="color:#f35525; cursor:pointer;" class="sort-th" data-col="0">
+                            Titre <span class="sort-icon">⇅</span>
+                        </th>
+                        <th style="color:#f35525;">Type</th>
+                        <th style="color:#f35525; cursor:pointer;" class="sort-th" data-col="2">
+                            Priorité <span class="sort-icon">⇅</span>
+                        </th>
+                        <th style="color:#f35525; cursor:pointer;" class="sort-th" data-col="3">
+                            Statut <span class="sort-icon">⇅</span>
+                        </th>
+                        <th style="color:#f35525;">Avis lié</th>
+                        <th style="color:#f35525; cursor:pointer;" class="sort-th" data-col="5">
+                            Date <span class="sort-icon">⇅</span>
+                        </th>
+                        <th style="color:#f35525;">💬 Réponse admin</th>
+                        <th style="color:#f35525;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="reclBody">
+                {% for rec in reclamations %}
+                    <tr
+                        data-titre="{{ rec.titre|lower }}"
+                        data-statut="{{ rec.statut }}"
+                        data-priorite="{{ rec.priorite }}"
+                        data-date="{{ rec.dateCreation ? rec.dateCreation|date('Y-m-d') : '0000-00-00' }}"
+                        data-priorite-val="{{ rec.priorite == 'Basse' ? 1 : (rec.priorite == 'Moyenne' ? 2 : (rec.priorite == 'Haute' ? 3 : 4)) }}"
+                    >
+                        <td style="max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:600;"
+                            title="{{ rec.titre }}">{{ rec.titre }}</td>
+                        <td style="font-size:0.85rem;">{{ rec.type ? rec.type.nom : '—' }}</td>
+                        <td>
+                            {% if rec.priorite == 'Basse' %}
+                                <span class="badge rounded-pill bg-secondary">Basse</span>
+                            {% elseif rec.priorite == 'Moyenne' %}
+                                <span class="badge rounded-pill bg-info text-dark">Moyenne</span>
+                            {% elseif rec.priorite == 'Haute' %}
+                                <span class="badge rounded-pill bg-warning text-dark">⚠ Haute</span>
+                            {% else %}
+                                <span class="badge rounded-pill bg-danger">🚨 Urgente</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if rec.statut == 'En attente' %}
+                                <span class="badge rounded-pill bg-warning text-dark">⏳ En attente</span>
+                            {% elseif rec.statut == 'En cours' %}
+                                <span class="badge rounded-pill bg-primary">🔄 En cours</span>
+                            {% elseif rec.statut == 'Traitée' %}
+                                <span class="badge rounded-pill bg-success">✓ Traitée</span>
+                            {% else %}
+                                <span class="badge rounded-pill bg-secondary">🔒 Fermée</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if rec.avis %}
+                                <a href="{{ path('avis_show', {'id': rec.avis.id}) }}"
+                                   class="badge rounded-pill text-decoration-none"
+                                   style="background:#fff3f0; color:#f35525; border:1px solid #f35525;">
+                                    #{{ rec.avis.id }}
+                                </a>
+                            {% else %}
+                                <span style="font-size:0.8rem; color:#bbb;">—</span>
+                            {% endif %}
+                        </td>
+                        <td style="white-space:nowrap; font-size:0.85rem; color:#888;">
+                            {{ rec.dateCreation ? rec.dateCreation|date('d/m/Y') : '—' }}
+                        </td>
+                        <td style="max-width:200px;">
+                            {% if rec.reponse %}
+                                <div style="background:#f0fff4; border-left:3px solid #28a745; border-radius:6px; padding:6px 10px;">
+                                    <div style="font-size:0.7rem; color:#28a745; font-weight:600; margin-bottom:2px;">Réponse admin :</div>
+                                    <div style="font-size:0.82rem; color:#333;">{{ rec.reponse }}</div>
+                                </div>
+                            {% else %}
+                                <span style="font-size:0.8rem; color:#bbb; font-style:italic;">En attente...</span>
+                            {% endif %}
+                        </td>
+                        <td style="white-space:nowrap;">
+                            <div style="display:flex; gap:5px; align-items:center; flex-wrap:nowrap;">
+
+                                {# 👁 Voir — toujours actif #}
+                                <a href="{{ path('reclamation_show', {'id': rec.id}) }}"
+                                   class="btn btn-sm rounded-pill"
+                                   style="background:#f0f5ff; color:#3a7bd5; border:1px solid #c5d8ff; font-size:0.78rem; padding:4px 10px; font-weight:600;">
+                                    👁 Voir
+                                </a>
+
+                                {# ✏ Modifier — actif si pas Traitée/Fermée #}
+                                {% if rec.statut != 'Fermée' and rec.statut != 'Traitée' %}
+                                <a href="{{ path('reclamation_edit', {'id': rec.id}) }}"
+                                   class="btn btn-sm rounded-pill"
+                                   style="background:#fff8e1; color:#e65100; border:1px solid #ffcc80; font-size:0.78rem; padding:4px 10px; font-weight:600;">
+                                    ✏ Modifier
+                                </a>
+                                {% else %}
+                                <span class="btn btn-sm rounded-pill"
+                                      style="background:#f5f5f5; color:#bbb; border:1px solid #e0e0e0; font-size:0.78rem; padding:4px 10px; font-weight:600; cursor:not-allowed;"
+                                      title="Non modifiable ({{ rec.statut }})">
+                                    ✏ Modifier
+                                </span>
+                                {% endif %}
+
+                                {# 🗑 Supprimer — actif si En attente #}
+                                {% if rec.statut == 'En attente' %}
+                                <form method="post" action="{{ path('reclamation_delete', {'id': rec.id}) }}"
+                                      onsubmit="return confirm('Supprimer cette réclamation ?');" style="display:inline-block; margin:0;">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ rec.id) }}">
+                                    <button type="submit" class="btn btn-sm rounded-pill"
+                                            style="background:#fff0f0; color:#c0392b; border:1px solid #ffb3b3; font-size:0.78rem; padding:4px 10px; font-weight:600;">
+                                        🗑 Supprimer
+                                    </button>
+                                </form>
+                                {% else %}
+                                <span class="btn btn-sm rounded-pill"
+                                      style="background:#f5f5f5; color:#bbb; border:1px solid #e0e0e0; font-size:0.78rem; padding:4px 10px; font-weight:600; cursor:not-allowed;"
+                                      title="Non supprimable ({{ rec.statut }})">
+                                    🗑 Supprimer
+                                </span>
+                                {% endif %}
+
+                            </div>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="8" class="text-center py-5" style="color:#bbb;">
+                            <div style="font-size:2.5rem; margin-bottom:10px;">📋</div>
+                            Aucune réclamation trouvée.<br>
+                            <a href="{{ path('reclamation_new') }}" style="color:#f35525;">Créer une réclamation</a>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            <div id="noResults" style="display:none; text-align:center; padding:40px; color:#bbb;">
+                Aucune réclamation ne correspond à votre recherche.
+            </div>
+        </div>
+    </div>
+
+    
+
+<script>
+(function() {
+    const searchInput    = document.getElementById('searchInput');
+    const filterStatut   = document.getElementById('filterStatut');
+    const filterPriorite = document.getElementById('filterPriorite');
+    const sortSelect     = document.getElementById('sortSelect');
+    const tbody          = document.getElementById('reclBody');
+    const resultCount    = document.getElementById('resultCount');
+    const noResults      = document.getElementById('noResults');
+
+    function filterAndSort() {
+        const q        = searchInput    ? searchInput.value.toLowerCase().trim() : '';
+        const statut   = filterStatut   ? filterStatut.value   : '';
+        const priorite = filterPriorite ? filterPriorite.value : '';
+        const sort     = sortSelect     ? sortSelect.value     : '';
+
+        const rows = Array.from(tbody.querySelectorAll('tr[data-titre]'));
+        let visible = 0;
+
+        rows.forEach(function(row) {
+            const okQ = !q        || (row.dataset.titre || '').includes(q);
+            const okS = !statut   || row.dataset.statut   === statut;
+            const okP = !priorite || row.dataset.priorite === priorite;
+
+            if (okQ && okS && okP) { row.style.display = ''; visible++; }
+            else                    { row.style.display = 'none'; }
+        });
+
+        if (resultCount) resultCount.textContent = visible + ' réclamation' + (visible > 1 ? 's' : '') + ' affichée' + (visible > 1 ? 's' : '');
+        if (noResults)   noResults.style.display = visible === 0 ? 'block' : 'none';
+
+        if (sort) {
+            const vis = rows.filter(r => r.style.display !== 'none');
+            vis.sort(function(a, b) {
+                if (sort === 'date-desc')     return b.dataset.date.localeCompare(a.dataset.date);
+                if (sort === 'date-asc')      return a.dataset.date.localeCompare(b.dataset.date);
+                if (sort === 'priorite-desc') return parseInt(b.dataset.prioriteVal) - parseInt(a.dataset.prioriteVal);
+                if (sort === 'priorite-asc')  return parseInt(a.dataset.prioriteVal) - parseInt(b.dataset.prioriteVal);
+                return 0;
+            });
+            vis.forEach(r => tbody.appendChild(r));
+        }
+    }
+
+    if (searchInput)    searchInput.addEventListener('input',   filterAndSort);
+    if (filterStatut)   filterStatut.addEventListener('change',  filterAndSort);
+    if (filterPriorite) filterPriorite.addEventListener('change', filterAndSort);
+    if (sortSelect)     sortSelect.addEventListener('change',    filterAndSort);
+
+    filterAndSort();
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,207 @@
+{% extends 'base_front.html.twig' %}
+
+{% block title %}{{ activite.nom }} - Vianova{% endblock %}
+
+{% block body %}
+
+  <div id="js-preloader" class="js-preloader">
+    <div class="preloader-inner">
+      <span class="dot"></span>
+      <div class="dots">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-heading header-text" style="
+      background-image:
+          linear-gradient(rgba(0,0,0,0.35), rgba(0,0,0,0.35)),
+          url('{{ asset('assets_front/images/images/my-banner.jpg') }}');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+  ">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-12">
+          <span class="breadcrumb">
+            <a href="{{ path('app_home') }}">Home</a> / Activités / {{ activite.nom }}
+          </span>
+          <h3>Détail de l’activité</h3>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="single-property section">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-8">
+          <div class="main-image">
+            <img
+              src="{{ activite.imageUrl ? activite.imageUrl : asset('assets_front/images/images/single-property.jpg') }}"
+              alt="{{ activite.nom }}"
+              style="width:100%; max-height:520px; object-fit:cover;"
+            >
+          </div>
+
+          <div class="main-content">
+            <span class="category">{{ activite.type ?: 'Activité' }}</span>
+            <h4>{{ activite.nom }}</h4>
+
+            <p>
+              {{ activite.description ?: 'Aucune description disponible pour cette activité.' }}
+            </p>
+          </div>
+
+          <div class="accordion" id="accordionExample">
+            <div class="accordion-item">
+              <h2 class="accordion-header" id="headingOne">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                  À propos de cette activité
+                </button>
+              </h2>
+              <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
+                <div class="accordion-body">
+                  Cette activité se déroule à <strong>{{ activite.lieu ?: 'lieu non précisé' }}</strong>
+                  et propose une expérience de type <strong>{{ activite.type ?: 'touristique' }}</strong>.
+                </div>
+              </div>
+            </div>
+
+            <div class="accordion-item">
+              <h2 class="accordion-header" id="headingTwo">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                  Durée et prix
+                </button>
+              </h2>
+              <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#accordionExample">
+                <div class="accordion-body">
+                  La durée estimée est de <strong>{{ activite.duree ?: 'N/A' }}</strong> minutes
+                  pour un tarif de <strong>{{ activite.prix ?: 'N/A' }} TND</strong>.
+                </div>
+              </div>
+            </div>
+
+            <div class="accordion-item">
+              <h2 class="accordion-header" id="headingThree">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                  Informations supplémentaires
+                </button>
+              </h2>
+              <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#accordionExample">
+                <div class="accordion-body">
+                  Note AI :
+                  <strong>{{ activite.aiRating is not null ? activite.aiRating : 'N/A' }}</strong><br>
+                  Image source :
+                  <strong>{{ activite.imageUrl ? 'Disponible' : 'Image par défaut' }}</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-4">
+          <div class="info-table">
+            <ul>
+              <li>
+                <img src="{{ asset('assets_front/images/images/info-icon-01.png') }}" alt="" style="max-width: 52px;">
+                <h4>{{ activite.duree ?: 'N/A' }} min<br><span>Durée</span></h4>
+              </li>
+              <li>
+                <img src="{{ asset('assets_front/images/images/info-icon-02.png') }}" alt="" style="max-width: 52px;">
+                <h4>{{ activite.lieu ?: 'N/A' }}<br><span>Lieu</span></h4>
+              </li>
+              <li>
+                <img src="{{ asset('assets_front/images/images/info-icon-03.png') }}" alt="" style="max-width: 52px;">
+                <h4>{{ activite.prix ?: 'N/A' }} TND<br><span>Prix</span></h4>
+              </li>
+              <li>
+                <img src="{{ asset('assets_front/images/images/info-icon-04.png') }}" alt="" style="max-width: 52px;">
+                <h4>{{ activite.aiRating is not null ? activite.aiRating : 'N/A' }}<br><span>Note AI</span></h4>
+              </li>
+            </ul>
+          </div>
+
+          <div class="icon-button mt-4">
+            <a href="{{ path('app_activite_index') }}">
+              <i class="fa fa-arrow-left"></i> Retour aux activités
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section best-deal">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-4">
+          <div class="section-heading">
+            <h6>| Activité</h6>
+            <h2>Découvrez cette expérience</h2>
+          </div>
+        </div>
+        <div class="col-lg-12">
+          <div class="tabs-content">
+            <div class="row">
+              <div class="nav-wrapper">
+                <ul class="nav nav-tabs" role="tablist">
+                  <li class="nav-item" role="presentation">
+                    <button class="nav-link active" type="button">Infos</button>
+                  </li>
+                  <li class="nav-item" role="presentation">
+                    <button class="nav-link" type="button">Lieu</button>
+                  </li>
+                  <li class="nav-item" role="presentation">
+                    <button class="nav-link" type="button">Expérience</button>
+                  </li>
+                </ul>
+              </div>
+
+              <div class="tab-content">
+                <div class="tab-pane fade show active">
+                  <div class="row">
+                    <div class="col-lg-3">
+                      <div class="info-table">
+                        <ul>
+                          <li>Nom <span>{{ activite.nom }}</span></li>
+                          <li>Type <span>{{ activite.type ?: 'N/A' }}</span></li>
+                          <li>Prix <span>{{ activite.prix ?: 'N/A' }} TND</span></li>
+                          <li>Durée <span>{{ activite.duree ?: 'N/A' }}</span></li>
+                          <li>Lieu <span>{{ activite.lieu ?: 'N/A' }}</span></li>
+                        </ul>
+                      </div>
+                    </div>
+
+                    <div class="col-lg-6">
+                      <img
+                        src="{{ activite.imageUrl ? activite.imageUrl : asset('assets_front/images/images/deal-01.jpg') }}"
+                        alt="{{ activite.nom }}"
+                        style="width:100%; max-height:360px; object-fit:cover;"
+                      >
+                    </div>
+
+                    <div class="col-lg-3">
+                      <h4>{{ activite.nom }}</h4>
+                      <p>{{ activite.description ?: 'Aucune description disponible.' }}</p>
+                      <div class="icon-button">
+                        <a href="{{ path('app_activite_index') }}">
+                          <i class="fa fa-calendar"></i> Voir d'autres activités
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+{% endblock %}

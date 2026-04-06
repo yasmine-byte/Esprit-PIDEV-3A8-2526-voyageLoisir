@@ -476,8 +476,6 @@
 {% endblock %}
 
 {% block body %}
-    {% include 'home/partials/header.html.twig' %}
-
     {% set coverImage = blog.imageCouverture ?: ('https://picsum.photos/seed/blog-' ~ blog.id ~ '/1200/900') %}
     {% set readTime = ((blog.contenu|default('')|length / 700)|round(0, 'ceil')) %}
     {% set statusLabel = blog.status ? 'publie' : 'brouillon' %}
@@ -651,7 +649,6 @@
         </div>
     </main>
 
-    {% include 'home/partials/footer.html.twig' %}
 {% endblock %}
 
 {% block javascripts %}
