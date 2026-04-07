@@ -11,45 +11,6 @@
   </div>
 </div>
 
-<div class="sub-header">
-  <div class="container">
-    <div class="row">
-      <div class="col-lg-8 col-md-8">
-        <ul class="info">
-          <li><i class="fa fa-envelope"></i> info@voyageloisir.com</li>
-          <li><i class="fa fa-map"></i> Tunis, Tunisie</li>
-        </ul>
-      </div>
-      <div class="col-lg-4 col-md-4">
-        <ul class="social-links">
-          <li><a href="#"><i class="fab fa-facebook"></i></a></li>
-          <li><a href="#"><i class="fab fa-twitter"></i></a></li>
-          <li><a href="#"><i class="fab fa-linkedin"></i></a></li>
-          <li><a href="#"><i class="fab fa-instagram"></i></a></li>
-        </ul>
-      </div>
-    </div>
-  </div>
-</div>
-
-<header class="header-area header-sticky">
-  <div class="container">
-    <div class="row">
-      <div class="col-12">
-        <nav class="main-nav">
-          <a href="{{ path("app_home") }}" class="logo"><h1>VoyageLoisir</h1></a>
-          <ul class="nav">
-            <li><a href="{{ path("app_home") }}">Accueil</a></li>
-            <li><a href="{{ path("app_destinations") }}" class="active">Destinations</a></li>
-            <li><a href="{{ path("app_contact") }}">Contact</a></li>
-          </ul>
-          <a class="menu-trigger"><span>Menu</span></a>
-        </nav>
-      </div>
-    </div>
-  </div>
-</header>
-
 {# ===== HERO SLIDER ===== #}
 <style>
 .dslide { position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;opacity:0;transition:opacity 1s ease;z-index:0; }
@@ -463,42 +424,29 @@
           <ul>
             <li style="display:block;padding:15px;text-align:center">
               <h5 style="margin-bottom:12px;border-bottom:1px solid #eee;padding-bottom:8px;text-align:left">Partager cette destination</h5>
-              <div id="qrcode" style="display:inline-block;padding:10px;background:#fff;border-radius:8px;border:1px solid #eee;margin-bottom:10px"></div>
+              <div style="display:inline-block;padding:10px;background:#fff;border-radius:8px;border:1px solid #eee;margin-bottom:10px">
+                <img
+                  src="{{ qr_code_url }}"
+                  alt="QR Code pour {{ destination.nom }}"
+                  width="150"
+                  height="150"
+                  style="display:block;width:150px;height:150px"
+                >
+              </div>
               <div style="font-size:12px;color:#888;margin-bottom:12px">Scannez pour partager</div>
-              <button onclick="downloadQR()" style="width:100%;padding:10px;background:#f97316;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer">
+              <a
+                href="{{ qr_code_url }}"
+                download="qrcode-{{ destination.nom|replace({' ': '-'}) }}.png"
+                style="display:block;width:100%;padding:10px;background:#f97316;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;text-decoration:none"
+              >
                 Telecharger le QR Code
-              </button>
+              </a>
+              <div style="font-size:11px;color:#999;margin-top:10px;word-break:break-all">
+                {{ share_url }}
+              </div>
             </li>
           </ul>
         </div>
-
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-        <script>
-        var pageUrl = window.location.href.replace("127.0.0.1", "192.168.0.182");
-        var qr = new QRCode(document.getElementById("qrcode"), {
-            text        : pageUrl,
-            width       : 150,
-            height      : 150,
-            colorDark   : "#1a1a1a",
-            colorLight  : "#ffffff",
-            correctLevel: QRCode.CorrectLevel.H
-        });
-
-        function downloadQR() {
-            setTimeout(function() {
-                var canvas = document.querySelector("#qrcode canvas");
-                var img    = document.querySelector("#qrcode img");
-                var link   = document.createElement("a");
-                link.download = "qrcode-{{ destination.nom|replace({" ": "-"}) }}.png";
-                if (canvas) {
-                    link.href = canvas.toDataURL("image/png");
-                } else if (img) {
-                    link.href = img.src;
-                }
-                link.click();
-            }, 500);
-        }
-        </script>
 
         <div class="main-button" style="margin-top:20px">
           <a href="{{ path("app_contact") }}">Reserver cette destination</a>

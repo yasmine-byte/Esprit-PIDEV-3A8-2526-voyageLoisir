@@ -1,0 +1,69 @@
+{% extends 'admin/base_admin.html.twig' %}
+{% block title %}Détail Hébergement{% endblock %}
+{% block admin_content %}
+
+    <div class="page-header">
+        <h1>Hébergement #{{ hebergement.id }}</h1>
+        <p><a href="{{ path('app_hebergement_index') }}" style="color:var(--accent-copper);">← Retour à la liste</a></p>
+    </div>
+
+    <div class="content-grid">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Informations</h3>
+            </div>
+            <div style="display:grid; gap:16px; padding:8px 0;">
+                <div>
+                    <div style="color:var(--text-secondary); font-size:12px; font-weight:600; text-transform:uppercase; margin-bottom:6px;">Description</div>
+                    <div>{{ hebergement.description }}</div>
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+                    <div>
+                        <div style="color:var(--text-secondary); font-size:12px; font-weight:600; text-transform:uppercase; margin-bottom:6px;">Prix</div>
+                        <div class="price-cell" style="font-size:20px; font-weight:700;">{{ hebergement.prix }} TND</div>
+                    </div>
+                    <div>
+                        <div style="color:var(--text-secondary); font-size:12px; font-weight:600; text-transform:uppercase; margin-bottom:6px;">Type</div>
+                        <span style="background:var(--bg-secondary); color:var(--accent-copper); padding:4px 12px; border-radius:20px; font-size:13px; font-weight:600;">
+                            {{ hebergement.type ? hebergement.type.nom : 'N/A' }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div style="display:flex; gap:12px; margin-top:20px;">
+                <a href="{{ path('app_hebergement_edit', {'id': hebergement.id}) }}" style="background:#f59e0b20; color:#f59e0b; padding:8px 20px; border-radius:8px; text-decoration:none; font-weight:600;">Modifier</a>
+                {{ include('hebergement/_delete_form.html.twig') }}
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Chambres ({{ hebergement.no|length }})</h3>
+                <a href="{{ path('app_chambre_new', {'hebergement': hebergement.id}) }}"
+                   style="background:var(--accent-gradient); color:#1c1c1e; padding:8px 16px; border-radius:8px; text-decoration:none; font-size:13px; font-weight:600;">
+                    + Ajouter une chambre
+                </a>
+            </div>
+            {% for chambre in hebergement.no %}
+                <div style="background:var(--bg-secondary); border-radius:8px; padding:12px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <div style="font-weight:600;">Chambre {{ chambre.numero }}</div>
+                        <div style="color:var(--text-secondary); font-size:13px; margin-top:4px;">
+                            {{ chambre.typeChambre }} — {{ chambre.prixNuit }} TND/nuit — {{ chambre.capacite }} pers.
+                        </div>
+                    </div>
+                    <div style="display:flex; gap:8px;">
+                        <a href="{{ path('app_chambre_edit', {'id': chambre.id}) }}" style="background:#f59e0b20; color:#f59e0b; padding:5px 12px; border-radius:6px; text-decoration:none; font-size:13px;">Modifier</a>
+                    </div>
+                </div>
+            {% else %}
+                <p style="color:var(--text-secondary);">Aucune chambre —
+                    <a href="{{ path('app_chambre_new', {'hebergement': hebergement.id}) }}" style="color:var(--accent-copper);">Ajouter la première chambre</a>
+                </p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <footer class="copyright">Copyright &copy; 2026 Voyage</footer>
+
+{% endblock %}

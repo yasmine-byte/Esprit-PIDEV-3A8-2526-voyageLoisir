@@ -1,0 +1,88 @@
+{% extends 'base_front.html.twig' %}
+
+{% block title %}Détail de la Réclamation - Villa Agency{% endblock %}
+
+{% block body %}
+    
+
+    <div class="page-heading header-text">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12">
+                    <span class="breadcrumb"><a href="{{ path('reclamation_index') }}">Réclamations</a> / Détails</span>
+                    <h3>Détails de la Réclamation</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mt-5 mb-5 pb-5 pt-3" style="min-height: 40vh;">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card shadow-sm border-0 mb-4 p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h4>{{ reclamation.titre }}</h4>
+                        {% if reclamation.statut == 'Fermée' %}
+                            <span class="badge bg-secondary py-2 px-3">Fermée</span>
+                        {% elseif reclamation.statut == 'Traitée' %}
+                            <span class="badge bg-success py-2 px-3">Traitée</span>
+                        {% elseif reclamation.statut == 'En cours' %}
+                            <span class="badge bg-primary py-2 px-3">En cours</span>
+                        {% else %}
+                            <span class="badge bg-warning text-dark py-2 px-3">En attente</span>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-sm-3 fw-bold text-muted">Type:</div>
+                        <div class="col-sm-9">{{ reclamation.type.nom }}</div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-sm-3 fw-bold text-muted">Priorité:</div>
+                        <div class="col-sm-9">
+                            {% if reclamation.priorite == 'Basse' %}
+                                <span class="badge bg-secondary">Basse</span>
+                            {% elseif reclamation.priorite == 'Moyenne' %}
+                                <span class="badge bg-info text-dark">Moyenne</span>
+                            {% elseif reclamation.priorite == 'Haute' %}
+                                <span class="badge bg-warning text-dark">Haute</span>
+                            {% elseif reclamation.priorite == 'Urgente' %}
+                                <span class="badge bg-danger">Urgente</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-sm-3 fw-bold text-muted">Date:</div>
+                        <div class="col-sm-9">{{ reclamation.dateCreation ? reclamation.dateCreation|date('d/m/Y') : '' }}</div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-sm-3 fw-bold text-muted">Description:</div>
+                        <div class="col-sm-9 bg-light p-3 rounded" style="font-size:1.05rem;">
+                            {{ reclamation.contenu|nl2br }}
+                        </div>
+                    </div>
+
+                    <div class="mt-4 pt-3 border-top d-flex justify-content-between">
+                        <div>
+                            {% if reclamation.statut != 'Fermée' %}
+                                <a href="{{ path('reclamation_edit', {'id': reclamation.id}) }}" class="btn btn-outline-dark px-4 py-2 rounded-pill me-2">Modifier</a>
+                            {% endif %}
+                            <form method="post" action="{{ path('reclamation_delete', {'id': reclamation.id}) }}" onsubmit="return confirm('Sûr ?');" style="display:inline-block;">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ reclamation.id) }}">
+                                <button class="btn btn-outline-danger px-4 py-2 rounded-pill">Supprimer</button>
+                            </form>
+                        </div>
+                        <a href="{{ path('reclamation_index') }}" class="btn text-white px-4 py-2 rounded-pill" style="background-color: #f35525;">Retour à la liste</a>
+                    </div>
+                </div>
+
+
+            </div>
+        </div>
+    </div>
+
+    
+{% endblock %}

@@ -1,0 +1,166 @@
+{% extends 'base_front.html.twig' %}
+{% block title %}Nouvelle Réclamation - Villa Agency{% endblock %}
+{% block body %}
+    
+    <style>
+        @keyframes fadeInUp{from{opacity:0;transform:translateY(30px);}to{opacity:1;transform:translateY(0);}}
+        @keyframes spin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
+        .animate-fade{animation:fadeInUp 0.6s ease forwards;}
+        .floating-card{background:#fff;border-radius:20px;box-shadow:0 20px 40px rgba(0,0,0,0.1);padding:40px;position:relative;z-index:10;margin-top:-50px;}
+        .custom-input{border:2px solid #e9ecef;border-radius:12px;padding:12px 15px 12px 45px;transition:all 0.3s;width:100%;}
+        .custom-input:focus{border-color:#f35525;box-shadow:0 0 0 3px rgba(243,85,37,0.1);outline:none;}
+        .input-icon{position:absolute;left:15px;top:50%;transform:translateY(-50%);color:#6c757d;}
+        .input-group-custom{position:relative;margin-bottom:5px;}
+        .custom-select{border:2px solid #e9ecef;border-radius:12px;padding:12px 15px;width:100%;appearance:none;background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%236c757d' viewBox='0 0 16 16'><path fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/></svg>") no-repeat right 15px center;background-color:#fff;}
+        .custom-select:focus{border-color:#f35525;outline:none;box-shadow:0 0 0 3px rgba(243,85,37,0.1);}
+        .priority-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+        .prio-card{border:2px solid #e9ecef;border-radius:10px;padding:10px 5px;text-align:center;cursor:pointer;transition:0.3s;font-weight:bold;font-size:0.85rem;color:#6c757d;}
+        .prio-card:hover{transform:translateY(-3px);}
+        .prio-card.active[data-val="Basse"]{background:rgba(108,117,125,0.1);border-color:#6c757d;color:#6c757d;}
+        .prio-card.active[data-val="Moyenne"]{background:rgba(13,202,240,0.1);border-color:#0dcaf0;color:#0dcaf0;}
+        .prio-card.active[data-val="Haute"]{background:rgba(253,126,20,0.1);border-color:#fd7e14;color:#fd7e14;}
+        .prio-card.active[data-val="Urgente"]{background:rgba(220,53,69,0.1);border-color:#dc3545;color:#dc3545;}
+        .hidden-select{display:none !important;}
+        .quality-bar{height:6px;background:#e9ecef;border-radius:3px;margin-top:5px;overflow:hidden;}
+        .quality-fill{height:100%;width:0%;transition:0.3s ease;}
+        .quality-text{font-size:0.8rem;font-weight:bold;text-align:right;margin-top:3px;}
+        .btn-submit{background:linear-gradient(45deg,#dc3545,#f35525);color:#fff;border:none;border-radius:50px;padding:14px 36px;font-size:1rem;font-weight:700;transition:0.3s;display:inline-flex;align-items:center;gap:10px;}
+        .btn-submit:hover{transform:scale(1.03);box-shadow:0 10px 20px rgba(220,53,69,0.3);color:#fff;}
+        .btn-cancel-new{background:#fff;color:#888;border:2px solid #e0e0e0;border-radius:50px;padding:14px 36px;font-size:1rem;font-weight:600;transition:all 0.25s;display:inline-flex;align-items:center;gap:8px;text-decoration:none;}
+        .btn-cancel-new:hover{background:#f5f5f5;border-color:#bbb;color:#444;text-decoration:none;}
+        .spinner-icon{display:none;animation:spin 1s linear infinite;}
+        .btn-submit.loading .btn-text-content{display:none;}
+        .btn-submit.loading .spinner-icon{display:inline-block;}
+        @media(max-width:768px){.priority-grid{grid-template-columns:repeat(2,1fr);}}
+    </style>
+
+    <div class="page-heading header-text" style="padding-bottom:120px;">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12">
+                    <span class="breadcrumb"><a href="{{ path('reclamation_index') }}">Réclamations</a> / Nouvelle</span>
+                    <h3>Centre d'Assistance</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mb-5">
+        <div class="row justify-content-center">
+            <div class="col-md-9 col-lg-8">
+                <div class="floating-card animate-fade">
+                    <h3 class="mb-4 fw-bold text-center">Soumettre une Réclamation</h3>
+
+                    {{ form_start(form, {'attr': {'novalidate': 'novalidate', 'id': 'form-recl'}}) }}
+
+                        {# Titre #}
+                        <div class="mb-4">
+                            {{ form_label(form.titre, 'Titre de la réclamation', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                            <div class="input-group-custom">
+                                <i class="fas fa-pen input-icon" id="titre-icon"></i>
+                                {{ form_widget(form.titre, {'attr': {'class': 'custom-input', 'placeholder': 'Ex: Problème de réservation', 'id': 'input-titre'}}) }}
+                            </div>
+                            <div id="titre-feedback" class="small mt-1 text-muted">Veuillez entrer au moins 5 caractères.</div>
+                            <div class="text-danger small mt-1">{{ form_errors(form.titre) }}</div>
+                        </div>
+
+                        {# Type #}
+                        <div class="mb-4">
+                            {{ form_label(form.type, 'Catégorie du problème', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                            {{ form_widget(form.type, {'attr': {'class': 'custom-select'}}) }}
+                            <div class="text-danger small mt-1">{{ form_errors(form.type) }}</div>
+                        </div>
+
+                        {# Priorité #}
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Niveau de Priorité</label>
+                            <div class="priority-grid">
+                                <div class="prio-card" data-val="Basse">🟢 Basse</div>
+                                <div class="prio-card" data-val="Moyenne">🔵 Moyenne</div>
+                                <div class="prio-card" data-val="Haute">🟠 Haute</div>
+                                <div class="prio-card" data-val="Urgente">🔴 Urgente</div>
+                            </div>
+                            <div class="hidden-select">{{ form_widget(form.priorite, {'id': 'hidden-priorite'}) }}</div>
+                            <div class="text-danger small mt-1">{{ form_errors(form.priorite) }}</div>
+                        </div>
+
+                        {# Contenu #}
+                        <div class="mb-4">
+                            {{ form_label(form.contenu, 'Détails du problème', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                            {{ form_widget(form.contenu, {'attr': {'class': 'custom-input', 'style': 'padding-left:15px;resize:none;', 'rows': 6, 'placeholder': 'Décrivez votre problème en détail... Plus vous donnez d\'informations, mieux nous pourrons vous aider. 🙏', 'id': 'input-desc'}}) }}
+                            <div class="d-flex justify-content-between align-items-center mt-2">
+                                <div class="text-muted small"><span id="char-count">0</span> caractères</div>
+                                <div class="quality-text" id="quality-text">Trop court</div>
+                            </div>
+                            <div class="quality-bar"><div class="quality-fill" id="quality-fill"></div></div>
+                            <div class="text-danger small mt-1">{{ form_errors(form.contenu) }}</div>
+                        </div>
+
+                        {# Boutons : Envoyer + Annuler #}
+                        <div class="mt-5 d-flex justify-content-center gap-3 flex-wrap">
+                            <button type="submit" class="btn-submit" id="btn-submit">
+                                <span class="btn-text-content">Envoyer ma réclamation 🚀</span>
+                                <i class="fas fa-spinner spinner-icon"></i>
+                            </button>
+                            <a href="{{ path('reclamation_index') }}" class="btn-cancel-new">✕ Annuler</a>
+                        </div>
+
+                        <div class="d-none">{{ form_rest(form) }}</div>
+                    {{ form_end(form, {'render_rest': false}) }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const inputTitre    = document.getElementById('input-titre');
+        const titreFeedback = document.getElementById('titre-feedback');
+        const titreIcon     = document.getElementById('titre-icon');
+
+        if(inputTitre) {
+            inputTitre.addEventListener('input', function() {
+                const v = this.value.trim();
+                if(!v)          { this.style.borderColor='#e9ecef'; titreIcon.style.color='#6c757d'; titreFeedback.textContent='Veuillez entrer au moins 5 caractères.'; titreFeedback.style.color='#6c757d'; }
+                else if(v.length<5){ this.style.borderColor='#dc3545'; titreIcon.style.color='#dc3545'; titreFeedback.textContent='Trop court (minimum 5).'; titreFeedback.style.color='#dc3545'; }
+                else               { this.style.borderColor='#28a745'; titreIcon.style.color='#28a745'; titreFeedback.textContent='Titre valide ✓'; titreFeedback.style.color='#28a745'; }
+            });
+        }
+
+        const inputDesc   = document.getElementById('input-desc');
+        const charCount   = document.getElementById('char-count');
+        const qualityFill = document.getElementById('quality-fill');
+        const qualityText = document.getElementById('quality-text');
+
+        if(inputDesc) {
+            inputDesc.addEventListener('input', function() {
+                const l = this.value.length;
+                charCount.textContent = l;
+                qualityFill.style.width = Math.min((l/200)*100, 100) + '%';
+                if(l<50)       { qualityFill.style.background='#dc3545'; qualityText.textContent='Trop court';     qualityText.style.color='#dc3545'; }
+                else if(l<150) { qualityFill.style.background='#fd7e14'; qualityText.textContent='Acceptable';    qualityText.style.color='#fd7e14'; }
+                else           { qualityFill.style.background='#28a745'; qualityText.textContent='Très détaillé ✓'; qualityText.style.color='#28a745'; }
+            });
+        }
+
+        const hiddenPrio = document.getElementById('hidden-priorite');
+        const prioCards  = document.querySelectorAll('.prio-card');
+
+        if(hiddenPrio && hiddenPrio.value) {
+            prioCards.forEach(function(c){ if(c.getAttribute('data-val')===hiddenPrio.value) c.classList.add('active'); });
+        }
+        prioCards.forEach(function(card) {
+            card.addEventListener('click', function() {
+                prioCards.forEach(function(c){ c.classList.remove('active'); });
+                this.classList.add('active');
+                if(hiddenPrio) hiddenPrio.value = this.getAttribute('data-val');
+            });
+        });
+
+        const formRecl = document.getElementById('form-recl');
+        const btnSub   = document.getElementById('btn-submit');
+        if(formRecl) { formRecl.addEventListener('submit', function(){ btnSub.classList.add('loading'); }); }
+    });
+    </script>
+{% endblock %}

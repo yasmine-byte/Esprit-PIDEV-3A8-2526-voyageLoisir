@@ -1,0 +1,16 @@
+{% extends 'admin/base_admin.html.twig' %}
+{% block title %}Nouvelle Chambre{% endblock %}
+{% block admin_content %}
+
+    <div class="page-header">
+        <h1>Nouvelle Chambre</h1>
+        <p><a href="{{ path('app_chambre_index') }}" style="color:var(--accent-copper);">← Retour à la liste</a></p>
+    </div>
+
+    <div class="card" style="max-width:700px;">
+        {{ include('chambre/_form.html.twig', {'button_label': 'Créer la chambre'}) }}
+    </div>
+
+    <footer class="copyright">Copyright &copy; 2026 Voyage</footer>
+
+{% endblock %}

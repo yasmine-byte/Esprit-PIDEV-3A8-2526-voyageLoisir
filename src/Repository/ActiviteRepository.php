@@ -15,6 +15,20 @@ class ActiviteRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Activite::class);
     }
+    public function findSortedByPrix(?string $sort = null): array
+{
+    $qb = $this->createQueryBuilder('a');
+
+    if ($sort === 'prix_asc') {
+        $qb->orderBy('a.prix', 'ASC');
+    } elseif ($sort === 'prix_desc') {
+        $qb->orderBy('a.prix', 'DESC');
+    } else {
+        $qb->orderBy('a.id', 'DESC'); // par défaut
+    }
+
+    return $qb->getQuery()->getResult();
+}
 
     //    /**
     //     * @return Activite[] Returns an array of Activite objects

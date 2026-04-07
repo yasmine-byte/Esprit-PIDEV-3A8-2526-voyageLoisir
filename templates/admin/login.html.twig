@@ -66,6 +66,9 @@
                     <div class="alert alert-danger">
                         {{ error.messageKey|trans(error.messageData, 'security') }}
                     </div>
+                    <script>
+                        alert("Erreur de connexion : {{ error.messageKey|trans(error.messageData, 'security') }}");
+                    </script>
                 {% endif %}
 
                 <div class="form-group">

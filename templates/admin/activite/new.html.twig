@@ -1,0 +1,191 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}Ajouter une activité{% endblock %}
+
+{% block admin_content %}
+
+<style>
+.admin-form-wrapper {
+    max-width: 900px;
+}
+
+.admin-form-header {
+    margin-bottom: 28px;
+}
+
+.admin-form-header h2 {
+    margin: 0;
+    font-size: 46px;
+    line-height: 1.1;
+    font-weight: 700;
+    color: #1e1e1e;
+}
+
+.admin-form-header p {
+    margin: 10px 0 0;
+    font-size: 18px;
+    color: #7a7a7a;
+}
+
+.admin-form-card {
+    background: #ffffff;
+    border: 1px solid #ececec;
+    border-radius: 24px;
+    padding: 30px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
+}
+
+.admin-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px 24px;
+}
+
+.admin-form-grid .full-width {
+    grid-column: 1 / -1;
+}
+
+.admin-form-card label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    color: #1e1e1e;
+}
+
+.admin-form-card input,
+.admin-form-card select,
+.admin-form-card textarea {
+    width: 100%;
+    border: 1px solid #e7e7e7;
+    border-radius: 14px;
+    padding: 14px 16px;
+    font-size: 15px;
+    color: #1e1e1e;
+    background: #fff;
+    transition: 0.2s ease;
+    outline: none;
+}
+
+.admin-form-card textarea {
+    min-height: 140px;
+    resize: vertical;
+}
+
+.admin-form-card input:focus,
+.admin-form-card select:focus,
+.admin-form-card textarea:focus {
+    border-color: #e7b67b;
+    box-shadow: 0 0 0 4px rgba(231, 182, 123, 0.15);
+}
+
+.admin-form-actions {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin-top: 28px;
+}
+
+.admin-save-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 13px 24px;
+    border-radius: 14px;
+    background: #e7b67b;
+    color: #1c1c1c;
+    text-decoration: none;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: 0.25s ease;
+}
+
+.admin-save-btn:hover {
+    background: #dca867;
+    transform: translateY(-1px);
+}
+
+.admin-back-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 13px 22px;
+    border-radius: 14px;
+    background: #f5f5f5;
+    color: #1e1e1e;
+    text-decoration: none;
+    font-weight: 600;
+    border: 1px solid #e7e7e7;
+    transition: 0.25s ease;
+}
+
+.admin-back-btn:hover {
+    background: #efefef;
+    color: #1e1e1e;
+}
+
+@media (max-width: 768px) {
+    .admin-form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-form-header h2 {
+        font-size: 34px;
+    }
+
+    .admin-form-card {
+        padding: 22px;
+    }
+}
+</style>
+
+<div class="admin-form-wrapper">
+    <div class="admin-form-header">
+        <h2>Ajouter une activité</h2>
+        <p>Remplissez les informations pour créer une nouvelle activité.</p>
+    </div>
+
+    <div class="admin-form-card">
+        {{ form_start(form) }}
+
+            <div class="admin-form-grid">
+                <div>
+                    {{ form_row(form.nom) }}
+                </div>
+
+                <div>
+                    {{ form_row(form.type) }}
+                </div>
+
+                <div class="full-width">
+                    {{ form_row(form.description) }}
+                </div>
+
+                <div>
+                    {{ form_row(form.prix) }}
+                </div>
+
+                <div>
+                    {{ form_row(form.duree) }}
+                </div>
+
+                <div>
+                    {{ form_row(form.lieu) }}
+                </div>
+
+                <div>
+                    {{ form_row(form.imageUrl) }}
+                </div>
+            </div>
+
+            <div class="admin-form-actions">
+                <button type="submit" class="admin-save-btn">Ajouter</button>
+                <a href="{{ path('admin_activite_index') }}" class="admin-back-btn">Retour à la liste</a>
+            </div>
+
+        {{ form_end(form) }}
+    </div>
+</div>
+
+{% endblock %}
