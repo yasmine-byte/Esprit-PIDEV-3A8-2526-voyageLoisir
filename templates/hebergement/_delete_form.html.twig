@@ -1,0 +1,6 @@
+<form method="post" action="{{ path('app_hebergement_delete', {'id': hebergement.id}) }}" onsubmit="return confirm('Confirmer la suppression ?');" style="display:inline;">
+    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ hebergement.id) }}">
+    <button type="submit" style="background:#ef444420; color:#ef4444; padding:6px 12px; border:none; border-radius:6px; font-size:13px; font-weight:500; cursor:pointer;">
+        Supprimer
+    </button>
+</form>

@@ -1,16 +1,10 @@
-<div id="js-preloader" class="js-preloader">
-  <div class="preloader-inner">
-    <span class="dot"></span>
-    <div class="dots"><span></span><span></span><span></span></div>
-  </div>
-</div>
 <div class="sub-header">
   <div class="container">
     <div class="row">
       <div class="col-lg-8 col-md-8">
         <ul class="info">
           <li><i class="fa fa-envelope"></i> vianova.com</li>
-          <li><i class="fa fa-map"></i> Tunis, Tunisie</li>
+          <li><i class="fa fa-map"></i> Tunis, Tunisie Lac1 33160</li>
         </ul>
       </div>
       <div class="col-lg-4 col-md-4">
@@ -24,6 +18,7 @@
     </div>
   </div>
 </div>
+
 <header class="header-area header-sticky">
   <div class="container">
     <div class="row">
@@ -33,33 +28,41 @@
           <ul class="nav">
             <li><a href="{{ path('app_home') }}">Home</a></li>
             <li><a href="{{ path('app_destinations') }}">Destination</a></li>
-            <li><a href="#">Hebergement</a></li>
-            <li><a href="#">Activite</a></li>
-            <li><a href="#">Blog</a></li>
-            <li><a href="#">Avis</a></li>
-            <li>
-              {% if app.user %}
-                {% if is_granted("ROLE_ADMIN") %}
-                  <a href="{{ path('app_destination_index') }}"
-                     style="background:#f97316;color:#fff;padding:6px 14px;border-radius:20px;font-size:13px;font-weight:600;text-decoration:none;margin-right:6px">
-                    Administration
-                  </a>
-                {% endif %}
-                <div class="user-nav-info">
-                  <a href="{{ path('front_profile') }}" class="user-nav-name">
-                    <i class="fa fa-user-circle"></i>
-                    {{ app.user.prenom }} {{ app.user.nom }}
-                  </a>
-                  <a href="{{ path('front_logout') }}" class="btn-logout">
-                    <i class="fa fa-sign-out-alt"></i> Deconnexion
-                  </a>
-                </div>
-              {% else %}
-                <a href="#" class="btn-login" data-bs-toggle="modal" data-bs-target="#authModal">
+            <li><a href="{{ path('app_hebergements_front') }}">Hébergement</a></li>
+            <li><a href="{{ path('app_activite_index') }}">Activité</a></li>
+            <li><a href="{{ path('app_properties') }}">Properties</a></li>
+            <li><a href="{{ path('avis_index') }}">Avis</a></li>
+            <li><a href="{{ path('reclamation_index') }}">Réclamations</a></li>
+            <li><a href="{{ path('app_blog_index') }}">Blog</a></li>
+            <li><a href="{{ path('app_contact') }}"><i class="fa fa-envelope" style="margin-right:5px;"></i> Contact</a></li>
+            {% if app.user %}
+              {% if is_granted("ROLE_ADMIN") %}
+                <li>
+                  <a href="{{ path('app_admin') }}" style="color:#d4845a; font-weight:600;"><i class="fa fa-cog"></i> Admin</a>
+                </li>
+              {% endif %}
+              <li>
+                <a href="{{ path('front_profile') }}" style="font-weight:600;">
+                  <i class="fa fa-user-circle"></i> {{ app.user.prenom }}
+                </a>
+              </li>
+              <li>
+                <a href="{{ path('front_logout') }}" title="Déconnexion" style="color:#ef4444;">
+                  <i class="fa fa-sign-out-alt"></i>
+                </a>
+              </li>
+            {% else %}
+              <li>
+                <a href="#" data-bs-toggle="modal" data-bs-target="#authModal" style="color:#d4845a; font-weight:600;">
                   <i class="fa fa-user"></i> Login
                 </a>
-              {% endif %}
-            </li>
+              </li>
+              <li>
+                <a href="{{ path('admin_login') }}" style="color:#f97316; font-weight:600;">
+                  <i class="fa fa-lock"></i> Admin
+                </a>
+              </li>
+            {% endif %}
           </ul>
           <a class="menu-trigger"><span>Menu</span></a>
         </nav>

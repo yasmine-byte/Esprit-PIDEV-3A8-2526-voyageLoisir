@@ -1,4 +1,4 @@
-{% extends 'admin/base_admin.html.twig' %}
+﻿{% extends 'admin/base_admin.html.twig' %}
 
 {% block title %}Dashboard — Gestion Utilisateurs{% endblock %}
 
@@ -6,8 +6,10 @@
 
 {# ─── EN-TÊTE ─────────────────────────────────────────────────────────────── #}
 <div class="page-header">
-    <h1>Tableau de bord</h1>
-    <p>Vue d'ensemble de la gestion des utilisateurs</p>
+    <div>
+        <h1>Tableau de bord</h1>
+        <p>Vue d'ensemble de la gestion des utilisateurs</p>
+    </div>
     <div class="header-actions">
         {% if is_granted('ROLE_ADMIN') %}
         <a href="{{ path('add_user') }}" class="btn btn-primary">
@@ -20,7 +22,7 @@
     </div>
 </div>
 
-{# ─── CARTES STATISTIQUES ─────────────────────────────────────────────────── #}
+{# ─── CARTES STATISTIQUES ──────────────────────────────────────────────────── #}
 {% if totalUsers is defined %}
 <div class="stats-grid">
     <div class="stat-card">
@@ -97,7 +99,7 @@
     </div>
 </div>
 {% else %}
-<div class="alert alert-info">
+<div class="alert-info">
     <p>Chargement des données...</p>
 </div>
 {% endif %}
@@ -171,7 +173,6 @@
 </div>
 
 {# ─── GRAPHIQUES ──────────────────────────────────────────────────────────── #}
-{% if totalUsers is defined %}
 <div class="charts-grid">
     <div class="card">
         <div class="card-header">
@@ -197,7 +198,6 @@
         </div>
     </div>
 </div>
-{% endif %}
 
 {# ─── STYLES ──────────────────────────────────────────────────────────────── #}
 <style>
@@ -250,11 +250,7 @@
 }
 .page-header h1 { margin: 0 0 4px 0; color: var(--text-primary); }
 .page-header p { margin: 0; color: var(--text-muted); }
-.header-actions {
-    display: flex;
-    gap: 12px;
-    align-items: center;
-}
+.header-actions { display: flex; gap: 12px; align-items: center; }
 .card-body.p-0 { padding: 0; }
 .mt-4 { margin-top: 20px; }
 .badge { background: var(--bg-secondary); color: var(--text-muted); padding: 4px 10px; border-radius: 20px; font-size: 12px; }
@@ -279,26 +275,17 @@
 }
 .role-badge { background: var(--accent-gradient); color: #1c1c1e; padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; }
 .status-badge { padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; }
-.status-badge.alert-success {
-    background: rgba(52,211,153,0.1);
-    border: 1px solid rgba(52,211,153,0.3);
-    color: #34d399;
-}
-.alert-danger {
-    background: rgba(239,68,68,0.1);
-    border: 1px solid rgba(239,68,68,0.3);
-    color: #ef4444;
-}
-.alert-info {
-    background: rgba(96,165,250,0.1);
-    border: 1px solid rgba(96,165,250,0.3);
-    color: #60a5fa;
-}
+.status-badge.active { background: rgba(52,211,153,0.1); border: 1px solid rgba(52,211,153,0.3); color: #34d399; }
+.status-badge.inactive { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); color: #ef4444; }
+.alert-info { background: rgba(96,165,250,0.1); border: 1px solid rgba(96,165,250,0.3); color: #60a5fa; padding: 16px; border-radius: 8px; }
 .text-muted { color: var(--text-muted); font-style: italic; font-size: 13px; }
 .btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 16px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-card); color: var(--text-primary); text-decoration: none; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s ease; }
+.btn-primary { background: var(--accent-copper); color: #1c1c1e; border-color: var(--accent-copper); font-weight: 600; }
 .btn-sm { padding: 6px 12px; font-size: 12px; border-radius: 6px; }
 .btn-outline-primary { border: 1px solid var(--accent-copper); color: var(--accent-copper); background: transparent; cursor: pointer; text-decoration: none; }
 .btn-outline-primary:hover { background: var(--accent-copper); color: #1c1c1e; }
+.btn-outline-danger { border: 1px solid #ef4444; color: #ef4444; background: transparent; cursor: pointer; text-decoration: none; }
+.btn-outline-danger:hover { background: #ef4444; color: #fff; }
 .empty-state { text-align: center; padding: 32px; color: var(--text-muted); }
 @media (max-width: 768px) {
     .charts-grid { grid-template-columns: 1fr; }

@@ -111,7 +111,13 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface, Equata
     // ✅ Simplifié — tout utilisateur connecté a ROLE_USER
     public function getRoles(): array
     {
-        return ['ROLE_USER'];
+        $roles = ['ROLE_USER'];
+        foreach ($this->roles as $role) {
+            if ($role->getName()) {
+                $roles[] = $role->getName();
+            }
+        }
+        return array_unique($roles);
     }
 
     public function eraseCredentials(): void {}

@@ -2,9 +2,9 @@
 {% block body %}
 <div class="dashboard">
     {% include 'admin/Partials/sidebar.html.twig' %}
-    <div class="main-content">
+    <main class="main-content">
         {% include 'admin/Partials/navbar.html.twig' %}
         {% block admin_content %}{% endblock %}
-    </div>
+    </main>
 </div>
 {% endblock %}

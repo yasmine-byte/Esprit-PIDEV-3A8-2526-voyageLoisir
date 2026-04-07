@@ -1,0 +1,773 @@
+{% extends 'base_front.html.twig' %}
+
+{% block title %}{{ blog.titre }}{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        :root {
+            --blog-accent: #E8652A;
+            --blog-bg: #FAF8F5;
+            --blog-text: #1E1C1A;
+            --blog-muted: #7A746E;
+            --blog-border: rgba(30, 28, 26, 0.08);
+            --blog-shadow: 0 20px 45px rgba(44, 33, 24, 0.08);
+        }
+
+        body {
+            background: var(--blog-bg);
+            color: var(--blog-text);
+            font-family: "Poppins", sans-serif;
+        }
+
+        .blog-article-page {
+            padding: 150px 0 90px;
+            background:
+                radial-gradient(circle at top left, rgba(232, 101, 42, 0.08), transparent 24%),
+                radial-gradient(circle at right 20%, rgba(205, 190, 175, 0.18), transparent 20%),
+                var(--blog-bg);
+        }
+
+        .blog-article-shell {
+            width: min(1180px, calc(100% - 32px));
+            margin: 0 auto;
+        }
+
+        .blog-article-topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+
+        .blog-back-link,
+        .blog-edit-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 18px;
+            border: 1px solid var(--blog-border);
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.82);
+            color: var(--blog-text);
+            text-decoration: none;
+            font-size: 0.94rem;
+            font-weight: 600;
+        }
+
+        .blog-edit-link {
+            background: var(--blog-accent);
+            border-color: var(--blog-accent);
+            color: #fff;
+        }
+
+        .blog-hero-article {
+            display: grid;
+            grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+            gap: 28px;
+            align-items: stretch;
+            margin-bottom: 34px;
+        }
+
+        .blog-hero-copy,
+        .blog-hero-media {
+            background: rgba(255, 255, 255, 0.88);
+            border: 1px solid var(--blog-border);
+            border-radius: 28px;
+            box-shadow: var(--blog-shadow);
+            overflow: hidden;
+        }
+
+        .blog-hero-copy {
+            padding: 34px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .blog-article-badge {
+            display: inline-flex;
+            align-items: center;
+            width: fit-content;
+            margin-bottom: 18px;
+            padding: 9px 14px;
+            border-radius: 999px;
+            background: rgba(232, 101, 42, 0.12);
+            color: var(--blog-accent);
+            font-size: 0.84rem;
+            font-weight: 700;
+            text-transform: capitalize;
+        }
+
+        .blog-hero-copy h1 {
+            margin: 0 0 18px;
+            font-size: clamp(2.25rem, 4vw, 4.2rem);
+            line-height: 1.03;
+            letter-spacing: -0.04em;
+            font-weight: 700;
+        }
+
+        .blog-article-excerpt {
+            margin: 0 0 24px;
+            color: var(--blog-muted);
+            font-size: 1.04rem;
+            line-height: 1.85;
+        }
+
+        .blog-article-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px 18px;
+            color: var(--blog-muted);
+            font-size: 0.92rem;
+        }
+
+        .blog-article-meta span {
+            position: relative;
+        }
+
+        .blog-article-meta span + span::before {
+            content: "\2022";
+            margin-right: 18px;
+        }
+
+        .blog-hero-media img {
+            width: 100%;
+            height: 100%;
+            min-height: 460px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .blog-article-layout {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 280px;
+            gap: 28px;
+        }
+
+        .blog-social-strip {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 14px;
+            margin-bottom: 28px;
+        }
+
+        .blog-social-card {
+            padding: 18px 20px;
+            border-radius: 18px;
+            background: #fff7f2;
+            border: 1px solid var(--blog-border);
+        }
+
+        .blog-social-card small {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--blog-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        .blog-social-card strong {
+            font-size: 1.6rem;
+            color: var(--blog-text);
+        }
+
+        .blog-article-body,
+        .blog-article-sidebar {
+            background: rgba(255, 255, 255, 0.88);
+            border: 1px solid var(--blog-border);
+            border-radius: 24px;
+            box-shadow: var(--blog-shadow);
+        }
+
+        .blog-article-body {
+            padding: 40px;
+        }
+
+        .blog-article-body p,
+        .blog-article-body div {
+            margin: 0 0 20px;
+            color: #342f2b;
+            font-size: 1.02rem;
+            line-height: 1.95;
+        }
+
+        .blog-article-sidebar {
+            padding: 24px;
+            position: sticky;
+            top: 24px;
+            height: fit-content;
+        }
+
+        .blog-side-block + .blog-side-block {
+            margin-top: 22px;
+            padding-top: 22px;
+            border-top: 1px solid var(--blog-border);
+        }
+
+        .blog-side-label {
+            margin: 0 0 8px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--blog-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        .blog-side-value {
+            margin: 0;
+            color: var(--blog-text);
+            font-size: 1rem;
+            line-height: 1.7;
+            word-break: break-word;
+        }
+
+        .blog-side-value a {
+            color: var(--blog-accent);
+            text-decoration: none;
+        }
+
+        .blog-side-pill {
+            display: inline-flex;
+            padding: 8px 12px;
+            border-radius: 999px;
+            background: rgba(232, 101, 42, 0.12);
+            color: var(--blog-accent);
+            font-size: 0.84rem;
+            font-weight: 700;
+            text-transform: capitalize;
+        }
+
+        .blog-delete-area {
+            margin-top: 18px;
+        }
+
+        .blog-delete-area form button {
+            width: 100%;
+            padding: 12px 16px;
+            border: 0;
+            border-radius: 14px;
+            background: #1e1c1a;
+            color: #fff;
+            font-weight: 600;
+        }
+
+        .blog-interactions {
+            display: grid;
+            gap: 24px;
+            margin-top: 30px;
+        }
+
+        .blog-panel {
+            background: rgba(255, 255, 255, 0.92);
+            border: 1px solid var(--blog-border);
+            border-radius: 24px;
+            box-shadow: var(--blog-shadow);
+            padding: 28px;
+            scroll-margin-top: 140px;
+        }
+
+        .blog-panel h2 {
+            margin: 0 0 18px;
+            font-size: 1.6rem;
+            color: var(--blog-text);
+        }
+
+        .blog-panel p {
+            color: var(--blog-muted);
+        }
+
+        .blog-rating-stars {
+            display: inline-flex;
+            flex-direction: row-reverse;
+            gap: 6px;
+            margin: 14px 0 18px;
+        }
+
+        .blog-rating-stars input {
+            display: none;
+        }
+
+        .blog-rating-stars label {
+            cursor: pointer;
+            font-size: 2rem;
+            color: #d6cec7;
+            transition: transform 0.2s ease, color 0.2s ease;
+        }
+
+        .blog-rating-stars label:hover,
+        .blog-rating-stars label:hover ~ label,
+        .blog-rating-stars input:checked ~ label {
+            color: var(--blog-accent);
+            transform: translateY(-1px);
+        }
+
+        .blog-form-stack {
+            display: grid;
+            gap: 14px;
+        }
+
+        .blog-form-stack input,
+        .blog-form-stack textarea {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1px solid rgba(30, 28, 26, 0.12);
+            border-radius: 14px;
+            background: #fff;
+            color: var(--blog-text);
+        }
+
+        .blog-form-stack textarea {
+            min-height: 140px;
+            resize: vertical;
+        }
+
+        .blog-submit-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: fit-content;
+            padding: 13px 22px;
+            border: 0;
+            border-radius: 999px;
+            background: var(--blog-accent);
+            color: #fff;
+            font-weight: 600;
+            box-shadow: 0 16px 28px rgba(232, 101, 42, 0.2);
+        }
+
+        .blog-comment-list {
+            display: grid;
+            gap: 18px;
+        }
+
+        .blog-comment-card {
+            padding: 20px;
+            border-radius: 18px;
+            background: #fff;
+            border: 1px solid var(--blog-border);
+        }
+
+        .blog-comment-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+
+        .blog-comment-head strong {
+            color: var(--blog-text);
+        }
+
+        .blog-comment-head span {
+            color: var(--blog-muted);
+            font-size: 0.9rem;
+        }
+
+        .blog-comment-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 14px;
+        }
+
+        .blog-like-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 14px;
+            border: 1px solid rgba(232, 101, 42, 0.18);
+            border-radius: 999px;
+            background: #fff7f2;
+            color: var(--blog-accent);
+            font-weight: 600;
+        }
+
+        .blog-like-btn.is-liked {
+            opacity: 0.7;
+        }
+
+        .blog-form-message {
+            display: none;
+            padding: 12px 14px;
+            border-radius: 14px;
+            background: #fff7ed;
+            color: #9a3412;
+            font-size: 0.92rem;
+            font-weight: 600;
+        }
+
+        .blog-form-message.is-visible {
+            display: block;
+        }
+
+        .blog-interaction-note {
+            margin-bottom: 18px;
+            padding: 12px 14px;
+            border-radius: 14px;
+            background: #fff7ed;
+            color: #9a3412;
+            font-size: 0.92rem;
+            font-weight: 600;
+        }
+
+        .blog-review-list {
+            display: grid;
+            gap: 14px;
+            margin-top: 18px;
+        }
+
+        .blog-review-card {
+            padding: 16px 18px;
+            border-radius: 16px;
+            background: #fff;
+            border: 1px solid var(--blog-border);
+        }
+
+        .blog-review-stars {
+            color: var(--blog-accent);
+            letter-spacing: 0.12em;
+            font-size: 0.95rem;
+        }
+
+        @media (max-width: 991px) {
+            .blog-article-page {
+                padding-top: 130px;
+            }
+
+            .blog-hero-article,
+            .blog-article-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .blog-social-strip {
+                grid-template-columns: 1fr;
+            }
+
+            .blog-article-sidebar {
+                position: static;
+            }
+        }
+
+        @media (max-width: 767px) {
+            .blog-article-shell {
+                width: min(100% - 24px, 1180px);
+            }
+
+            .blog-hero-copy,
+            .blog-article-body,
+            .blog-article-sidebar {
+                padding: 22px;
+            }
+
+            .blog-hero-media img {
+                min-height: 280px;
+            }
+
+            .blog-panel {
+                padding: 22px;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    {% set coverImage = blog.imageCouverture ?: ('https://picsum.photos/seed/blog-' ~ blog.id ~ '/1200/900') %}
+    {% set readTime = ((blog.contenu|default('')|length / 700)|round(0, 'ceil')) %}
+    {% set statusLabel = blog.status ? 'publie' : 'brouillon' %}
+    {% if blog.publicationRequested and not blog.status %}
+        {% set statusLabel = 'en attente' %}
+    {% endif %}
+
+    <main class="blog-article-page">
+        <div class="blog-article-shell">
+            <div class="blog-article-topbar">
+                <a class="blog-back-link" href="{{ path('app_blog_index') }}">&larr; Back to blogs</a>
+                {% if blog.status %}
+                    <a class="blog-edit-link" href="{{ path('app_blog_edit', {'id': blog.id}) }}">Edit article</a>
+                {% endif %}
+            </div>
+
+            <section class="blog-hero-article">
+                <div class="blog-hero-copy">
+                    <span class="blog-article-badge">{{ statusLabel }}</span>
+                    <h1>{{ blog.titre }}</h1>
+                    {% if blog.extrait %}
+                        <p class="blog-article-excerpt">{{ blog.extrait }}</p>
+                    {% endif %}
+                    <div class="blog-article-meta">
+                        <span>{{ blog.datePublication ? blog.datePublication|date('F d, Y') : (blog.dateCreation ? blog.dateCreation|date('F d, Y') : 'Recently written') }}</span>
+                        <span>{{ readTime > 0 ? readTime : 1 }} min read</span>
+                        <span>{{ blog.authorId ?: 'Vianova traveler' }}</span>
+                    </div>
+                </div>
+
+                <div class="blog-hero-media">
+                    <img src="{{ coverImage }}" alt="{{ blog.titre }}">
+                </div>
+            </section>
+
+            <section class="blog-article-layout">
+                <article class="blog-article-body">
+                    <div class="blog-social-strip">
+                        <div class="blog-social-card">
+                            <small>Blog rating</small>
+                            <strong>{{ average_rating }}</strong>
+                        </div>
+                        <div class="blog-social-card">
+                            <small>Blog views</small>
+                            <strong>{{ views_count }}</strong>
+                        </div>
+                        <div class="blog-social-card">
+                            <small>Community</small>
+                            <strong>{{ comments|length }} comments</strong>
+                        </div>
+                    </div>
+
+                    {% for paragraph in blog.contenu|split('\n') %}
+                        {% if paragraph|trim is not empty %}
+                            <p>{{ paragraph|trim }}</p>
+                        {% endif %}
+                    {% endfor %}
+
+                    <div class="blog-interactions">
+                        <section class="blog-panel" id="blog-review-section">
+                            <h2>Community Review</h2>
+                            <p>Post one review with both your comment and your star rating.</p>
+
+                            {% if current_user_name %}
+                                <div class="blog-interaction-note">Connected as {{ current_user_name }}. Your review will be posted under this name.</div>
+                            {% else %}
+                                <div class="blog-interaction-note">No connected user was detected, so you can still post by entering your name below.</div>
+                            {% endif %}
+
+                            <form method="post" class="blog-form-stack" id="blogEngageForm" action="{{ path('app_blog_engage', {'id': blog.id}) }}" style="margin-bottom: 22px;">
+                                <input type="hidden" name="_token" value="{{ csrf_token('blog_engage_' ~ blog.id) }}">
+                                {% if current_user_name %}
+                                    <input type="text" name="userName" value="{{ current_user_name }}" readonly>
+                                {% else %}
+                                    <input type="text" name="userName" placeholder="Your name" required>
+                                {% endif %}
+
+                                <div class="blog-rating-stars">
+                                    {% for value in 5..1 %}
+                                        <input type="radio" id="rating-{{ value }}" name="rating" value="{{ value }}" {% if value == 5 %}checked{% endif %}>
+                                        <label for="rating-{{ value }}">★</label>
+                                    {% endfor %}
+                                </div>
+
+                                <textarea name="contenu" placeholder="Write your comment here..." required></textarea>
+                                <div class="blog-form-message" id="blogEngageMessage"></div>
+                                <button type="submit" class="blog-submit-btn">Post review</button>
+                            </form>
+
+                            {% if comments is not empty %}
+                                <div class="blog-comment-list" id="blogCommentList">
+                                    {% for comment in comments %}
+                                        {% set commentRating = ratings_by_user[comment.nomuser] ?? null %}
+                                        <article class="blog-comment-card">
+                                            <div class="blog-comment-head">
+                                                <strong>{{ comment.nomuser }}</strong>
+                                                <span>{{ comment.dateCreation ? comment.dateCreation|date('Y-m-d H:i') : '' }}</span>
+                                            </div>
+                                            {% if commentRating %}
+                                                <div class="blog-review-stars">
+                                                    {% for i in 1..5 %}
+                                                        {{ i <= commentRating.rating ? '★' : '☆' }}
+                                                    {% endfor %}
+                                                </div>
+                                            {% endif %}
+                                            <p>{{ comment.contenu }}</p>
+                                            <div class="blog-comment-actions">
+                                                <button
+                                                    type="button"
+                                                    class="blog-like-btn"
+                                                    data-like-comment
+                                                    data-like-url="{{ path('app_commentaire_like', {'id': comment.id}) }}"
+                                                    data-like-token="{{ csrf_token('like_comment_' ~ comment.id) }}"
+                                                >
+                                                    <span>♡</span>
+                                                    <span data-like-count>{{ comment.likesCount ?: 0 }}</span>
+                                                </button>
+                                            </div>
+                                        </article>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <div id="blogCommentList" class="blog-comment-list">
+                                    <p>No comments yet. Be the first to react.</p>
+                                </div>
+                            {% endif %}
+                        </section>
+                    </div>
+                </article>
+
+                <aside class="blog-article-sidebar">
+                    <div class="blog-side-block">
+                        <p class="blog-side-label">Status</p>
+                        <span class="blog-side-pill">{{ statusLabel }}</span>
+                    </div>
+
+                    <div class="blog-side-block">
+                        <p class="blog-side-label">Role access</p>
+                        <p class="blog-side-value">
+                            {{ viewer_role == 'ROLE_ADMIN' ? 'Admin moderation enabled' : 'User interaction enabled' }}
+                        </p>
+                    </div>
+
+                    <div class="blog-side-block">
+                        <p class="blog-side-label">Slug</p>
+                        <p class="blog-side-value">{{ blog.slug ?: 'No slug provided' }}</p>
+                    </div>
+
+                    <div class="blog-side-block">
+                        <p class="blog-side-label">Created on</p>
+                        <p class="blog-side-value">{{ blog.dateCreation ? blog.dateCreation|date('Y-m-d H:i') : '-' }}</p>
+                    </div>
+
+                    <div class="blog-side-block">
+                        <p class="blog-side-label">Published on</p>
+                        <p class="blog-side-value">{{ blog.datePublication ? blog.datePublication|date('Y-m-d H:i') : 'Not published yet' }}</p>
+                    </div>
+
+                    <div class="blog-side-block">
+                        <p class="blog-side-label">Cover image</p>
+                        <p class="blog-side-value">
+                            <a href="{{ coverImage }}" target="_blank" rel="noopener noreferrer">Open image</a>
+                        </p>
+                    </div>
+
+                    <div class="blog-delete-area">
+                        {{ include('blog/_delete_form.html.twig') }}
+                    </div>
+                </aside>
+            </section>
+        </div>
+    </main>
+
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        (function () {
+            const engageForm = document.getElementById('blogEngageForm');
+            const messageBox = document.getElementById('blogEngageMessage');
+            const commentList = document.getElementById('blogCommentList');
+            const averageRatingNode = document.querySelector('.blog-social-card strong');
+
+            const renderStars = function (rating) {
+                let stars = '';
+                for (let i = 1; i <= 5; i += 1) {
+                    stars += i <= rating ? '★' : '☆';
+                }
+                return stars;
+            };
+
+            const showMessage = function (message) {
+                if (!messageBox) {
+                    return;
+                }
+                messageBox.textContent = message;
+                messageBox.classList.add('is-visible');
+            };
+
+            if (engageForm && commentList) {
+                engageForm.addEventListener('submit', async function (event) {
+                    event.preventDefault();
+
+                    const formData = new FormData(engageForm);
+                    const response = await fetch(engageForm.action, {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    });
+
+                    const payload = await response.json();
+                    if (!response.ok) {
+                        showMessage(payload.message || 'Unable to save your review right now.');
+                        return;
+                    }
+
+                    showMessage(payload.message || 'Your review has been posted.');
+
+                    const emptyState = commentList.querySelector('p');
+                    if (emptyState && emptyState.parentElement === commentList) {
+                        emptyState.remove();
+                    }
+
+                    const card = document.createElement('article');
+                    card.className = 'blog-comment-card';
+                    card.innerHTML = `
+                        <div class="blog-comment-head">
+                            <strong>${payload.comment.author}</strong>
+                            <span>${payload.comment.createdAt}</span>
+                        </div>
+                        <div class="blog-review-stars">${renderStars(payload.comment.rating)}</div>
+                        <p>${payload.comment.content}</p>
+                        <div class="blog-comment-actions">
+                            <button
+                                type="button"
+                                class="blog-like-btn"
+                                data-like-comment
+                                data-like-url="${payload.comment.likeUrl}"
+                                data-like-token="${payload.comment.likeToken}"
+                            >
+                                <span>♡</span>
+                                <span data-like-count>${payload.comment.likesCount}</span>
+                            </button>
+                        </div>
+                    `;
+
+                    commentList.prepend(card);
+                    engageForm.reset();
+                    const defaultStar = engageForm.querySelector('input[name="rating"][value="5"]');
+                    if (defaultStar) {
+                        defaultStar.checked = true;
+                    }
+
+                    if (averageRatingNode && payload.stats) {
+                        averageRatingNode.textContent = payload.stats.averageRating;
+                    }
+                });
+            }
+
+            document.addEventListener('click', async function (event) {
+                const button = event.target.closest('[data-like-comment]');
+                if (!button || button.classList.contains('is-liked')) {
+                    return;
+                }
+
+                const formData = new FormData();
+                formData.append('_token', button.dataset.likeToken);
+
+                const response = await fetch(button.dataset.likeUrl, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+
+                const payload = await response.json();
+                if (!response.ok) {
+                    return;
+                }
+
+                const countNode = button.querySelector('[data-like-count]');
+                if (countNode) {
+                    countNode.textContent = payload.likesCount;
+                }
+
+                button.classList.add('is-liked');
+                button.querySelector('span').textContent = '♥';
+            });
+        })();
+    </script>
+{% endblock %}

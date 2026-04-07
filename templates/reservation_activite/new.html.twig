@@ -1,0 +1,94 @@
+{% extends 'base_front.html.twig' %}
+
+{% block title %}Réserver une activité{% endblock %}
+
+{% block body %}
+
+<div class="page-heading header-text"
+     style="
+        background-image: linear-gradient(rgba(0,0,0,0.35), rgba(0,0,0,0.35)),
+        url('{{ asset('assets_front/images/images/my-banner.jpg') }}');
+        background-size: cover;
+        background-position: center;
+     ">
+
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <span class="breadcrumb">
+                    <a href="{{ path('app_home') }}">Home</a> /
+                    <a href="{{ path('app_activite_index') }}">Activités</a> /
+                    Réservation
+                </span>
+                <h3 style="color:white;">Réserver une activité</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="contact-page section">
+    <div class="container">
+        <div class="row">
+
+            <div class="col-lg-6">
+                <div class="section-heading">
+                    <h6>| Nouvelle Réservation</h6>
+                    <h2>Réservez votre activité en quelques étapes</h2>
+                </div>
+
+                <p>
+                    Vous êtes en train de réserver l’activité
+                    <strong>{{ activite.nom }}</strong>.
+                    Vérifiez les informations puis remplissez le formulaire pour confirmer votre réservation.
+                </p>
+
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="item phone">
+                            <h6>{{ activite.prix }} TND<br><span>Prix par personne</span></h6>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-12">
+                        <div class="item email">
+                            <h6>{{ activite.lieu }}<br><span>{{ activite.duree }} min</span></h6>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-12 mt-3">
+                        <div class="item email">
+                            <h6>{{ activite.type ? activite.type : 'Activité' }}<br><span>Type d’activité</span></h6>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                {{ form_start(form, {'attr': {'id': 'contact-form'}}) }}
+                    <div class="row">
+                        <div class="col-lg-12">
+                            {{ form_row(form.dateReservation) }}
+                        </div>
+
+                        <div class="col-lg-12">
+                            {{ form_row(form.nombrePersonnes) }}
+                        </div>
+
+                        <div class="col-lg-12">
+                            {{ form_row(form.statut) }}
+                        </div>
+
+                        <div class="col-lg-12">
+                            <button type="submit" class="orange-button">
+                                Confirmer la réservation
+                            </button>
+                        </div>
+                    </div>
+                {{ form_end(form) }}
+            </div>
+
+        </div>
+    </div>
+</div>
+
+{% endblock %}

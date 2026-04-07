@@ -1,54 +1,8 @@
 {% extends "base_front.html.twig" %}
 
-{% block title %}Destinations - VoyageLoisir{% endblock %}
+{% block title %}Destinations - Vianova{% endblock %}
 
 {% block body %}
-
-<div id="js-preloader" class="js-preloader">
-  <div class="preloader-inner">
-    <span class="dot"></span>
-    <div class="dots"><span></span><span></span><span></span></div>
-  </div>
-</div>
-
-<div class="sub-header">
-  <div class="container">
-    <div class="row">
-      <div class="col-lg-8 col-md-8">
-        <ul class="info">
-          <li><i class="fa fa-envelope"></i> info@voyageloisir.com</li>
-          <li><i class="fa fa-map"></i> Tunis, Tunisie</li>
-        </ul>
-      </div>
-      <div class="col-lg-4 col-md-4">
-        <ul class="social-links">
-          <li><a href="#"><i class="fab fa-facebook"></i></a></li>
-          <li><a href="#"><i class="fab fa-twitter"></i></a></li>
-          <li><a href="#"><i class="fab fa-linkedin"></i></a></li>
-          <li><a href="#"><i class="fab fa-instagram"></i></a></li>
-        </ul>
-      </div>
-    </div>
-  </div>
-</div>
-
-<header class="header-area header-sticky">
-  <div class="container">
-    <div class="row">
-      <div class="col-12">
-        <nav class="main-nav">
-          <a href="{{ path("app_home") }}" class="logo"><h1>VoyageLoisir</h1></a>
-          <ul class="nav">
-            <li><a href="{{ path("app_home") }}">Accueil</a></li>
-            <li><a href="{{ path("app_destinations") }}" class="active">Destinations</a></li>
-            <li><a href="{{ path("app_contact") }}">Contact</a></li>
-          </ul>
-          <a class="menu-trigger"><span>Menu</span></a>
-        </nav>
-      </div>
-    </div>
-  </div>
-</header>
 
 {# ===== HERO BANNER SLIDER ===== #}
 <div style="position:relative;width:100%;height:520px;overflow:hidden">
@@ -64,10 +18,8 @@
     {% endfor %}
   {% endfor %}
 
-  {# Overlay #}
   <div style="position:absolute;inset:0;background:linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.6) 100%);z-index:1"></div>
 
-  {# Contenu centré #}
   <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px;z-index:2">
     <span style="color:#f97316;font-size:14px;font-weight:600;letter-spacing:3px;text-transform:uppercase;margin-bottom:16px">
       Explorez le Monde
@@ -79,16 +31,13 @@
       Découvrez les plus beaux endroits du monde et planifiez votre prochain voyage
     </p>
 
-    {# Barre de recherche #}
     <form method="GET" action="{{ path('app_destinations') }}"
           style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:center;width:100%;max-width:680px">
-
       <div style="flex:1;min-width:220px">
         <input type="text" name="search" value="{{ search }}"
                placeholder="🔍 Destination, pays..."
                style="width:100%;padding:14px 20px;border-radius:8px;border:none;background:#fff;color:#333;font-size:15px;box-shadow:0 4px 20px rgba(0,0,0,0.2)">
       </div>
-
       <div style="min-width:160px">
         <select name="saison"
                 style="width:100%;padding:14px 16px;border-radius:8px;border:none;background:#fff;color:#333;font-size:15px;box-shadow:0 4px 20px rgba(0,0,0,0.2)">
@@ -99,15 +48,12 @@
           <option value="Hiver"     {{ saison == 'Hiver'     ? 'selected' : '' }}>❄️ Hiver</option>
         </select>
       </div>
-
       <button type="submit"
               style="padding:14px 28px;border-radius:8px;border:none;background:#f97316;color:#fff;font-size:15px;font-weight:600;cursor:pointer;box-shadow:0 4px 20px rgba(249,115,22,0.4);white-space:nowrap">
         Rechercher
       </button>
-
     </form>
 
-    {# Breadcrumb #}
     <div style="margin-top:24px">
       <a href="{{ path('app_home') }}" style="color:rgba(255,255,255,0.7);font-size:13px;text-decoration:none">Accueil</a>
       <span style="color:rgba(255,255,255,0.5);margin:0 8px">/</span>
@@ -115,9 +61,7 @@
     </div>
   </div>
 
-  {# Points de navigation #}
   <div style="position:absolute;bottom:20px;left:50%;transform:translateX(-50%);display:flex;gap:8px;z-index:3" id="hero-dots"></div>
-
 </div>
 
 <script>
@@ -125,17 +69,13 @@
     var slides = document.querySelectorAll('.hero-slide');
     var dotsContainer = document.getElementById('hero-dots');
     var current = 0;
-
     if (slides.length === 0) return;
-
-    // Créer les points
     slides.forEach(function(_, i) {
         var dot = document.createElement('div');
         dot.style.cssText = 'width:10px;height:10px;border-radius:50%;background:' + (i === 0 ? '#f97316' : 'rgba(255,255,255,0.5)') + ';cursor:pointer;transition:background 0.3s';
         dot.addEventListener('click', function() { goTo(i); });
         dotsContainer.appendChild(dot);
     });
-
     function goTo(index) {
         slides[current].style.opacity = '0';
         dotsContainer.children[current].style.background = 'rgba(255,255,255,0.5)';
@@ -143,10 +83,7 @@
         slides[current].style.opacity = '1';
         dotsContainer.children[current].style.background = '#f97316';
     }
-
-    setInterval(function() {
-        goTo((current + 1) % slides.length);
-    }, 7000);
+    setInterval(function() { goTo((current + 1) % slides.length); }, 7000);
 })();
 </script>
 
@@ -154,7 +91,6 @@
 <div class="section properties">
   <div class="container">
 
-    {# Résultat de recherche #}
     {% if search or saison %}
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px">
         <p style="color:#555;font-size:15px;margin:0">
@@ -170,7 +106,6 @@
       </div>
     {% endif %}
 
-    {# Tabs saison — masqués si recherche active #}
     {% if not search and not saison %}
     <ul class="properties-filter">
       <li><a class="is_active" href="#!" data-filter="*">Toutes</a></li>
@@ -185,20 +120,18 @@
       {% for destination in destinations %}
       <div class="col-lg-4 col-md-6 align-self-center mb-30 properties-items {{ destination.meilleureSaison }}">
         <div class="item">
-
           {% if destination.images|length > 0 %}
-            <a href="{{ path("app_destination_detail", {"id": destination.id}) }}">
+            <a href="{{ path('app_destination_detail', {'id': destination.id}) }}">
               <img src="{{ asset(destination.images[0].urlImage) }}" alt="{{ destination.nom }}"
                    style="height:220px;object-fit:cover;width:100%">
             </a>
           {% else %}
-            <a href="{{ path("app_destination_detail", {"id": destination.id}) }}">
-              <img src="{{ asset("assets_front/images/images/property-01.jpg") }}" alt="{{ destination.nom }}"
+            <a href="{{ path('app_destination_detail', {'id': destination.id}) }}">
+              <img src="{{ asset('assets_front/images/images/property-01.jpg') }}" alt="{{ destination.nom }}"
                    style="height:220px;object-fit:cover;width:100%">
             </a>
           {% endif %}
 
-          {# Calcul note #}
           {% set nv = 0 %}
           {% if destination.nbVisites >= 10000 %}{% set nv = 2.5 %}
           {% elseif destination.nbVisites >= 5000 %}{% set nv = 2 %}
@@ -235,8 +168,9 @@
             <span style="font-size:12px;font-weight:600;color:#f97316">{{ nt|number_format(1) }}</span>
             <span style="font-size:12px;color:#888">{{ destination.nbVisites ?? 0 }} visites</span>
           </div>
+
           <h4>
-            <a href="{{ path("app_destination_detail", {"id": destination.id}) }}">
+            <a href="{{ path('app_destination_detail', {'id': destination.id}) }}">
               {{ destination.nom }} - {{ destination.pays }}
             </a>
           </h4>
@@ -246,9 +180,8 @@
             <li>Statut : <span>{{ destination.statut ? "Actif" : "Inactif" }}</span></li>
           </ul>
           <div class="main-button">
-            <a href="{{ path("app_destination_detail", {"id": destination.id}) }}">Voir les détails</a>
+            <a href="{{ path('app_destination_detail', {'id': destination.id}) }}">Voir les détails</a>
           </div>
-
         </div>
       </div>
       {% else %}
@@ -261,13 +194,5 @@
 
   </div>
 </div>
-
-<footer>
-  <div class="container">
-    <div class="col-lg-12">
-      <p>Copyright &copy; 2026 VoyageLoisir. Design: <a href="https://templatemo.com" target="_blank">TemplateMo</a></p>
-    </div>
-  </div>
-</footer>
 
 {% endblock %}

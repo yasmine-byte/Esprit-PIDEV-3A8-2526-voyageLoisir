@@ -1,10 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <title>{% block title %}Villa Agency{% endblock %}</title>
+
+    <title>{% block title %}Vianova{% endblock %}</title>
+
     {% block stylesheets %}
         <link href="{{ asset('vendor_front/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
         <link rel="stylesheet" href="{{ asset('assets_front/css/css/fontawesome.css') }}">
@@ -15,7 +17,14 @@
     {% endblock %}
 </head>
 <body>
+
+
+    {% include 'home/partials/header.html.twig' %}
+
     {% block body %}{% endblock %}
+
+    {% include 'home/partials/footer.html.twig' %}
+
     {% block javascripts %}
         <script src="{{ asset('vendor_front/jquery/jquery.min.js') }}"></script>
         <script src="{{ asset('vendor_front/bootstrap/js/bootstrap.min.js') }}"></script>
