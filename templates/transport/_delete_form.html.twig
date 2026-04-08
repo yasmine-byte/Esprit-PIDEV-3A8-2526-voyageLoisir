@@ -1,6 +1,12 @@
-<form method="post" action="{{ path('app_transport_delete', {'id': transport.id}) }}"
-      onsubmit="return confirm('Confirmer la suppression ?');"
+<form id="delete-form-{{ transport.id }}"
+      method="post"
+      action="{{ path('app_transport_delete', {'id': transport.id}) }}"
       style="display:inline">
     <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ transport.id) }}">
-    <button class="action-btn" style="color:#c27878;border-color:#c27878;background:none;cursor:pointer">Supprimer</button>
+    <button type="button"
+            onclick="openDeleteModal(document.getElementById('delete-form-{{ transport.id }}'))"
+            class="action-btn"
+            style="color:#c27878;border-color:#c27878;background:none;cursor:pointer">
+        Supprimer
+    </button>
 </form>

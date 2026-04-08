@@ -236,15 +236,35 @@
 
         {# ===== METEO VOYAGE ===== #}
         {% if destination.latitude and destination.longitude %}
+        {% set voyagesAvecDates = [] %}
+        {% for v in destination.voyages %}
+            {% if v.dateDepart and v.dateArrivee %}
+                {% set voyagesAvecDates = voyagesAvecDates|merge([v]) %}
+            {% endif %}
+        {% endfor %}
+
         <div style="margin-bottom:30px">
-          <h5 style="margin-bottom:15px">Meteo pendant le voyage</h5>
-          {% if destination.voyage and destination.voyage.dateDepart and destination.voyage.dateArrivee %}
-          <div style="background:#fff3e0;border-radius:10px;padding:12px 16px;margin-bottom:14px;border:1px solid #ffe0b2;font-size:13px;color:#555">
-            Voyage du <strong style="color:#f97316">{{ destination.voyage.dateDepart|date("d/m/Y") }}</strong>
-            au <strong style="color:#f97316">{{ destination.voyage.dateArrivee|date("d/m/Y") }}</strong>
-            | <strong>{{ destination.voyage.pointDepart ?? "" }}</strong> vers <strong>{{ destination.voyage.pointArrivee ?? "" }}</strong>
+          <h5 style="margin-bottom:12px">Meteo pendant le voyage</h5>
+
+          {% if voyagesAvecDates|length > 0 %}
+          <p style="font-size:13px;color:#888;margin-bottom:10px">Choisissez un voyage pour afficher la meteo :</p>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px">
+            {% for v in voyagesAvecDates %}
+            <button type="button"
+                    onclick="selectVoyage({{ loop.index0 }})"
+                    id="btn-voyage-{{ loop.index0 }}"
+                    style="padding:8px 14px;border-radius:20px;border:2px solid {% if loop.first %}#f97316{% else %}#ddd{% endif %};
+                           background:{% if loop.first %}#f97316{% else %}#fff{% endif %};
+                           color:{% if loop.first %}#fff{% else %}#555{% endif %};
+                           font-size:12px;font-weight:600;cursor:pointer;transition:all .2s">
+                Voyage #{{ v.id }} &mdash; {{ v.dateDepart|date("d/m/Y") }} → {{ v.dateArrivee|date("d/m/Y") }}
+            </button>
+            {% endfor %}
           </div>
+
+          <div id="meteo-voyage-info" style="background:#fff3e0;border-radius:10px;padding:12px 16px;margin-bottom:14px;border:1px solid #ffe0b2;font-size:13px;color:#555"></div>
           {% endif %}
+
           <div id="meteo-loading" style="text-align:center;color:#888;padding:20px;font-size:14px">Chargement...</div>
           <div id="meteo-days" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px"></div>
           <div id="meteo-msg" style="display:none;text-align:center;font-size:13px;padding:10px;margin-top:8px;border-radius:8px"></div>
@@ -253,14 +273,20 @@
 
         <script>
         (function() {
-            var lat  = {{ destination.latitude }};
-            var lng  = {{ destination.longitude }};
-            {% if destination.voyage and destination.voyage.dateDepart and destination.voyage.dateArrivee %}
-            var startDate = "{{ destination.voyage.dateDepart|date("Y-m-d") }}";
-            var endDate   = "{{ destination.voyage.dateArrivee|date("Y-m-d") }}";
-            {% else %}
-            var startDate = null; var endDate = null;
-            {% endif %}
+            var lat = {{ destination.latitude }};
+            var lng = {{ destination.longitude }};
+
+            var VOYAGES = [
+                {% for v in voyagesAvecDates %}
+                {
+                    id:    {{ v.id }},
+                    start: "{{ v.dateDepart|date("Y-m-d") }}",
+                    end:   "{{ v.dateArrivee|date("Y-m-d") }}",
+                    depart:  "{{ v.pointDepart ?? '' }}",
+                    arrivee: "{{ v.pointArrivee ?? '' }}"
+                }{% if not loop.last %},{% endif %}
+                {% endfor %}
+            ];
 
             var WC = {0:"Ciel clair",1:"Princ. clair",2:"Part. nuageux",3:"Couvert",45:"Brouillard",48:"Brouillard",51:"Bruine",53:"Bruine",55:"Bruine dense",61:"Pluie legere",63:"Pluie",65:"Pluie forte",71:"Neige legere",73:"Neige",75:"Neige forte",80:"Averses",81:"Averses",82:"Averses",95:"Orage",96:"Orage",99:"Orage fort"};
             var DAYS = ["Dim","Lun","Mar","Mer","Jeu","Ven","Sam"];
@@ -280,64 +306,101 @@
                 m.style.background = color === "#BA7517" ? "#fff8e1" : "#ffebee";
                 m.textContent   = txt;
             }
-
-            var loading = document.getElementById("meteo-loading");
-
-            if (!startDate || !endDate) {
-                loading.style.display = "none";
-                showMsg("Aucun voyage associe a cette destination.", "#E24B4A");
-                return;
+            function clearMsg() {
+                var m = document.getElementById("meteo-msg");
+                m.style.display = "none";
+                m.textContent = "";
             }
 
-            var today   = new Date(); today.setHours(0,0,0,0);
-            var maxDate = new Date(today); maxDate.setDate(today.getDate() + 14);
-            var sDate   = new Date(startDate);
-            var eDate   = new Date(endDate);
+            window.selectVoyage = function(idx) {
+                var v = VOYAGES[idx];
+                if (!v) return;
 
-            if (sDate > maxDate) {
-                loading.style.display = "none";
-                showMsg("Meteo non disponible - le voyage commence apres le " + fmt(maxDate) + ".", "#E24B4A");
-                return;
-            }
-            if (sDate < today) sDate = today;
-            var partiel = false;
-            if (eDate > maxDate) { eDate = maxDate; partiel = true; }
+                // mise a jour boutons
+                VOYAGES.forEach(function(_, i) {
+                    var btn = document.getElementById("btn-voyage-" + i);
+                    if (!btn) return;
+                    btn.style.background   = i === idx ? "#f97316" : "#fff";
+                    btn.style.color        = i === idx ? "#fff"    : "#555";
+                    btn.style.borderColor  = i === idx ? "#f97316" : "#ddd";
+                });
 
-            var url = "https://api.open-meteo.com/v1/forecast"
-                + "?latitude="  + lat + "&longitude=" + lng
-                + "&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_sum,windspeed_10m_max"
-                + "&timezone=auto&start_date=" + fmt(sDate) + "&end_date=" + fmt(eDate);
+                // info voyage
+                var info = document.getElementById("meteo-voyage-info");
+                if (info) {
+                    var parts = [];
+                    if (v.depart || v.arrivee) parts.push("<strong>" + (v.depart||"?") + "</strong> → <strong>" + (v.arrivee||"?") + "</strong>");
+                    var sd = v.start.split("-"); var ed = v.end.split("-");
+                    parts.push("du <strong style='color:#f97316'>" + sd[2]+"/"+sd[1]+"/"+sd[0] + "</strong> au <strong style='color:#f97316'>" + ed[2]+"/"+ed[1]+"/"+ed[0] + "</strong>");
+                    info.innerHTML = parts.join(" &nbsp;|&nbsp; ");
+                }
 
-            fetch(url)
-                .then(function(r){return r.json();})
-                .then(function(data){
+                loadMeteo(v.start, v.end);
+            };
+
+            function loadMeteo(startDate, endDate) {
+                clearMsg();
+                var loading = document.getElementById("meteo-loading");
+                var daysDiv = document.getElementById("meteo-days");
+                loading.style.display = "block";
+                daysDiv.innerHTML = "";
+
+                var today   = new Date(); today.setHours(0,0,0,0);
+                var maxDate = new Date(today); maxDate.setDate(today.getDate() + 14);
+                var sDate   = new Date(startDate);
+                var eDate   = new Date(endDate);
+
+                if (sDate > maxDate) {
                     loading.style.display = "none";
-                    if (data.error) { showMsg("Erreur API : " + (data.reason||"inconnue"), "#E24B4A"); return; }
-                    var daily = data.daily;
-                    if (!daily||!daily.time||daily.time.length===0) { showMsg("Aucune donnee disponible.", "#E24B4A"); return; }
-                    var daysDiv = document.getElementById("meteo-days");
-                    daysDiv.innerHTML = "";
-                    for (var i=0;i<daily.time.length;i++) {
-                        var d=new Date(daily.time[i]),code=daily.weathercode[i];
-                        var tmax=Math.round(daily.temperature_2m_max[i]),tmin=Math.round(daily.temperature_2m_min[i]);
-                        var pluie=Math.round(daily.precipitation_sum[i]),vent=Math.round(daily.windspeed_10m_max[i]);
-                        var card=document.createElement("div");
-                        card.style.cssText="background:#fff;border-radius:10px;padding:14px 10px;text-align:center;border:1px solid #eee;transition:box-shadow 0.2s";
-                        card.onmouseover=function(){this.style.boxShadow="0 4px 16px rgba(249,115,22,0.15)";};
-                        card.onmouseout=function(){this.style.boxShadow="none";};
-                        card.innerHTML="<div style='font-size:13px;font-weight:700;color:#333'>"+DAYS[d.getDay()]+"</div>"
-                            +"<div style='font-size:11px;color:#aaa;margin-bottom:8px'>"+d.getDate()+"/"+(d.getMonth()+1)+"</div>"
-                            +"<div style='display:flex;justify-content:center;margin-bottom:6px'>"+svgIcon(iconType(code),36)+"</div>"
-                            +"<div style='font-size:11px;color:#666;margin-bottom:8px;min-height:28px'>"+(WC[code]||"")+"</div>"
-                            +"<div style='font-size:16px;font-weight:700;color:#f97316'>"+tmax+" C</div>"
-                            +"<div style='font-size:12px;color:#90a4ae;margin-bottom:6px'>"+tmin+" C</div>"
-                            +"<div style='font-size:11px;color:#64b5f6'>Pluie : "+pluie+" mm</div>"
-                            +"<div style='font-size:11px;color:#78909c'>Vent : "+vent+" km/h</div>";
-                        daysDiv.appendChild(card);
-                    }
-                    if (partiel) showMsg("Affichage partiel - meteo disponible jusqu au "+fmt(maxDate)+" seulement.", "#BA7517");
-                })
-                .catch(function(e){ loading.style.display="none"; showMsg("Erreur reseau : "+e.message, "#E24B4A"); });
+                    showMsg("Meteo non disponible - le voyage commence apres le " + fmt(maxDate) + ".", "#E24B4A");
+                    return;
+                }
+                if (sDate < today) sDate = today;
+                var partiel = false;
+                if (eDate > maxDate) { eDate = maxDate; partiel = true; }
+
+                var url = "https://api.open-meteo.com/v1/forecast"
+                    + "?latitude=" + lat + "&longitude=" + lng
+                    + "&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_sum,windspeed_10m_max"
+                    + "&timezone=auto&start_date=" + fmt(sDate) + "&end_date=" + fmt(eDate);
+
+                fetch(url)
+                    .then(function(r){return r.json();})
+                    .then(function(data){
+                        loading.style.display = "none";
+                        if (data.error) { showMsg("Erreur API : " + (data.reason||"inconnue"), "#E24B4A"); return; }
+                        var daily = data.daily;
+                        if (!daily||!daily.time||daily.time.length===0) { showMsg("Aucune donnee disponible.", "#E24B4A"); return; }
+                        daysDiv.innerHTML = "";
+                        for (var i=0;i<daily.time.length;i++) {
+                            var d=new Date(daily.time[i]),code=daily.weathercode[i];
+                            var tmax=Math.round(daily.temperature_2m_max[i]),tmin=Math.round(daily.temperature_2m_min[i]);
+                            var pluie=Math.round(daily.precipitation_sum[i]),vent=Math.round(daily.windspeed_10m_max[i]);
+                            var card=document.createElement("div");
+                            card.style.cssText="background:#fff;border-radius:10px;padding:14px 10px;text-align:center;border:1px solid #eee;transition:box-shadow 0.2s";
+                            card.onmouseover=function(){this.style.boxShadow="0 4px 16px rgba(249,115,22,0.15)";};
+                            card.onmouseout=function(){this.style.boxShadow="none";};
+                            card.innerHTML="<div style='font-size:13px;font-weight:700;color:#333'>"+DAYS[d.getDay()]+"</div>"
+                                +"<div style='font-size:11px;color:#aaa;margin-bottom:8px'>"+d.getDate()+"/"+(d.getMonth()+1)+"</div>"
+                                +"<div style='display:flex;justify-content:center;margin-bottom:6px'>"+svgIcon(iconType(code),36)+"</div>"
+                                +"<div style='font-size:11px;color:#666;margin-bottom:8px;min-height:28px'>"+(WC[code]||"")+"</div>"
+                                +"<div style='font-size:16px;font-weight:700;color:#f97316'>"+tmax+" °C</div>"
+                                +"<div style='font-size:12px;color:#90a4ae;margin-bottom:6px'>"+tmin+" °C</div>"
+                                +"<div style='font-size:11px;color:#64b5f6'>Pluie : "+pluie+" mm</div>"
+                                +"<div style='font-size:11px;color:#78909c'>Vent : "+vent+" km/h</div>";
+                            daysDiv.appendChild(card);
+                        }
+                        if (partiel) showMsg("Affichage partiel - meteo disponible jusqu au "+fmt(maxDate)+" seulement.", "#BA7517");
+                    })
+                    .catch(function(e){ document.getElementById("meteo-loading").style.display="none"; showMsg("Erreur reseau : "+e.message, "#E24B4A"); });
+            }
+
+            if (VOYAGES.length > 0) {
+                selectVoyage(0);
+            } else {
+                document.getElementById("meteo-loading").style.display = "none";
+                showMsg("Aucun voyage avec des dates associe a cette destination.", "#E24B4A");
+            }
         })();
         </script>
         {% endif %}
@@ -384,39 +447,85 @@
           </ul>
         </div>
 
-        {% if destination.voyage %}
-          <div class="info-table" style="margin-top:20px">
-            <ul>
-              <li style="display:block;padding:15px">
-                <h5 style="margin-bottom:12px;border-bottom:1px solid #eee;padding-bottom:8px">Voyage associe</h5>
-                <p style="margin:6px 0">Depart : <strong>{{ destination.voyage.pointDepart ?? "-" }}</strong></p>
-                <p style="margin:6px 0">Arrivee : <strong>{{ destination.voyage.pointArrivee ?? "-" }}</strong></p>
-                <p style="margin:6px 0">Date depart : <strong>{{ destination.voyage.dateDepart ? destination.voyage.dateDepart|date("d/m/Y") : "-" }}</strong></p>
-                <p style="margin:6px 0">Date arrivee : <strong>{{ destination.voyage.dateArrivee ? destination.voyage.dateArrivee|date("d/m/Y") : "-" }}</strong></p>
-                <p style="margin:6px 0">Prix : <strong>{{ destination.voyage.prix ? destination.voyage.prix ~ " EUR" : "-" }}</strong></p>
-              </li>
-            </ul>
-          </div>
-        {% endif %}
+        {% if destination.voyages|length > 0 %}
+        <div style="margin-top:32px">
 
-        {% if destination.transports|length > 0 %}
-          <div class="info-table" style="margin-top:20px">
-            <ul>
-              <li style="display:block;padding:15px">
-                <h5 style="margin-bottom:12px;border-bottom:1px solid #eee;padding-bottom:8px">Transports disponibles</h5>
-                {% for transport in destination.transports %}
-                  <p style="margin:6px 0">
-                    {% if transport.typeTransport == "Avion" %}<i class="fa fa-plane" style="color:#f97316;margin-right:6px"></i>
-                    {% elseif transport.typeTransport == "Bus" %}<i class="fa fa-bus" style="color:#f97316;margin-right:6px"></i>
-                    {% elseif transport.typeTransport == "Train" %}<i class="fa fa-train" style="color:#f97316;margin-right:6px"></i>
-                    {% elseif transport.typeTransport == "Voiture" %}<i class="fa fa-car" style="color:#f97316;margin-right:6px"></i>
-                    {% endif %}
-                    <strong>{{ transport.typeTransport }}</strong>
-                  </p>
-                {% endfor %}
-              </li>
-            </ul>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+            <h5 style="margin:0;font-size:15px;font-weight:700;color:#1a1a1a">
+              Voyages disponibles
+            </h5>
+            <span style="background:#fff4ec;color:#f97316;border-radius:20px;padding:3px 12px;font-size:12px;font-weight:700;border:1px solid #fdd5b5">
+              {{ destination.voyages|length }} voyage{{ destination.voyages|length > 1 ? 's' : '' }}
+            </span>
           </div>
+
+          <div style="display:flex;flex-direction:column;gap:12px">
+          {% for v in destination.voyages %}
+
+            {% if v.dateDepart and v.dateArrivee %}
+              {% set duree = ((v.dateArrivee|date("U") - v.dateDepart|date("U")) / 86400)|round %}
+            {% else %}
+              {% set duree = null %}
+            {% endif %}
+
+            <div style="background:#fff;border:1px solid #ececec;border-radius:16px;overflow:hidden;transition:box-shadow .2s"
+                 onmouseover="this.style.boxShadow='0 6px 24px rgba(249,115,22,.12)'"
+                 onmouseout="this.style.boxShadow='none'">
+
+              {# ---- Ligne prix + id ---- #}
+              <div style="padding:14px 18px 0;display:flex;justify-content:space-between;align-items:flex-start">
+                <span style="font-size:11px;font-weight:600;color:#bbb;letter-spacing:.5px;text-transform:uppercase">Voyage #{{ v.id }}</span>
+                {% if v.prix %}
+                  <span style="font-size:18px;font-weight:800;color:#f97316">{{ v.prix }}<span style="font-size:11px;font-weight:600;margin-left:2px">EUR</span></span>
+                {% endif %}
+              </div>
+
+              {# ---- Trajet timeline ---- #}
+              <div style="padding:12px 18px;display:flex;align-items:center;gap:0">
+                <div style="flex:1">
+                  <div style="font-size:11px;color:#bbb;margin-bottom:2px">Départ</div>
+                  <div style="font-size:14px;font-weight:700;color:#1a1a1a">{{ v.pointDepart ?? "—" }}</div>
+                  <div style="font-size:11px;color:#888;margin-top:2px">{{ v.dateDepart ? v.dateDepart|date("d MMM Y")|upper : "—" }}</div>
+                  <div style="font-size:11px;color:#888">{{ v.dateDepart ? v.dateDepart|date("d/m/Y") : "" }}</div>
+                </div>
+
+                <div style="display:flex;flex-direction:column;align-items:center;padding:0 14px;flex-shrink:0">
+                  {% if duree %}
+                  <span style="font-size:10px;color:#f97316;font-weight:600;margin-bottom:4px">{{ duree }}j</span>
+                  {% endif %}
+                  <div style="display:flex;align-items:center;gap:0">
+                    <div style="width:6px;height:6px;border-radius:50%;background:#f97316"></div>
+                    <div style="width:50px;height:1px;background:linear-gradient(to right,#f97316,#fb923c)"></div>
+                    <div style="font-size:14px;color:#f97316;margin:0 2px">✈</div>
+                    <div style="width:50px;height:1px;background:linear-gradient(to right,#fb923c,#f97316)"></div>
+                    <div style="width:6px;height:6px;border-radius:50%;background:#f97316"></div>
+                  </div>
+                </div>
+
+                <div style="flex:1;text-align:right">
+                  <div style="font-size:11px;color:#bbb;margin-bottom:2px">Arrivée</div>
+                  <div style="font-size:14px;font-weight:700;color:#1a1a1a">{{ v.pointArrivee ?? "—" }}</div>
+                  <div style="font-size:11px;color:#888;margin-top:2px">{{ v.dateArrivee ? v.dateArrivee|date("d/m/Y") : "" }}</div>
+                </div>
+              </div>
+
+              {# ---- Transports ---- #}
+              {% if v.transports|length > 0 %}
+              <div style="border-top:1px solid #f5f5f5;padding:10px 18px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                <span style="font-size:11px;color:#bbb;font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-right:4px">Transport</span>
+                {% for t in v.transports %}
+                  {% set icons = {'Avion': '✈', 'Bus': '🚌', 'Train': '🚆', 'Voiture': '🚗'} %}
+                  <span style="display:inline-flex;align-items:center;gap:5px;background:#fff4ec;color:#f97316;border:1px solid #fdd5b5;border-radius:20px;padding:4px 12px;font-size:12px;font-weight:600">
+                    {{ icons[t.typeTransport] ?? '' }} {{ t.typeTransport }}
+                  </span>
+                {% endfor %}
+              </div>
+              {% endif %}
+
+            </div>
+          {% endfor %}
+          </div>
+        </div>
         {% endif %}
 
 

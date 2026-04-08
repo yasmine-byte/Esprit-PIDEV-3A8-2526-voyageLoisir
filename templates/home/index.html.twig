@@ -472,7 +472,8 @@
             {% set ratingBoost = (destination.nbVisites ?? 0) >= 5000 ? 1.0 : ((destination.nbVisites ?? 0) >= 2000 ? 0.7 : ((destination.nbVisites ?? 0) >= 500 ? 0.4 : 0.1)) %}
             {% set rating = min(ratingBase + ratingBoost, 5) %}
             {% set reviews = destination.nbVisites ?? 0 %}
-            {% set startPrice = destination.voyage and destination.voyage.prix ? destination.voyage.prix : ((destination.nbVisites ?? 0) * 2 + 1499) %}
+            {% set firstVoyage = destination.voyages|length > 0 ? destination.voyages[0] : null %}
+            {% set startPrice = firstVoyage and firstVoyage.prix ? firstVoyage.prix : ((destination.nbVisites ?? 0) * 2 + 1499) %}
             <article class="top-destination-card">
               <a href="{{ path('app_destination_detail', {'id': destination.id}) }}" class="top-destination-media">
                 {% if destination.images|length > 0 %}

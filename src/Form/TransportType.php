@@ -2,8 +2,8 @@
 
 namespace App\Form;
 
-use App\Entity\Destination;
 use App\Entity\Transport;
+use App\Entity\Voyage;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
@@ -28,11 +28,11 @@ class TransportType extends AbstractType
                 "placeholder" => "-- Choisir un transport --",
                 "required"    => true,
             ])
-            ->add("destination", EntityType::class, [
-                "class"        => Destination::class,
+            ->add("voyage", EntityType::class, [
+                "class"        => Voyage::class,
                 "choice_label" => "id",
-                "placeholder"  => "-- Choisir une destination --",
-                "required"     => true,
+                "placeholder"  => "-- Choisir un voyage --",
+                "required"     => false,
             ]);
     }
 

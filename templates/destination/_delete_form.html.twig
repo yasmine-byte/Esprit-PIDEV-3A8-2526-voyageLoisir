@@ -1,6 +1,12 @@
-<form method="post" action="{{ path('app_destination_delete', {'id': destination.id}) }}"
-      onsubmit="return confirm('Confirmer la suppression ?');"
+<form id="delete-form-{{ destination.id }}"
+      method="post"
+      action="{{ path('app_destination_delete', {'id': destination.id}) }}"
       style="display:inline">
     <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ destination.id) }}">
-    <button class="action-btn" style="color:#c27878;border-color:#c27878;background:none;cursor:pointer">Supprimer</button>
+    <button type="button"
+            onclick="openDestinationDeleteModal({{ destination.id }}, '{{ destination.nom|e('js') }}', [{% for v in destination.voyages %}'Voyage {{ v.id }} — {{ (v.pointDepart ~ ' → ' ~ v.pointArrivee)|e('js') }} ({{ v.dateDepart ? v.dateDepart|date('d/m/Y') : '?' }} → {{ v.dateArrivee ? v.dateArrivee|date('d/m/Y') : '?' }})'{% if not loop.last %},{% endif %}{% endfor %}])"
+            class="action-btn"
+            style="color:#c27878;border-color:#c27878;background:none;cursor:pointer">
+        Supprimer
+    </button>
 </form>

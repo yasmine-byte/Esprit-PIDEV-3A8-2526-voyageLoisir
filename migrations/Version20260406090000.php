@@ -16,11 +16,11 @@ final class Version20260406090000 extends AbstractMigration
 
     public function up(Schema $schema): void
     {
-        $this->addSql('ALTER TABLE activite CHANGE decription description LONGTEXT DEFAULT NULL');
+        // colonne deja nommee description dans la migration initiale
     }
 
     public function down(Schema $schema): void
     {
-        $this->addSql('ALTER TABLE activite CHANGE description decription LONGTEXT DEFAULT NULL');
+        // rien a faire
     }
 }

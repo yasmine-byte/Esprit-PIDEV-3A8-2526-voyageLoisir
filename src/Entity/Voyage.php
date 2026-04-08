@@ -4,7 +4,10 @@ namespace App\Entity;
 
 use App\Repository\VoyageRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use App\Entity\Users;
+use App\Entity\Destination;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: VoyageRepository::class)]
@@ -28,11 +31,13 @@ class Voyage
     #[ORM\Column(length: 100, nullable: true)]
     #[Assert\NotBlank(message: "Le point de depart est obligatoire.")]
     #[Assert\Length(min: 2, max: 100, minMessage: "Min 2 caracteres.", maxMessage: "Max 100 caracteres.")]
+    #[Assert\Regex(pattern: "/^[^0-9]+$/", message: "Les chiffres ne sont pas autorises.")]
     private ?string $point_depart = null;
 
     #[ORM\Column(length: 100, nullable: true)]
     #[Assert\NotBlank(message: "Le point d arrivee est obligatoire.")]
     #[Assert\Length(min: 2, max: 100, minMessage: "Min 2 caracteres.", maxMessage: "Max 100 caracteres.")]
+    #[Assert\Regex(pattern: "/^[^0-9]+$/", message: "Les chiffres ne sont pas autorises.")]
     private ?string $point_arrivee = null;
 
     #[ORM\Column(type: "float", nullable: true)]
@@ -40,6 +45,13 @@ class Voyage
     #[Assert\PositiveOrZero(message: "Le prix ne peut pas etre negatif.")]
     #[Assert\LessThanOrEqual(value: 99999, message: "Max 99 999 EUR.")]
     private ?float $prix = null;
+
+    #[ORM\ManyToOne(targetEntity: Destination::class, inversedBy: "voyages")]
+    #[ORM\JoinColumn(nullable: true, onDelete: "SET NULL")]
+    private ?Destination $destination = null;
+
+    #[ORM\OneToMany(mappedBy: "voyage", targetEntity: Transport::class, cascade: ["persist", "remove"])]
+    private Collection $transports;
 
     #[ORM\ManyToOne(targetEntity: Users::class)]
     #[ORM\JoinColumn(nullable: true, onDelete: "SET NULL")]
@@ -49,7 +61,30 @@ class Voyage
     #[ORM\JoinColumn(nullable: true, onDelete: "SET NULL")]
     private ?Users $reserved_by = null;
 
+    public function __construct()
+    {
+        $this->transports = new ArrayCollection();
+    }
+
     public function getId(): ?int { return $this->id; }
+    public function getTransports(): Collection { return $this->transports; }
+    public function addTransport(Transport $transport): static
+    {
+        if (!$this->transports->contains($transport)) {
+            $this->transports->add($transport);
+            $transport->setVoyage($this);
+        }
+        return $this;
+    }
+    public function removeTransport(Transport $transport): static
+    {
+        if ($this->transports->removeElement($transport)) {
+            if ($transport->getVoyage() === $this) $transport->setVoyage(null);
+        }
+        return $this;
+    }
+    public function getDestination(): ?Destination { return $this->destination; }
+    public function setDestination(?Destination $destination): static { $this->destination = $destination; return $this; }
     public function getDateDepart(): ?\DateTimeInterface { return $this->date_depart; }
     public function setDateDepart(?\DateTimeInterface $d): static { $this->date_depart = $d; return $this; }
     public function getDateArrivee(): ?\DateTimeInterface { return $this->date_arrivee; }

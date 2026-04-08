@@ -4,12 +4,19 @@
 {% block admin_content %}
 <div class="page-header">
     <h1>Nouvelle Image</h1>
-    <p>Ajouter une nouvelle image</p>
+    <p>Ajouter une nouvelle image{% if destination_id %} pour la destination <strong>#{{ destination_id }}</strong>{% endif %}</p>
 </div>
+
+{% if destination_id %}
+<div style="background:#e8f5e9;border:1px solid #a5d6a7;border-radius:10px;padding:12px 18px;margin-bottom:20px;display:flex;align-items:center;gap:10px;font-size:13px;color:#2e7d32">
+    <span style="font-size:18px">📍</span>
+    La destination <strong>#{{ destination_id }}</strong> est pré-sélectionnée automatiquement.
+</div>
+{% endif %}
 
 <div class="card">
     {{ include('image/_form.html.twig') }}
-    <a href="{{ path('app_image_index') }}" class="action-btn" style="margin-top:10px">Retour</a>
+    <a href="{{ path('app_destination_index') }}" class="action-btn" style="margin-top:10px">← Retour aux destinations</a>
 </div>
 
 <footer class="copyright">Copyright &copy; 2026 VoyageLoisir</footer>
