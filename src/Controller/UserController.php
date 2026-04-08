@@ -31,6 +31,54 @@ class UserController extends AbstractController
         ]);
     }
 
+    // ── Dashboard utilisateurs ──────────────────────────────────────────────────
+    #[Route('/admin/users/dashboard', name: 'admin_users_dashboard')]
+    public function dashboard(RoleRepository $roleRepository): Response
+    {
+        $users = $this->usersRepository->findAll();
+        $roles = $roleRepository->findAll();
+
+        $totalUsers    = count($users);
+        $activeUsers   = count(array_filter($users, fn($u) => $u->isActive()));
+        $inactiveUsers = $totalUsers - $activeUsers;
+        $totalRoles    = count($roles);
+
+        $latestUsers = $this->usersRepository->findBy([], ['createdAt' => 'DESC'], 5);
+
+        $monthlyData = [];
+        for ($i = 5; $i >= 0; $i--) {
+            $date = new \DateTime("-$i months");
+            $key  = $date->format('Y-m');
+            $monthlyData[$key] = 0;
+        }
+        foreach ($users as $user) {
+            if ($user->getCreatedAt()) {
+                $key = $user->getCreatedAt()->format('Y-m');
+                if (isset($monthlyData[$key])) {
+                    $monthlyData[$key]++;
+                }
+            }
+        }
+
+        $roleStats = [];
+        foreach ($users as $user) {
+            foreach ($user->getRolesCollection() as $role) {
+                $name = $role->getName();
+                $roleStats[$name] = ($roleStats[$name] ?? 0) + 1;
+            }
+        }
+
+        return $this->render('admin/dashboard.html.twig', [
+            'totalUsers'    => $totalUsers,
+            'activeUsers'   => $activeUsers,
+            'inactiveUsers' => $inactiveUsers,
+            'totalRoles'    => $totalRoles,
+            'latestUsers'   => $latestUsers,
+            'monthlyData'   => $monthlyData,
+            'roleStats'     => $roleStats,
+        ]);
+    }
+
     // ── Ajouter un utilisateur ──────────────────────────────────────────────────
     #[Route('/admin/add-user', name: 'add_user')]
     public function addUser(Request $request): Response
@@ -52,7 +100,6 @@ class UserController extends AbstractController
 
             $formData = compact('nom', 'prenom', 'email', 'telephone');
 
-            // ── Validation ──
             if (empty($nom)) {
                 $fieldErrors['nom'] = 'Le nom est obligatoire.';
             } elseif (!preg_match('/^[A-Za-zÀ-ÿ\s]{2,50}$/', $nom)) {
@@ -121,9 +168,8 @@ class UserController extends AbstractController
                     $this->entityManager->persist($user);
                     $this->entityManager->flush();
 
-                    // ── Message succès inline (sans alert JS) ──
                     $successMsg = 'L\'utilisateur ' . $nom . ' ' . $prenom . ' a été créé avec succès.';
-                    $formData   = []; // Réinitialiser le formulaire
+                    $formData   = [];
 
                 } catch (\Exception $e) {
                     $globalError = 'Une erreur est survenue : ' . $e->getMessage();
@@ -264,6 +310,16 @@ class UserController extends AbstractController
         $statut = $user->isActive() ? 'activé' : 'désactivé';
         $this->addFlash('success', "Le compte de {$user->getNom()} {$user->getPrenom()} a été {$statut} avec succès.");
         return $this->redirectToRoute('admin_users_list');
+    }
+
+    // ── Activités ───────────────────────────────────────────────────────────────
+    #[Route('/admin/activities', name: 'admin_activities')]
+    public function userActivities(): Response
+    {
+        $users = $this->usersRepository->findAll();
+        return $this->render('admin/activities/index.html.twig', [
+            'users' => $users
+        ]);
     }
 
     // ── Profil d'un utilisateur ─────────────────────────────────────────────────
