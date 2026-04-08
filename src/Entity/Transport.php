@@ -19,13 +19,14 @@ class Transport
     #[Assert\Choice(choices: ["Avion", "Bus", "Voiture", "Train"], message: "Type de transport invalide.")]
     private ?string $type_transport = null;
 
-    #[ORM\ManyToOne(inversedBy: "transports")]
-    #[Assert\NotNull(message: "La destination est obligatoire.")]
-    private ?Destination $destination = null;
+    #[ORM\ManyToOne(targetEntity: Voyage::class, inversedBy: "transports")]
+    #[ORM\JoinColumn(nullable: true, onDelete: "SET NULL")]
+    #[Assert\NotNull(message: "Le voyage est obligatoire.")]
+    private ?Voyage $voyage = null;
 
     public function getId(): ?int { return $this->id; }
     public function getTypeTransport(): ?string { return $this->type_transport; }
     public function setTypeTransport(?string $type_transport): static { $this->type_transport = $type_transport; return $this; }
-    public function getDestination(): ?Destination { return $this->destination; }
-    public function setDestination(?Destination $destination): static { $this->destination = $destination; return $this; }
+    public function getVoyage(): ?Voyage { return $this->voyage; }
+    public function setVoyage(?Voyage $voyage): static { $this->voyage = $voyage; return $this; }
 }

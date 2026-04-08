@@ -7,4 +7,66 @@
         {% block admin_content %}{% endblock %}
     </main>
 </div>
+
+{# ===== MODAL DE CONFIRMATION DE SUPPRESSION ===== #}
+<div id="delete-modal" style="
+    display:none;position:fixed;inset:0;z-index:9999;
+    background:rgba(0,0,0,.6);backdrop-filter:blur(3px);
+    align-items:center;justify-content:center;
+">
+    <div style="
+        background:#1e1e2e;border:1px solid #333;border-radius:14px;
+        padding:36px 40px;max-width:420px;width:90%;
+        box-shadow:0 20px 60px rgba(0,0,0,.6);
+        animation:popIn .18s ease;
+    ">
+        <div style="text-align:center;margin-bottom:24px">
+            <div style="font-size:48px;margin-bottom:12px">🗑️</div>
+            <h3 style="margin:0 0 8px;color:#fff;font-size:18px">Confirmer la suppression</h3>
+            <p style="margin:0;color:#999;font-size:14px">Cette action est irréversible.</p>
+        </div>
+        <div style="display:flex;gap:12px;justify-content:center">
+            <button onclick="closeDeleteModal()"
+                    style="flex:1;padding:10px 20px;border-radius:8px;border:1px solid #555;
+                           background:none;color:#aaa;font-size:14px;cursor:pointer;font-weight:500">
+                Annuler
+            </button>
+            <button id="delete-confirm-btn"
+                    style="flex:1;padding:10px 20px;border-radius:8px;border:none;
+                           background:#c0392b;color:#fff;font-size:14px;cursor:pointer;font-weight:600">
+                Supprimer
+            </button>
+        </div>
+    </div>
+</div>
+
+<style>
+@keyframes popIn {
+    from { transform:scale(.9); opacity:0; }
+    to   { transform:scale(1);  opacity:1; }
+}
+</style>
+
+<script>
+var _deleteForm = null;
+
+function openDeleteModal(formEl) {
+    _deleteForm = formEl;
+    var modal = document.getElementById('delete-modal');
+    modal.style.display = 'flex';
+}
+
+function closeDeleteModal() {
+    document.getElementById('delete-modal').style.display = 'none';
+    _deleteForm = null;
+}
+
+document.getElementById('delete-confirm-btn').addEventListener('click', function() {
+    if (_deleteForm) _deleteForm.submit();
+});
+
+document.getElementById('delete-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeDeleteModal();
+});
+</script>
 {% endblock %}

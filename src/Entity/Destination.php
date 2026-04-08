@@ -30,10 +30,12 @@ class Destination
     private ?string $pays = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Assert\NotBlank(message: "La description est obligatoire.")]
     #[Assert\Length(min: 20, max: 2000, minMessage: "Min 20 caracteres.", maxMessage: "Max 2000 caracteres.")]
     private ?string $description = null;
 
     #[ORM\Column(nullable: true)]
+    #[Assert\NotNull(message: "Le statut est obligatoire.")]
     private ?bool $statut = null;
 
     #[ORM\Column(length: 50, nullable: true)]
@@ -59,20 +61,16 @@ class Destination
     #[ORM\Column(length: 500, nullable: true)]
     private ?string $video_path = null;
 
-    #[ORM\ManyToOne]
-    #[Assert\NotNull(message: "Le voyage est obligatoire.")]
-    private ?Voyage $voyage = null;
+    #[ORM\OneToMany(mappedBy: "destination", targetEntity: Voyage::class, cascade: ["persist", "remove"])]
+    private Collection $voyages;
 
     #[ORM\OneToMany(mappedBy: "destination", targetEntity: Image::class, cascade: ["persist", "remove"])]
     private Collection $images;
 
-    #[ORM\OneToMany(mappedBy: "destination", targetEntity: Transport::class, cascade: ["persist", "remove"])]
-    private Collection $transports;
-
     public function __construct()
     {
-        $this->images     = new ArrayCollection();
-        $this->transports = new ArrayCollection();
+        $this->voyages = new ArrayCollection();
+        $this->images  = new ArrayCollection();
     }
 
     public function getId(): ?int { return $this->id; }
@@ -94,8 +92,22 @@ class Destination
     public function setNbVisites(?int $nb_visites): static { $this->nb_visites = $nb_visites; return $this; }
     public function getVideoPath(): ?string { return $this->video_path; }
     public function setVideoPath(?string $video_path): static { $this->video_path = $video_path; return $this; }
-    public function getVoyage(): ?Voyage { return $this->voyage; }
-    public function setVoyage(?Voyage $voyage): static { $this->voyage = $voyage; return $this; }
+    public function getVoyages(): Collection { return $this->voyages; }
+    public function addVoyage(Voyage $voyage): static
+    {
+        if (!$this->voyages->contains($voyage)) {
+            $this->voyages->add($voyage);
+            $voyage->setDestination($this);
+        }
+        return $this;
+    }
+    public function removeVoyage(Voyage $voyage): static
+    {
+        if ($this->voyages->removeElement($voyage)) {
+            if ($voyage->getDestination() === $this) $voyage->setDestination(null);
+        }
+        return $this;
+    }
 
     public function getImages(): Collection { return $this->images; }
     public function addImage(Image $image): static
@@ -114,20 +126,4 @@ class Destination
         return $this;
     }
 
-    public function getTransports(): Collection { return $this->transports; }
-    public function addTransport(Transport $transport): static
-    {
-        if (!$this->transports->contains($transport)) {
-            $this->transports->add($transport);
-            $transport->setDestination($this);
-        }
-        return $this;
-    }
-    public function removeTransport(Transport $transport): static
-    {
-        if ($this->transports->removeElement($transport)) {
-            if ($transport->getDestination() === $this) $transport->setDestination(null);
-        }
-        return $this;
-    }
 }

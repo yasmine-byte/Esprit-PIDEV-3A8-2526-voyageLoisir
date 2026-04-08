@@ -138,7 +138,7 @@
                     </a>
                 </th>
                 <th>Statut</th>
-                <th>ID Voyage</th>
+                <th>Voyage</th>
                 <th>Latitude</th>
                 <th>Longitude</th>
                 <th>Actions</th>
@@ -159,12 +159,18 @@
                         <span class="transaction-status" style="background:#ff4444">Inactif</span>
                     {% endif %}
                 </td>
-                <td>{{ destination.voyage ? destination.voyage.id : '-' }}</td>
+<td>{{ destination.voyages|length > 0 ? destination.voyages|length ~ ' voyage(s)' : '-' }}</td>
                 <td>{{ destination.latitude ?? '-' }}</td>
                 <td>{{ destination.longitude ?? '-' }}</td>
                 <td style="white-space:nowrap">
                     <a href="{{ path('app_destination_show', {'id': destination.id}) }}" class="action-btn">Voir</a>
                     <a href="{{ path('app_destination_edit', {'id': destination.id}) }}" class="action-btn">Modifier</a>
+                    <a href="{{ path('app_image_new', {'destination_id': destination.id}) }}"
+                       class="action-btn"
+                       style="background:#1a6e3c;color:#fff;border-color:#1a6e3c">+ Image</a>
+                    <a href="{{ path('app_voyage_new', {'destination_id': destination.id}) }}"
+                       class="action-btn"
+                       style="background:#1a3a6e;color:#fff;border-color:#1a3a6e">+ Voyage</a>
                     {{ include('destination/_delete_form.html.twig') }}
                 </td>
             </tr>
@@ -179,6 +185,95 @@
     </table>
     </div>
 </div>
+
+{# ===== MODAL SUPPRESSION DESTINATION ===== #}
+<div id="dest-delete-modal" style="
+    display:none;position:fixed;inset:0;z-index:9999;
+    background:rgba(0,0,0,.65);backdrop-filter:blur(4px);
+    align-items:center;justify-content:center;">
+    <div style="
+        background:#1e1e2e;border:1px solid #3a3a4a;border-radius:16px;
+        padding:32px 36px;max-width:460px;width:92%;
+        box-shadow:0 24px 64px rgba(0,0,0,.7);
+        animation:popIn .18s ease;">
+
+        <div style="text-align:center;margin-bottom:20px">
+            <div style="font-size:44px;margin-bottom:10px">⚠️</div>
+            <h3 id="dest-modal-title" style="margin:0 0 6px;color:#fff;font-size:17px"></h3>
+            <p style="margin:0;color:#999;font-size:13px">Cette action est irréversible.</p>
+        </div>
+
+        <div id="dest-modal-voyages-box" style="display:none;margin-bottom:20px">
+            <div style="background:#2a1a1a;border:1px solid #5a2a2a;border-radius:10px;padding:14px 16px">
+                <p style="margin:0 0 10px;font-size:12px;font-weight:700;color:#e57373;text-transform:uppercase;letter-spacing:.5px">
+                    🗓 Voyages qui seront supprimés :
+                </p>
+                <ul id="dest-modal-voyages-list" style="margin:0;padding:0 0 0 16px;font-size:12px;color:#ccc;line-height:1.9"></ul>
+            </div>
+        </div>
+
+        <div id="dest-modal-no-voyages-box" style="display:none;margin-bottom:20px">
+            <div style="background:#1a2a1a;border:1px solid #2a5a2a;border-radius:10px;padding:10px 16px;font-size:12px;color:#81c784">
+                ✅ Aucun voyage associé à cette destination.
+            </div>
+        </div>
+
+        <div style="display:flex;gap:12px">
+            <button onclick="closeDestinationDeleteModal()"
+                    style="flex:1;padding:11px;border-radius:9px;border:1px solid #444;
+                           background:none;color:#aaa;font-size:14px;cursor:pointer;font-weight:500">
+                Annuler
+            </button>
+            <button id="dest-modal-confirm"
+                    style="flex:1;padding:11px;border-radius:9px;border:none;
+                           background:#c0392b;color:#fff;font-size:14px;cursor:pointer;font-weight:700">
+                Supprimer quand même
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+var _destForm = null;
+
+function openDestinationDeleteModal(id, nom, voyages) {
+    _destForm = document.getElementById('delete-form-' + id);
+    document.getElementById('dest-modal-title').textContent = 'Supprimer "' + nom + '" ?';
+
+    var listEl      = document.getElementById('dest-modal-voyages-list');
+    var voyagesBox  = document.getElementById('dest-modal-voyages-box');
+    var noVoyageBox = document.getElementById('dest-modal-no-voyages-box');
+
+    listEl.innerHTML = '';
+    if (voyages.length > 0) {
+        voyages.forEach(function(v) {
+            var li = document.createElement('li');
+            li.textContent = v;
+            listEl.appendChild(li);
+        });
+        voyagesBox.style.display  = 'block';
+        noVoyageBox.style.display = 'none';
+    } else {
+        voyagesBox.style.display  = 'none';
+        noVoyageBox.style.display = 'block';
+    }
+
+    document.getElementById('dest-delete-modal').style.display = 'flex';
+}
+
+function closeDestinationDeleteModal() {
+    document.getElementById('dest-delete-modal').style.display = 'none';
+    _destForm = null;
+}
+
+document.getElementById('dest-modal-confirm').addEventListener('click', function() {
+    if (_destForm) _destForm.submit();
+});
+
+document.getElementById('dest-delete-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeDestinationDeleteModal();
+});
+</script>
 
 <footer class="copyright">Copyright &copy; 2026 VoyageLoisir</footer>
 {% endblock %}

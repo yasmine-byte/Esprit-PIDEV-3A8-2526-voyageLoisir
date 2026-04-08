@@ -1,9 +1,9 @@
 <?php
 namespace App\Controller;
-use App\Entity\Destination;
 use App\Entity\Voyage;
 use App\Form\VoyageType;
 use App\Repository\VoyageRepository;
+use App\Repository\DestinationRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -29,9 +29,18 @@ final class VoyageController extends AbstractController
     }
 
     #[Route("/new", name: "app_voyage_new", methods: ["GET", "POST"])]
-    public function new(Request $request, EntityManagerInterface $entityManager): Response
+    public function new(Request $request, EntityManagerInterface $entityManager, DestinationRepository $destRepo): Response
     {
         $voyage = new Voyage();
+
+        $destinationId = $request->query->getInt('destination_id');
+        if ($destinationId) {
+            $destination = $destRepo->find($destinationId);
+            if ($destination) {
+                $voyage->setDestination($destination);
+            }
+        }
+
         $form = $this->createForm(VoyageType::class, $voyage);
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
@@ -44,8 +53,9 @@ final class VoyageController extends AbstractController
             return $this->redirectToRoute("app_voyage_index", [], Response::HTTP_SEE_OTHER);
         }
         return $this->render("voyage/new.html.twig", [
-            "voyage" => $voyage,
-            "form"   => $form,
+            "voyage"         => $voyage,
+            "form"           => $form,
+            "destination_id" => $destinationId,
         ]);
     }
 
@@ -76,12 +86,6 @@ final class VoyageController extends AbstractController
     public function delete(Request $request, Voyage $voyage, EntityManagerInterface $entityManager): Response
     {
         if ($this->isCsrfTokenValid("delete" . $voyage->getId(), $request->getPayload()->getString("_token"))) {
-            $destinations = $entityManager->getRepository(Destination::class)->findBy(["voyage" => $voyage]);
-            foreach ($destinations as $destination) {
-                $destination->setVoyage(null);
-                $entityManager->persist($destination);
-            }
-            $entityManager->flush();
             $entityManager->remove($voyage);
             $entityManager->flush();
         }

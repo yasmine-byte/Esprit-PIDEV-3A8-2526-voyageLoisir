@@ -1,110 +1,49 @@
-{{ form_start(form, {'attr': {'id': 'form-voyage'}}) }}
+{{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
 
 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; margin-bottom:20px;">
     <div>
         <label class="form-label">Date de Depart *</label>
-        {{ form_widget(form.date_depart, {'attr': {'class': 'form-input', 'id': 'f-dep', 'min': "now"|date("Y-m-d"), 'onchange': 'lvDate()'}}) }}
-        <small id="msg-dep" style="display:block;min-height:16px;font-size:12px;margin-top:3px"></small>
+        {{ form_widget(form.date_depart, {'attr': {'class': 'form-input'}}) }}
         {% for err in form.date_depart.vars.errors %}
             <small style="display:block;color:#E24B4A;font-size:12px;margin-top:2px">{{ err.message }}</small>
         {% endfor %}
     </div>
     <div>
         <label class="form-label">Date d Arrivee *</label>
-        {{ form_widget(form.date_arrivee, {'attr': {'class': 'form-input', 'id': 'f-arr', 'min': "now"|date("Y-m-d"), 'onchange': 'lvDate()'}}) }}
-        <small id="msg-arr" style="display:block;min-height:16px;font-size:12px;margin-top:3px"></small>
+        {{ form_widget(form.date_arrivee, {'attr': {'class': 'form-input'}}) }}
         {% for err in form.date_arrivee.vars.errors %}
             <small style="display:block;color:#E24B4A;font-size:12px;margin-top:2px">{{ err.message }}</small>
         {% endfor %}
     </div>
     <div>
         <label class="form-label">Point de Depart *</label>
-        {{ form_widget(form.point_depart, {'attr': {'class': 'form-input', 'id': 'f-pdep', 'placeholder': 'Ex: Tunis', 'oninput': 'lvNom("f-pdep", this.value)'}}) }}
-        <small id="msg-pdep" style="display:block;min-height:16px;font-size:12px;margin-top:3px"></small>
+        {{ form_widget(form.point_depart, {'attr': {'class': 'form-input', 'placeholder': 'Ex: Tunis'}}) }}
         {% for err in form.point_depart.vars.errors %}
             <small style="display:block;color:#E24B4A;font-size:12px;margin-top:2px">{{ err.message }}</small>
         {% endfor %}
     </div>
     <div>
         <label class="form-label">Point d Arrivee *</label>
-        {{ form_widget(form.point_arrivee, {'attr': {'class': 'form-input', 'id': 'f-parr', 'placeholder': 'Ex: Paris', 'oninput': 'lvNom("f-parr", this.value)'}}) }}
-        <small id="msg-parr" style="display:block;min-height:16px;font-size:12px;margin-top:3px"></small>
+        {{ form_widget(form.point_arrivee, {'attr': {'class': 'form-input', 'placeholder': 'Ex: Paris'}}) }}
         {% for err in form.point_arrivee.vars.errors %}
             <small style="display:block;color:#E24B4A;font-size:12px;margin-top:2px">{{ err.message }}</small>
         {% endfor %}
     </div>
     <div>
         <label class="form-label">Prix (EUR) *</label>
-        {{ form_widget(form.prix, {'attr': {'class': 'form-input', 'id': 'f-prix', 'placeholder': 'Ex: 299.99', 'min': '0.01', 'oninput': 'lvPrix("f-prix", this.value)'}}) }}
-        <small id="msg-prix" style="display:block;min-height:16px;font-size:12px;margin-top:3px"></small>
+        {{ form_widget(form.prix, {'attr': {'class': 'form-input', 'placeholder': 'Ex: 299.99'}}) }}
         {% for err in form.prix.vars.errors %}
+            <small style="display:block;color:#E24B4A;font-size:12px;margin-top:2px">{{ err.message }}</small>
+        {% endfor %}
+    </div>
+    <div>
+        <label class="form-label">Destination</label>
+        {{ form_widget(form.destination, {'attr': {'class': 'form-select'}}) }}
+        {% for err in form.destination.vars.errors %}
             <small style="display:block;color:#E24B4A;font-size:12px;margin-top:2px">{{ err.message }}</small>
         {% endfor %}
     </div>
 </div>
 
-<div id="duree-box" style="display:none;margin-bottom:16px;padding:8px 14px;background:#E1F5EE;color:#085041;border-radius:8px;font-size:13px;font-weight:500"></div>
-
 <button type="submit" class="btn primary">Sauvegarder</button>
 {{ form_end(form) }}
-
-<script>
-function ok(id, msg) {
-    var el = document.getElementById(id);
-    var m  = document.getElementById("msg-" + id.replace("f-",""));
-    if (el) el.style.borderColor = "#1D9E75";
-    if (m)  { m.style.color = "#1D9E75"; m.textContent = "OK - " + msg; }
-}
-function er(id, msg) {
-    var el = document.getElementById(id);
-    var m  = document.getElementById("msg-" + id.replace("f-",""));
-    if (el) el.style.borderColor = "#E24B4A";
-    if (m)  { m.style.color = "#E24B4A"; m.textContent = "Erreur - " + msg; }
-}
-function clr(id) {
-    var el = document.getElementById(id);
-    var m  = document.getElementById("msg-" + id.replace("f-",""));
-    if (el) el.style.borderColor = "";
-    if (m)  m.textContent = "";
-}
-
-function lvNom(id, val) {
-    var v = val.trim();
-    if (!v)                { clr(id); return; }
-    if (/[0-9]/.test(v))   { er(id, "Les chiffres ne sont pas autorises"); return; }
-    if (/[<>{}@#]/.test(v)){ er(id, "Caracteres speciaux interdits"); return; }
-    if (v.length < 2)      { er(id, "Minimum 2 caracteres"); return; }
-    if (v.length > 100)    { er(id, "Maximum 100 caracteres"); return; }
-    ok(id, "Valide");
-}
-
-function lvPrix(id, val) {
-    var v = parseFloat(val);
-    if (val === "" || isNaN(v)) { clr(id); return; }
-    if (v <= 0)    { er(id, "Le prix doit etre positif"); return; }
-    if (v > 99999) { er(id, "Maximum 99 999 EUR"); return; }
-    ok(id, v.toFixed(2) + " EUR");
-}
-
-function lvDate() {
-    var dep   = document.getElementById("f-dep");
-    var arr   = document.getElementById("f-arr");
-    var box   = document.getElementById("duree-box");
-    var today = new Date(); today.setHours(0,0,0,0);
-    var d = dep.value ? new Date(dep.value) : null;
-    var a = arr.value ? new Date(arr.value) : null;
-    if (d) {
-        if (d < today) { er("f-dep", "Date dans le passe"); dep.value = ""; }
-        else           { ok("f-dep", "Valide"); if (arr) arr.min = dep.value; }
-    }
-    if (d && a) {
-        if (a <= d) { er("f-arr", "Doit etre apres le depart"); box.style.display = "none"; }
-        else {
-            ok("f-arr", "Valide");
-            var diff = Math.round((a - d) / 86400000);
-            box.style.display = "block";
-            box.textContent   = "Duree : " + diff + " jour" + (diff > 1 ? "s" : "");
-        }
-    } else { box.style.display = "none"; }
-}
-</script>

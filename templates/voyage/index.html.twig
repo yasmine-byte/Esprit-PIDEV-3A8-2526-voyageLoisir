@@ -1,4 +1,4 @@
-﻿{% extends 'admin/base_admin.html.twig' %}
+{% extends 'admin/base_admin.html.twig' %}
 {% block title %}Voyages{% endblock %}
 
 {% block admin_content %}
@@ -71,6 +71,7 @@
 
     {% set params = {search: search} %}
 
+    <div style="overflow-x:auto">
     <table class="market-table">
         <thead>
             <tr>
@@ -80,65 +81,129 @@
                         ID {% if tri == 'id' %}{{ ordre == 'ASC' ? '▲' : '▼' }}{% endif %}
                     </a>
                 </th>
-                <th>
-                    <a href="{{ path('app_voyage_index', params|merge({tri: 'date_depart', ordre: (tri == 'date_depart' and ordre == 'ASC') ? 'DESC' : 'ASC'})) }}"
-                       style="color:inherit;text-decoration:none;white-space:nowrap">
-                        Date Départ {% if tri == 'date_depart' %}{{ ordre == 'ASC' ? '▲' : '▼' }}{% endif %}
-                    </a>
-                </th>
-                <th>
-                    <a href="{{ path('app_voyage_index', params|merge({tri: 'date_arrivee', ordre: (tri == 'date_arrivee' and ordre == 'ASC') ? 'DESC' : 'ASC'})) }}"
-                       style="color:inherit;text-decoration:none;white-space:nowrap">
-                        Date Arrivée {% if tri == 'date_arrivee' %}{{ ordre == 'ASC' ? '▲' : '▼' }}{% endif %}
-                    </a>
-                </th>
+                <th>Destination</th>
                 <th>
                     <a href="{{ path('app_voyage_index', params|merge({tri: 'point_depart', ordre: (tri == 'point_depart' and ordre == 'ASC') ? 'DESC' : 'ASC'})) }}"
                        style="color:inherit;text-decoration:none;white-space:nowrap">
-                        Point Départ {% if tri == 'point_depart' %}{{ ordre == 'ASC' ? '▲' : '▼' }}{% endif %}
+                        Trajet {% if tri == 'point_depart' %}{{ ordre == 'ASC' ? '▲' : '▼' }}{% endif %}
                     </a>
                 </th>
                 <th>
-                    <a href="{{ path('app_voyage_index', params|merge({tri: 'point_arrivee', ordre: (tri == 'point_arrivee' and ordre == 'ASC') ? 'DESC' : 'ASC'})) }}"
+                    <a href="{{ path('app_voyage_index', params|merge({tri: 'date_depart', ordre: (tri == 'date_depart' and ordre == 'ASC') ? 'DESC' : 'ASC'})) }}"
                        style="color:inherit;text-decoration:none;white-space:nowrap">
-                        Point Arrivée {% if tri == 'point_arrivee' %}{{ ordre == 'ASC' ? '▲' : '▼' }}{% endif %}
+                        Dates {% if tri == 'date_depart' %}{{ ordre == 'ASC' ? '▲' : '▼' }}{% endif %}
                     </a>
                 </th>
+                <th>Durée</th>
                 <th>
                     <a href="{{ path('app_voyage_index', params|merge({tri: 'prix', ordre: (tri == 'prix' and ordre == 'ASC') ? 'DESC' : 'ASC'})) }}"
                        style="color:inherit;text-decoration:none;white-space:nowrap">
                         Prix {% if tri == 'prix' %}{{ ordre == 'ASC' ? '▲' : '▼' }}{% endif %}
                     </a>
                 </th>
-                <th>Cree par</th>
-                <th>Reserve par</th>
+                <th>Transports</th>
                 <th>Actions</th>
             </tr>
         </thead>
         <tbody>
             {% for voyage in voyages %}
             <tr>
-                <td>{{ voyage.id }}</td>
-                <td>{{ voyage.dateDepart ? voyage.dateDepart|date('d/m/Y') : '-' }}</td>
-                <td>{{ voyage.dateArrivee ? voyage.dateArrivee|date('d/m/Y') : '-' }}</td>
-                <td>{{ voyage.pointDepart ?? '-' }}</td>
-                <td>{{ voyage.pointArrivee ?? '-' }}</td>
-                <td>{{ voyage.prix ? voyage.prix ~ ' €' : '-' }}</td>
+                {# ID #}
                 <td>
+                    <span style="background:#2a2a3e;color:#a0a0c0;border-radius:6px;padding:3px 8px;font-size:12px;font-weight:700">
+                        #{{ voyage.id }}
+                    </span>
+                </td>
+
+                {# Destination #}
+                <td>
+                    {% if voyage.destination %}
+                        <span style="background:#1a2e1a;color:#6fcf97;border-radius:6px;padding:3px 9px;font-size:12px;font-weight:600">
+                            {{ voyage.destination.nom }}
+                        </span>
+                        <div style="font-size:10px;color:#666;margin-top:2px">ID #{{ voyage.destination.id }}</div>
+                    {% else %}
+                        <span style="color:#555;font-size:12px">—</span>
+                    {% endif %}
+                </td>
+
+                {# Trajet #}
+                <td style="white-space:nowrap">
+                    <div style="display:flex;align-items:center;gap:6px;font-size:13px">
+                        <span style="font-weight:600;color:#e0e0e0">{{ voyage.pointDepart ?? '?' }}</span>
+                        <span style="color:#f97316;font-size:11px">→</span>
+                        <span style="font-weight:600;color:#e0e0e0">{{ voyage.pointArrivee ?? '?' }}</span>
+                    </div>
+                </td>
+
+                {# Dates #}
+                <td style="white-space:nowrap">
+                    <div style="font-size:12px;color:#aaa">
+                        <span style="color:#e0e0e0;font-weight:600">{{ voyage.dateDepart ? voyage.dateDepart|date('d/m/Y') : '—' }}</span>
+                        <br>
+                        <span style="font-size:10px;color:#666">→ {{ voyage.dateArrivee ? voyage.dateArrivee|date('d/m/Y') : '—' }}</span>
+                    </div>
+                </td>
+
+                {# Durée #}
+                <td>
+                    {% if voyage.dateDepart and voyage.dateArrivee %}
+                        {% set duree = ((voyage.dateArrivee|date('U') - voyage.dateDepart|date('U')) / 86400)|round %}
+                        <span style="background:#1a1a2e;color:#818cf8;border-radius:20px;padding:3px 10px;font-size:11px;font-weight:700;white-space:nowrap">
+                            {{ duree }}j
+                        </span>
+                    {% else %}
+                        <span style="color:#555">—</span>
+                    {% endif %}
+                </td>
+
+                {# Prix #}
+                <td>
+                    {% if voyage.prix %}
+                        <span style="font-size:14px;font-weight:800;color:#f97316">
+                            {{ voyage.prix }}<span style="font-size:10px;font-weight:500;margin-left:1px">€</span>
+                        </span>
+                    {% else %}
+                        <span style="color:#555">—</span>
+                    {% endif %}
+                </td>
+
+                {# Transports #}
+                <td>
+                    {% if voyage.transports|length > 0 %}
+                        <div style="display:flex;flex-wrap:wrap;gap:4px">
+                        {% set icons = {'Avion': '✈', 'Bus': '🚌', 'Train': '🚆', 'Voiture': '🚗'} %}
+                        {% for t in voyage.transports %}
+                            <span style="background:#2a1a3e;color:#c084fc;border-radius:20px;padding:2px 8px;font-size:11px;font-weight:600;white-space:nowrap">
+                                {{ icons[t.typeTransport] ?? '' }} {{ t.typeTransport }}
+                            </span>
+                        {% endfor %}
+                        </div>
+                    {% else %}
+                        <span style="color:#555;font-size:12px">—</span>
+                    {% endif %}
+                </td>
+
+                {# Actions #}
+                <td style="white-space:nowrap">
                     <a href="{{ path('app_voyage_show', {'id': voyage.id}) }}" class="action-btn">Voir</a>
                     <a href="{{ path('app_voyage_edit', {'id': voyage.id}) }}" class="action-btn">Modifier</a>
+                    <a href="{{ path('app_transport_new', {'voyage_id': voyage.id}) }}"
+                       class="action-btn"
+                       style="background:#6a3fa0;color:#fff;border-color:#6a3fa0">+ Transport</a>
                     {{ include('voyage/_delete_form.html.twig') }}
                 </td>
             </tr>
             {% else %}
             <tr>
-                <td colspan="7" style="text-align:center;color:#888;padding:30px">
+                <td colspan="8" style="text-align:center;color:#888;padding:30px">
                     Aucun voyage trouvé
                 </td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
+    </div>
 </div>
 
 <footer class="copyright">Copyright &copy; 2026 VoyageLoisir</footer>

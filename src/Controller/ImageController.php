@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Image;
 use App\Form\ImageType;
 use App\Repository\ImageRepository;
+use App\Repository\DestinationRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -32,9 +33,18 @@ public function index(Request $request, ImageRepository $repo): Response
 }
 
     #[Route("/new", name: "app_image_new", methods: ["GET", "POST"])]
-    public function new(Request $request, EntityManagerInterface $em): Response
+    public function new(Request $request, EntityManagerInterface $em, DestinationRepository $destRepo): Response
     {
         $image = new Image();
+
+        $destinationId = $request->query->getInt('destination_id');
+        if ($destinationId) {
+            $destination = $destRepo->find($destinationId);
+            if ($destination) {
+                $image->setDestination($destination);
+            }
+        }
+
         $form  = $this->createForm(ImageType::class, $image);
         $form->handleRequest($request);
 
@@ -59,8 +69,9 @@ public function index(Request $request, ImageRepository $repo): Response
         }
 
         return $this->render("image/new.html.twig", [
-            "image" => $image,
-            "form"  => $form,
+            "image"         => $image,
+            "form"          => $form,
+            "destination_id" => $destinationId,
         ]);
     }
 

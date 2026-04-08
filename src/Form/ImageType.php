@@ -19,12 +19,8 @@ class ImageType extends AbstractType
             ->add("url_image", FileType::class, [
                 "label"    => "Images (plusieurs fichiers)",
                 "mapped"   => false,
-                "required" => true,
+                "required" => false,
                 "multiple" => true,
-                "attr"     => [
-                    "accept"   => "image/*",
-                    "multiple" => "multiple",
-                ],
                 "constraints" => [
                     new Assert\All([
                         "constraints" => [
