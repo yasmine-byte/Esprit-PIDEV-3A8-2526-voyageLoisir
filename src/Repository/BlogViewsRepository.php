@@ -16,6 +16,34 @@ class BlogViewsRepository extends ServiceEntityRepository
         parent::__construct($registry, BlogViews::class);
     }
 
+    public function countByBlogIds(array $blogIds): array
+    {
+        $blogIds = array_values(array_unique(array_filter(array_map('intval', $blogIds))));
+        if ([] === $blogIds) {
+            return [];
+        }
+
+        $rows = $this->createQueryBuilder('v')
+            ->select('IDENTITY(v.blog) AS blog_id', 'COUNT(v.id) AS total_views')
+            ->andWhere('v.blog IN (:blogIds)')
+            ->setParameter('blogIds', $blogIds)
+            ->groupBy('v.blog')
+            ->getQuery()
+            ->getArrayResult();
+
+        $counts = [];
+        foreach ($rows as $row) {
+            $blogId = (int) ($row['blog_id'] ?? 0);
+            if ($blogId <= 0) {
+                continue;
+            }
+
+            $counts[$blogId] = (int) ($row['total_views'] ?? 0);
+        }
+
+        return $counts;
+    }
+
     //    /**
     //     * @return BlogViews[] Returns an array of BlogViews objects
     //     */

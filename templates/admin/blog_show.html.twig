@@ -256,6 +256,7 @@
 
     {% set coverImage = blog.imageCouverture ?: ('https://picsum.photos/seed/admin-blog-' ~ blog.id ~ '/1200/900') %}
     {% set readTime = ((blog.contenu|default('')|length / 700)|round(0, 'ceil')) %}
+    {% set contentLength = blog.contenu|default('')|length %}
     {% set completeness = 0 %}
     {% set statusLabel = blog.status ? 'publie' : 'brouillon' %}
     {% if blog.publicationRequested and not blog.status %}
@@ -285,7 +286,6 @@
                         <button class="admin-blog-secondary" type="submit">Mettre en attente</button>
                     </form>
                 {% endif %}
-                <a class="admin-blog-action" href="{{ path('app_blog_edit', {'id': blog.id}) }}">Edit</a>
                 <form method="post" action="{{ path('admin_blog_delete', {'id': blog.id}) }}" onsubmit="return confirm('Delete this blog?');">
                     <input type="hidden" name="_token" value="{{ csrf_token('admin_delete_blog_' ~ blog.id) }}">
                     <button class="admin-blog-delete" type="submit">Delete</button>
@@ -317,12 +317,12 @@
                         <strong>{{ blog.ratingCount is not null ? blog.ratingCount : 0 }}</strong>
                     </div>
                     <div class="admin-kpi-card">
-                        <small>Comments</small>
-                        <strong>{{ comments|length }}</strong>
-                    </div>
-                    <div class="admin-kpi-card">
                         <small>Views</small>
                         <strong>{{ views_count }}</strong>
+                    </div>
+                    <div class="admin-kpi-card">
+                        <small>Characters</small>
+                        <strong>{{ contentLength }}</strong>
                     </div>
                 </div>
             </div>
@@ -333,7 +333,7 @@
 
         <section class="admin-blog-grid">
             <article class="admin-blog-view-card admin-blog-content">
-                <h2>Blog content</h2>
+                <h2>Contenu complet</h2>
                 {% for paragraph in blog.contenu|split('\n') %}
                     {% if paragraph|trim is not empty %}
                         <p>{{ paragraph|trim }}</p>
@@ -342,11 +342,11 @@
             </article>
 
             <aside class="admin-blog-view-card">
-                <h2>Blog details</h2>
+                <h2>Autres details</h2>
 
                 <div class="admin-side-block">
                     <p class="admin-side-label">Slug</p>
-                    <p class="admin-side-value">{{ blog.slug ?: 'No slug' }}</p>
+                    <p class="admin-side-value">{{ blog.slug ?: 'Aucun slug' }}</p>
                 </div>
 
                 <div class="admin-side-block">
@@ -356,7 +356,7 @@
 
                 <div class="admin-side-block">
                     <p class="admin-side-label">Date publication</p>
-                    <p class="admin-side-value">{{ blog.datePublication ? blog.datePublication|date('Y-m-d H:i') : 'Not published yet' }}</p>
+                    <p class="admin-side-value">{{ blog.datePublication ? blog.datePublication|date('Y-m-d H:i') : 'Pas encore publie' }}</p>
                 </div>
 
                 <div class="admin-side-block">
@@ -366,7 +366,7 @@
 
                 <div class="admin-side-block">
                     <p class="admin-side-label">Image couverture</p>
-                    <p class="admin-side-value"><a href="{{ coverImage }}" target="_blank" rel="noopener noreferrer">Open image</a></p>
+                    <p class="admin-side-value"><a href="{{ coverImage }}" target="_blank" rel="noopener noreferrer">Ouvrir l'image</a></p>
                 </div>
 
                 <div class="admin-side-block">
