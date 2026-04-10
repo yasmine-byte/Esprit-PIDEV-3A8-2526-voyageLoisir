@@ -4,6 +4,7 @@ namespace App\Form;
 
 use App\Entity\Blog;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
@@ -21,26 +22,12 @@ class BlogType extends AbstractType
                     'placeholder' => 'Give your story a clear title',
                 ],
             ])
-            ->add('slug', TextType::class, [
-                'label' => 'Slug',
-                'required' => false,
-                'attr' => [
-                    'placeholder' => 'my-hidden-wonder',
-                ],
-            ])
-            ->add('imageCouverture', TextType::class, [
+            ->add('blogCoverImage', FileType::class, [
                 'label' => 'Image de couverture',
                 'required' => false,
+                'mapped' => false,
                 'attr' => [
-                    'placeholder' => 'https://example.com/cover.jpg',
-                ],
-            ])
-            ->add('extrait', TextareaType::class, [
-                'label' => 'Extrait',
-                'required' => false,
-                'attr' => [
-                    'rows' => 4,
-                    'placeholder' => 'Write a short summary of the article',
+                    'accept' => 'image/*',
                 ],
             ])
             ->add('contenu', TextareaType::class, [
@@ -48,6 +35,15 @@ class BlogType extends AbstractType
                 'attr' => [
                     'rows' => 10,
                     'placeholder' => 'Tell the full story here...',
+                ],
+            ])
+            ->add('extrait', TextareaType::class, [
+                'label' => 'Extrait',
+                'required' => false,
+                'attr' => [
+                    'rows' => 4,
+                    'placeholder' => 'Generate or refine a short summary for the blog card...',
+                    'data-blog-excerpt-target' => 'output',
                 ],
             ])
             ->add('saveDraft', SubmitType::class, [
