@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Commentaire;
 use App\Form\CommentaireType;
 use App\Repository\CommentaireRepository;
+use App\Service\CommentModerationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -24,13 +25,15 @@ final class CommentaireController extends AbstractController
     }
 
     #[Route('/new', name: 'app_commentaire_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager): Response
+    public function new(Request $request, EntityManagerInterface $entityManager, CommentModerationService $commentModerationService): Response
     {
         $commentaire = new Commentaire();
         $form = $this->createForm(CommentaireType::class, $commentaire);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $moderation = $commentModerationService->moderate((string) $commentaire->getContenu());
+            $commentaire->setContenu($moderation['sanitized'] ?? (string) $commentaire->getContenu());
             $entityManager->persist($commentaire);
             $entityManager->flush();
 
@@ -52,12 +55,14 @@ final class CommentaireController extends AbstractController
     }
 
     #[Route('/{id}/edit', name: 'app_commentaire_edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, Commentaire $commentaire, EntityManagerInterface $entityManager): Response
+    public function edit(Request $request, Commentaire $commentaire, EntityManagerInterface $entityManager, CommentModerationService $commentModerationService): Response
     {
         $form = $this->createForm(CommentaireType::class, $commentaire);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $moderation = $commentModerationService->moderate((string) $commentaire->getContenu());
+            $commentaire->setContenu($moderation['sanitized'] ?? (string) $commentaire->getContenu());
             $entityManager->flush();
 
             return $this->redirectToRoute('app_commentaire_index', [], Response::HTTP_SEE_OTHER);

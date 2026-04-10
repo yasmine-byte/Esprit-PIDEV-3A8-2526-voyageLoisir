@@ -1,6 +1,6 @@
 {% extends 'base_front.html.twig' %}
 
-{% block title %}Travel Journal{% endblock %}
+{% block title %}Carnet de voyage{% endblock %}
 
 {% block stylesheets %}
     {{ parent() }}
@@ -741,40 +741,40 @@
 {% block body %}
 {% set fallbackStories = [
     {
-        category: 'Fresh Pick',
-        title: 'A slow tasting journey through hidden kitchens, rooftop aperitifs, and unforgettable local pours',
-        date: 'April 02, 2026',
-        readTime: '8 min read',
+        category: 'Nouveautes',
+        title: 'Une escapade gourmande entre adresses cachees, aperitifs en terrasse et saveurs locales memorables',
+        date: '02 Avril 2026',
+        readTime: '8 min de lecture',
         image: 'https://picsum.photos/seed/food-drinks-travel/1200/800',
         link: '#',
         rating: '4.8',
         views: '126'
     },
     {
-        category: 'Most Viewed',
-        title: 'The sunrise train rides that turned a simple itinerary into the highlight of the season',
-        date: 'March 28, 2026',
-        readTime: '5 min read',
+        category: 'Plus vus',
+        title: 'Des trajets au lever du soleil qui transforment un simple itineraire en souvenir fort',
+        date: '28 Mars 2026',
+        readTime: '5 min de lecture',
         image: 'https://picsum.photos/seed/traveling-journal/500/400',
         link: '#',
         rating: '4.6',
         views: '89'
     },
     {
-        category: 'Top Rated',
-        title: 'Inside design-forward stays where heritage buildings meet quiet luxury',
-        date: 'March 22, 2026',
-        readTime: '6 min read',
+        category: 'Mieux notes',
+        title: 'Des sejours de caractere ou patrimoine et confort se rencontrent',
+        date: '22 Mars 2026',
+        readTime: '6 min de lecture',
         image: 'https://picsum.photos/seed/hotel-story/500/400',
         link: '#',
         rating: '4.9',
         views: '73'
     },
     {
-        category: 'Trending',
-        title: 'How to build a dream route with smarter bookings and longer local moments',
-        date: 'March 18, 2026',
-        readTime: '4 min read',
+        category: 'Tendance',
+        title: 'Comment construire un itineraire inspire avec plus de moments locaux',
+        date: '18 Mars 2026',
+        readTime: '4 min de lecture',
         image: 'https://picsum.photos/seed/travel-budget-guide/500/400',
         link: '#',
         rating: '4.4',
@@ -782,16 +782,19 @@
     }
 ] %}
 {% set stories = [] %}
+{% set heroImageTall = hero_blogs[0] ?? null %}
+{% set heroImageTop = hero_blogs[1] ?? null %}
+{% set heroImageBottom = hero_blogs[2] ?? null %}
 
 {% for i in 0..3 %}
     {% set blog = latestStories[i] ?? null %}
     {% if blog %}
         {% set metrics = blog_metrics[blog.id] ?? {} %}
         {% set stories = stories|merge([{
-            category: metrics.category|default('Fresh Pick'),
+            category: metrics.category|default('Nouveautes'),
             title: blog.titre,
-            date: blog.datePublication ? blog.datePublication|date('F d, Y') : (blog.dateCreation ? blog.dateCreation|date('F d, Y') : 'Recently published'),
-            readTime: metrics.read_time|default(1) ~ ' min read',
+            date: blog.datePublication ? blog.datePublication|date('d/m/Y') : (blog.dateCreation ? blog.dateCreation|date('d/m/Y') : 'Publication recente'),
+            readTime: metrics.read_time|default(1) ~ ' min de lecture',
             image: metrics.cover_image|default('https://picsum.photos/seed/blog-fallback-' ~ blog.id ~ '/1200/900'),
             link: path('app_blog_show', {'id': blog.id}),
             rating: metrics.rating_average|default(0),
@@ -819,49 +822,50 @@
 
         <section class="blog-hero">
             <div class="blog-hero-copy">
-                <span class="blog-kicker">Curated escapes for curious travelers</span>
-                <h1>Discover the World's <span class="blog-highlight">Hidden</span> Wonders</h1>
+                <span class="blog-kicker">Inspiration voyage pour voyageurs curieux</span>
+                <h1>Decouvrez les <span class="blog-highlight">plus beaux</span> recits d ailleurs</h1>
                 <p>
-                    Explore thoughtfully crafted stories, extraordinary places, and local rituals that turn
-                    every getaway into a richer experience. From quiet castles to vibrant temples and cinematic
-                    landscapes, this journal is built for travelers who want something memorable.
+                    Retrouvez des recits authentiques, des adresses inspirantes et des experiences locales
+                    qui donnent envie de partir. Ce carnet met en avant les blogs publies par la communaute
+                    pour vous aider a preparer votre prochaine escapade.
                 </p>
                 <div class="blog-hero-actions">
-                    <a class="blog-cta" href="#top-destinations">Discover trip</a>
-                    <button type="button" class="blog-pill-link blog-create-trigger" data-blog-modal-open>Share your blog</button>
+                    <a class="blog-cta" href="#tous-les-blogs">Voir les blogs</a>
+                    <a class="blog-pill-link" href="{{ path('app_blog_vision_board') }}">Vision board ({{ vision_board_count|default(0) }})</a>
+                    <button type="button" class="blog-pill-link blog-create-trigger" data-blog-modal-open>Partager votre blog</button>
                 </div>
             </div>
 
             <div class="blog-plane" aria-hidden="true">&#9992;</div>
 
-            <div class="blog-collage" aria-label="Travel photo collage">
+            <div class="blog-collage" aria-label="Collage des blogs">
                 <div class="blog-photo-card blog-photo-card--tall">
-                    <img src="https://picsum.photos/seed/chateau-travel-card/900/1200" alt="Historic castle destination">
+                    <img src="{{ heroImageTall ? (blog_metrics[heroImageTall.id].cover_image|default(heroImageTall.imageCouverture)) : 'https://picsum.photos/seed/chateau-travel-card/900/1200' }}" alt="{{ heroImageTall ? heroImageTall.titre : 'Blog voyage' }}">
                 </div>
                 <div class="blog-photo-card blog-photo-card--top">
-                    <img src="https://picsum.photos/seed/asian-temple-card/800/600" alt="Asian temple destination">
+                    <img src="{{ heroImageTop ? (blog_metrics[heroImageTop.id].cover_image|default(heroImageTop.imageCouverture)) : 'https://picsum.photos/seed/asian-temple-card/800/600' }}" alt="{{ heroImageTop ? heroImageTop.titre : 'Blog voyage' }}">
                 </div>
                 <div class="blog-photo-card blog-photo-card--bottom">
-                    <img src="https://picsum.photos/seed/landscape-travel-card/800/900" alt="Scenic landscape destination">
+                    <img src="{{ heroImageBottom ? (blog_metrics[heroImageBottom.id].cover_image|default(heroImageBottom.imageCouverture)) : 'https://picsum.photos/seed/landscape-travel-card/800/900' }}" alt="{{ heroImageBottom ? heroImageBottom.titre : 'Blog voyage' }}">
                 </div>
             </div>
         </section>
 
         <section class="blog-section" id="top-destinations">
             <div class="blog-section-head">
-                <h2>You Might Also Like</h2>
+                <h2>Vous pourriez aussi aimer</h2>
             </div>
 
             <div class="blog-filter-row">
                 <div class="blog-filter-list">
-                    <span class="blog-filter-chip is-active">Top Rated</span>
-                    <span class="blog-filter-chip">Most Viewed</span>
-                    <span class="blog-filter-chip">Freshly Approved</span>
-                    <span class="blog-filter-chip">Trending Now</span>
-                    <span class="blog-filter-chip">Readers' Picks</span>
+                    <a class="blog-filter-chip {{ active_category == 'mieux-notes' ? 'is-active' : '' }}" href="{{ path('app_blog_index', {categorie: 'mieux-notes'}) }}#top-destinations">Mieux notes</a>
+                    <a class="blog-filter-chip {{ active_category == 'plus-vus' ? 'is-active' : '' }}" href="{{ path('app_blog_index', {categorie: 'plus-vus'}) }}#top-destinations">Plus vus</a>
+                    <a class="blog-filter-chip {{ active_category == 'nouveautes' ? 'is-active' : '' }}" href="{{ path('app_blog_index', {categorie: 'nouveautes'}) }}#top-destinations">Nouveautes</a>
+                    <a class="blog-filter-chip {{ active_category == 'tendance' ? 'is-active' : '' }}" href="{{ path('app_blog_index', {categorie: 'tendance'}) }}#top-destinations">Tendance</a>
+                    <a class="blog-filter-chip {{ active_category == 'coups-de-coeur' ? 'is-active' : '' }}" href="{{ path('app_blog_index', {categorie: 'coups-de-coeur'}) }}#top-destinations">Coups de coeur</a>
                 </div>
 
-                <a class="blog-pill-link" href="{{ path('app_blog_index') }}">Explore all blogs</a>
+                <a class="blog-pill-link" href="{{ path('app_blog_index') }}#tous-les-blogs">Voir tous les blogs</a>
             </div>
 
             <div class="blog-destinations-grid">
@@ -870,12 +874,12 @@
                     <article class="blog-destination-card">
                         <a class="blog-hidden-link" href="{{ path('app_blog_show', {'id': blog.id}) }}">
                             <img src="{{ metrics.cover_image|default('https://picsum.photos/seed/blog-top-' ~ blog.id ~ '/900/1100') }}" alt="{{ blog.titre }}" onerror="this.src='https://picsum.photos/seed/blog-top-fallback-{{ blog.id }}/900/1100'">
-                            <span class="blog-tag">{{ metrics.category|default('Top Rated') }}</span>
+                            <span class="blog-tag">{{ metrics.category|default('Mieux notes') }}</span>
                             <h3>{{ blog.titre }}</h3>
-                            <p>{{ blog.extrait ?: 'A curated story picked for readers who enjoy highly rated travel journals.' }}</p>
+                            <p>{{ blog.extrait ?: 'Un recit voyage recommande pour les lecteurs en quete de belles inspirations.' }}</p>
                             <div class="blog-card-stats">
-                                <span><strong>{{ metrics.rating_average|default(0) }}</strong> rating</span>
-                                <span><strong>{{ metrics.views|default(0) }}</strong> views</span>
+                                <span><strong>{{ (metrics.rating_average|default(0))|number_format(1, '.', ' ') }}</strong> / 5</span>
+                                <span><strong>{{ metrics.views|default(0) }}</strong> vues</span>
                             </div>
                         </a>
                     </article>
@@ -885,8 +889,8 @@
 
         <section class="blog-section" style="padding-top: 84px;">
             <div class="blog-section-head">
-                <h2>Latest Stories</h2>
-                <a class="blog-pill-link" href="#latest-stories">Read more articles</a>
+                <h2>Derniers articles</h2>
+                <a class="blog-pill-link" href="#tous-les-blogs">Voir plus d articles</a>
             </div>
 
             <div class="blog-stories-grid" id="latest-stories">
@@ -901,8 +905,8 @@
                                 <span>{{ stories[0].readTime }}</span>
                             </div>
                             <div class="blog-card-stats">
-                                <span><strong>{{ stories[0].rating }}</strong> rating</span>
-                                <span><strong>{{ stories[0].views }}</strong> views</span>
+                                <span><strong>{{ stories[0].rating|number_format(1, '.', ' ') }}</strong> / 5</span>
+                                <span><strong>{{ stories[0].views }}</strong> vues</span>
                             </div>
                         </div>
                     </a>
@@ -920,8 +924,8 @@
                                         <span>{{ story.readTime }}</span>
                                     </div>
                                     <div class="blog-card-stats">
-                                        <span><strong>{{ story.rating }}</strong> rating</span>
-                                        <span><strong>{{ story.views }}</strong> views</span>
+                                        <span><strong>{{ story.rating|number_format(1, '.', ' ') }}</strong> / 5</span>
+                                        <span><strong>{{ story.views }}</strong> vues</span>
                                     </div>
                                 </a>
                             </div>
@@ -933,6 +937,36 @@
                 </div>
             </div>
         </section>
+
+        <section class="blog-section" id="tous-les-blogs" style="padding-top: 84px;">
+            <div class="blog-section-head">
+                <h2>Tous les blogs publies</h2>
+                <a class="blog-pill-link" href="{{ path('app_blog_index') }}">Reinitialiser le filtre</a>
+            </div>
+
+            <div class="blog-destinations-grid">
+                {% for blog in filtered_blogs %}
+                    {% set metrics = blog_metrics[blog.id] ?? {} %}
+                    <article class="blog-destination-card">
+                        <a class="blog-hidden-link" href="{{ path('app_blog_show', {'id': blog.id}) }}">
+                            <img src="{{ metrics.cover_image|default('https://picsum.photos/seed/blog-all-' ~ blog.id ~ '/900/1100') }}" alt="{{ blog.titre }}">
+                            <span class="blog-tag">{{ metrics.category|default('Nouveautes') }}</span>
+                            <h3>{{ blog.titre }}</h3>
+                            <p>{{ blog.extrait ?: 'Resume indisponible pour le moment.' }}</p>
+                            <div class="blog-card-stats">
+                                <span><strong>{{ (metrics.rating_average|default(0))|number_format(1, '.', ' ') }}</strong> / 5</span>
+                                <span><strong>{{ metrics.views|default(0) }}</strong> vues</span>
+                            </div>
+                        </a>
+                    </article>
+                {% else %}
+                    <article class="blog-destination-card">
+                        <h3>Aucun blog ne correspond a ce filtre</h3>
+                        <p>Essayez une autre categorie ou reinitialisez le filtre pour voir tous les blogs publies.</p>
+                    </article>
+                {% endfor %}
+            </div>
+        </section>
     </div>
 </main>
 
@@ -941,8 +975,8 @@
     <div class="blog-modal-panel" role="dialog" aria-modal="true" aria-labelledby="blogComposeTitle">
         <div class="blog-modal-header">
             <div>
-                <h3 id="blogComposeTitle">Write your travel blog</h3>
-                <p>Users can add a title, content, cover image, excerpt, and slug. A publish request stays pending until an admin approves it.</p>
+                <h3 id="blogComposeTitle">Ecrire votre blog de voyage</h3>
+                <p>Ajoutez un titre, un contenu, une image de couverture et un extrait. Une demande de publication reste en attente jusqu a validation par l administrateur.</p>
             </div>
             <button type="button" class="blog-modal-close" aria-label="Close" data-blog-modal-close>&times;</button>
         </div>

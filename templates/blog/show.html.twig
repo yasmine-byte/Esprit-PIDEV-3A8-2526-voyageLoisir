@@ -63,6 +63,13 @@
             color: #fff;
         }
 
+        .blog-topbar-actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
         .blog-hero-article {
             display: grid;
             grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
@@ -139,6 +146,35 @@
             min-height: 460px;
             object-fit: cover;
             display: block;
+        }
+
+        .blog-image-tools {
+            display: flex;
+            gap: 12px;
+            padding: 18px;
+            border-top: 1px solid var(--blog-border);
+            background: rgba(255, 255, 255, 0.95);
+            flex-wrap: wrap;
+        }
+
+        .blog-vision-btn,
+        .blog-pinterest-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 16px;
+            border-radius: 999px;
+            border: 1px solid rgba(30, 28, 26, 0.12);
+            background: #fff;
+            color: var(--blog-text);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .blog-vision-btn.is-saved {
+            background: var(--blog-accent);
+            border-color: var(--blog-accent);
+            color: #fff;
         }
 
         .blog-article-layout {
@@ -279,6 +315,38 @@
             color: var(--blog-muted);
         }
 
+        .blog-translate-tools {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin: 0 0 24px;
+        }
+
+        .blog-translate-tools select {
+            padding: 12px 14px;
+            border-radius: 12px;
+            border: 1px solid rgba(30, 28, 26, 0.12);
+            background: #fff;
+            color: var(--blog-text);
+        }
+
+        .blog-translate-btn,
+        .blog-translate-reset {
+            padding: 12px 18px;
+            border-radius: 999px;
+            border: 1px solid rgba(30, 28, 26, 0.12);
+            background: #fff;
+            color: var(--blog-text);
+            font-weight: 600;
+        }
+
+        .blog-translate-btn {
+            background: var(--blog-accent);
+            border-color: var(--blog-accent);
+            color: #fff;
+        }
+
         .blog-rating-stars {
             display: inline-flex;
             flex-direction: row-reverse;
@@ -373,6 +441,7 @@
             align-items: center;
             gap: 10px;
             margin-top: 14px;
+            flex-wrap: wrap;
         }
 
         .blog-like-btn {
@@ -389,6 +458,25 @@
 
         .blog-like-btn.is-liked {
             opacity: 0.7;
+        }
+
+        .blog-comment-translate-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 14px;
+            border: 1px solid rgba(30, 28, 26, 0.12);
+            border-radius: 999px;
+            background: #fff;
+            color: var(--blog-text);
+            font-weight: 600;
+        }
+
+        .blog-comment-translate-note {
+            width: 100%;
+            margin-top: 2px;
+            color: var(--blog-muted);
+            font-size: 0.88rem;
         }
 
         .blog-form-message {
@@ -477,6 +565,8 @@
 
 {% block body %}
     {% set coverImage = blog.imageCouverture ?: ('https://picsum.photos/seed/blog-' ~ blog.id ~ '/1200/900') %}
+    {% set absoluteBlogUrl = absolute_url(path('app_blog_show', {'id': blog.id})) %}
+    {% set pinterestUrl = 'https://www.pinterest.com/pin/create/button/?url=' ~ absoluteBlogUrl|url_encode ~ '&media=' ~ absolute_url(coverImage)|url_encode ~ '&description=' ~ blog.titre|url_encode %}
     {% set readTime = ((blog.contenu|default('')|length / 700)|round(0, 'ceil')) %}
     {% set statusLabel = blog.status ? 'publie' : 'brouillon' %}
     {% if blog.publicationRequested and not blog.status %}
@@ -486,10 +576,13 @@
     <main class="blog-article-page">
         <div class="blog-article-shell">
             <div class="blog-article-topbar">
-                <a class="blog-back-link" href="{{ path('app_blog_index') }}">&larr; Back to blogs</a>
-                {% if blog.status %}
-                    <a class="blog-edit-link" href="{{ path('app_blog_edit', {'id': blog.id}) }}">Edit article</a>
-                {% endif %}
+                <a class="blog-back-link" href="{{ path('app_blog_index') }}">&larr; Retour aux blogs</a>
+                <div class="blog-topbar-actions">
+                    <a class="blog-back-link" href="{{ path('app_blog_vision_board') }}">Vision board ({{ vision_board_count }})</a>
+                    {% if blog.status %}
+                        <a class="blog-edit-link" href="{{ path('app_blog_edit', {'id': blog.id}) }}">Modifier l article</a>
+                    {% endif %}
+                </div>
             </div>
 
             <section class="blog-hero-article">
@@ -500,14 +593,28 @@
                         <p class="blog-article-excerpt">{{ blog.extrait }}</p>
                     {% endif %}
                     <div class="blog-article-meta">
-                        <span>{{ blog.datePublication ? blog.datePublication|date('F d, Y') : (blog.dateCreation ? blog.dateCreation|date('F d, Y') : 'Recently written') }}</span>
-                        <span>{{ readTime > 0 ? readTime : 1 }} min read</span>
-                        <span>{{ blog.authorId ?: 'Vianova traveler' }}</span>
+                        <span>{{ blog.datePublication ? blog.datePublication|date('d/m/Y') : (blog.dateCreation ? blog.dateCreation|date('d/m/Y') : 'Redige recemment') }}</span>
+                        <span>{{ readTime > 0 ? readTime : 1 }} min de lecture</span>
+                        <span>{{ blog.authorId ?: 'Voyageur Vianova' }}</span>
                     </div>
                 </div>
 
                 <div class="blog-hero-media">
-                    <img src="{{ coverImage }}" alt="{{ blog.titre }}">
+                    <a href="{{ pinterestUrl }}" target="_blank" rel="noopener noreferrer" title="Enregistrer cette image sur Pinterest">
+                        <img src="{{ coverImage }}" alt="{{ blog.titre }}">
+                    </a>
+                    <div class="blog-image-tools">
+                        <button
+                            type="button"
+                            class="blog-vision-btn{% if is_in_vision_board %} is-saved{% endif %}"
+                            id="visionBoardToggle"
+                            data-url="{{ path('app_blog_toggle_vision_board', {'id': blog.id}) }}"
+                            data-token="{{ csrf_token('vision_board_' ~ blog.id) }}"
+                        >
+                            {% if is_in_vision_board %}Enregistre dans la vision board{% else %}Ajouter a la vision board{% endif %}
+                        </button>
+                        <a class="blog-pinterest-link" href="{{ pinterestUrl }}" target="_blank" rel="noopener noreferrer">Enregistrer sur Pinterest</a>
+                    </div>
                 </div>
             </section>
 
@@ -515,34 +622,55 @@
                 <article class="blog-article-body">
                     <div class="blog-social-strip">
                         <div class="blog-social-card">
-                            <small>Blog rating</small>
-                            <strong>{{ average_rating }}</strong>
+                            <small>Note moyenne</small>
+                            <strong>{{ average_rating|number_format(1, '.', ' ') }}/5</strong>
                         </div>
                         <div class="blog-social-card">
-                            <small>Blog views</small>
+                            <small>Vues</small>
                             <strong>{{ views_count }}</strong>
                         </div>
                         <div class="blog-social-card">
-                            <small>Community</small>
-                            <strong>{{ comments|length }} comments</strong>
+                            <small>Communaute</small>
+                            <strong>{{ comments|length }} commentaire{{ comments|length > 1 ? 's' : '' }}</strong>
                         </div>
                     </div>
 
+                    <div class="blog-translate-tools">
+                        <select id="blogTranslationLanguage">
+                            <option value="fr">Francais</option>
+                            <option value="en">Anglais</option>
+                            <option value="es">Espagnol</option>
+                            <option value="de">Allemand</option>
+                            <option value="it">Italien</option>
+                            <option value="ar">Arabe</option>
+                        </select>
+                        <button type="button" class="blog-translate-btn" id="blogTranslateButton">Traduire l article</button>
+                        <button type="button" class="blog-translate-reset" id="blogTranslateReset">Texte original</button>
+                    </div>
+                    <div class="blog-form-message" id="blogTranslateMessage"></div>
+
+                    <div
+                        id="blogArticleContent"
+                        data-original-title="{{ blog.titre|e('html_attr') }}"
+                        data-original-excerpt="{{ (blog.extrait ?: '')|e('html_attr') }}"
+                        data-original-content="{{ blog.contenu|e('html_attr') }}"
+                    >
                     {% for paragraph in blog.contenu|split('\n') %}
                         {% if paragraph|trim is not empty %}
                             <p>{{ paragraph|trim }}</p>
                         {% endif %}
                     {% endfor %}
+                    </div>
 
                     <div class="blog-interactions">
                         <section class="blog-panel" id="blog-review-section">
-                            <h2>Community Review</h2>
-                            <p>Post one review with both your comment and your star rating.</p>
+                            <h2>Avis de la communaute</h2>
+                            <p>Publiez un avis avec votre commentaire et votre note.</p>
 
                             {% if current_user_name %}
-                                <div class="blog-interaction-note">Connected as {{ current_user_name }}. Your review will be posted under this name.</div>
+                                <div class="blog-interaction-note">Connecte en tant que {{ current_user_name }}. Votre avis sera publie sous ce nom.</div>
                             {% else %}
-                                <div class="blog-interaction-note">No connected user was detected, so you can still post by entering your name below.</div>
+                                <div class="blog-interaction-note">Aucun utilisateur connecte detecte. Vous pouvez publier en saisissant votre nom ci dessous.</div>
                             {% endif %}
 
                             <form method="post" class="blog-form-stack" id="blogEngageForm" action="{{ path('app_blog_engage', {'id': blog.id}) }}" style="margin-bottom: 22px;">
@@ -550,7 +678,7 @@
                                 {% if current_user_name %}
                                     <input type="text" name="userName" value="{{ current_user_name }}" readonly>
                                 {% else %}
-                                    <input type="text" name="userName" placeholder="Your name" required>
+                                    <input type="text" name="userName" placeholder="Votre nom" required>
                                 {% endif %}
 
                                 <div class="blog-rating-stars">
@@ -560,9 +688,9 @@
                                     {% endfor %}
                                 </div>
 
-                                <textarea name="contenu" placeholder="Write your comment here..." required></textarea>
+                                <textarea name="contenu" placeholder="Ecrivez votre commentaire ici..." required></textarea>
                                 <div class="blog-form-message" id="blogEngageMessage"></div>
-                                <button type="submit" class="blog-submit-btn">Post review</button>
+                                <button type="submit" class="blog-submit-btn">Publier mon avis</button>
                             </form>
 
                             {% if comments is not empty %}
@@ -581,7 +709,7 @@
                                                     {% endfor %}
                                                 </div>
                                             {% endif %}
-                                            <p>{{ comment.contenu }}</p>
+                                            <p data-comment-content>{{ comment.contenu }}</p>
                                             <div class="blog-comment-actions">
                                                 <button
                                                     type="button"
@@ -593,13 +721,23 @@
                                                     <span>♡</span>
                                                     <span data-like-count>{{ comment.likesCount ?: 0 }}</span>
                                                 </button>
+                                                <button
+                                                    type="button"
+                                                    class="blog-comment-translate-btn"
+                                                    data-translate-comment
+                                                    data-original-content="{{ comment.contenu|e('html_attr') }}"
+                                                    data-translated="false"
+                                                >
+                                                    Traduire
+                                                </button>
+                                                <span class="blog-comment-translate-note" data-comment-translate-note></span>
                                             </div>
                                         </article>
                                     {% endfor %}
                                 </div>
                             {% else %}
                                 <div id="blogCommentList" class="blog-comment-list">
-                                    <p>No comments yet. Be the first to react.</p>
+                                    <p>Aucun commentaire pour le moment. Soyez le premier a reagir.</p>
                                 </div>
                             {% endif %}
                         </section>
@@ -608,14 +746,14 @@
 
                 <aside class="blog-article-sidebar">
                     <div class="blog-side-block">
-                        <p class="blog-side-label">Status</p>
+                        <p class="blog-side-label">Statut</p>
                         <span class="blog-side-pill">{{ statusLabel }}</span>
                     </div>
 
                     <div class="blog-side-block">
-                        <p class="blog-side-label">Role access</p>
+                        <p class="blog-side-label">Acces</p>
                         <p class="blog-side-value">
-                            {{ viewer_role == 'ROLE_ADMIN' ? 'Admin moderation enabled' : 'User interaction enabled' }}
+                            {{ viewer_role == 'ROLE_ADMIN' ? 'Moderation administrateur activee' : 'Interactions utilisateurs actives' }}
                         </p>
                     </div>
 
@@ -625,19 +763,19 @@
                     </div>
 
                     <div class="blog-side-block">
-                        <p class="blog-side-label">Created on</p>
+                        <p class="blog-side-label">Cree le</p>
                         <p class="blog-side-value">{{ blog.dateCreation ? blog.dateCreation|date('Y-m-d H:i') : '-' }}</p>
                     </div>
 
                     <div class="blog-side-block">
-                        <p class="blog-side-label">Published on</p>
-                        <p class="blog-side-value">{{ blog.datePublication ? blog.datePublication|date('Y-m-d H:i') : 'Not published yet' }}</p>
+                        <p class="blog-side-label">Publie le</p>
+                        <p class="blog-side-value">{{ blog.datePublication ? blog.datePublication|date('Y-m-d H:i') : 'Pas encore publie' }}</p>
                     </div>
 
                     <div class="blog-side-block">
-                        <p class="blog-side-label">Cover image</p>
+                        <p class="blog-side-label">Image de couverture</p>
                         <p class="blog-side-value">
-                            <a href="{{ coverImage }}" target="_blank" rel="noopener noreferrer">Open image</a>
+                            <a href="{{ coverImage }}" target="_blank" rel="noopener noreferrer">Ouvrir l image</a>
                         </p>
                     </div>
 
@@ -659,6 +797,15 @@
             const messageBox = document.getElementById('blogEngageMessage');
             const commentList = document.getElementById('blogCommentList');
             const averageRatingNode = document.querySelector('.blog-social-card strong');
+            const translateButton = document.getElementById('blogTranslateButton');
+            const resetButton = document.getElementById('blogTranslateReset');
+            const translateMessage = document.getElementById('blogTranslateMessage');
+            const languageSelect = document.getElementById('blogTranslationLanguage');
+            const articleContent = document.getElementById('blogArticleContent');
+            const articleTitle = document.querySelector('.blog-hero-copy h1');
+            const articleExcerpt = document.querySelector('.blog-article-excerpt');
+            const visionBoardToggle = document.getElementById('visionBoardToggle');
+            let currentTranslationLanguage = null;
 
             const renderStars = function (rating) {
                 let stars = '';
@@ -676,6 +823,31 @@
                 messageBox.classList.add('is-visible');
             };
 
+            const showTranslateMessage = function (message) {
+                if (!translateMessage) {
+                    return;
+                }
+                translateMessage.textContent = message;
+                translateMessage.classList.add('is-visible');
+            };
+
+            const renderParagraphs = function (content) {
+                if (!articleContent) {
+                    return;
+                }
+
+                articleContent.innerHTML = '';
+                content.split('\n').forEach(function (paragraph) {
+                    if (!paragraph.trim()) {
+                        return;
+                    }
+
+                    const p = document.createElement('p');
+                    p.textContent = paragraph.trim();
+                    articleContent.appendChild(p);
+                });
+            };
+
             if (engageForm && commentList) {
                 engageForm.addEventListener('submit', async function (event) {
                     event.preventDefault();
@@ -691,11 +863,15 @@
 
                     const payload = await response.json();
                     if (!response.ok) {
-                        showMessage(payload.message || 'Unable to save your review right now.');
+                        showMessage(payload.message || 'Impossible d enregistrer votre avis pour le moment.');
                         return;
                     }
 
-                    showMessage(payload.message || 'Your review has been posted.');
+                    showMessage(payload.message || 'Votre avis a ete publie.');
+
+                    if (payload.moderation && payload.moderation.containsBlockedWords) {
+                        showMessage((payload.message || 'Votre avis a ete publie.') + ' Mots filtres : ' + payload.moderation.matchedTerms.join(', '));
+                    }
 
                     const emptyState = commentList.querySelector('p');
                     if (emptyState && emptyState.parentElement === commentList) {
@@ -710,7 +886,7 @@
                             <span>${payload.comment.createdAt}</span>
                         </div>
                         <div class="blog-review-stars">${renderStars(payload.comment.rating)}</div>
-                        <p>${payload.comment.content}</p>
+                        <p data-comment-content>${payload.comment.content}</p>
                         <div class="blog-comment-actions">
                             <button
                                 type="button"
@@ -722,6 +898,16 @@
                                 <span>♡</span>
                                 <span data-like-count>${payload.comment.likesCount}</span>
                             </button>
+                            <button
+                                type="button"
+                                class="blog-comment-translate-btn"
+                                data-translate-comment
+                                data-original-content="${payload.comment.content.replace(/&/g, '&amp;').replace(/"/g, '&quot;')}"
+                                data-translated="false"
+                            >
+                                Traduire
+                            </button>
+                            <span class="blog-comment-translate-note" data-comment-translate-note></span>
                         </div>
                     `;
 
@@ -735,6 +921,74 @@
                     if (averageRatingNode && payload.stats) {
                         averageRatingNode.textContent = payload.stats.averageRating;
                     }
+                });
+            }
+
+            if (translateButton && languageSelect && articleContent && articleTitle) {
+                translateButton.addEventListener('click', async function () {
+                    showTranslateMessage('Traduction de l article en cours...');
+
+                    const response = await fetch('{{ path('api_blog_translate_article', {'id': blog.id}) }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: JSON.stringify({
+                            target_language: languageSelect.value
+                        })
+                    });
+
+                    const payload = await response.json();
+                    if (!response.ok || !payload.success) {
+                        showTranslateMessage(payload.message || 'La traduction est indisponible pour le moment.');
+                        return;
+                    }
+
+                    articleTitle.textContent = payload.translated.title;
+                    if (articleExcerpt) {
+                        articleExcerpt.textContent = payload.translated.excerpt || '';
+                    }
+                    renderParagraphs(payload.translated.content || '');
+                    currentTranslationLanguage = payload.target_language;
+                    showTranslateMessage('Article traduit en ' + payload.target_language + '.');
+                });
+            }
+
+            if (resetButton && articleContent && articleTitle) {
+                resetButton.addEventListener('click', function () {
+                    articleTitle.textContent = articleContent.dataset.originalTitle || articleTitle.textContent;
+                    if (articleExcerpt) {
+                        articleExcerpt.textContent = articleContent.dataset.originalExcerpt || '';
+                    }
+                    renderParagraphs(articleContent.dataset.originalContent || '');
+                    currentTranslationLanguage = null;
+                    showTranslateMessage('Article original restaure.');
+                });
+            }
+
+            if (visionBoardToggle) {
+                visionBoardToggle.addEventListener('click', async function () {
+                    const formData = new FormData();
+                    formData.append('_token', visionBoardToggle.dataset.token);
+
+                    const response = await fetch(visionBoardToggle.dataset.url, {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    });
+
+                    const payload = await response.json();
+                    if (!response.ok) {
+                        showTranslateMessage(payload.message || 'Impossible de mettre a jour votre vision board.');
+                        return;
+                    }
+
+                    visionBoardToggle.classList.toggle('is-saved', !!payload.saved);
+                    visionBoardToggle.textContent = payload.saved ? 'Enregistre dans la vision board' : 'Ajouter a la vision board';
+                    showTranslateMessage(payload.message || 'Vision board mise a jour.');
                 });
             }
 
@@ -767,6 +1021,66 @@
 
                 button.classList.add('is-liked');
                 button.querySelector('span').textContent = '♥';
+            });
+
+            document.addEventListener('click', async function (event) {
+                const button = event.target.closest('[data-translate-comment]');
+                if (!button) {
+                    return;
+                }
+
+                const card = button.closest('.blog-comment-card');
+                const contentNode = card ? card.querySelector('[data-comment-content]') : null;
+                const noteNode = card ? card.querySelector('[data-comment-translate-note]') : null;
+                const targetLanguage = currentTranslationLanguage || (languageSelect ? languageSelect.value : 'fr');
+
+                if (!contentNode) {
+                    return;
+                }
+
+                if (button.dataset.translated === 'true') {
+                    contentNode.textContent = button.dataset.originalContent || contentNode.textContent;
+                    button.dataset.translated = 'false';
+                    button.textContent = 'Traduire';
+                    if (noteNode) {
+                        noteNode.textContent = 'Commentaire original restaure.';
+                    }
+                    return;
+                }
+
+                button.disabled = true;
+                if (noteNode) {
+                    noteNode.textContent = 'Traduction en cours vers ' + targetLanguage + '...';
+                }
+
+                const response = await fetch('{{ path('api_blog_translate') }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify({
+                        text: button.dataset.originalContent || contentNode.textContent,
+                        target_language: targetLanguage
+                    })
+                });
+
+                const payload = await response.json();
+                button.disabled = false;
+
+                if (!response.ok || !payload.success) {
+                    if (noteNode) {
+                        noteNode.textContent = payload.message || 'Impossible de traduire ce commentaire pour le moment.';
+                    }
+                    return;
+                }
+
+                contentNode.textContent = payload.translated_text || contentNode.textContent;
+                button.dataset.translated = 'true';
+                    button.textContent = 'Original';
+                if (noteNode) {
+                    noteNode.textContent = 'Commentaire traduit vers ' + targetLanguage + '.';
+                }
             });
         })();
     </script>

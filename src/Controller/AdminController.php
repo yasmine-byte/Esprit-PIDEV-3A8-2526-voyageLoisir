@@ -12,6 +12,7 @@ use App\Repository\ChambreRepository;
 use App\Repository\ReservationRepository;
 use App\Repository\RoleRepository;
 use App\Repository\UsersRepository;
+use App\Service\BlogRecommendationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Dompdf\Dompdf;
 use Dompdf\Options;
@@ -202,102 +203,60 @@ class AdminController extends AbstractController
     public function blogs(
         Request $request,
         BlogRepository $blogRepository,
-        BlogViewsRepository $blogViewsRepository,
         CommentaireRepository $commentaireRepository,
-        BlogRatingRepository $blogRatingRepository
+        BlogRecommendationService $blogRecommendationService
     ): Response {
         $search = trim((string) $request->query->get('q', ''));
         $sort = (string) $request->query->get('sort', 'recent');
         $statusFilter = (string) $request->query->get('status', 'all');
-
-        $queryBuilder = $blogRepository->createQueryBuilder('b');
-
-        if ('' !== $search) {
-            $queryBuilder
-                ->andWhere('b.titre LIKE :search OR b.slug LIKE :search OR b.extrait LIKE :search OR b.contenu LIKE :search')
-                ->setParameter('search', '%' . $search . '%');
-        }
-
-        if ('draft' === $statusFilter) {
-            $queryBuilder->andWhere('b.status = :draft OR b.status IS NULL')->setParameter('draft', false);
-        } elseif ('published' === $statusFilter) {
-            $queryBuilder->andWhere('b.status = :published')->setParameter('published', true);
-        } elseif ('pending' === $statusFilter) {
-            $queryBuilder->andWhere('b.publicationRequested = :pending')->setParameter('pending', true);
-        } else {
+        if (!in_array($statusFilter, ['all', 'draft', 'published', 'pending'], true)) {
             $statusFilter = 'all';
         }
-
-        switch ($sort) {
-            case 'oldest':
-                $queryBuilder->orderBy('b.dateCreation', 'ASC')->addOrderBy('b.id', 'ASC');
-                break;
-            case 'title':
-                $queryBuilder->orderBy('b.titre', 'ASC')->addOrderBy('b.id', 'DESC');
-                break;
-            case 'status':
-                $queryBuilder->orderBy('b.status', 'ASC')->addOrderBy('b.publicationRequested', 'DESC')->addOrderBy('b.dateCreation', 'DESC');
-                break;
-            case 'published':
-                $queryBuilder->orderBy('b.datePublication', 'DESC')->addOrderBy('b.id', 'DESC');
-                break;
-            default:
-                $sort = 'recent';
-                $queryBuilder->orderBy('b.dateCreation', 'DESC')->addOrderBy('b.id', 'DESC');
-                break;
+        if (!in_array($sort, ['recent', 'oldest', 'title', 'status', 'published'], true)) {
+            $sort = 'recent';
         }
 
-        $blogs = $queryBuilder->getQuery()->getResult();
-        $allBlogs = $blogRepository->findAll();
-        $allViews = $blogViewsRepository->findAll();
-        $allComments = $commentaireRepository->findAll();
-        $allRatings = $blogRatingRepository->findAll();
+        $blogs = $blogRepository->createAdminListingQueryBuilder($search, $sort, $statusFilter)
+            ->getQuery()
+            ->getResult();
+        $allBlogs = $blogRepository->fetchAdminSummaryData();
+        $blogMetrics = $blogRecommendationService->buildMetrics($blogs);
 
-        $publishedCount = count(array_filter($allBlogs, static fn (Blog $blog) => true === $blog->getStatus()));
-        $draftCount = count(array_filter($allBlogs, static fn (Blog $blog) => true !== $blog->getStatus()));
-        $pendingCount = count(array_filter($allBlogs, static fn (Blog $blog) => true === $blog->isPublicationRequested()));
-        $publishedReadTimes = array_map(
-            static fn (Blog $blog) => max(1, (int) ceil(strlen((string) $blog->getContenu()) / 700)),
-            $allBlogs
-        );
+        $publishedCount = 0;
+        $draftCount = 0;
+        $pendingCount = 0;
+        $publishedReadTimes = [];
+        $highQualityCount = 0;
+
+        foreach ($allBlogs as $blogData) {
+            $isPublished = true === ($blogData['status'] ?? null);
+            $isPending = true === ($blogData['publicationRequested'] ?? null);
+
+            if ($isPublished) {
+                $publishedCount++;
+            } else {
+                $draftCount++;
+            }
+
+            if ($isPending) {
+                $pendingCount++;
+            }
+
+            $publishedReadTimes[] = max(1, (int) ceil(mb_strlen((string) ($blogData['contenu'] ?? '')) / 700));
+
+            if ($this->calculateCompletenessFromData($blogData) >= 80) {
+                $highQualityCount++;
+            }
+        }
+
         $avgReadTime = [] !== $publishedReadTimes ? (int) ceil(array_sum($publishedReadTimes) / count($publishedReadTimes)) : 0;
-        $highQualityCount = count(array_filter($allBlogs, fn (Blog $blog) => $this->calculateCompleteness($blog) >= 80));
 
-        $viewCounts = [];
-        foreach ($allViews as $view) {
-            $blogId = $view->getBlog()?->getId();
-            if (null === $blogId) continue;
-            $viewCounts[$blogId] = ($viewCounts[$blogId] ?? 0) + 1;
-        }
-
-        $commentCounts = [];
-        $commentsByBlog = [];
-        foreach ($allComments as $comment) {
-            $blogId = $comment->getBlog()?->getId();
-            if (null === $blogId) continue;
-            $commentCounts[$blogId] = ($commentCounts[$blogId] ?? 0) + 1;
-            $commentsByBlog[$blogId][] = $comment;
-        }
-
-        $ratingCounts = [];
-        foreach ($allRatings as $rating) {
-            $blogId = $rating->getBlog()?->getId();
-            if (null === $blogId) continue;
-            $ratingCounts[$blogId] = ($ratingCounts[$blogId] ?? 0) + 1;
-        }
-
-        $blogMetrics = [];
         foreach ($blogs as $blog) {
             $blogId = $blog->getId();
             $completeness = $this->calculateCompleteness($blog);
-            $blogMetrics[$blogId] = [
-                'views'         => $viewCounts[$blogId] ?? 0,
-                'comments'      => $commentCounts[$blogId] ?? 0,
-                'ratings'       => $ratingCounts[$blogId] ?? 0,
-                'read_time'     => max(1, (int) ceil(strlen((string) $blog->getContenu()) / 700)),
-                'completeness'  => $completeness,
-                'quality_label' => $completeness >= 80 ? 'Ready' : ($completeness >= 55 ? 'Needs review' : 'Incomplete'),
-            ];
+            $blogMetrics[$blogId]['completeness'] = $completeness;
+            $blogMetrics[$blogId]['quality_label'] = $completeness >= 80 ? 'Ready' : ($completeness >= 55 ? 'Needs review' : 'Incomplete');
+            $blogMetrics[$blogId]['ratings'] = $blogMetrics[$blogId]['rating_count'] ?? 0;
         }
 
         return $this->render('admin/blogs.html.twig', [
@@ -306,7 +265,6 @@ class AdminController extends AbstractController
             'sort'             => $sort,
             'status_filter'    => $statusFilter,
             'blog_metrics'     => $blogMetrics,
-            'comments_by_blog' => $commentsByBlog,
             'stats'            => [
                 'total'          => count($allBlogs),
                 'published'      => $publishedCount,
@@ -314,7 +272,7 @@ class AdminController extends AbstractController
                 'pending'        => $pendingCount,
                 'avg_read_time'  => $avgReadTime,
                 'ready'          => $highQualityCount,
-                'comments_total' => count($allComments),
+                'comments_total' => $commentaireRepository->count([]),
             ],
         ]);
     }
@@ -397,6 +355,18 @@ class AdminController extends AbstractController
         if ($blog->getImageCouverture()) $score += 15;
         if ($blog->getExtrait() && strlen(trim($blog->getExtrait())) >= 40) $score += 20;
         if ($blog->getContenu() && strlen(trim($blog->getContenu())) >= 300) $score += 30;
+        return $score;
+    }
+
+    private function calculateCompletenessFromData(array $blogData): int
+    {
+        $score = 0;
+        if (!empty($blogData['titre'])) $score += 20;
+        if (!empty($blogData['slug'])) $score += 15;
+        if (!empty($blogData['imageCouverture'])) $score += 15;
+        if (!empty($blogData['extrait']) && strlen(trim((string) $blogData['extrait'])) >= 40) $score += 20;
+        if (!empty($blogData['contenu']) && strlen(trim((string) $blogData['contenu'])) >= 300) $score += 30;
+
         return $score;
     }
 }
