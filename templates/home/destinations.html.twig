@@ -86,6 +86,113 @@
     setInterval(function() { goTo((current + 1) % slides.length); }, 7000);
 })();
 </script>
+{# RECHERCHE VOCALE #}
+<div style="margin-bottom:32px;padding:24px;background:#fff;border-radius:16px;border:1px solid #f0f0f0;box-shadow:0 4px 24px rgba(0,0,0,.07)">
+  <h5 class="dd-title" style="margin-bottom:6px">Recherche vocale de destination</h5>
+  <p style="font-size:13px;color:#888;margin-bottom:18px">Parlez pour trouver une destination similaire</p>
+
+  <div id="micBtn" onclick="toggleMic()"
+    style="width:64px;height:64px;border-radius:50%;border:1.5px solid #fed7aa;background:#fff7ed;display:flex;align-items:center;justify-content:center;cursor:pointer;margin:0 auto 1rem;transition:all .2s">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="9" y="2" width="6" height="12" rx="3"/>
+      <path d="M5 10a7 7 0 0 0 14 0"/>
+      <line x1="12" y1="19" x2="12" y2="22"/>
+      <line x1="9" y1="22" x2="15" y2="22"/>
+    </svg>
+  </div>
+
+  <p id="voiceStatus" style="text-align:center;font-size:13px;color:#aaa;margin-bottom:12px">Cliquez sur le micro pour parler</p>
+
+  <div id="voiceTranscript"
+    style="background:#f8fafc;border-radius:10px;padding:12px 16px;min-height:44px;font-size:14px;color:#64748b;margin-bottom:12px;border:1px solid #e8ecf0">
+    Votre message apparaîtra ici…
+  </div>
+
+  <button id="voiceSearchBtn" disabled onclick="runVoiceSearch()"
+    style="width:100%;padding:9px;border:1.5px solid #fed7aa;border-radius:10px;background:#fff7ed;color:#ea6c0a;font-size:14px;font-weight:600;cursor:pointer">
+    Rechercher
+  </button>
+
+  <div id="voiceResults" style="margin-top:14px"></div>
+</div>
+
+<script>
+(function(){
+  var rec=null, tr='', on=false;
+  var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  window.toggleMic=function(){
+    if(!SR){document.getElementById('voiceStatus').textContent='Non supporté sur Chrome/Edge uniquement.';return;}
+    if(on){rec.stop();return;}
+    rec=new SR(); rec.lang='fr-FR'; rec.interimResults=true;
+    rec.onstart=function(){on=true;document.getElementById('micBtn').style.borderColor='#f97316';document.getElementById('micBtn').style.background='#fff3e0';document.getElementById('voiceStatus').textContent='Écoute…';document.getElementById('voiceResults').innerHTML='';document.getElementById('voiceSearchBtn').disabled=true;};
+    rec.onresult=function(e){var f='',i='';for(var x=e.resultIndex;x<e.results.length;x++){var t=e.results[x][0].transcript;e.results[x].isFinal?f+=t:i+=t;}document.getElementById('voiceTranscript').textContent=f||i;if(f)tr=f;};
+    rec.onend=function(){on=false;document.getElementById('micBtn').style.borderColor='#fed7aa';document.getElementById('micBtn').style.background='#fff7ed';document.getElementById('voiceStatus').textContent=tr?'Terminé — cliquez Rechercher':'Rien détecté, réessayez';if(tr)document.getElementById('voiceSearchBtn').disabled=false;};
+    rec.onerror=function(e){on=false;document.getElementById('voiceStatus').textContent='Erreur : '+e.error;};
+    rec.start();
+  };
+  window.runVoiceSearch = function() {
+    if (!tr) return;
+    document.getElementById('voiceSearchBtn').disabled = true;
+    document.getElementById('voiceStatus').textContent = 'Recherche…';
+    document.getElementById('voiceResults').innerHTML = '<p style="text-align:center;color:#aaa;font-size:13px">...</p>';
+
+    fetch('{{ path("app_destination_voice_query") }}', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: tr })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        var html = '';
+
+        // ✅ Destinations disponibles dans le catalogue
+        var dispo = data.disponibles || [];
+        if (dispo.length > 0) {
+            html += '<div style="margin-bottom:10px">'
+                  + '<span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#16a34a">✅ Disponible dans notre catalogue</span>'
+                  + '</div>';
+            dispo.forEach(function(d) {
+                html += '<div style="background:#f0fdf4;border-radius:10px;padding:12px 14px;margin-bottom:8px;border:1px solid #bbf7d0">'
+                    + '<strong style="font-size:14px;color:#0f172a">' + d.nom + '</strong>'
+                    + ' <span style="font-size:12px;color:#888">' + d.pays + ' · ' + (d.saison || '') + '</span>'
+                    + '<p style="font-size:13px;color:#555;margin:6px 0">' + d.description + '</p>'
+                    + (d.activites || []).map(function(a) {
+                        return '<span style="background:#dcfce7;color:#15803d;font-size:11px;padding:3px 8px;border-radius:6px;margin-right:4px;border:1px solid #bbf7d0">' + a + '</span>';
+                    }).join('')
+                    + '<div style="margin-top:8px"><a href="{{ path("app_destination_detail", {"id": 0}) }}'.replace("/0", "/" + d.id) + '" style="font-size:12px;color:#f97316;font-weight:600">Voir la destination →</a></div>'                    + '</div>';
+            });
+        }
+
+        // 🌍 Destination hors catalogue
+        var hors = data.hors_catalogue;
+        if (hors && hors.existe) {
+            html += '<div style="background:#fff7ed;border-radius:10px;padding:14px 16px;margin-bottom:8px;border:1px solid #fed7aa">'
+                  + '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">'
+                  + '<span style="font-size:16px">🌍</span>'
+                  + '<strong style="font-size:14px;color:#0f172a">' + (hors.nom || '') + '</strong>'
+                  + (hors.pays ? '<span style="font-size:12px;color:#888"> · ' + hors.pays + '</span>' : '')
+                  + '</div>'
+                  + '<p style="font-size:13px;color:#ea6c0a;font-style:italic;margin:0 0 8px">' + (hors.message || '') + '</p>'
+                  + '<p style="font-size:13px;color:#555;margin:0 0 6px">' + (hors.infos || '') + '</p>'
+                  + (hors.conseil ? '<div style="background:#fff;border-radius:8px;padding:8px 12px;border:1px solid #fed7aa;font-size:12px;color:#92400e">💡 ' + hors.conseil + '</div>' : '')
+                  + '</div>';
+        }
+
+        if (!html) {
+            html = '<p style="color:#e11d48;font-size:13px;text-align:center">Aucune destination trouvée.</p>';
+        }
+
+        document.getElementById('voiceStatus').textContent =
+            dispo.length + ' dans le catalogue' + (hors && hors.existe ? ' · 1 suggestion mondiale' : '');
+        document.getElementById('voiceResults').innerHTML = html;
+    })
+    .catch(function() {
+        document.getElementById('voiceResults').innerHTML = '<p style="color:#e11d48;font-size:13px;text-align:center">Erreur de connexion.</p>';
+        document.getElementById('voiceSearchBtn').disabled = false;
+    });
+};
+})();
+</script>
 
 {# ===== SECTION DESTINATIONS ===== #}
 <div class="section properties">
@@ -179,6 +286,14 @@
             <li>Saison : <span>{{ destination.meilleureSaison ?? "-" }}</span></li>
             <li>Statut : <span>{{ destination.statut ? "Actif" : "Inactif" }}</span></li>
           </ul>
+          {# ===== LIKE CARTE ===== #}
+          <div style="margin:8px 0">
+              <button onclick="toggleLikeCard({{ destination.id }}, this)"
+                  style="display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:20px;border:1.5px solid #fed7aa;background:#fff7ed;cursor:pointer;font-size:13px;font-weight:600;color:#ea6c0a;transition:all .2s">
+                  <span class="like-icon-{{ destination.id }}">🤍</span>
+                  <span class="like-count-{{ destination.id }}">{{ destination.nbVisites ?? 0 }}</span>
+              </button>
+          </div>
           <div class="main-button">
             <a href="{{ path('app_destination_detail', {'id': destination.id}) }}">Voir les détails</a>
           </div>
@@ -194,5 +309,46 @@
 
   </div>
 </div>
+<script>
+{% for destination in destinations %}
+(function(){
+    var id = {{ destination.id }};
+    fetch('/destination/like-status/' + id)
+        .then(function(r){ return r.json(); })
+        .then(function(data){
+            var icon = document.querySelector('.like-icon-' + id);
+            var count = document.querySelector('.like-count-' + id);
+            if (icon) icon.textContent = data.liked ? '❤️' : '🤍';
+            if (count) count.textContent = data.total;
+            if (data.liked) {
+                var btns = document.querySelectorAll('[onclick*="toggleLikeCard(' + id + '"]');
+                btns.forEach(function(btn){
+                    btn.style.background  = '#fff0f0';
+                    btn.style.borderColor = '#fca5a5';
+                    btn.style.color       = '#e11d48';
+                });
+            }
+        });
+})();
+{% endfor %}
+
+function toggleLikeCard(id, btn) {
+    fetch('/destination/like/' + id, {
+        method: 'POST',
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+        var icon = document.querySelector('.like-icon-' + id);
+        var count = document.querySelector('.like-count-' + id);
+        if (icon) icon.textContent = data.liked ? '❤️' : '🤍';
+        if (count) count.textContent = data.total;
+        btn.style.background  = data.liked ? '#fff0f0' : '#fff7ed';
+        btn.style.borderColor = data.liked ? '#fca5a5' : '#fed7aa';
+        btn.style.color       = data.liked ? '#e11d48' : '#ea6c0a';
+    });
+}
+</script>
+
 
 {% endblock %}
