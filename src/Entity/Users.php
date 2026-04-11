@@ -9,8 +9,11 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\EquatableInterface;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 #[ORM\Entity(repositoryClass: UsersRepository::class)]
+#[UniqueEntity(fields: ['email'], message: 'Cet email est déjà utilisé.')]
 class Users implements UserInterface, PasswordAuthenticatedUserInterface, EquatableInterface
 {
     #[ORM\Id]
@@ -19,32 +22,39 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface, Equata
     private ?int $id = null;
 
     #[ORM\Column(length: 100)]
+    #[Assert\NotBlank(message: 'Le nom est obligatoire.')]
+    #[Assert\Length(min: 2, max: 100, minMessage: 'Le nom doit contenir au moins 2 caractères.')]
+    #[Assert\Regex(pattern: '/^[A-Za-zÀ-ÿ\s]+$/', message: 'Le nom ne doit contenir que des lettres.')]
     private ?string $nom = null;
 
     #[ORM\Column(length: 100)]
+    #[Assert\NotBlank(message: 'Le prénom est obligatoire.')]
+    #[Assert\Length(min: 2, max: 100, minMessage: 'Le prénom doit contenir au moins 2 caractères.')]
+    #[Assert\Regex(pattern: '/^[A-Za-zÀ-ÿ\s]+$/', message: 'Le prénom ne doit contenir que des lettres.')]
     private ?string $prenom = null;
 
     #[ORM\Column(length: 150)]
+    #[Assert\NotBlank(message: "L'email est obligatoire.")]
+    #[Assert\Email(message: "L'adresse email '{{ value }}' n'est pas valide.")]
     private ?string $email = null;
 
     #[ORM\Column(length: 20, nullable: true)]
+    #[Assert\Regex(pattern: '/^[0-9]{8}$/', message: 'Le téléphone doit contenir exactement 8 chiffres.')]
     private ?string $telephone = null;
 
     #[ORM\Column(length: 255)]
     private ?string $passwordHash = null;
 
-    #[ORM\Column(nullable: true)]
-    private ?bool $isActive = null;
+    // FIX : valeur par défaut true pour que tout nouvel utilisateur soit actif
+    #[ORM\Column(name: 'is_active', nullable: true)]
+    private ?bool $isActive = true;
 
-    #[ORM\Column(nullable: true)]
+    #[ORM\Column(name: 'created_at', nullable: true)]
     private ?\DateTime $createdAt = null;
 
-    #[ORM\Column(nullable: true)]
+    #[ORM\Column(name: 'updated_at', nullable: true)]
     private ?\DateTime $updatedAt = null;
 
-    /**
-     * @var Collection<int, Role>
-     */
     #[ORM\ManyToMany(targetEntity: Role::class, inversedBy: 'no', fetch: 'EAGER')]
     #[ORM\JoinTable(
         name: 'users_role',
@@ -55,7 +65,10 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface, Equata
 
     public function __construct()
     {
-        $this->roles = new ArrayCollection();
+        $this->roles     = new ArrayCollection();
+        $this->isActive  = true;
+        $this->createdAt = new \DateTime();
+        $this->updatedAt = new \DateTime();
     }
 
     public function getId(): ?int { return $this->id; }
@@ -84,9 +97,6 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface, Equata
     public function getUpdatedAt(): ?\DateTime { return $this->updatedAt; }
     public function setUpdatedAt(?\DateTime $updatedAt): static { $this->updatedAt = $updatedAt; return $this; }
 
-    /**
-     * @return Collection<int, Role>
-     */
     public function getRolesCollection(): Collection { return $this->roles; }
 
     public function addRole(Role $role): static
@@ -108,7 +118,6 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface, Equata
         return (string) $this->email;
     }
 
-    // ✅ Simplifié — tout utilisateur connecté a ROLE_USER
     public function getRoles(): array
     {
         $roles = ['ROLE_USER'];
@@ -122,9 +131,10 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface, Equata
 
     public function eraseCredentials(): void {}
 
+    // FIX : cast en string pour éviter le retour null qui casse Symfony Security
     public function getPassword(): string
     {
-        return $this->passwordHash;
+        return (string) $this->passwordHash;
     }
 
     public function isEqualTo(UserInterface $user): bool

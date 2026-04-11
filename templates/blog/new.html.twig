@@ -1,11 +1,11 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}New Blog{% endblock %}
+{% block title %}Nouveau blog{% endblock %}
 
 {% block body %}
-    <h1>Create new Blog</h1>
+    <h1>Creer un nouveau blog</h1>
 
     {{ include('blog/_form.html.twig') }}
 
-    <a href="{{ path('app_blog_index') }}">back to list</a>
+    <a href="{{ path('app_blog_index') }}">Retour a la liste</a>
 {% endblock %}

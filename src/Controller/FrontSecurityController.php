@@ -3,7 +3,6 @@
 namespace App\Controller;
 
 use App\Entity\Users;
-use App\Repository\VoyageRepository;
 use App\Repository\UsersRepository;
 use App\Repository\RoleRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -45,30 +44,45 @@ class FrontSecurityController extends AbstractController
         UsersRepository $usersRepository,
         RoleRepository $roleRepository
     ): Response {
-        $nom             = $request->request->get('nom');
-        $prenom          = $request->request->get('prenom');
-        $email           = $request->request->get('email');
-        $telephone       = $request->request->get('telephone');
-        $password        = $request->request->get('password');
-        $confirmPassword = $request->request->get('confirm_password');
+        $nom             = trim($request->request->get('nom', ''));
+        $prenom          = trim($request->request->get('prenom', ''));
+        $email           = trim($request->request->get('email', ''));
+        $telephone       = trim($request->request->get('telephone', ''));
+        $password        = $request->request->get('password', '');
+        $confirmPassword = $request->request->get('confirm_password', '');
 
-        // Validations
+        // ── Validations ──
+        if (empty($nom) || empty($prenom) || empty($email) || empty($password)) {
+            $this->addFlash('register_error', 'Tous les champs obligatoires doivent être remplis.');
+            return $this->redirectToRoute('admin_login');
+        }
+
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $this->addFlash('register_error', "Le format de l'adresse email est invalide.");
+            return $this->redirectToRoute('admin_login');
+        }
+
         if ($password !== $confirmPassword) {
             $this->addFlash('register_error', 'Les mots de passe ne correspondent pas.');
-            return $this->redirectToRoute('app_home');
+            return $this->redirectToRoute('admin_login');
         }
 
         if (strlen($password) < 8) {
             $this->addFlash('register_error', 'Le mot de passe doit contenir au moins 8 caractères.');
-            return $this->redirectToRoute('app_home');
+            return $this->redirectToRoute('admin_login');
+        }
+
+        if (!empty($telephone) && !preg_match('/^[0-9]{8}$/', $telephone)) {
+            $this->addFlash('register_error', 'Le numéro de téléphone doit contenir exactement 8 chiffres.');
+            return $this->redirectToRoute('admin_login');
         }
 
         if ($usersRepository->findOneBy(['email' => $email])) {
-            $this->addFlash('register_error', 'Cet email est déjà utilisé.');
-            return $this->redirectToRoute('app_home');
+            $this->addFlash('register_error', 'Cette adresse email est déjà utilisée.');
+            return $this->redirectToRoute('admin_login');
         }
 
-        // Créer l'utilisateur
+        // ── Créer l'utilisateur avec ROLE_USER par défaut ──
         $user = new Users();
         $user->setNom($nom);
         $user->setPrenom($prenom);
@@ -79,7 +93,7 @@ class FrontSecurityController extends AbstractController
         $user->setUpdatedAt(new \DateTime());
         $user->setPasswordHash($hasher->hashPassword($user, $password));
 
-        // Attribuer ROLE_USER par défaut
+        // Assigner ROLE_USER uniquement
         $roleUser = $roleRepository->findOneBy(['name' => 'ROLE_USER']);
         if ($roleUser) {
             $user->addRole($roleUser);
@@ -89,7 +103,7 @@ class FrontSecurityController extends AbstractController
         $em->flush();
 
         $this->addFlash('register_success', 'Compte créé avec succès ! Vous pouvez maintenant vous connecter.');
-        return $this->redirectToRoute('app_home');
+        return $this->redirectToRoute('admin_login');
     }
 
     #[Route('/profile', name: 'front_profile')]
