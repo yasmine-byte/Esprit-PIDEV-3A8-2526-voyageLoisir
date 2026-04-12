@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Repository;
+use App\Entity\Users;
 
 use App\Entity\Voyage;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
@@ -36,4 +37,13 @@ class VoyageRepository extends ServiceEntityRepository
 
         return $qb->getQuery()->getResult();
     }
+    public function findByReservedUser(Users $user): array
+{
+    return $this->createQueryBuilder('v')
+        ->join('v.reservedByUsers', 'u')
+        ->andWhere('u = :user')
+        ->setParameter('user', $user)
+        ->getQuery()
+        ->getResult();
+}
 }

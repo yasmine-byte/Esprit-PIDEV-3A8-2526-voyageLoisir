@@ -75,16 +75,32 @@ final class DestinationController extends AbstractController
         }
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->persist($destination);
-            $entityManager->flush();
-            return $this->redirectToRoute('app_destination_index', [], Response::HTTP_SEE_OTHER);
-        }
+        $entityManager->persist($destination);
+        $entityManager->flush();
 
-        return $this->render('destination/new.html.twig', [
-            'destination' => $destination,
-            'form'        => $form->createView(),
-        ]);
+        // ✅ Notification WhatsApp CallMeBot
+        $phone  = $_ENV['CALLMEBOT_PHONE'];
+        $apiKey = $_ENV['CALLMEBOT_APIKEY'];
+        $msg    = "🌍 *VoyageLoisir — Nouvelle destination !*\n\n"
+                . "📍 *{$destination->getNom()}* — {$destination->getPays()}\n"
+                . "🌤 Meilleure saison : " . ($destination->getMeilleureSaison() ?? 'N/A') . "\n\n"
+                . "Connectez-vous pour voir les détails.";
+        $url = sprintf(
+            'https://api.callmebot.com/whatsapp.php?phone=%s&text=%s&apikey=%s',
+            urlencode($phone), urlencode($msg), urlencode($apiKey)
+        );
+        $ch = curl_init();
+        curl_setopt_array($ch, [CURLOPT_URL => $url, CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 10, CURLOPT_SSL_VERIFYPEER => false]);
+        curl_exec($ch); curl_close($ch);
+
+        return $this->redirectToRoute('app_destination_index', [], Response::HTTP_SEE_OTHER);
     }
+
+            return $this->render('destination/new.html.twig', [
+                'destination' => $destination,
+                'form'        => $form->createView(),
+            ]);
+        }
 
     // ✅ TOUTES LES ROUTES FIXES AVANT /{id}
 
@@ -280,7 +296,7 @@ If all results are from the catalogue, set hors_catalogue.existe = false.";
         }
         $inactifs = count($destinations) - $actifs;
 
-        // Totaux
+        // Totaux visites & likes
         $totalVisites = 0;
         $totalLikes   = 0;
         foreach ($destinations as $d) {
@@ -299,15 +315,49 @@ If all results are from the catalogue, set hors_catalogue.existe = false.";
             'Hiver'     => $session->get('recherche_saison_Hiver', 0),
         ];
 
-        // Top visites data
+        // ✅ Réservations (via voyages → collection users)
+        $totalReservations     = 0;
+        $reservationsParSaison = ['Printemps' => 0, 'Ete' => 0, 'Automne' => 0, 'Hiver' => 0];
+        $topReservations       = [];
+
+        foreach ($destinations as $d) {
+            $nbRes = 0;
+            foreach ($d->getVoyages() as $voyage) {
+                $nbRes += $voyage->getReservedByUsers()->count();
+            }
+            $totalReservations += $nbRes;
+
+            $s = $d->getMeilleureSaison() ?? '';
+            if (isset($reservationsParSaison[$s])) {
+                $reservationsParSaison[$s] += $nbRes;
+            }
+
+            $topReservations[] = [
+                'nom'    => $d->getNom(),
+                'pays'   => $d->getPays(),
+                'saison' => $d->getMeilleureSaison(),
+                'nbRes'  => $nbRes,
+                'statut' => $d->isStatut(),
+            ];
+        }
+
+        usort($topReservations, fn($a, $b) => $b['nbRes'] - $a['nbRes']);
+        $topReservations = array_slice($topReservations, 0, 5);
+
+        // ✅ Top visites data (avec nbRes inclus pour le tableau classement)
         $topVisitesData = [];
         foreach ($topVisites as $d) {
+            $nbResD = 0;
+            foreach ($d->getVoyages() as $v) {
+                $nbResD += $v->getReservedByUsers()->count();
+            }
             $topVisitesData[] = [
                 'nom'       => $d->getNom(),
                 'pays'      => $d->getPays(),
                 'saison'    => $d->getMeilleureSaison(),
                 'nbVisites' => $d->getNbVisites() ?? 0,
                 'nbLikes'   => $d->getNbLikes()   ?? 0,
+                'nbRes'     => $nbResD,
                 'statut'    => $d->isStatut(),
             ];
         }
@@ -323,19 +373,22 @@ If all results are from the catalogue, set hors_catalogue.existe = false.";
         }
 
         return $this->json([
-            'total'               => count($destinations),
-            'actifs'              => $actifs,
-            'inactifs'            => $inactifs,
-            'totalVisites'        => $totalVisites,
-            'totalLikes'          => $totalLikes,
-            'totalRechercheVocale'=> $totalRechercheVocale,
-            'parPays'             => $parPays,
-            'parSaison'           => $parSaison,
-            'visitesSaison'       => $visitesSaison,
-            'likesSaison'         => $likesSaison,
-            'recherchesSaison'    => $recherchesSaison,
-            'topVisites'          => $topVisitesData,
-            'topLikes'            => $topLikesData,
+            'total'                  => count($destinations),
+            'actifs'                 => $actifs,
+            'inactifs'               => $inactifs,
+            'totalVisites'           => $totalVisites,
+            'totalLikes'             => $totalLikes,
+            'totalRechercheVocale'   => $totalRechercheVocale,
+            'totalReservations'      => $totalReservations,
+            'parPays'                => $parPays,
+            'parSaison'              => $parSaison,
+            'visitesSaison'          => $visitesSaison,
+            'likesSaison'            => $likesSaison,
+            'recherchesSaison'       => $recherchesSaison,
+            'reservationsParSaison'  => $reservationsParSaison,
+            'topVisites'             => $topVisitesData,
+            'topLikes'               => $topLikesData,
+            'topReservations'        => $topReservations,
         ]);
     }
 

@@ -1,6 +1,6 @@
 {% extends "base_front.html.twig" %}
 
-{% block title %}{{ destination.nom }} - VoyageLoisir{% endblock %}
+{% block title %}{{ destination.nom }} — VoyageLoisir{% endblock %}
 
 {% block body %}
 
@@ -12,224 +12,776 @@
 </div>
 
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap');
+
 :root {
-  --c: #f97316;
-  --c-dark: #ea6c0a;
-  --c-light: #fff7ed;
-  --c-border: #fed7aa;
-  --slate: #0f172a;
-  --muted: #64748b;
-  --card-border: #e8ecf0;
-  --shadow-sm: 0 2px 12px rgba(0,0,0,.06);
-  --shadow-md: 0 6px 28px rgba(0,0,0,.09);
-  --radius: 16px;
-  --radius-sm: 10px;
+  --accent: #c8956c;
+  --accent-light: rgba(200,149,108,0.15);
+  --accent-border: rgba(200,149,108,0.3);
+  --dark: #0d0e12;
+  --dark2: #13141a;
+  --dark3: #1a1b22;
+  --text-white: rgba(255,255,255,0.92);
+  --text-muted: rgba(255,255,255,0.42);
+  --text-mid: rgba(255,255,255,0.65);
+  --card-bg: #ffffff;
+  --card-border: #eeece8;
+  --body-text: #2c2b28;
+  --muted-text: #8a8880;
+  --radius: 20px;
+  --radius-sm: 12px;
+  --cream: #f7f5f1;
 }
 
-/* ===== HERO SLIDER ===== */
-.dslide { position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;opacity:0;transition:opacity 1s ease;z-index:0; }
-.dslide.active { opacity:1;z-index:1; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body, html { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(--body-text); }
 
-/* ===== RATING ===== */
-.dd-rating-wrap {
-  display:flex;align-items:center;gap:28px;flex-wrap:wrap;
-  padding:28px 32px;
-  background:#fff;
-  border-radius:20px;
-  border:1px solid var(--card-border);
-  box-shadow:0 8px 32px rgba(249,115,22,.08);
-  margin-bottom:28px;
-  position:relative;
-  overflow:hidden;
-}
-.dd-rating-wrap::before {
-  content:'';position:absolute;top:0;left:0;right:0;height:4px;
-  background:linear-gradient(90deg,#f97316,#fb923c,#fdba74);
-}
-.dd-score-big { font-size:64px;font-weight:900;color:var(--c);line-height:1;letter-spacing:-4px; }
-.dd-score-label { font-size:11px;color:var(--muted);margin-top:6px;font-weight:600;text-transform:uppercase;letter-spacing:1px; }
-.dd-rating-badge {
-  display:inline-flex;align-items:center;gap:6px;
-  padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;
-  margin-right:6px;margin-top:6px;
-}
-.dd-rating-badge.orange { background:var(--c-light);color:var(--c-dark);border:1px solid var(--c-border); }
-.dd-rating-badge.gray { background:#f1f5f9;color:#475569;border:1px solid #e2e8f0; }
-.dd-pills-row { display:flex;border-top:1px solid #f0f4f8;margin-top:20px;padding-top:20px;gap:24px;flex-wrap:wrap; }
-.dd-pill-item { display:flex;flex-direction:column;align-items:flex-start;gap:4px; }
-.dd-pill-val { font-size:22px;font-weight:800;color:var(--slate);line-height:1; }
-.dd-pill-val span { font-size:13px;font-weight:600;color:var(--c);margin-left:4px; }
-.dd-pill-lbl { font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:1px; }
-
-/* ===== DESCRIPTION ===== */
-.dd-desc-card {
-  margin-bottom:32px;padding:32px;
-  background:#fff;border-radius:20px;
-  border:1px solid var(--card-border);
-  box-shadow:0 8px 32px rgba(249,115,22,.06);
-  position:relative;overflow:hidden;
-}
-.dd-desc-card::after {
-  content:'';position:absolute;bottom:0;right:0;
-  width:160px;height:160px;
-  background:radial-gradient(circle,rgba(249,115,22,.06) 0%,transparent 70%);
-  pointer-events:none;
-}
-.dd-country-badge {
-  display:inline-flex;align-items:center;gap:6px;
-  background:linear-gradient(135deg,#fff7ed,#ffedd5);
-  color:var(--c-dark);border:1px solid var(--c-border);
-  border-radius:20px;padding:5px 14px;font-size:12px;font-weight:700;
-  text-transform:uppercase;letter-spacing:1px;margin-bottom:14px;
-}
-.dd-desc-title { font-size:26px;font-weight:800;color:var(--slate);margin:0 0 14px;line-height:1.3; }
-.dd-desc-divider { width:48px;height:4px;background:linear-gradient(90deg,#f97316,#fdba74);border-radius:2px;margin-bottom:18px; }
-.dd-desc-text { color:#4b5563;line-height:1.9;font-size:15px;margin:0; }
-
-/* ===== GALERIE ===== */
-.dd-gallery-item { position:relative;overflow:hidden;border-radius:12px;cursor:pointer;aspect-ratio:4/3; }
-.dd-gallery-item img { width:100%;height:100%;object-fit:cover;transition:transform .45s ease;display:block; }
-.dd-gallery-item:hover img { transform:scale(1.07); }
-.dd-gallery-overlay { position:absolute;inset:0;background:rgba(249,115,22,.35);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .3s; }
-.dd-gallery-item:hover .dd-gallery-overlay { opacity:1; }
-
-/* ===== SIDEBAR STAT CARDS ===== */
-.stat-grid { display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:28px; }
-.stat-card {
-  background:#fff;border-radius:18px;padding:20px 18px;
-  border:1.5px solid #f0f4f8;
-  box-shadow:0 4px 20px rgba(0,0,0,.05);
-  transition:transform .2s,box-shadow .2s;
-  position:relative;overflow:hidden;
-}
-.stat-card:hover { transform:translateY(-3px);box-shadow:0 12px 32px rgba(0,0,0,.1); }
-.stat-card::before { content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:18px 18px 0 0; }
-.stat-card.orange::before { background:linear-gradient(90deg,#f97316,#fdba74); }
-.stat-card.green::before  { background:linear-gradient(90deg,#16a34a,#4ade80); }
-.stat-card.blue::before   { background:linear-gradient(90deg,#3b82f6,#93c5fd); }
-.stat-card.red::before    { background:linear-gradient(90deg,#e11d48,#fb7185); }
-.stat-icon {
-  width:42px;height:42px;border-radius:12px;
-  display:flex;align-items:center;justify-content:center;
-  margin-bottom:14px;
-}
-.stat-icon.orange { background:linear-gradient(135deg,#fff7ed,#ffedd5);border:1px solid #fed7aa; }
-.stat-icon.green  { background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:1px solid #bbf7d0; }
-.stat-icon.blue   { background:linear-gradient(135deg,#eff6ff,#dbeafe);border:1px solid #bfdbfe; }
-.stat-icon.red    { background:linear-gradient(135deg,#fef2f2,#fee2e2);border:1px solid #fecdd3; }
-.stat-val { font-size:16px;font-weight:800;color:var(--slate);margin-bottom:4px;line-height:1.2; }
-.stat-lbl { font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px; }
-.stat-lbl.orange { color:var(--c); }
-.stat-lbl.green  { color:#16a34a; }
-.stat-lbl.blue   { color:#3b82f6; }
-.stat-lbl.red    { color:#e11d48; }
-.stat-lbl.success { color:#16a34a; }
-
-/* ===== SECTION TITLES ===== */
-.section-title {
-  font-size:15px;font-weight:800;color:var(--slate);
-  margin-bottom:20px;padding-left:14px;
-  border-left:4px solid var(--c);
-  line-height:1.3;letter-spacing:-.2px;
+/* ===== HERO ===== */
+.vl-hero {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  min-height: 600px;
+  max-height: 800px;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-end;
 }
 
-/* ===== VOYAGE CARDS ===== */
-.voyage-card {
-  background:#fff;border-radius:20px;overflow:hidden;
-  border:1.5px solid #f0f4f8;
-  box-shadow:0 4px 20px rgba(0,0,0,.06);
-  transition:all .25s;margin-bottom:16px;cursor:pointer;
+.vl-hero-slider { position: absolute; inset: 0; }
+
+.vl-slide {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  opacity: 0;
+  transition: opacity 1.2s ease;
 }
-.voyage-card:hover { box-shadow:0 12px 40px rgba(249,115,22,.18);border-color:var(--c-border);transform:translateY(-3px); }
-.voyage-card-stripe { height:5px;width:100%; }
-.voyage-card-body { padding:20px 22px; }
-.route-box { display:flex;align-items:center;background:#f8fafc;border-radius:14px;padding:16px 18px;margin-bottom:16px;border:1px solid #f0f4f8; }
-.route-city { flex:1;min-width:0; }
-.route-city-name { font-size:15px;font-weight:800;color:var(--slate);white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
-.route-city-date { font-size:11px;color:var(--c);font-weight:600;margin-top:3px; }
-.route-arrow { display:flex;flex-direction:column;align-items:center;padding:0 12px;flex-shrink:0; }
-.route-line { display:flex;align-items:center;gap:0; }
-.route-dot { width:6px;height:6px;border-radius:50%;background:var(--c); }
-.route-seg { width:26px;height:2px;background:linear-gradient(90deg,var(--c),#fdba74); }
-.route-icon { font-size:16px;margin:0 3px; }
-.route-dur { font-size:10px;font-weight:700;color:var(--c);margin-top:5px;background:var(--c-light);padding:2px 8px;border-radius:10px; }
-.transport-badge { display:inline-flex;align-items:center;gap:4px;background:#f1f5f9;color:#475569;border-radius:20px;padding:4px 12px;font-size:11px;font-weight:600;border:1px solid #e2e8f0; }
-.conv-btn { padding:3px 10px;border-radius:20px;border:1px solid rgba(255,255,255,.25);color:#fff;font-size:10px;cursor:pointer;transition:all .2s; }
 
-/* ===== TICKET STYLE ===== */
-.ticket-card { position:relative;border-radius:20px;overflow:hidden;min-height:220px;cursor:pointer;transition:transform .3s,box-shadow .3s;margin-bottom:16px; }
-.ticket-card:hover { transform:translateY(-5px);box-shadow:0 24px 60px rgba(0,0,0,.4); }
-.ticket-bg { position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:brightness(.52) saturate(1.15);transition:transform .5s; }
-.ticket-card:hover .ticket-bg { transform:scale(1.06); }
-.ticket-overlay { position:absolute;inset:0;background:linear-gradient(160deg,rgba(0,0,0,.05) 0%,rgba(0,0,0,.65) 100%); }
-.ticket-inner { position:relative;z-index:2;padding:22px 22px 18px;height:100%;display:flex;flex-direction:column;justify-content:space-between; }
-.ticket-notch { position:absolute;top:50%;width:22px;height:22px;border-radius:50%;background:#f5f5f5;z-index:3; }
-.ticket-notch.left  { left:-11px;transform:translateY(-50%); }
-.ticket-notch.right { right:-11px;transform:translateY(-50%); }
+.vl-slide.active { opacity: 1; }
 
-/* ===== METEO ===== */
-.meteo-card { background:#fff;border-radius:12px;padding:16px 10px;text-align:center;border:1px solid #e8ecf4;transition:box-shadow .2s,transform .2s; }
-.meteo-card:hover { box-shadow:0 8px 24px rgba(249,115,22,.14);transform:translateY(-3px); }
-.meteo-btn { padding:7px 16px;border-radius:20px;border:1.5px solid #e2e8f0;background:#fff;color:#64748b;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s; }
-.meteo-btn.active,.meteo-btn:hover { background:var(--c);color:#fff;border-color:var(--c);box-shadow:0 4px 14px rgba(249,115,22,.3); }
+.vl-hero-veil {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(to top, rgba(10,9,8,0.96) 0%, rgba(10,9,8,0.6) 40%, rgba(10,9,8,0.15) 100%),
+    linear-gradient(to right, rgba(10,9,8,0.4) 0%, transparent 60%);
+  z-index: 1;
+}
 
-/* ===== MAP BUTTONS ===== */
-.map-btn { padding:7px 16px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;border:1.5px solid #d1d5db;background:#fff;color:#6b7280;white-space:nowrap; }
-.map-btn.active,.map-btn:hover { background:var(--c);color:#fff;border-color:var(--c);box-shadow:0 4px 14px rgba(249,115,22,.28); }
+.vl-hero-content {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  padding: 0 80px 72px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: flex-end;
+  gap: 60px;
+}
+
+.vl-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 24px;
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.vl-breadcrumb a { color: var(--text-muted); text-decoration: none; transition: color 0.2s; }
+.vl-breadcrumb a:hover { color: var(--accent); }
+.vl-breadcrumb-sep { opacity: 0.3; }
+
+.vl-hero-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--accent-light);
+  border: 1px solid var(--accent-border);
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  padding: 6px 16px;
+  border-radius: 30px;
+  margin-bottom: 20px;
+}
+
+.vl-hero-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(52px, 7vw, 96px);
+  font-weight: 300;
+  color: var(--text-white);
+  line-height: 0.95;
+  letter-spacing: -2px;
+  margin-bottom: 28px;
+}
+.vl-hero-title em { font-style: italic; color: var(--accent); }
+
+.vl-hero-desc {
+  font-size: 15px;
+  font-weight: 300;
+  color: var(--text-mid);
+  line-height: 1.8;
+  max-width: 520px;
+  margin-bottom: 36px;
+}
+
+.vl-hero-meta { display: flex; align-items: center; gap: 0; }
+
+.vl-meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-right: 28px;
+  margin-right: 28px;
+  border-right: 1px solid rgba(255,255,255,0.12);
+}
+.vl-meta-item:last-child { border-right: none; margin-right: 0; padding-right: 0; }
+.vl-meta-val { font-size: 18px; font-weight: 500; color: var(--text-white); line-height: 1; }
+.vl-meta-key { font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-muted); }
+
+.vl-hero-score { text-align: right; }
+.vl-score-num {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 88px;
+  font-weight: 300;
+  color: var(--text-white);
+  line-height: 1;
+  letter-spacing: -4px;
+}
+.vl-score-sub { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); margin-top: 4px; }
+.vl-stars { display: flex; justify-content: flex-end; gap: 4px; margin-top: 10px; }
+.vl-star { width: 14px; height: 14px; fill: var(--accent); }
+.vl-star.empty { fill: rgba(255,255,255,0.15); }
+
+.vl-dots { position: absolute; bottom: 32px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; z-index: 3; }
+.vl-dot { width: 6px; height: 6px; border-radius: 3px; background: rgba(255,255,255,0.25); cursor: pointer; transition: all 0.3s; }
+.vl-dot.active { width: 24px; background: var(--accent); }
+
+/* ===== TRANSLATE BAR ===== */
+.vl-trad-bar {
+  position: sticky;
+  top: 0;
+  z-index: 500;
+  background: rgba(247,245,241,0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--card-border);
+  padding: 10px 80px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+#pt-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  background: var(--card-bg);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--card-border);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.1);
+  min-width: 190px;
+  overflow: hidden;
+  z-index: 600;
+  display: none;
+}
+#pt-dropdown.open { display: block; }
+
+.pt-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  font-size: 13px;
+  color: var(--body-text);
+  cursor: pointer;
+  transition: background 0.15s;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+}
+.pt-option:hover, .pt-option.active { background: var(--accent-light); color: var(--accent); }
+
+/* ===== LAYOUT PRINCIPAL — 2 colonnes ===== */
+.vl-main {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 60px 80px 0;
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 40px;
+  align-items: start;
+}
+
+/* ===== CARDS ===== */
+.vl-card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  padding: 36px 40px;
+  margin-bottom: 24px;
+}
+
+.vl-section-label {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 10px;
+}
+
+.vl-section-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 30px;
+  font-weight: 400;
+  color: var(--body-text);
+  margin-bottom: 16px;
+  line-height: 1.2;
+}
+
+.vl-section-divider { width: 40px; height: 1px; background: var(--accent); margin-bottom: 20px; opacity: 0.5; }
+.vl-section-text { font-size: 15px; font-weight: 300; color: var(--muted-text); line-height: 1.9; }
+
+/* ===== GALERIE PLEIN ÉCRAN ===== */
+.vl-fullwidth-section {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 0 80px;
+}
+
+.vl-fullwidth-card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  padding: 48px 52px;
+  margin-bottom: 32px;
+}
+
+/* Galerie masonry plein écran */
+.vl-gallery-full {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-auto-rows: 240px;
+  gap: 12px;
+  margin-top: 28px;
+}
+
+.vl-gallery-full .vl-gallery-item:nth-child(1) { grid-column: span 2; grid-row: span 2; }
+.vl-gallery-full .vl-gallery-item:nth-child(5) { grid-column: span 2; }
+
+.vl-gallery-item {
+  position: relative;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.vl-gallery-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.vl-gallery-item:hover img { transform: scale(1.06); }
+
+.vl-gallery-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(200,149,108,0.25);
+  opacity: 0;
+  transition: opacity 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.vl-gallery-item:hover .vl-gallery-overlay { opacity: 1; }
+
+/* ===== METEO PLEIN ÉCRAN ===== */
+.vl-meteo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.vl-meteo-card {
+  background: #f9f8f5;
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-sm);
+  padding: 20px 14px;
+  text-align: center;
+  transition: all 0.2s;
+}
+
+.vl-meteo-card:hover {
+  border-color: var(--accent-border);
+  background: var(--accent-light);
+}
+
+/* ===== YOUTUBE PLEIN ÉCRAN ===== */
+.vl-yt-fullwidth {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 40px;
+  align-items: start;
+  margin-top: 24px;
+}
+
+.vl-video-wrap {
+  position: relative;
+  padding-bottom: 56.25%;
+  height: 0;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.vl-video-wrap iframe,
+.vl-video-wrap video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* ===== ITINÉRAIRE ===== */
+.vl-itin-btns { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 6px; }
+
+.vl-btn-itin {
+  padding: 10px 26px;
+  border-radius: 30px;
+  border: 1px solid var(--accent-border);
+  background: transparent;
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  transition: all 0.2s;
+}
+
+.vl-btn-itin:hover { background: var(--accent); color: white; border-color: var(--accent); }
+
+/* ===== MODAL ITINÉRAIRE ===== */
+#modal-itineraire {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(10,9,8,0.82);
+  backdrop-filter: blur(8px);
+  z-index: 9999;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+#modal-inner {
+  background: #13141a;
+  border-radius: var(--radius);
+  width: 100%;
+  max-width: 960px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.itin-day-card {
+  background: #1a1b22;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  margin-bottom: 14px;
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+.itin-day-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 24px;
+  background: rgba(200,149,108,0.1);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.itin-day-num {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 32px;
+  font-weight: 300;
+  color: var(--accent);
+  line-height: 1;
+  min-width: 44px;
+}
+
+.itin-day-title { font-size: 15px; font-weight: 500; color: rgba(255,255,255,0.9); }
+.itin-slots { padding: 8px 24px 16px; }
+
+.itin-slot {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.itin-slot:last-child { border-bottom: none; }
+
+.itin-slot-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.itin-slot-lbl { font-size: 10px; font-weight: 500; letter-spacing: 1.5px; text-transform: uppercase; color: var(--accent); margin-bottom: 4px; }
+.itin-slot-txt { font-size: 13px; color: rgba(255,255,255,0.55); line-height: 1.7; }
+
+/* ===== VOYAGE BTN ===== */
+.vl-voyage-btn {
+  padding: 7px 16px;
+  border-radius: 20px;
+  border: 1px solid var(--card-border);
+  background: white;
+  color: var(--muted-text);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  transition: all 0.2s;
+}
+.vl-voyage-btn.active, .vl-voyage-btn:hover { background: var(--accent); color: white; border-color: var(--accent); }
+
+/* ===== MAP ===== */
+.vl-map-btn {
+  padding: 7px 16px;
+  border-radius: 20px;
+  border: 1px solid var(--card-border);
+  background: white;
+  color: var(--muted-text);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.vl-map-btn.active, .vl-map-btn:hover { background: var(--accent); color: white; border-color: var(--accent); }
+
+/* ===== SIDEBAR ===== */
+.vl-stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.vl-stat {
+  background: #f9f8f5;
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-sm);
+  padding: 18px 16px;
+}
+
+.vl-stat-val { font-size: 17px; font-weight: 500; color: var(--body-text); margin-bottom: 4px; line-height: 1.2; }
+.vl-stat-key { font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted-text); }
+
+/* ===== TICKET ===== */
+.vl-ticket {
+  position: relative;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  min-height: 200px;
+  margin-bottom: 14px;
+  cursor: pointer;
+  transition: transform 0.3s;
+}
+.vl-ticket:hover { transform: translateY(-4px); }
+
+.vl-ticket-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: brightness(0.45) saturate(1.1);
+  transition: transform 0.5s;
+}
+.vl-ticket:hover .vl-ticket-bg { transform: scale(1.05); }
+
+.vl-ticket-veil {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(160deg, rgba(0,0,0,0.05), rgba(0,0,0,0.7));
+}
+
+.vl-ticket-notch { position: absolute; top: 50%; width: 20px; height: 20px; border-radius: 50%; background: var(--cream); z-index: 2; }
+.vl-ticket-notch.l { left: -10px; transform: translateY(-50%); }
+.vl-ticket-notch.r { right: -10px; transform: translateY(-50%); }
+
+.vl-ticket-inner {
+  position: relative;
+  z-index: 3;
+  padding: 22px 22px 18px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.vl-ticket-route {
+  display: flex;
+  align-items: center;
+  background: rgba(255,255,255,0.1);
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin: 12px 0;
+  gap: 10px;
+}
+
+.vl-ticket-city { flex: 1; font-size: 15px; font-weight: 500; color: white; text-transform: uppercase; letter-spacing: 0.5px; }
+.vl-ticket-city-date { font-size: 10px; color: rgba(255,255,255,0.45); margin-top: 3px; font-weight: 400; text-transform: none; letter-spacing: 0; }
+.vl-ticket-arr { text-align: right; }
+.vl-ticket-line { display: flex; align-items: center; gap: 0; flex: 0; }
+.vl-ticket-dot { width: 5px; height: 5px; border-radius: 50%; background: rgba(255,255,255,0.4); }
+.vl-ticket-seg { width: 22px; height: 1px; background: rgba(255,255,255,0.25); }
+
+.vl-conv-btn {
+  padding: 3px 10px;
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.2);
+  background: rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.7);
+  font-size: 10px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  transition: all 0.2s;
+}
+.vl-conv-btn.active { background: rgba(255,255,255,0.25); font-weight: 700; }
+
+.vl-reserve-btn {
+  display: block;
+  width: 100%;
+  padding: 11px;
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  margin-top: 14px;
+  font-family: 'DM Sans', sans-serif;
+  transition: all 0.2s;
+  text-align: center;
+  text-decoration: none;
+}
+.vl-reserve-btn:hover { background: #b8845a; color: white; }
 
 /* ===== SHARE CARD ===== */
-.share-card { background:#fff;border-radius:20px;border:1px solid var(--card-border);padding:24px;text-align:center;box-shadow:0 8px 32px rgba(249,115,22,.06); }
-.btn-primary { display:block;padding:14px 20px;background:linear-gradient(135deg,#f97316,#ea6c0a);color:#fff;border-radius:12px;font-size:14px;font-weight:700;text-align:center;text-decoration:none;box-shadow:0 6px 20px rgba(249,115,22,.35);transition:transform .2s,box-shadow .2s; }
-.btn-primary:hover { transform:translateY(-2px);box-shadow:0 10px 28px rgba(249,115,22,.45);color:#fff; }
-.btn-secondary { display:block;padding:12px 20px;background:#fff;color:var(--muted);border:1.5px solid #e2e8f0;border-radius:12px;font-size:13px;font-weight:600;text-align:center;text-decoration:none;transition:all .2s; }
-.btn-secondary:hover { border-color:var(--c-border);color:var(--c);background:var(--c-light); }
+.vl-share-card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  padding: 28px 32px;
+  text-align: center;
+  margin-top: 4px;
+}
 
-/* ===== TRAD BAR ===== */
-#pt-dropdown { position:absolute;top:calc(100% + 6px);left:0;background:#fff;border-radius:12px;border:1px solid #e2e8f0;box-shadow:0 8px 30px rgba(0,0,0,.12);min-width:180px;overflow:hidden;z-index:600;display:none; }
-#pt-dropdown.open { display:block; }
-.pt-option { display:flex;align-items:center;gap:10px;padding:10px 16px;font-size:13px;font-weight:600;color:#374151;cursor:pointer;transition:background .15s;border:none;background:none;width:100%;text-align:left; }
-.pt-option:hover,.pt-option.active { background:#fff7ed;color:#f97316; }
+.vl-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--muted-text);
+  text-decoration: none;
+  margin-top: 16px;
+  transition: color 0.2s;
+}
+.vl-back:hover { color: var(--accent); }
 
-/* ===== ANIMATIONS ===== */
-@keyframes modalIn { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
-@keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
-.fade-up { animation:fadeUp .5s ease both; }
+/* ===== SECTION SEPARATOR ===== */
+.vl-sep {
+  max-width: 1320px;
+  margin: 0 auto 40px;
+  padding: 0 80px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+.vl-sep-line { flex: 1; height: 1px; background: var(--card-border); }
+.vl-sep-label {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--accent);
+  white-space: nowrap;
+}
+
+/* ===== BOTTOM PADDING ===== */
+.vl-page-bottom { padding-bottom: 100px; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.fade-up { animation: fadeUp 0.6s ease both; }
 </style>
 
-{# HERO #}
-<div style="position:relative;width:100%;height:520px;overflow:hidden;background:#222">
-  {% if destination.images|length > 0 %}
-    {% for image in destination.images %}
-      <img src="{{ asset(image.urlImage) }}" alt="{{ destination.nom }}" class="dslide{% if loop.first %} active{% endif %}">
-    {% endfor %}
-  {% else %}
-    <img src="{{ asset("assets_front/images/images/single-property.jpg") }}" alt="{{ destination.nom }}" class="dslide active">
-  {% endif %}
-  <div style="position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,0.15) 0%,rgba(0,0,0,0.7) 100%);z-index:2"></div>
-  <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px;z-index:3">
-    <span style="display:inline-block;background:rgba(255,255,255,.15);backdrop-filter:blur(6px);color:#fff;font-size:12px;font-weight:700;letter-spacing:3px;text-transform:uppercase;margin-bottom:18px;padding:7px 20px;border-radius:20px;border:1px solid rgba(255,255,255,.3)">{{ destination.pays }}</span>
-    <h1 style="color:#fff;font-size:54px;font-weight:800;margin-bottom:14px;text-shadow:0 3px 12px rgba(0,0,0,0.5);letter-spacing:-.5px">{{ destination.nom }}</h1>
-    <p style="color:rgba(255,255,255,0.85);font-size:17px;max-width:520px;margin-bottom:0">{{ destination.meilleureSaison ? "✦ Meilleure saison : " ~ destination.meilleureSaison : "" }}</p>
-    <div style="margin-top:24px;display:flex;align-items:center;gap:8px">
-      <a href="{{ path("app_destinations") }}" style="color:rgba(255,255,255,0.65);font-size:13px;text-decoration:none;transition:color .2s">Accueil</a>
-      <span style="color:rgba(255,255,255,0.35);font-size:10px">●</span>
-      <a href="{{ path("app_destinations") }}" style="color:rgba(255,255,255,0.65);font-size:13px;text-decoration:none">Destinations</a>
-      <span style="color:rgba(255,255,255,0.35);font-size:10px">●</span>
-      <span style="color:#f97316;font-size:13px;font-weight:600">{{ destination.nom }}</span>
+{# ===== HERO ===== #}
+<div class="vl-hero">
+  <div class="vl-hero-slider">
+    {% if destination.images|length > 0 %}
+      {% for image in destination.images %}
+        <img src="{{ asset(image.urlImage) }}" alt="{{ destination.nom }}" class="vl-slide{% if loop.first %} active{% endif %}">
+      {% endfor %}
+    {% else %}
+      <img src="{{ asset('assets_front/images/images/single-property.jpg') }}" alt="{{ destination.nom }}" class="vl-slide active">
+    {% endif %}
+  </div>
+  <div class="vl-hero-veil"></div>
+
+  <div class="vl-hero-content fade-up">
+    <div>
+      <div class="vl-breadcrumb">
+        <a href="{{ path('app_destinations') }}">Accueil</a>
+        <span class="vl-breadcrumb-sep">—</span>
+        <a href="{{ path('app_destinations') }}">Destinations</a>
+        <span class="vl-breadcrumb-sep">—</span>
+        <span style="color: var(--text-mid)">{{ destination.nom }}</span>
+      </div>
+
+      <div class="vl-hero-tag">
+        <span style="width:5px;height:5px;border-radius:50%;background:var(--accent);display:inline-block;flex-shrink:0"></span>
+        {{ destination.pays }}
+      </div>
+
+      <h1 class="vl-hero-title">
+        {% set words = destination.nom|split(' ') %}
+        {% if words|length > 1 %}
+          {{ words[0] }} <em>{{ words[1:]|join(' ') }}</em>
+        {% else %}
+          <em>{{ destination.nom }}</em>
+        {% endif %}
+      </h1>
+
+      <p class="vl-hero-desc">{{ destination.description|slice(0, 160) }}{% if destination.description|length > 160 %}…{% endif %}</p>
+
+      <div class="vl-hero-meta">
+        <div class="vl-meta-item">
+          <div class="vl-meta-val">{{ destination.nbVisites ?? 0 }}</div>
+          <div class="vl-meta-key">Visites</div>
+        </div>
+        {% if destination.meilleureSaison %}
+        <div class="vl-meta-item">
+          <div class="vl-meta-val">{{ destination.meilleureSaison }}</div>
+          <div class="vl-meta-key">Meilleure saison</div>
+        </div>
+        {% endif %}
+        <div class="vl-meta-item">
+          <div class="vl-meta-val" style="color: {% if destination.statut %}#7ec99a{% else %}#e07070{% endif %}">
+            {{ destination.statut ? 'Actif' : 'Inactif' }}
+          </div>
+          <div class="vl-meta-key">Statut</div>
+        </div>
+        <div class="vl-meta-item">
+          <div class="vl-meta-val">{{ destination.nbLikes ?? 0 }}</div>
+          <div class="vl-meta-key">J'aime</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="vl-hero-score">
+      {% set note_visites = 0 %}
+      {% if destination.nbVisites >= 10000 %}{% set note_visites = 2.5 %}
+      {% elseif destination.nbVisites >= 5000 %}{% set note_visites = 2 %}
+      {% elseif destination.nbVisites >= 2000 %}{% set note_visites = 1.5 %}
+      {% elseif destination.nbVisites >= 1000 %}{% set note_visites = 1 %}
+      {% elseif destination.nbVisites >= 500 %}{% set note_visites = 0.5 %}{% endif %}
+      {% set note_saison = 0 %}
+      {% if destination.meilleureSaison == "Ete" %}{% set note_saison = 2.5 %}
+      {% elseif destination.meilleureSaison == "Printemps" %}{% set note_saison = 2 %}
+      {% elseif destination.meilleureSaison == "Automne" %}{% set note_saison = 1.5 %}
+      {% elseif destination.meilleureSaison == "Hiver" %}{% set note_saison = 1 %}{% endif %}
+      {% set note_jaimes = 0 %}
+      {% if destination.nbLikes >= 50 %}{% set note_jaimes = 1 %}
+      {% elseif destination.nbLikes >= 20 %}{% set note_jaimes = 0.75 %}
+      {% elseif destination.nbLikes >= 10 %}{% set note_jaimes = 0.5 %}
+      {% elseif destination.nbLikes >= 5 %}{% set note_jaimes = 0.25 %}
+      {% elseif destination.nbLikes >= 1 %}{% set note_jaimes = 0.1 %}{% endif %}
+      {% set note_totale = note_visites + note_saison + note_jaimes %}
+      {% if note_totale > 5 %}{% set note_totale = 5 %}{% endif %}
+      {% set etoiles_pleines = note_totale|round(0, 'floor') %}
+      {% set demi_etoile = ((note_totale - etoiles_pleines) >= 0.5) ? 1 : 0 %}
+      {% set etoiles_vides = 5 - etoiles_pleines - demi_etoile %}
+
+      <div class="vl-score-num">{{ note_totale|number_format(1) }}</div>
+      <div class="vl-score-sub">/ 5 · Note globale</div>
+      <div class="vl-stars">
+        {% for i in 1..etoiles_pleines %}
+          <svg class="vl-star" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        {% endfor %}
+        {% if demi_etoile %}
+          <svg class="vl-star" viewBox="0 0 24 24"><defs><linearGradient id="h2"><stop offset="50%" stop-color="#c8956c"/><stop offset="50%" stop-color="rgba(255,255,255,0.15)"/></linearGradient></defs><path fill="url(#h2)" d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        {% endif %}
+        {% for i in 1..etoiles_vides %}
+          <svg class="vl-star empty" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        {% endfor %}
+      </div>
     </div>
   </div>
-  <div style="position:absolute;bottom:24px;left:50%;transform:translateX(-50%);display:flex;gap:8px;z-index:4" id="detail-dots"></div>
+
+  <div class="vl-dots" id="vl-dots"></div>
 </div>
+
 <script>
-(function(){var cur=0,timer=null;function init(){var slides=document.querySelectorAll(".dslide"),dc=document.getElementById("detail-dots");if(!slides||slides.length<=1)return;var dots=[];for(var i=0;i<slides.length;i++){(function(idx){var d=document.createElement("div");d.style.cssText="width:10px;height:10px;border-radius:50%;cursor:pointer;transition:all 0.3s;background:"+(idx===0?"#f97316":"rgba(255,255,255,0.4)");d.addEventListener("click",function(){go(idx,slides,dots)});dc.appendChild(d);dots.push(d);})(i);}timer=setInterval(function(){go((cur+1)%slides.length,slides,dots);},7000);function go(i,sl,dt){sl[cur].classList.remove("active");dt[cur].style.background="rgba(255,255,255,0.4)";dt[cur].style.width="10px";cur=i;sl[cur].classList.add("active");dt[cur].style.background="#f97316";dt[cur].style.width="24px";dt[cur].style.borderRadius="5px";clearInterval(timer);timer=setInterval(function(){go((cur+1)%sl.length,sl,dt);},7000);}}if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",init);}else{init();}})();
+(function(){
+  var cur=0, timer=null;
+  var slides=document.querySelectorAll('.vl-slide');
+  var dotsEl=document.getElementById('vl-dots');
+  if(!slides||slides.length<=1) return;
+  var dots=[];
+  for(var i=0;i<slides.length;i++){
+    (function(idx){
+      var d=document.createElement('div');
+      d.className='vl-dot'+(idx===0?' active':'');
+      d.onclick=function(){go(idx);};
+      dotsEl.appendChild(d);
+      dots.push(d);
+    })(i);
+  }
+  function go(i){
+    slides[cur].classList.remove('active');dots[cur].classList.remove('active');
+    cur=i;slides[cur].classList.add('active');dots[cur].classList.add('active');
+    clearInterval(timer);timer=setInterval(function(){go((cur+1)%slides.length);},7000);
+  }
+  timer=setInterval(function(){go((cur+1)%slides.length);},7000);
+})();
 </script>
 
-{# TRAD BAR #}
-<div id="page-trad-bar" style="background:#fff;border-bottom:1px solid #f0f0f0;padding:10px 24px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:500;box-shadow:0 2px 10px rgba(0,0,0,.06)">
+{# ===== BARRE DE TRADUCTION ===== #}
+<div class="vl-trad-bar">
   <div style="position:relative">
-    <button id="pt-toggle-btn" onclick="toggleDropdown()" style="display:flex;align-items:center;gap:8px;padding:8px 16px;border-radius:10px;border:1.5px solid #fed7aa;background:#fff7ed;color:#ea6c0a;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s">
-      <span id="pt-flag">🌍</span><span id="pt-label">Traduire la page</span>
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+    <button id="pt-toggle-btn" onclick="toggleDropdown()" style="display:flex;align-items:center;gap:8px;padding:8px 18px;border-radius:30px;border:1px solid var(--accent-border);background:transparent;color:var(--accent);font-size:12px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:0.5px">
+      <span id="pt-flag">🌍</span>
+      <span id="pt-label">Traduire la page</span>
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
     </button>
     <div id="pt-dropdown">
       <button class="pt-option" data-lang="en" onclick="choisirLang('en','🇬🇧','English')">🇬🇧 English</button>
@@ -240,518 +792,511 @@
       <button class="pt-option" data-lang="tr" onclick="choisirLang('tr','🇹🇷','Türkçe')">🇹🇷 Türkçe</button>
       <button class="pt-option" data-lang="zh" onclick="choisirLang('zh','🇨🇳','中文')">🇨🇳 中文</button>
       <button class="pt-option" data-lang="ja" onclick="choisirLang('ja','🇯🇵','日本語')">🇯🇵 日本語</button>
-      <div style="border-top:1px solid #f0f0f0;margin:4px 0"></div>
+      <div style="border-top:1px solid var(--card-border);margin:4px 0"></div>
       <button class="pt-option" onclick="restaurerPage();fermerDropdown()">↺ Original (Français)</button>
     </div>
   </div>
-  <span id="pt-status" style="font-size:12px;color:#f97316;font-weight:600;display:none"></span>
+  <span id="pt-status" style="font-size:12px;color:var(--accent);font-weight:500;display:none"></span>
 </div>
+
 <script>
 function toggleDropdown(){document.getElementById('pt-dropdown').classList.toggle('open');}
 function fermerDropdown(){document.getElementById('pt-dropdown').classList.remove('open');}
 function choisirLang(lang,flag,label){fermerDropdown();document.getElementById('pt-flag').textContent=flag;document.getElementById('pt-label').textContent=label;document.querySelectorAll('.pt-option').forEach(function(b){b.classList.remove('active');});var opt=document.querySelector('.pt-option[data-lang="'+lang+'"]');if(opt)opt.classList.add('active');traduirePage(lang);}
-document.addEventListener('click',function(e){if(!e.target.closest('#page-trad-bar'))fermerDropdown();});
+document.addEventListener('click',function(e){if(!e.target.closest('.vl-trad-bar'))fermerDropdown();});
 </script>
+
 <script>
-(function(){var _originals=null,_currentLang=null;function collectNodes(){var root=document.getElementById('page-content-area');if(!root)return[];var result=[],walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:function(node){if(!node.textContent.trim())return NodeFilter.FILTER_REJECT;var p=node.parentElement;if(!p)return NodeFilter.FILTER_REJECT;var tag=p.tagName.toLowerCase();if(['script','style','noscript','iframe','code'].indexOf(tag)>=0)return NodeFilter.FILTER_REJECT;if(p.closest('#page-trad-bar'))return NodeFilter.FILTER_REJECT;return NodeFilter.FILTER_ACCEPT;}});var n;while((n=walker.nextNode()))result.push(n);return result;}
-function sauvegarderOriginaux(nodes){_originals=new Map();nodes.forEach(function(n){_originals.set(n,n.textContent);});}
-function restaurerOriginaux(nodes){if(!_originals)return;nodes.forEach(function(n){if(_originals.has(n))n.textContent=_originals.get(n);});}
-function traduireChunkPT(chunk,lang){return fetch('https://api.mymemory.translated.net/get?q='+encodeURIComponent(chunk)+'&langpair=fr|'+lang).then(function(r){return r.json();}).then(function(d){return(d&&d.responseData&&d.responseData.translatedText)?d.responseData.translatedText:chunk;}).catch(function(){return chunk;});}
-function grouperNœuds(nodes){var groupes=[],courant={nodes:[],textes:[],total:0};nodes.forEach(function(n){var t=n.textContent.trim();if(!t)return;if(courant.total+t.length>400&&courant.nodes.length>0){groupes.push(courant);courant={nodes:[],textes:[],total:0};}courant.nodes.push(n);courant.textes.push(t);courant.total+=t.length+1;});if(courant.nodes.length>0)groupes.push(courant);return groupes;}
-window.traduirePage=function(lang){if(_currentLang===lang)return;_currentLang=lang;var nodes=collectNodes();if(!_originals)sauvegarderOriginaux(nodes);else restaurerOriginaux(nodes);var groupes=grouperNœuds(nodes);var status=document.getElementById('pt-status');status.style.display='inline';status.textContent='⟳ Traduction en cours... (0/'+groupes.length+')';var done=0;Promise.all(groupes.map(function(g){return traduireChunkPT(g.textes.join('\n'),lang).then(function(traduit){var lignes=traduit.split('\n');g.nodes.forEach(function(node,i){if(lignes[i]!==undefined)node.textContent=lignes[i];});done++;status.textContent='⟳ Traduction... ('+done+'/'+groupes.length+')';})})).then(function(){status.textContent='✓ Traduit en '+lang.toUpperCase();setTimeout(function(){status.style.display='none';},3000);});};
-window.restaurerPage=function(){_currentLang=null;var nodes=collectNodes();if(_originals)restaurerOriginaux(nodes);document.getElementById('pt-status').style.display='none';};
+(function(){
+  var _originals=null,_currentLang=null,MAX=450;
+  function collectNodes(){var root=document.body;if(!root)return[];var result=[];var walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:function(node){if(!node.textContent.trim())return NodeFilter.FILTER_REJECT;var p=node.parentElement;if(!p)return NodeFilter.FILTER_REJECT;var tag=p.tagName.toLowerCase();if(['script','style','noscript','iframe','code'].indexOf(tag)>=0)return NodeFilter.FILTER_REJECT;if(p.closest('.vl-trad-bar'))return NodeFilter.FILTER_REJECT;if(p.closest('#pt-dropdown'))return NodeFilter.FILTER_REJECT;if(p.closest('#js-preloader'))return NodeFilter.FILTER_REJECT;return NodeFilter.FILTER_ACCEPT;}});var n;while((n=walker.nextNode()))result.push(n);return result;}
+  function sauvegarderOriginaux(nodes){_originals=new Map();nodes.forEach(function(n){_originals.set(n,n.textContent);});}
+  function restaurerOriginaux(nodes){if(!_originals)return;nodes.forEach(function(n){if(_originals.has(n))n.textContent=_originals.get(n);});}
+  function splitLongText(text,maxLen){var trimmed=text.trim();if(trimmed.length<=maxLen)return[trimmed];var parts=[];var remaining=trimmed;while(remaining.length>maxLen){var cut=remaining.lastIndexOf(' ',maxLen);if(cut<Math.floor(maxLen*0.6))cut=maxLen;parts.push(remaining.slice(0,cut).trim());remaining=remaining.slice(cut).trim();}if(remaining)parts.push(remaining);return parts;}
+  function traduireChunk(chunk,lang){return fetch('https://api.mymemory.translated.net/get?q='+encodeURIComponent(chunk)+'&langpair=fr|'+lang).then(function(r){return r.json();}).then(function(d){var t=d&&d.responseData&&d.responseData.translatedText?d.responseData.translatedText:'';if(!t||/QUERY LENGTH LIMIT EXCEEDED/i.test(t))return chunk;return t;}).catch(function(){return chunk;});}
+  function grouperNoeuds(nodes){var groupes=[],courant={nodes:[],textes:[],total:0};function pushCurrent(){if(courant.nodes.length>0){groupes.push(courant);courant={nodes:[],textes:[],total:0};}}nodes.forEach(function(n){var text=n.textContent.trim();if(!text)return;splitLongText(text,MAX).forEach(function(part,index,allParts){if(courant.total+part.length+1>MAX)pushCurrent();var nodeRef=index===0?n:null;courant.nodes.push(nodeRef);courant.textes.push(part);courant.total+=part.length+1;if(index<allParts.length-1)pushCurrent();});});pushCurrent();return groupes;}
+  function appliquerTraductionAuGroupe(groupe,traduit){var lignes=traduit.split('\n');var buffer=[];groupe.nodes.forEach(function(nodeRef,i){buffer.push(lignes[i]!==undefined?lignes[i]:groupe.textes[i]);if(nodeRef){nodeRef.textContent=buffer.join(' ');buffer=[];}});}
+  window.traduirePage=function(lang){if(_currentLang===lang)return;_currentLang=lang;var nodes=collectNodes();if(!_originals)sauvegarderOriginaux(nodes);else restaurerOriginaux(nodes);var groupes=grouperNoeuds(nodes);var status=document.getElementById('pt-status');status.style.display='inline';status.textContent='⟳ Traduction... (0/'+groupes.length+')';var done=0;Promise.all(groupes.map(function(g){return traduireChunk(g.textes.join('\n'),lang).then(function(traduit){appliquerTraductionAuGroupe(g,traduit);done++;status.textContent='⟳ ('+done+'/'+groupes.length+')';});})).then(function(){status.textContent='✓ Traduit';setTimeout(function(){status.style.display='none';},3000);});};
+  window.restaurerPage=function(){_currentLang=null;var nodes=collectNodes();if(_originals)restaurerOriginaux(nodes);document.getElementById('pt-status').style.display='none';};
 })();
 </script>
 
-{# ===== CONTENU ===== #}
-<div id="page-content-area">
-<div class="single-property section">
-  <div class="container">
-    <div class="row">
+{# ===== LAYOUT PRINCIPAL 2 COLONNES — description + sidebar ===== #}
+<div id="vl-page-content">
+<div class="vl-main">
 
-      {# COL GAUCHE #}
-      <div class="col-lg-8">
+  {# COLONNE GAUCHE #}
+  <div>
+    {# DESCRIPTION #}
+    <div class="vl-card fade-up">
+      <div class="vl-section-label">À propos</div>
+      <h2 class="vl-section-title">{{ destination.nom }}, {{ destination.pays }}</h2>
+      <div class="vl-section-divider"></div>
+      <p class="vl-section-text">{{ destination.description ?? 'Aucune description disponible.' }}</p>
+    </div>
 
-        {# NOTE #}
-        {% set note_visites = 0 %}
-        {% if destination.nbVisites >= 10000 %}{% set note_visites = 2.5 %}
-        {% elseif destination.nbVisites >= 5000 %}{% set note_visites = 2 %}
-        {% elseif destination.nbVisites >= 2000 %}{% set note_visites = 1.5 %}
-        {% elseif destination.nbVisites >= 1000 %}{% set note_visites = 1 %}
-        {% elseif destination.nbVisites >= 500 %}{% set note_visites = 0.5 %}{% endif %}
-        {% set note_saison = 0 %}
-        {% if destination.meilleureSaison == "Ete" %}{% set note_saison = 2.5 %}
-        {% elseif destination.meilleureSaison == "Printemps" %}{% set note_saison = 2 %}
-        {% elseif destination.meilleureSaison == "Automne" %}{% set note_saison = 1.5 %}
-        {% elseif destination.meilleureSaison == "Hiver" %}{% set note_saison = 1 %}{% endif %}
-        {% set note_totale = note_visites + note_saison %}
-        {% if note_totale > 5 %}{% set note_totale = 5 %}{% endif %}
-        {% set etoiles_pleines = note_totale|round(0, "floor") %}
-        {% set demi_etoile = ((note_totale - etoiles_pleines) >= 0.5) ? 1 : 0 %}
-        {% set etoiles_vides = 5 - etoiles_pleines - demi_etoile %}
+    {# ITINÉRAIRE IA #}
+    <div class="vl-card fade-up">
+      <div class="vl-section-label">Intelligence artificielle</div>
+      <h3 class="vl-section-title" style="font-size:22px">Programme de voyage</h3>
+      <p class="vl-section-text" style="margin-bottom:20px">Choisissez la durée et l'IA génère votre programme complet jour par jour.</p>
+      <div class="vl-itin-btns">
+        {% for d in [3, 5, 7] %}
+        <button type="button" class="vl-btn-itin" onclick="genererItineraire({{ d }})">{{ d }} jours</button>
+        {% endfor %}
+        <span id="itineraire-loading" style="display:none;font-size:13px;color:var(--accent);align-self:center">⟳ Génération...</span>
+      </div>
+    </div>
 
-        {# RATING CARD #}
-        <div class="dd-rating-wrap fade-up">
-          <div style="text-align:center;min-width:90px">
-            <div class="dd-score-big">{{ note_totale|number_format(1) }}</div>
-            <div class="dd-score-label">/ 5 · Note globale</div>
-          </div>
-          <div style="flex:1;min-width:200px">
-            <div style="display:flex;gap:5px;margin-bottom:14px;align-items:center">
-              {% for i in 1..etoiles_pleines %}
-                <svg width="26" height="26" viewBox="0 0 24 24" fill="#f97316" style="filter:drop-shadow(0 2px 4px rgba(249,115,22,.4))"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-              {% endfor %}
-              {% if demi_etoile %}
-                <svg width="26" height="26" viewBox="0 0 24 24"><defs><linearGradient id="half"><stop offset="50%" stop-color="#f97316"/><stop offset="50%" stop-color="#e2e8f0"/></linearGradient></defs><path fill="url(#half)" d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-              {% endif %}
-              {% for i in 1..etoiles_vides %}
-                <svg width="26" height="26" viewBox="0 0 24 24" fill="#e2e8f0"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-              {% endfor %}
-              <span style="margin-left:8px;font-size:13px;font-weight:700;color:var(--muted)">{{ note_totale|number_format(1) }}/5</span>
-            </div>
-            <div style="display:flex;flex-wrap:wrap;gap:6px">
-              <span class="dd-rating-badge orange">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                {% if destination.nbVisites >= 10000 %}Très populaire{% elseif destination.nbVisites >= 5000 %}Populaire{% elseif destination.nbVisites >= 2000 %}Bien visité{% elseif destination.nbVisites >= 1000 %}Connu{% elseif destination.nbVisites >= 500 %}Émergent{% else %}Peu connu{% endif %}
-                · {{ destination.nbVisites ?? 0 }} visites
-              </span>
-              <span class="dd-rating-badge gray">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>
-                Saison {% if destination.meilleureSaison == "Ete" %}excellente{% elseif destination.meilleureSaison == "Printemps" %}très bonne{% elseif destination.meilleureSaison == "Automne" %}bonne{% elseif destination.meilleureSaison == "Hiver" %}correcte{% else %}—{% endif %}
-                · {{ destination.meilleureSaison ?? "—" }}
-              </span>
-            </div>
-          </div>
+    {# CARTE LEAFLET #}
+    {% if destination.latitude and destination.longitude %}
+    {% set voyagesAvecDepart = [] %}
+    {% for v in destination.voyages %}{% if v.pointDepart %}{% set voyagesAvecDepart = voyagesAvecDepart|merge([v]) %}{% endif %}{% endfor %}
+    <div class="vl-card fade-up">
+      <div class="vl-section-label">Localisation</div>
+      <h3 class="vl-section-title" style="font-size:22px">Carte & Trajets</h3>
+      <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+      <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+      {% if voyagesAvecDepart|length > 0 %}
+      <div style="margin-bottom:14px;display:flex;flex-wrap:wrap;gap:8px">
+        {% for v in voyagesAvecDepart %}
+          {% set ticons = {'Avion': '✈', 'Bus': '🚌', 'Train': '🚆', 'Voiture': '🚗'} %}
+          {% set transportIcons = '' %}
+          {% for t in v.transports %}{% set transportIcons = transportIcons ~ (ticons[t.typeTransport] ?? '') %}{% endfor %}
+          <button type="button" id="map-btn-{{ v.id }}" onclick="showVoyageRoute({{ v.id }})" class="vl-map-btn{% if loop.first %} active{% endif %}">
+            {{ transportIcons }} Voyage {{ v.id }}
+          </button>
+        {% endfor %}
+      </div>
+      {% endif %}
+      <div id="trajet-map" style="height:380px;border-radius:var(--radius-sm);border:1px solid var(--card-border);z-index:1;position:relative;margin-top:16px"></div>
+      <div id="route-info" style="display:none;margin-top:12px;padding:14px 18px;background:#f9f8f5;border-radius:10px;border:1px solid var(--card-border);font-size:13px;color:var(--body-text);line-height:1.7"></div>
+      <small style="color:#ccc;font-size:11px;margin-top:8px;display:block;text-align:right">OpenStreetMap / OSRM</small>
+    </div>
+    <script>
+    (function(){
+      var destLat={{ destination.latitude }},destLng={{ destination.longitude }},destNom="{{ destination.nom|e('js') }}",destPays="{{ destination.pays|e('js') }}";
+      var VOYAGES_MAP=[{% for v in voyagesAvecDepart %}{id:{{ v.id }},depart:"{{ v.pointDepart|e('js') }}",arrivee:"{{ v.pointArrivee ? v.pointArrivee|e('js') : '' }}",transports:[{% for t in v.transports %}"{{ t.typeTransport|e('js') }}"{% if not loop.last %},{% endif %}{% endfor %}],dateD:"{{ v.dateDepart ? v.dateDepart|date('d/m/Y') : '' }}",dateA:"{{ v.dateArrivee ? v.dateArrivee|date('d/m/Y') : '' }}"}{% if not loop.last %},{% endif %}{% endfor %}];
+      var map=L.map("trajet-map").setView([destLat,destLng],5);
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{attribution:"© OpenStreetMap"}).addTo(map);
+      var destIcon=L.divIcon({className:"",html:"<div style='width:16px;height:16px;border-radius:50%;background:#c8956c;border:3px solid white;box-shadow:0 2px 8px rgba(200,149,108,0.5)'></div>",iconSize:[16,16],iconAnchor:[8,8]});
+      L.marker([destLat,destLng],{icon:destIcon}).addTo(map).bindPopup("<strong style='color:#c8956c'>"+destNom+"</strong><br><small>Destination</small>").openPopup();
+      var routeLayers=[];
+      function clearRoute(){routeLayers.forEach(function(l){map.removeLayer(l);});routeLayers=[];document.getElementById("route-info").style.display="none";}
+      function addLayer(l){l.addTo(map);routeLayers.push(l);return l;}
+      function geocode(q,cb){fetch("https://nominatim.openstreetmap.org/search?q="+encodeURIComponent(q)+"&format=json&limit=1",{headers:{"Accept-Language":"fr"}}).then(function(r){return r.json();}).then(function(d){cb(d&&d.length>0?[parseFloat(d[0].lat),parseFloat(d[0].lon)]:null);}).catch(function(){cb(null);});}
+      function findAirport(name,cb){geocode(name+" aéroport international",function(c){if(c){cb(c);return;}geocode(name+" airport",cb);});}
+      function getOsrmRoute(la1,lo1,la2,lo2,cb){fetch("https://router.project-osrm.org/route/v1/driving/"+lo1+","+la1+";"+lo2+","+la2+"?overview=full&geometries=geojson").then(function(r){return r.json();}).then(function(d){cb(d&&d.code==="Ok"&&d.routes&&d.routes[0]?d.routes[0]:null);}).catch(function(){cb(null);});}
+      function haversine(la1,lo1,la2,lo2){var R=6371,dLa=(la2-la1)*Math.PI/180,dLo=(lo2-lo1)*Math.PI/180;var a=Math.sin(dLa/2)*Math.sin(dLa/2)+Math.cos(la1*Math.PI/180)*Math.cos(la2*Math.PI/180)*Math.sin(dLo/2)*Math.sin(dLo/2);return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));}
+      function fmtDur(min){min=Math.round(min);if(min<60)return min+" min";var h=Math.floor(min/60),m=min%60;return h+"h"+(m>0?m+"min":"");}
+      function makeArc(la1,lo1,la2,lo2,color,dashed){var mLa=(la1+la2)/2+Math.abs(lo2-lo1)*0.14,mLo=(lo1+lo2)/2,pts=[];for(var t=0;t<=1;t+=0.02)pts.push([(1-t)*(1-t)*la1+2*(1-t)*t*mLa+t*t*la2,(1-t)*(1-t)*lo1+2*(1-t)*t*mLo+t*t*lo2]);return L.polyline(pts,{color:color,weight:3,opacity:0.8,dashArray:dashed?"8 5":null});}
+      function mkIcon(la,lo,color,size,popup){var m=L.marker([la,lo],{icon:L.divIcon({className:"",html:"<div style='width:"+size+"px;height:"+size+"px;border-radius:50%;background:"+color+";border:2px solid white;box-shadow:0 2px 6px rgba(0,0,0,.3)'></div>",iconSize:[size,size],iconAnchor:[size/2,size/2]})});if(popup)m.bindPopup(popup);return m;}
+      function showInfo(html){var el=document.getElementById("route-info");el.innerHTML=html;el.style.display="block";}
+      window.showVoyageRoute=function(vid){
+        clearRoute();
+        VOYAGES_MAP.forEach(function(v){var btn=document.getElementById("map-btn-"+v.id);if(!btn)return;if(v.id===vid)btn.classList.add("active");else btn.classList.remove("active");});
+        var voyage=null;for(var i=0;i<VOYAGES_MAP.length;i++){if(VOYAGES_MAP[i].id===vid){voyage=VOYAGES_MAP[i];break;}}
+        if(!voyage)return;
+        var hasAvion=voyage.transports.indexOf("Avion")>=0,hasTrain=voyage.transports.indexOf("Train")>=0,hasBus=voyage.transports.indexOf("Bus")>=0;
+        showInfo("<span style='color:var(--muted-text);font-style:italic'>⟳ Calcul en cours...</span>");
+        geocode(voyage.depart,function(depC){
+          if(!depC){showInfo("<span style='color:#e07070'>Impossible de localiser : <strong>"+voyage.depart+"</strong></span>");return;}
+          var dLa=depC[0],dLo=depC[1];
+          addLayer(mkIcon(dLa,dLo,"#c8956c",14,"<strong style='color:#c8956c'>Départ — "+voyage.depart+"</strong>"+(voyage.dateD?"<br><small>"+voyage.dateD+"</small>":"")));
+          if(hasAvion){findAirport(voyage.depart,function(depAirC){if(!depAirC)depAirC=depC;findAirport(destNom+" "+destPays,function(destAirC){var aLa=destAirC?destAirC[0]:destLat,aLo=destAirC?destAirC[1]:destLng;if(haversine(dLa,dLo,depAirC[0],depAirC[1])>2){addLayer(makeArc(dLa,dLo,depAirC[0],depAirC[1],"#c8956c",true));addLayer(mkIcon(depAirC[0],depAirC[1],"#7ec9a0",14,"<strong>✈ Aéroport de départ</strong>"));}addLayer(makeArc(depAirC[0],depAirC[1],aLa,aLo,"#c8956c",false));if(destAirC&&haversine(aLa,aLo,destLat,destLng)>2){addLayer(mkIcon(aLa,aLo,"#7ec9a0",14,"<strong>✈ Aéroport d'arrivée</strong>"));addLayer(makeArc(aLa,aLo,destLat,destLng,"#c8956c",true));}var fd=haversine(depAirC[0],depAirC[1],aLa,aLo);showInfo("✈ <strong>"+voyage.depart+" → "+destNom+"</strong> · "+Math.round(fd)+" km · <strong style='color:#c8956c'>"+fmtDur(fd/800*60+120)+"</strong>");var b=L.latLngBounds([[destLat,destLng],[dLa,dLo],[depAirC[0],depAirC[1]]]);if(destAirC)b.extend([aLa,aLo]);map.fitBounds(b,{padding:[40,40]});});});}
+          else{getOsrmRoute(dLa,dLo,destLat,destLng,function(route){var tColor="#c8956c",tLabel=hasTrain?"🚆 Train":hasBus?"🚌 Bus":"🚗 Voiture",speed=hasTrain?160:hasBus?70:100;if(route&&route.geometry){var pts=route.geometry.coordinates.map(function(c){return[c[1],c[0]];});addLayer(L.polyline(pts,{color:tColor,weight:3,opacity:0.8}));var distKm=Math.round(route.distance/1000);showInfo(tLabel+" <strong>"+voyage.depart+" → "+destNom+"</strong> · "+distKm+" km · <strong style='color:#c8956c'>"+fmtDur((distKm/speed)*60)+"</strong>");}else{var dist=haversine(dLa,dLo,destLat,destLng);addLayer(makeArc(dLa,dLo,destLat,destLng,tColor,true));showInfo(tLabel+" <strong>"+voyage.depart+" → "+destNom+"</strong> · "+Math.round(dist)+" km");}map.fitBounds(L.latLngBounds([[destLat,destLng],[dLa,dLo]]),{padding:[40,40]});});}
+        });
+      };
+      if(VOYAGES_MAP.length>0)showVoyageRoute(VOYAGES_MAP[0].id);
+    })();
+    </script>
+    {% endif %}
+
+    {# VIDÉO LOCALE #}
+    {% if destination.videoPath %}
+    <div class="vl-card fade-up">
+      <div class="vl-section-label">Présentation</div>
+      <h3 class="vl-section-title" style="font-size:22px">Vidéo de la destination</h3>
+      <div class="vl-video-wrap" style="margin-top:16px">
+        <video controls style="border-radius:var(--radius-sm)">
+          <source src="{{ asset(destination.videoPath) }}" type="video/mp4">
+        </video>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  {# SIDEBAR #}
+  <div>
+    <div class="vl-stats-grid">
+      <div class="vl-stat">
+        <div class="vl-stat-val">{{ destination.pays }}</div>
+        <div class="vl-stat-key">Pays</div>
+      </div>
+      <div class="vl-stat">
+        <div class="vl-stat-val">{{ destination.meilleureSaison ?? '—' }}</div>
+        <div class="vl-stat-key">Saison</div>
+      </div>
+      <div class="vl-stat">
+        <div class="vl-stat-val">{{ destination.nbVisites ?? 0 }}</div>
+        <div class="vl-stat-key">Visites</div>
+      </div>
+      <div class="vl-stat">
+        <div class="vl-stat-val" style="color:{% if destination.statut %}#7ec99a{% else %}#e07070{% endif %}">
+          {{ destination.statut ? 'Actif' : 'Inactif' }}
         </div>
+        <div class="vl-stat-key">Statut</div>
+      </div>
+    </div>
 
-        {# DESCRIPTION #}
-        <div class="dd-desc-card fade-up">
-          <div class="dd-country-badge">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-            {{ destination.pays }}
-          </div>
-          <h4 class="dd-desc-title">{{ destination.nom }}</h4>
-          <div class="dd-desc-divider"></div>
-          <p class="dd-desc-text">{{ destination.description ?? "Aucune description disponible." }}</p>
+    {# CONVERTISSEUR #}
+    <script>
+    var _rateCache={};
+    var _rateSym={'EUR':'€','USD':'$','GBP':'£','TND':'TND','MAD':'MAD','JPY':'¥','CAD':'C$','CHF':'Fr'};
+    function getRate(from,to,cb){var key=from+'_'+to;if(_rateCache[key]){cb(_rateCache[key]);return;}fetch('{{ path("app_exchange_rate", {"from": "__F__", "to": "__T__"}) }}'.replace('__F__',from).replace('__T__',to)).then(function(r){return r.json();}).then(function(d){if(d.rate){_rateCache[key]=d.rate;cb(d.rate);}}).catch(function(){});}
+    function convertirPrix(voyageId,prix,devise){['EUR','USD','GBP','TND','MAD'].forEach(function(d){var btn=document.getElementById('conv-btn-'+voyageId+'-'+d);if(btn){btn.classList.toggle('active',d===devise);}});var displayEl=document.getElementById('conv-display-'+voyageId);if(devise==='EUR'){displayEl.textContent=prix+' €';return;}getRate('EUR',devise,function(rate){displayEl.textContent=(prix*rate).toFixed(2)+' '+(_rateSym[devise]||devise);});}
+    </script>
+
+    {# VOYAGES #}
+    {% if destination.voyages|length > 0 %}
+    <div style="margin-bottom:20px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <div>
+          <div class="vl-section-label">Offres disponibles</div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:400;color:var(--body-text)">Voyages</div>
         </div>
-
-        {# GALERIE #}
-        {% if destination.images|length > 0 %}
-        <div style="margin-bottom:32px;padding:28px;background:#fff;border-radius:20px;border:1px solid var(--card-border);box-shadow:var(--shadow-sm)">
-          <h5 class="section-title">Galerie photos</h5>
-          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
-            {% for image in destination.images %}
-              <div class="dd-gallery-item" onclick="openLightbox({{ loop.index0 }})">
-                <img src="{{ asset(image.urlImage) }}" alt="{{ destination.nom }}">
-                <div class="dd-gallery-overlay">
-                  <div style="width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.2);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;border:2px solid rgba(255,255,255,.5)">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
-                  </div>
-                </div>
-              </div>
-            {% endfor %}
-          </div>
-        </div>
-        {% endif %}
-
-        {# LIGHTBOX #}
-        <div id="lightbox" onclick="closeLightbox()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:9999;align-items:center;justify-content:center">
-          <button onclick="prevLight(event)" style="position:absolute;left:20px;top:50%;transform:translateY(-50%);background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,.2);color:#fff;font-size:28px;width:52px;height:52px;border-radius:50%;cursor:pointer;backdrop-filter:blur(4px)">&#8249;</button>
-          <img id="lightbox-img" src="" alt="" style="max-width:90vw;max-height:85vh;border-radius:12px;object-fit:contain;box-shadow:0 24px 80px rgba(0,0,0,.8)">
-          <button onclick="nextLight(event)" style="position:absolute;right:20px;top:50%;transform:translateY(-50%);background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,.2);color:#fff;font-size:28px;width:52px;height:52px;border-radius:50%;cursor:pointer;backdrop-filter:blur(4px)">&#8250;</button>
-          <span onclick="closeLightbox()" style="position:absolute;top:20px;right:24px;color:#fff;font-size:28px;cursor:pointer;opacity:.7;transition:opacity .2s">&#10005;</span>
-          <div id="lightbox-count" style="position:absolute;bottom:20px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,0.6);font-size:13px;background:rgba(0,0,0,.4);padding:4px 14px;border-radius:20px"></div>
-        </div>
-        <script>
-        var imgUrls=[{% for image in destination.images %}"{{ asset(image.urlImage) }}"{% if not loop.last %},{% endif %}{% endfor %}];
-        var lbCurrent=0;
-        function openLightbox(i){lbCurrent=i;document.getElementById("lightbox").style.display="flex";document.getElementById("lightbox-img").src=imgUrls[i];document.getElementById("lightbox-count").textContent=(i+1)+" / "+imgUrls.length;}
-        function closeLightbox(){document.getElementById("lightbox").style.display="none";}
-        function prevLight(e){e.stopPropagation();lbCurrent=(lbCurrent-1+imgUrls.length)%imgUrls.length;openLightbox(lbCurrent);}
-        function nextLight(e){e.stopPropagation();lbCurrent=(lbCurrent+1)%imgUrls.length;openLightbox(lbCurrent);}
-        document.addEventListener("keydown",function(e){if(document.getElementById("lightbox").style.display==="flex"){if(e.key==="ArrowLeft")prevLight({stopPropagation:function(){}});if(e.key==="ArrowRight")nextLight({stopPropagation:function(){}});if(e.key==="Escape")closeLightbox();}});
-        </script>
-
-        {# ITINÉRAIRE IA #}
-        <div style="margin-bottom:32px;padding:28px;background:#fff;border-radius:20px;border:1px solid var(--card-border);box-shadow:var(--shadow-sm);position:relative;overflow:hidden">
-          <div style="position:absolute;top:-20px;right:-20px;width:120px;height:120px;background:radial-gradient(circle,rgba(249,115,22,.08),transparent 70%);pointer-events:none"></div>
-          <h5 class="section-title"> Programme pour votre voyage</h5>
-          <p style="font-size:13px;color:var(--muted);margin-bottom:20px">Choisissez la durée et l'IA génère votre programme complet jour par jour.</p>
-          <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center">
-            {% for d in [3, 5, 7] %}
-            <button type="button" onclick="genererItineraire({{ d }})"
-                    style="padding:10px 24px;border-radius:20px;border:1.5px solid #fed7aa;background:#fff7ed;color:#ea6c0a;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;box-shadow:0 2px 8px rgba(249,115,22,.12)"
-                    onmouseover="this.style.background='#f97316';this.style.color='#fff';this.style.borderColor='#f97316';this.style.boxShadow='0 6px 18px rgba(249,115,22,.35)'"
-                    onmouseout="this.style.background='#fff7ed';this.style.color='#ea6c0a';this.style.borderColor='#fed7aa';this.style.boxShadow='0 2px 8px rgba(249,115,22,.12)'">
-              {{ d }} jours
-            </button>
-            {% endfor %}
-            <div id="itineraire-loading" style="display:none;font-size:13px;color:#f97316;font-weight:600;display:none">⟳ Génération en cours...</div>
-          </div>
-        </div>
-
-        {# MODAL ITINÉRAIRE #}
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-        <div id="modal-itineraire" style="display:none;position:fixed;inset:0;background:rgba(10,12,28,0.78);backdrop-filter:blur(6px);z-index:9999;align-items:center;justify-content:center;padding:20px">
-          <div style="background:#0f172a;border-radius:24px;width:100%;max-width:980px;max-height:92vh;display:flex;flex-direction:column;box-shadow:0 40px 100px rgba(0,0,0,.6);overflow:hidden;animation:modalIn .3s ease">
-            <div style="padding:24px 28px;display:flex;align-items:center;justify-content:space-between;gap:16px;border-bottom:1px solid rgba(255,255,255,.08);flex-shrink:0">
-              <div style="display:flex;align-items:center;gap:14px">
-                <div style="width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,#f97316,#ea6c0a);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">✈️</div>
-                <div>
-                  <h3 id="modal-titre" style="color:#fff;margin:0;font-size:18px;font-weight:800;line-height:1.2"></h3>
-                  <p id="modal-sous-titre" style="color:#64748b;margin:0;font-size:12px;margin-top:3px"></p>
-                </div>
-              </div>
-              <div style="display:flex;gap:8px;align-items:center;flex-shrink:0">
-                <button id="btn-pdf" onclick="telechargerPDF()" style="display:flex;align-items:center;gap:6px;padding:9px 18px;border-radius:10px;border:none;background:#f97316;color:#fff;font-size:13px;font-weight:700;cursor:pointer">⬇ PDF</button>
-                <button onclick="fermerModal()" style="width:36px;height:36px;border-radius:10px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.06);color:#94a3b8;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center">✕</button>
-              </div>
-            </div>
-            <div id="modal-contenu" style="overflow-y:auto;padding:24px 28px;flex:1"></div>
-          </div>
-        </div>
-        <style>
-        .itin-day-card{background:#1e293b;border-radius:18px;overflow:hidden;margin-bottom:16px;border:1px solid rgba(255,255,255,.06);}
-        .itin-day-header{display:flex;align-items:center;gap:14px;padding:18px 22px;background:linear-gradient(135deg,rgba(249,115,22,.18),rgba(249,115,22,.06));border-bottom:1px solid rgba(255,255,255,.06);}
-        .itin-day-num{width:44px;height:44px;border-radius:14px;background:#f97316;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:900;color:#fff;flex-shrink:0;}
-        .itin-day-title{font-size:15px;font-weight:700;color:#f1f5f9;margin:0;}
-        .itin-day-sub{font-size:11px;color:#64748b;margin:2px 0 0;font-weight:600;text-transform:uppercase;letter-spacing:.6px;}
-        .itin-slots{padding:8px 22px 16px;}
-        .itin-slot{display:flex;align-items:flex-start;gap:14px;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.05);}
-        .itin-slot:last-child{border-bottom:none;}
-        .itin-slot-icon{width:34px;height:34px;border-radius:10px;background:rgba(255,255,255,.06);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;margin-top:1px;}
-        .itin-slot-body{flex:1;}
-        .itin-slot-lbl{font-size:10px;font-weight:700;color:#f97316;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;}
-        .itin-slot-txt{font-size:13px;color:#cbd5e1;line-height:1.65;margin:0;}
-        </style>
-        <script>
-        function genererItineraire(duree){
-            document.getElementById('itineraire-loading').style.display='block';
-            fetch('{{ path("app_destination_itineraire", {"id": destination.id}) }}',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'duree='+duree})
-            .then(function(r){return r.json();})
-            .then(function(data){document.getElementById('itineraire-loading').style.display='none';if(!data||!data.jours){alert('Erreur.');return;}afficherModal(data.jours,duree);})
-            .catch(function(){document.getElementById('itineraire-loading').style.display='none';alert('Erreur.');});
-        }
-        function afficherModal(jours,duree){
-            document.getElementById('modal-titre').textContent='Itinéraire {{ destination.nom|e("js") }} — '+duree+' jours';
-            document.getElementById('modal-sous-titre').textContent='{{ destination.pays|e("js") }} · Généré par IA';
-            var slots=[{key:'matin',label:'Matin',icon:'🌅'},{key:'dejeuner',label:'Déjeuner',icon:'🍽️'},{key:'apres_midi',label:'Après-midi',icon:'☀️'},{key:'diner',label:'Dîner',icon:'🌙'},{key:'transport',label:'Transport',icon:'🚗'},{key:'conseil',label:'Conseil',icon:'💡'}];
-            var html='';
-            jours.forEach(function(j){html+='<div class="itin-day-card"><div class="itin-day-header"><div class="itin-day-num">'+j.jour+'</div><div><p class="itin-day-title">'+(j.titre||'Jour '+j.jour)+'</p><p class="itin-day-sub">Jour '+j.jour+'</p></div></div><div class="itin-slots">';
-            slots.forEach(function(s){if(!j[s.key])return;html+='<div class="itin-slot"><div class="itin-slot-icon">'+s.icon+'</div><div class="itin-slot-body"><div class="itin-slot-lbl">'+s.label+'</div><p class="itin-slot-txt">'+j[s.key]+'</p></div></div>';});
-            html+='</div></div>';});
-            document.getElementById('modal-contenu').innerHTML=html;
-            document.getElementById('modal-itineraire').style.display='flex';
-        }
-        function fermerModal(){document.getElementById('modal-itineraire').style.display='none';}
-        function telechargerPDF(){var btn=document.getElementById('btn-pdf'),titre=document.getElementById('modal-titre').textContent,el=document.getElementById('modal-contenu');btn.textContent='⟳ PDF...';btn.disabled=true;var prevOverflow=el.style.overflow;el.style.overflow='visible';html2canvas(el,{scale:2,useCORS:true,backgroundColor:'#0f172a',logging:false,scrollY:0}).then(function(canvas){el.style.overflow=prevOverflow;var{jsPDF}=window.jspdf;var imgData=canvas.toDataURL('image/png');var cw=canvas.width,ch=canvas.height;var isWide=(cw/ch)>1.2;var orientation=isWide?'landscape':'portrait';var pageW=isWide?297:210,pageH=isWide?210:297;var pdf=new jsPDF({orientation:orientation,unit:'mm',format:'a4'});var titleH=16;pdf.setFillColor(249,115,22);pdf.rect(0,0,pageW,titleH,'F');pdf.setTextColor(255,255,255);pdf.setFontSize(11);pdf.setFont('helvetica','bold');pdf.text(titre,10,10.5);var m=6,oY=titleH+m,aW=pageW-m*2,aH=pageH-oY-m;var sc=Math.min(aW/cw,aH/ch);pdf.addImage(imgData,'PNG',m+(aW-cw*sc)/2,oY,cw*sc,ch*sc);pdf.save(titre.replace(/[^a-zA-Z0-9\u00C0-\u024F\s\-]/g,'').trim().replace(/\s+/g,'_')+'.pdf');btn.textContent='⬇ PDF';btn.disabled=false;}).catch(function(){el.style.overflow=prevOverflow;btn.textContent='⬇ PDF';btn.disabled=false;});}
-        document.getElementById('modal-itineraire').addEventListener('click',function(e){if(e.target===this)fermerModal();});
-        </script>
-
-        {# METEO #}
-        {% if destination.latitude and destination.longitude %}
-        {% set voyagesAvecDates = [] %}
-        {% for v in destination.voyages %}{% if v.dateDepart and v.dateArrivee %}{% set voyagesAvecDates = voyagesAvecDates|merge([v]) %}{% endif %}{% endfor %}
-        <div style="margin-bottom:32px;padding:28px;background:#fff;border-radius:20px;border:1px solid var(--card-border);box-shadow:var(--shadow-sm)">
-          <h5 class="section-title">Météo pendant le voyage</h5>
-          {% if voyagesAvecDates|length > 0 %}
-          <p style="font-size:13px;color:var(--muted);margin-bottom:12px">Choisissez un voyage :</p>
-          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px">
-            {% for v in voyagesAvecDates %}
-            <button type="button" onclick="selectVoyage({{ loop.index0 }})" id="btn-voyage-{{ loop.index0 }}" class="meteo-btn{% if loop.first %} active{% endif %}">
-              Voyage #{{ v.id }} — {{ v.dateDepart|date("d/m/Y") }} → {{ v.dateArrivee|date("d/m/Y") }}
-            </button>
-            {% endfor %}
-          </div>
-          <div id="meteo-voyage-info" style="background:var(--c-light);border-radius:10px;padding:12px 16px;margin-bottom:16px;border:1px solid var(--c-border);font-size:13px;color:#374151"></div>
-          {% endif %}
-          <div id="meteo-loading" style="text-align:center;color:var(--muted);padding:24px;font-size:14px">Chargement...</div>
-          <div id="meteo-days" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px"></div>
-          <div id="meteo-msg" style="display:none;text-align:center;font-size:13px;padding:10px;margin-top:8px;border-radius:8px"></div>
-          <div style="margin-top:10px;text-align:right"><small style="color:#bbb;font-size:11px">Source : Open-Meteo.com</small></div>
-        </div>
-        <script>
-        (function(){
-            var lat={{ destination.latitude }},lng={{ destination.longitude }};
-            var VOYAGES=[{% for v in voyagesAvecDates %}{id:{{ v.id }},start:"{{ v.dateDepart|date("Y-m-d") }}",end:"{{ v.dateArrivee|date("Y-m-d") }}",depart:"{{ v.pointDepart ?? '' }}",arrivee:"{{ v.pointArrivee ?? '' }}"}{% if not loop.last %},{% endif %}{% endfor %}];
-            var WC={0:"Ciel clair",1:"Princ. clair",2:"Part. nuageux",3:"Couvert",45:"Brouillard",48:"Brouillard",51:"Bruine",53:"Bruine",55:"Bruine dense",61:"Pluie légère",63:"Pluie",65:"Pluie forte",71:"Neige légère",73:"Neige",75:"Neige forte",80:"Averses",81:"Averses",82:"Averses",95:"Orage",96:"Orage",99:"Orage fort"};
-            var DAYS=["Dim","Lun","Mar","Mer","Jeu","Ven","Sam"];
-            function fmt(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
-            function iconType(c){if(c===0)return"sun";if(c<=2)return"partly";if(c===3)return"cloud";if(c<=48)return"fog";if(c<=67)return"rain";if(c<=77)return"snow";if(c<=82)return"shower";return"storm";}
-            function svgIcon(t,s){s=s||36;var ic={sun:"<svg width='"+s+"' height='"+s+"' viewBox='0 0 48 48' fill='none'><circle cx='24' cy='24' r='10' fill='#f97316'/><g stroke='#f97316' stroke-width='2.5' stroke-linecap='round'><line x1='24' y1='4' x2='24' y2='10'/><line x1='24' y1='38' x2='24' y2='44'/><line x1='4' y1='24' x2='10' y2='24'/><line x1='38' y1='24' x2='44' y2='24'/></g></svg>",partly:"<svg width='"+s+"' height='"+s+"' viewBox='0 0 48 48' fill='none'><circle cx='20' cy='20' r='8' fill='#f97316'/><rect x='10' y='26' width='28' height='12' rx='6' fill='#90caf9'/></svg>",cloud:"<svg width='"+s+"' height='"+s+"' viewBox='0 0 48 48' fill='none'><rect x='6' y='18' width='36' height='18' rx='9' fill='#90caf9'/><ellipse cx='20' cy='20' rx='10' ry='8' fill='#bbdefb'/></svg>",fog:"<svg width='"+s+"' height='"+s+"' viewBox='0 0 48 48' fill='none'><g stroke='#90a4ae' stroke-width='3' stroke-linecap='round'><line x1='8' y1='16' x2='40' y2='16'/><line x1='8' y1='24' x2='40' y2='24'/><line x1='8' y1='32' x2='40' y2='32'/></g></svg>",rain:"<svg width='"+s+"' height='"+s+"' viewBox='0 0 48 48' fill='none'><rect x='8' y='10' width='32' height='16' rx='8' fill='#90caf9'/><g stroke='#1976d2' stroke-width='2.5' stroke-linecap='round'><line x1='16' y1='32' x2='14' y2='40'/><line x1='24' y1='32' x2='22' y2='40'/><line x1='32' y1='32' x2='30' y2='40'/></g></svg>",snow:"<svg width='"+s+"' height='"+s+"' viewBox='0 0 48 48' fill='none'><rect x='8' y='10' width='32' height='16' rx='8' fill='#bbdefb'/><g fill='#90caf9'><circle cx='16' cy='36' r='3'/><circle cx='24' cy='36' r='3'/><circle cx='32' cy='36' r='3'/></g></svg>",shower:"<svg width='"+s+"' height='"+s+"' viewBox='0 0 48 48' fill='none'><circle cx='22' cy='14' r='7' fill='#f97316'/><rect x='8' y='18' width='32' height='12' rx='6' fill='#90caf9'/><g stroke='#1976d2' stroke-width='2.5' stroke-linecap='round'><line x1='16' y1='34' x2='14' y2='42'/><line x1='24' y1='34' x2='22' y2='42'/><line x1='32' y1='34' x2='30' y2='42'/></g></svg>",storm:"<svg width='"+s+"' height='"+s+"' viewBox='0 0 48 48' fill='none'><rect x='6' y='8' width='36' height='16' rx='8' fill='#546e7a'/><polyline points='26,26 20,36 25,36 19,46' stroke='#fdd835' stroke-width='3' fill='none'/></svg>"};return ic[t]||ic["sun"];}
-            function showMsg(txt,color){var m=document.getElementById("meteo-msg");m.style.display="block";m.style.color=color||"#E24B4A";m.style.background=color==="#BA7517"?"#fff8e1":"#ffebee";m.textContent=txt;}
-            function clearMsg(){var m=document.getElementById("meteo-msg");m.style.display="none";m.textContent="";}
-            window.selectVoyage=function(idx){var v=VOYAGES[idx];if(!v)return;
-            VOYAGES.forEach(function(_,i){var btn=document.getElementById("btn-voyage-"+i);if(!btn)return;if(i===idx)btn.classList.add("active");else btn.classList.remove("active");});
-            var info=document.getElementById("meteo-voyage-info");if(info){var parts=[];if(v.depart||v.arrivee)parts.push("<strong>"+(v.depart||"?")+"</strong> → <strong>"+(v.arrivee||"?")+"</strong>");var sd=v.start.split("-"),ed=v.end.split("-");parts.push("du <strong style='color:#f97316'>"+sd[2]+"/"+sd[1]+"/"+sd[0]+"</strong> au <strong style='color:#f97316'>"+ed[2]+"/"+ed[1]+"/"+ed[0]+"</strong>");info.innerHTML=parts.join(" &nbsp;|&nbsp; ");}
-            if(window.showVoyageRoute)window.showVoyageRoute(v.id);loadMeteo(v.start,v.end);};
-            function loadMeteo(startDate,endDate){clearMsg();var loading=document.getElementById("meteo-loading"),daysDiv=document.getElementById("meteo-days");loading.style.display="block";daysDiv.innerHTML="";var today=new Date();today.setHours(0,0,0,0);var maxDate=new Date(today);maxDate.setDate(today.getDate()+14);var sDate=new Date(startDate),eDate=new Date(endDate);if(sDate>maxDate){loading.style.display="none";showMsg("Météo non disponible.","#E24B4A");return;}if(sDate<today)sDate=today;var partiel=false;if(eDate>maxDate){eDate=maxDate;partiel=true;}var url="https://api.open-meteo.com/v1/forecast?latitude="+lat+"&longitude="+lng+"&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_sum,windspeed_10m_max&timezone=auto&start_date="+fmt(sDate)+"&end_date="+fmt(eDate);
-            fetch(url).then(function(r){return r.json();}).then(function(data){loading.style.display="none";if(data.error){showMsg("Erreur API","#E24B4A");return;}var daily=data.daily;if(!daily||!daily.time||daily.time.length===0){showMsg("Aucune donnée.","#E24B4A");return;}daysDiv.innerHTML="";for(var i=0;i<daily.time.length;i++){var d=new Date(daily.time[i]),code=daily.weathercode[i];var tmax=Math.round(daily.temperature_2m_max[i]),tmin=Math.round(daily.temperature_2m_min[i]);var pluie=Math.round(daily.precipitation_sum[i]),vent=Math.round(daily.windspeed_10m_max[i]);var card=document.createElement("div");card.className="meteo-card";card.innerHTML="<div style='font-size:13px;font-weight:700;color:#333'>"+DAYS[d.getDay()]+"</div><div style='font-size:11px;color:#aaa;margin-bottom:8px'>"+d.getDate()+"/"+(d.getMonth()+1)+"</div><div style='display:flex;justify-content:center;margin-bottom:6px'>"+svgIcon(iconType(code),36)+"</div><div style='font-size:11px;color:#666;margin-bottom:8px;min-height:28px'>"+(WC[code]||"")+"</div><div style='font-size:16px;font-weight:800;color:#f97316'>"+tmax+" °C</div><div style='font-size:12px;color:#90a4ae;margin-bottom:6px'>"+tmin+" °C</div><div style='font-size:11px;color:#64b5f6'>🌧 "+pluie+" mm</div><div style='font-size:11px;color:#78909c'>💨 "+vent+" km/h</div>";daysDiv.appendChild(card);}if(partiel)showMsg("Affichage partiel.","#BA7517");}).catch(function(){document.getElementById("meteo-loading").style.display="none";showMsg("Erreur réseau.","#E24B4A");});}
-            if(VOYAGES.length>0){selectVoyage(0);}else{document.getElementById("meteo-loading").style.display="none";showMsg("Aucun voyage associé.","#E24B4A");}
-        })();
-        </script>
-        {% endif %}
-
-        {% if destination.videoPath %}
-        <div style="margin-bottom:32px;padding:28px;background:#fff;border-radius:20px;border:1px solid var(--card-border);box-shadow:var(--shadow-sm)">
-          <h5 class="section-title">Vidéo de présentation</h5>
-          <video controls style="width:100%;border-radius:12px;max-height:360px;box-shadow:0 8px 24px rgba(0,0,0,.12)">
-            <source src="{{ asset(destination.videoPath) }}" type="video/mp4">
-          </video>
-        </div>
-        {% endif %}
-
-        {# VIDEO YOUTUBE #}
-        <div style="margin-bottom:32px;padding:28px;background:#fff;border-radius:20px;border:1px solid var(--card-border);box-shadow:var(--shadow-sm)">
-          <h5 class="section-title">🎬 Vidéo de destination</h5>
-          <p style="font-size:13px;color:var(--muted);margin-bottom:18px">Découvrez {{ destination.nom }} en vidéo</p>
-          <div id="yt-loading" style="text-align:center;color:var(--muted);padding:30px;font-size:13px">⟳ Recherche de vidéo...</div>
-          <div id="yt-container" style="display:none">
-            <div style="position:relative;padding-bottom:56.25%;height:0;border-radius:14px;overflow:hidden;box-shadow:0 8px 28px rgba(0,0,0,.14)">
-              <iframe id="yt-iframe" src="" frameborder="0" allowfullscreen style="position:absolute;inset:0;width:100%;height:100%"></iframe>
-            </div>
-            <p id="yt-titre" style="font-size:13px;color:var(--muted);margin-top:10px;font-weight:600"></p>
-          </div>
-          <div id="yt-error" style="display:none;font-size:13px;color:#94a3b8;text-align:center;padding:20px">Aucune vidéo trouvée.</div>
-        </div>
-        <script>
-        (function(){fetch('{{ path("app_destination_videos", {"id": destination.id}) }}').then(function(r){return r.json();}).then(function(v){document.getElementById('yt-loading').style.display='none';if(!v||!v.id){document.getElementById('yt-error').style.display='block';return;}document.getElementById('yt-iframe').src='https://www.youtube.com/embed/'+v.id;document.getElementById('yt-titre').textContent=v.titre||'';document.getElementById('yt-container').style.display='block';}).catch(function(){document.getElementById('yt-loading').style.display='none';document.getElementById('yt-error').style.display='block';});})();
-        </script>
-
-        {# CARTE LEAFLET #}
-        {% if destination.latitude and destination.longitude %}
-        {% set voyagesAvecDepart = [] %}
-        {% for v in destination.voyages %}{% if v.pointDepart %}{% set voyagesAvecDepart = voyagesAvecDepart|merge([v]) %}{% endif %}{% endfor %}
-        <div style="margin-bottom:32px;padding:28px;background:#fff;border-radius:20px;border:1px solid var(--card-border);box-shadow:var(--shadow-sm)">
-          <h5 class="section-title">Localisation &amp; Trajets</h5>
-          <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-          <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-          {% if voyagesAvecDepart|length > 0 %}
-          <div style="margin-bottom:14px;display:flex;flex-wrap:wrap;gap:8px;align-items:center">
-            <span style="font-size:11px;color:#aaa;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-right:4px">Trajet</span>
-            {% for v in voyagesAvecDepart %}
-              {% set ticons = {'Avion': '✈', 'Bus': '🚌', 'Train': '🚆', 'Voiture': '🚗'} %}
-              {% set transportIcons = '' %}
-              {% for t in v.transports %}{% set transportIcons = transportIcons ~ (ticons[t.typeTransport] ?? '') %}{% endfor %}
-              <button type="button" id="map-btn-{{ v.id }}" onclick="showVoyageRoute({{ v.id }})"
-                      class="map-btn{% if loop.first %} active{% endif %}">
-                {{ transportIcons }} Voyage {{ v.id }} — {{ v.pointDepart }}
-              </button>
-            {% endfor %}
-          </div>
-          {% endif %}
-          <div id="trajet-map" style="height:400px;border-radius:14px;border:1px solid #e8ecf0;z-index:1;position:relative;box-shadow:0 4px 20px rgba(0,0,0,.08)"></div>
-          <div id="route-info" style="display:none;margin-top:12px;padding:14px 18px;background:var(--c-light);border-radius:12px;border:1px solid var(--c-border);font-size:13px;color:#374151;line-height:1.7"></div>
-          <small style="color:#bbb;font-size:11px;margin-top:8px;display:block;text-align:right">Source : OpenStreetMap / Nominatim / OSRM</small>
-        </div>
-        <script>
-        (function(){
-            var destLat={{ destination.latitude }},destLng={{ destination.longitude }},destNom="{{ destination.nom|e('js') }}",destPays="{{ destination.pays|e('js') }}";
-            var VOYAGES_MAP=[{% for v in voyagesAvecDepart %}{id:{{ v.id }},depart:"{{ v.pointDepart|e('js') }}",arrivee:"{{ v.pointArrivee ? v.pointArrivee|e('js') : '' }}",transports:[{% for t in v.transports %}"{{ t.typeTransport|e('js') }}"{% if not loop.last %},{% endif %}{% endfor %}],dateD:"{{ v.dateDepart ? v.dateDepart|date('d/m/Y') : '' }}",dateA:"{{ v.dateArrivee ? v.dateArrivee|date('d/m/Y') : '' }}"}{% if not loop.last %},{% endif %}{% endfor %}];
-            var map=L.map("trajet-map").setView([destLat,destLng],5);
-            L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{attribution:"© OpenStreetMap contributors"}).addTo(map);
-            var destIcon=L.divIcon({className:"",html:"<div style='width:18px;height:18px;border-radius:50%;background:#f97316;border:3px solid #fff;box-shadow:0 2px 8px rgba(249,115,22,.5)'></div>",iconSize:[18,18],iconAnchor:[9,9]});
-            L.marker([destLat,destLng],{icon:destIcon}).addTo(map).bindPopup("<strong style='color:#f97316'>"+destNom+"</strong><br><small>Destination</small>").openPopup();
-            var routeLayers=[];
-            function clearRoute(){routeLayers.forEach(function(l){map.removeLayer(l);});routeLayers=[];document.getElementById("route-info").style.display="none";}
-            function addLayer(l){l.addTo(map);routeLayers.push(l);return l;}
-            function geocode(q,cb){fetch("https://nominatim.openstreetmap.org/search?q="+encodeURIComponent(q)+"&format=json&limit=1",{headers:{"Accept-Language":"fr"}}).then(function(r){return r.json();}).then(function(d){cb(d&&d.length>0?[parseFloat(d[0].lat),parseFloat(d[0].lon)]:null);}).catch(function(){cb(null);});}
-            function findAirport(name,cb){geocode(name+" aéroport international",function(c){if(c){cb(c);return;}geocode(name+" airport",cb);});}
-            function getOsrmRoute(la1,lo1,la2,lo2,cb){fetch("https://router.project-osrm.org/route/v1/driving/"+lo1+","+la1+";"+lo2+","+la2+"?overview=full&geometries=geojson").then(function(r){return r.json();}).then(function(d){cb(d&&d.code==="Ok"&&d.routes&&d.routes[0]?d.routes[0]:null);}).catch(function(){cb(null);});}
-            function haversine(la1,lo1,la2,lo2){var R=6371,dLa=(la2-la1)*Math.PI/180,dLo=(lo2-lo1)*Math.PI/180;var a=Math.sin(dLa/2)*Math.sin(dLa/2)+Math.cos(la1*Math.PI/180)*Math.cos(la2*Math.PI/180)*Math.sin(dLo/2)*Math.sin(dLo/2);return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));}
-            function fmtDur(min){min=Math.round(min);if(min<60)return min+" min";var h=Math.floor(min/60),m=min%60;return h+"h"+(m>0?m+"min":"");}
-            function makeArc(la1,lo1,la2,lo2,color,dashed){var mLa=(la1+la2)/2+Math.abs(lo2-lo1)*0.14,mLo=(lo1+lo2)/2,pts=[];for(var t=0;t<=1;t+=0.02)pts.push([(1-t)*(1-t)*la1+2*(1-t)*t*mLa+t*t*la2,(1-t)*(1-t)*lo1+2*(1-t)*t*mLo+t*t*lo2]);return L.polyline(pts,{color:color,weight:3,opacity:0.85,dashArray:dashed?"8 5":null});}
-            function mkIcon(la,lo,color,size,popup){var m=L.marker([la,lo],{icon:L.divIcon({className:"",html:"<div style='width:"+size+"px;height:"+size+"px;border-radius:50%;background:"+color+";border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.3)'></div>",iconSize:[size,size],iconAnchor:[size/2,size/2]})});if(popup)m.bindPopup(popup);return m;}
-            function showInfo(html){var el=document.getElementById("route-info");el.innerHTML=html;el.style.display="block";}
-            window.showVoyageRoute=function(vid){
-                clearRoute();
-                VOYAGES_MAP.forEach(function(v){var btn=document.getElementById("map-btn-"+v.id);if(!btn)return;if(v.id===vid)btn.classList.add("active");else btn.classList.remove("active");});
-                var voyage=null;for(var i=0;i<VOYAGES_MAP.length;i++){if(VOYAGES_MAP[i].id===vid){voyage=VOYAGES_MAP[i];break;}}
-                if(!voyage)return;
-                var hasAvion=voyage.transports.indexOf("Avion")>=0,hasTrain=voyage.transports.indexOf("Train")>=0,hasBus=voyage.transports.indexOf("Bus")>=0;
-                showInfo("<span style='color:#888;font-style:italic'>⟳ Calcul en cours...</span>");
-                geocode(voyage.depart,function(depC){
-                    if(!depC){showInfo("<span style='color:#e11d48'>Impossible de localiser : <strong>"+voyage.depart+"</strong></span>");return;}
-                    var dLa=depC[0],dLo=depC[1];
-                    addLayer(mkIcon(dLa,dLo,"#f97316",15,"<strong style='color:#f97316'>Départ — "+voyage.depart+"</strong>"+(voyage.dateD?"<br><small>"+voyage.dateD+"</small>":"")));
-                    if(hasAvion){findAirport(voyage.depart,function(depAirC){if(!depAirC)depAirC=depC;findAirport(destNom+" "+destPays,function(destAirC){var aLa=destAirC?destAirC[0]:destLat,aLo=destAirC?destAirC[1]:destLng;if(haversine(dLa,dLo,depAirC[0],depAirC[1])>2){addLayer(makeArc(dLa,dLo,depAirC[0],depAirC[1],"#f97316",true));addLayer(mkIcon(depAirC[0],depAirC[1],"#10b981",16,"<strong style='color:#10b981'>✈ Aéroport de départ</strong>"));}addLayer(makeArc(depAirC[0],depAirC[1],aLa,aLo,"#f97316",false));if(destAirC&&haversine(aLa,aLo,destLat,destLng)>2){addLayer(mkIcon(aLa,aLo,"#10b981",16,"<strong style='color:#10b981'>✈ Aéroport d'arrivée</strong><br><small>"+destNom+"</small>"));addLayer(makeArc(aLa,aLo,destLat,destLng,"#f97316",true));}var fd=haversine(depAirC[0],depAirC[1],aLa,aLo);showInfo("✈ <strong>Vol : "+voyage.depart+" → "+destNom+"</strong><br>Distance : <strong>"+Math.round(fd)+" km</strong> &nbsp;|&nbsp; Durée estimée : <strong style='color:#f97316'>"+fmtDur(fd/800*60+120)+"</strong>");var b=L.latLngBounds([[destLat,destLng],[dLa,dLo],[depAirC[0],depAirC[1]]]);if(destAirC)b.extend([aLa,aLo]);map.fitBounds(b,{padding:[40,40]});});});}
-                    else{getOsrmRoute(dLa,dLo,destLat,destLng,function(route){var tColor=hasTrain?"#10b981":"#f97316",tLabel=hasTrain?"🚆 Train":hasBus?"🚌 Bus":"🚗 Voiture",speed=hasTrain?160:hasBus?70:100;if(route&&route.geometry){var pts=route.geometry.coordinates.map(function(c){return[c[1],c[0]];});addLayer(L.polyline(pts,{color:tColor,weight:4,opacity:0.85}));var distKm=Math.round(route.distance/1000);showInfo(tLabel+" <strong>"+voyage.depart+" → "+destNom+"</strong><br>Distance : <strong>"+distKm+" km</strong> &nbsp;|&nbsp; Durée estimée : <strong style='color:#f97316'>"+fmtDur((distKm/speed)*60)+"</strong>");}else{var dist=haversine(dLa,dLo,destLat,destLng);addLayer(makeArc(dLa,dLo,destLat,destLng,tColor,true));showInfo(tLabel+" <strong>"+voyage.depart+" → "+destNom+"</strong><br>Distance : <strong>"+Math.round(dist)+" km</strong>");}map.fitBounds(L.latLngBounds([[destLat,destLng],[dLa,dLo]]),{padding:[40,40]});});}
-                });
-            };
-            if(VOYAGES_MAP.length>0)showVoyageRoute(VOYAGES_MAP[0].id);
-        })();
-        </script>
-        {% endif %}
-
+        <span style="background:var(--accent-light);color:var(--accent);border:1px solid var(--accent-border);border-radius:20px;padding:4px 14px;font-size:12px;font-weight:500">
+          {{ destination.voyages|length }} voyage{{ destination.voyages|length > 1 ? 's' : '' }}
+        </span>
       </div>
 
-      {# SIDEBAR #}
-      <div class="col-lg-4">
+      {% set tp_icons = {'Avion': '✈', 'Bus': '🚌', 'Train': '🚆', 'Voiture': '🚗'} %}
+      {% for v in destination.voyages %}
+        {% if v.dateDepart and v.dateArrivee %}{% set duree = ((v.dateArrivee|date("U") - v.dateDepart|date("U")) / 86400)|round %}{% else %}{% set duree = null %}{% endif %}
+        {% set primaryTransport = v.transports|first %}
+        {% set bgImg = destination.images|first %}
 
-        {# STAT CARDS #}
-        <div class="stat-grid">
-          <div class="stat-card orange">
-            <div class="stat-icon orange">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-            </div>
-            <div class="stat-val">{{ destination.pays }}</div>
-            <div class="stat-lbl orange">Pays</div>
-          </div>
+        <div class="vl-ticket" onclick="if(window.showVoyageRoute)showVoyageRoute({{ v.id }})">
+          {% if bgImg %}
+            <img class="vl-ticket-bg" src="{{ asset(bgImg.urlImage) }}" alt="">
+          {% else %}
+            <div style="position:absolute;inset:0;background:linear-gradient(135deg,#1e1a15,#0d0e12)"></div>
+          {% endif %}
+          <div class="vl-ticket-veil"></div>
+          <div class="vl-ticket-notch l"></div>
+          <div class="vl-ticket-notch r"></div>
 
-          <div class="stat-card green">
-            <div class="stat-icon green">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>
-            </div>
-            <div class="stat-val">{{ destination.meilleureSaison ?? "—" }}</div>
-            <div class="stat-lbl green">Meilleure saison</div>
-          </div>
-
-          <div class="stat-card blue">
-            <div class="stat-icon blue">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-            </div>
-            <div class="stat-val">{{ destination.nbVisites ?? 0 }}</div>
-            <div class="stat-lbl blue">Visites</div>
-          </div>
-
-          <div class="stat-card {% if destination.statut %}green{% else %}red{% endif %}">
-            <div class="stat-icon {% if destination.statut %}green{% else %}red{% endif %}">
-              {% if destination.statut %}
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-              {% else %}
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#e11d48" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          <div class="vl-ticket-inner">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start">
+              <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.35)">Voyage #{{ v.id }}</div>
+              {% if v.prix %}
+              <div style="text-align:right">
+                <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:300;color:white;letter-spacing:-1px;line-height:1" id="conv-display-{{ v.id }}">{{ v.prix }} €</div>
+                {% if duree %}<div style="font-size:10px;color:rgba(255,255,255,0.35);margin-top:2px">{{ duree }} jour{{ duree > 1 ? 's' : '' }}</div>{% endif %}
+              </div>
               {% endif %}
             </div>
-            <div class="stat-val" style="color:{% if destination.statut %}#16a34a{% else %}#e11d48{% endif %}">{{ destination.statut ? "Actif" : "Inactif" }}</div>
-            <div class="stat-lbl {% if destination.statut %}success{% else %}red{% endif %}">Statut</div>
-          </div>
-        </div>
 
-        {# CONVERTISSEUR #}
-        <script>
-        var _rateCache={};
-        var _rateSym={'EUR':'€','USD':'$','GBP':'£','TND':'TND','MAD':'MAD','JPY':'¥','CAD':'C$','CHF':'Fr'};
-        function getRate(from,to,cb){var key=from+'_'+to;if(_rateCache[key]){cb(_rateCache[key]);return;}fetch('{{ path("app_exchange_rate", {"from": "__F__", "to": "__T__"}) }}'.replace('__F__',from).replace('__T__',to)).then(function(r){return r.json();}).then(function(d){if(d.rate){_rateCache[key]=d.rate;cb(d.rate);}}).catch(function(){});}
-        function convertirPrix(voyageId,prix,devise){var displayEl=document.getElementById('conv-display-'+voyageId);var spinEl=document.getElementById('conv-spin-'+voyageId);['EUR','USD','GBP','TND','MAD'].forEach(function(d){var btn=document.getElementById('conv-btn-'+voyageId+'-'+d);if(btn){btn.style.background=d===devise?'rgba(255,255,255,.35)':'rgba(255,255,255,.1)';btn.style.fontWeight=d===devise?'800':'600';}});if(devise==='EUR'){displayEl.textContent=prix+' €';return;}if(spinEl)spinEl.style.display='inline';getRate('EUR',devise,function(rate){if(spinEl)spinEl.style.display='none';displayEl.textContent=(prix*rate).toFixed(2)+' '+(_rateSym[devise]||devise);});}
-        </script>
-
-        {# VOYAGES #}
-        {% if destination.voyages|length > 0 %}
-        <div style="margin-bottom:28px">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
-            <div>
-              <h5 style="margin:0 0 3px;font-size:17px;font-weight:800;color:var(--slate)">Voyages disponibles</h5>
-              <p style="margin:0;font-size:12px;color:var(--muted)">Choisissez votre formule</p>
-            </div>
-            <span style="background:linear-gradient(135deg,#f97316,#ea6c0a);color:#fff;border-radius:20px;padding:5px 14px;font-size:12px;font-weight:700;box-shadow:0 4px 14px rgba(249,115,22,.35)">
-              {{ destination.voyages|length }} voyage{{ destination.voyages|length > 1 ? 's' : '' }}
-            </span>
-          </div>
-
-          {% set tp_icons = {'Avion': '✈', 'Bus': '🚌', 'Train': '🚆', 'Voiture': '🚗'} %}
-          {% for v in destination.voyages %}
-            {% if v.dateDepart and v.dateArrivee %}{% set duree = ((v.dateArrivee|date("U") - v.dateDepart|date("U")) / 86400)|round %}{% else %}{% set duree = null %}{% endif %}
-            {% set primaryTransport = v.transports|first %}
-            {% set bgImg = destination.images|first %}
-
-            <div class="ticket-card" onclick="if(window.showVoyageRoute)showVoyageRoute({{ v.id }})">
-              {% if bgImg %}
-                <img class="ticket-bg" src="{{ asset(bgImg.urlImage) }}" alt="">
-              {% else %}
-                <div style="position:absolute;inset:0;background:linear-gradient(135deg,#1e293b,#0f172a)"></div>
-              {% endif %}
-              <div class="ticket-overlay"></div>
-              <div class="ticket-notch left"></div>
-              <div class="ticket-notch right"></div>
-
-              <div class="ticket-inner">
-                <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px">
-                  <div>
-                    <div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:2px">Voyage</div>
-                    <div style="font-size:12px;font-weight:700;color:rgba(255,255,255,.4)">#{{ v.id }}</div>
-                  </div>
-                  {% if v.prix %}
-                  <div style="text-align:right">
-                    <div style="font-size:22px;font-weight:900;color:#fff;letter-spacing:-1px;line-height:1" id="conv-display-{{ v.id }}">{{ v.prix }} €</div>
-                    <span id="conv-spin-{{ v.id }}" style="display:none;font-size:10px;color:rgba(255,255,255,.7)">⟳</span>
-                    {% if duree %}<div style="font-size:10px;color:rgba(255,255,255,.5);margin-top:3px">{{ duree }} jour{{ duree > 1 ? 's' : '' }}</div>{% endif %}
-                  </div>
-                  {% endif %}
-                </div>
-
-                <div style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.1);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.15);border-radius:14px;padding:14px 16px;margin-bottom:14px">
-                  <div style="flex:1">
-                    <div style="font-size:16px;font-weight:800;color:#fff;text-transform:uppercase;letter-spacing:.5px;line-height:1">{{ v.pointDepart ?? '?' }}</div>
-                    <div style="font-size:10px;color:rgba(255,255,255,.55);margin-top:4px;font-weight:600">{{ v.dateDepart ? v.dateDepart|date("d/m/Y") : '—' }}</div>
-                  </div>
-                  <div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex-shrink:0">
-                    <div style="display:flex;align-items:center">
-                      <div style="width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.5)"></div>
-                      <div style="width:28px;height:1.5px;background:rgba(255,255,255,.35)"></div>
-                      <span style="font-size:14px;margin:0 3px">{{ tp_icons[primaryTransport.typeTransport] ?? '✈' }}</span>
-                      <div style="width:28px;height:1.5px;background:rgba(255,255,255,.35)"></div>
-                      <div style="width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.5)"></div>
-                    </div>
-                    {% if duree %}<span style="font-size:9px;color:rgba(255,255,255,.6);font-weight:700;text-transform:uppercase;letter-spacing:.8px">{{ duree }}j</span>{% endif %}
-                  </div>
-                  <div style="flex:1;text-align:right">
-                    <div style="font-size:16px;font-weight:800;color:#fff;text-transform:uppercase;letter-spacing:.5px;line-height:1">{{ v.pointArrivee ?? '?' }}</div>
-                    <div style="font-size:10px;color:rgba(255,255,255,.55);margin-top:4px;font-weight:600">{{ v.dateArrivee ? v.dateArrivee|date("d/m/Y") : '—' }}</div>
-                  </div>
-                </div>
-
-                <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px">
-                  <div style="display:flex;gap:6px;flex-wrap:wrap">
-                    {% for t in v.transports %}
-                      <span style="display:inline-flex;align-items:center;gap:4px;background:rgba(255,255,255,.12);backdrop-filter:blur(4px);border:1px solid rgba(255,255,255,.18);border-radius:50px;padding:4px 10px;font-size:11px;font-weight:600;color:#fff">{{ tp_icons[t.typeTransport] ?? '' }} {{ t.typeTransport }}</span>
-                    {% endfor %}
-                  </div>
-                </div>
-
-                {% if v.prix %}
-                <div style="margin-top:12px;display:flex;gap:5px;flex-wrap:wrap">
-                  {% for devise in ['EUR','USD','GBP','TND','MAD'] %}
-                  <button id="conv-btn-{{ v.id }}-{{ devise }}"
-                          onclick="event.stopPropagation();convertirPrix({{ v.id }}, {{ v.prix }}, '{{ devise }}')"
-                          class="conv-btn"
-                          style="background:{% if devise == 'EUR' %}rgba(255,255,255,.3){% else %}rgba(255,255,255,.1){% endif %};font-weight:{% if devise == 'EUR' %}800{% else %}600{% endif %}">
-                    {{ devise }}
-                  </button>
-                  {% endfor %}
-                </div>
-                {% endif %}
+            <div class="vl-ticket-route">
+              <div class="vl-ticket-city">
+                <div>{{ v.pointDepart ?? '?' }}</div>
+                <div class="vl-ticket-city-date">{{ v.dateDepart ? v.dateDepart|date('d/m/Y') : '—' }}</div>
+              </div>
+              <div class="vl-ticket-line">
+                <div class="vl-ticket-dot"></div>
+                <div class="vl-ticket-seg"></div>
+                <span style="font-size:14px;margin:0 4px">{{ tp_icons[primaryTransport.typeTransport] ?? '✈' }}</span>
+                <div class="vl-ticket-seg"></div>
+                <div class="vl-ticket-dot"></div>
+              </div>
+              <div class="vl-ticket-city vl-ticket-arr">
+                <div>{{ v.pointArrivee ?? '?' }}</div>
+                <div class="vl-ticket-city-date">{{ v.dateArrivee ? v.dateArrivee|date('d/m/Y') : '—' }}</div>
               </div>
             </div>
-          {% endfor %}
-        </div>
-        {% endif %}
 
-        {# SHARE #}
-        <div class="share-card">
-          <h5 style="margin:0 0 18px;font-size:14px;font-weight:800;color:var(--slate);padding-bottom:14px;border-bottom:1px solid #f0f4f8;text-align:left">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2.5" style="vertical-align:middle;margin-right:6px"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-            Partager cette destination
-          </h5>
-          <div style="display:flex;justify-content:center;margin-bottom:14px">
-            <div style="padding:12px;background:linear-gradient(135deg,#fff7ed,#fff);border-radius:16px;border:2px solid var(--c-border);box-shadow:0 4px 16px rgba(249,115,22,.12)">
-              <img src="{{ qr_code_url }}" alt="QR Code pour {{ destination.nom }}" style="display:block;width:150px;height:150px;border-radius:8px">
+            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+              <div style="display:flex;gap:5px;flex-wrap:wrap">
+                {% for t in v.transports %}
+                  <span style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);border-radius:30px;padding:3px 10px;font-size:10px;color:rgba(255,255,255,0.65);font-weight:500">{{ tp_icons[t.typeTransport] ?? '' }} {{ t.typeTransport }}</span>
+                {% endfor %}
+              </div>
             </div>
+
+            {% if v.prix %}
+            <div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:10px" onclick="event.stopPropagation()">
+              {% for devise in ['EUR','USD','GBP','TND','MAD'] %}
+              <button id="conv-btn-{{ v.id }}-{{ devise }}" onclick="convertirPrix({{ v.id }}, {{ v.prix }}, '{{ devise }}')" class="vl-conv-btn {% if devise == 'EUR' %}active{% endif %}">{{ devise }}</button>
+              {% endfor %}
+            </div>
+            {% endif %}
+
+            {% if app.user and v.isReservedByUser(app.user) %}
+              <div onclick="event.stopPropagation()" style="margin-top:12px;padding:10px 16px;background:rgba(126,201,154,0.15);border:1px solid rgba(126,201,154,0.3);border-radius:10px;font-size:12px;font-weight:500;text-align:center;color:rgba(126,201,154,0.9)">
+                ✓ Déjà réservé
+              </div>
+            {% elseif app.user %}
+              <form action="{{ path('app_voyage_reserve', {id: v.id}) }}" method="POST" onclick="event.stopPropagation()">
+                <input type="hidden" name="_token" value="{{ csrf_token('reserve' ~ v.id) }}">
+                <button type="submit" class="vl-reserve-btn">Réserver ce voyage</button>
+              </form>
+            {% else %}
+              <a href="{{ path('front_login') }}" onclick="event.stopPropagation()" class="vl-reserve-btn">Connexion requise</a>
+            {% endif %}
           </div>
-          <p style="font-size:12px;color:#aaa;margin-bottom:16px">Scannez pour partager</p>
-          <a href="{{ qr_code_url }}" download="qrcode-{{ destination.nom|replace({' ': '-'}) }}.png" class="btn-primary">⬇ Télécharger le QR Code</a>
-          <div style="font-size:10px;color:#ccc;margin-top:12px;word-break:break-all;line-height:1.5;padding:8px;background:#f8fafc;border-radius:8px">{{ share_url }}</div>
         </div>
+      {% endfor %}
+    </div>
+    {% endif %}
 
-        <div style="margin-top:16px;display:flex;flex-direction:column;gap:10px">
-          <a href="{{ path("app_contact") }}" class="btn-primary">✉ Réserver cette destination</a>
-          <a href="{{ path("app_destinations") }}" class="btn-secondary">← Toutes les destinations</a>
+    {# PARTAGE QR #}
+    <div class="vl-share-card">
+      <div class="vl-section-label" style="margin-bottom:16px">Partager</div>
+      <div style="display:inline-flex;padding:10px;background:#f9f8f5;border-radius:var(--radius-sm);border:1px solid var(--card-border);margin-bottom:12px">
+        <img src="{{ qr_code_url }}" alt="QR Code" style="width:130px;height:130px;display:block">
+      </div>
+      <p style="font-size:12px;color:var(--muted-text);margin-bottom:14px">Scannez pour partager</p>
+      <a href="{{ qr_code_url }}" download="qrcode-{{ destination.nom|replace({' ': '-'}) }}.png"
+         style="display:block;padding:11px;background:var(--accent);color:white;border-radius:var(--radius-sm);font-size:13px;font-weight:500;text-decoration:none;transition:all 0.2s"
+         onmouseover="this.style.background='#b8845a'" onmouseout="this.style.background='var(--accent)'">
+        Télécharger le QR Code
+      </a>
+      <div style="font-size:10px;color:#ccc;margin-top:12px;word-break:break-all;line-height:1.5">{{ share_url }}</div>
+    </div>
+
+    <a href="{{ path('app_destinations') }}" class="vl-back">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m15 18-6-6 6-6"/></svg>
+      Toutes les destinations
+    </a>
+  </div>
+</div>
+</div>
+
+{# ======================================================
+   GALERIE — PLEIN ÉCRAN HORIZONTAL
+   ====================================================== #}
+{% if destination.images|length > 0 %}
+<div style="height:60px"></div>
+<div class="vl-sep">
+  <div class="vl-sep-line"></div>
+  <span class="vl-sep-label">Galerie photos</span>
+  <div class="vl-sep-line"></div>
+</div>
+
+<div class="vl-fullwidth-section">
+  <div class="vl-fullwidth-card">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:8px">
+      <div>
+        <div class="vl-section-label">Galerie</div>
+        <h3 class="vl-section-title" style="font-size:28px;margin-bottom:0">Photos de {{ destination.nom }}</h3>
+      </div>
+      <span style="font-size:13px;color:var(--muted-text)">{{ destination.images|length }} photo{{ destination.images|length > 1 ? 's' : '' }}</span>
+    </div>
+
+    <div class="vl-gallery-full">
+      {% for image in destination.images %}
+        <div class="vl-gallery-item" onclick="openLightbox({{ loop.index0 }})">
+          <img src="{{ asset(image.urlImage) }}" alt="{{ destination.nom }}">
+          <div class="vl-gallery-overlay">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+          </div>
         </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endif %}
 
+{# LIGHTBOX #}
+<div id="vl-lightbox" onclick="closeLightbox()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.96);z-index:9999;align-items:center;justify-content:center">
+  <button onclick="prevLight(event)" style="position:absolute;left:20px;top:50%;transform:translateY(-50%);background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:white;font-size:26px;width:50px;height:50px;border-radius:50%;cursor:pointer">&#8249;</button>
+  <img id="vl-lightbox-img" src="" alt="" style="max-width:90vw;max-height:85vh;border-radius:12px;object-fit:contain">
+  <button onclick="nextLight(event)" style="position:absolute;right:20px;top:50%;transform:translateY(-50%);background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:white;font-size:26px;width:50px;height:50px;border-radius:50%;cursor:pointer">&#8250;</button>
+  <span onclick="closeLightbox()" style="position:absolute;top:20px;right:24px;color:rgba(255,255,255,0.5);font-size:24px;cursor:pointer">✕</span>
+</div>
+<script>
+var imgUrls=[{% for image in destination.images %}"{{ asset(image.urlImage) }}"{% if not loop.last %},{% endif %}{% endfor %}];
+var lbCurrent=0;
+function openLightbox(i){lbCurrent=i;document.getElementById('vl-lightbox').style.display='flex';document.getElementById('vl-lightbox-img').src=imgUrls[i];}
+function closeLightbox(){document.getElementById('vl-lightbox').style.display='none';}
+function prevLight(e){e.stopPropagation();lbCurrent=(lbCurrent-1+imgUrls.length)%imgUrls.length;openLightbox(lbCurrent);}
+function nextLight(e){e.stopPropagation();lbCurrent=(lbCurrent+1)%imgUrls.length;openLightbox(lbCurrent);}
+document.addEventListener('keydown',function(e){if(document.getElementById('vl-lightbox').style.display==='flex'){if(e.key==='ArrowLeft')prevLight({stopPropagation:function(){}});if(e.key==='ArrowRight')nextLight({stopPropagation:function(){}});if(e.key==='Escape')closeLightbox();}});
+</script>
+
+{# ======================================================
+   MÉTÉO — PLEIN ÉCRAN HORIZONTAL
+   ====================================================== #}
+{% if destination.latitude and destination.longitude %}
+{% set voyagesAvecDates = [] %}
+{% for v in destination.voyages %}{% if v.dateDepart and v.dateArrivee %}{% set voyagesAvecDates = voyagesAvecDates|merge([v]) %}{% endif %}{% endfor %}
+
+<div style="height:20px"></div>
+<div class="vl-sep">
+  <div class="vl-sep-line"></div>
+  <span class="vl-sep-label">Conditions climatiques</span>
+  <div class="vl-sep-line"></div>
+</div>
+
+<div class="vl-fullwidth-section">
+  <div class="vl-fullwidth-card">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:20px">
+      <div>
+        <div class="vl-section-label">Météo en temps réel</div>
+        <h3 class="vl-section-title" style="font-size:28px;margin-bottom:0">Conditions pendant le voyage</h3>
+      </div>
+      {% if voyagesAvecDates|length > 0 %}
+      <div style="display:flex;flex-wrap:wrap;gap:8px">
+        {% for v in voyagesAvecDates %}
+        <button type="button" onclick="selectVoyage({{ loop.index0 }})" id="btn-voyage-{{ loop.index0 }}" class="vl-voyage-btn{% if loop.first %} active{% endif %}">
+          Voyage #{{ v.id }} — {{ v.dateDepart|date('d/m/Y') }} → {{ v.dateArrivee|date('d/m/Y') }}
+        </button>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+    <div id="meteo-voyage-info" style="background:#f9f8f5;border-radius:10px;padding:12px 16px;margin-bottom:16px;border:1px solid var(--card-border);font-size:13px;color:var(--body-text);display:none"></div>
+    <div id="meteo-loading" style="text-align:center;color:var(--muted-text);padding:40px;font-size:13px">Chargement de la météo...</div>
+    <div id="meteo-days" class="vl-meteo-grid"></div>
+    <div id="meteo-msg" style="display:none;text-align:center;font-size:13px;padding:10px;margin-top:8px;border-radius:8px"></div>
+    <div style="margin-top:16px;text-align:right"><small style="color:#ccc;font-size:11px">Source : Open-Meteo.com</small></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var lat={{ destination.latitude }},lng={{ destination.longitude }};
+  var VOYAGES=[{% for v in voyagesAvecDates %}{id:{{ v.id }},start:"{{ v.dateDepart|date("Y-m-d") }}",end:"{{ v.dateArrivee|date("Y-m-d") }}",depart:"{{ v.pointDepart ?? '' }}",arrivee:"{{ v.pointArrivee ?? '' }}"}{% if not loop.last %},{% endif %}{% endfor %}];
+  var WC={0:"Ciel clair",1:"Princ. clair",2:"Part. nuageux",3:"Couvert",45:"Brouillard",48:"Brouillard",51:"Bruine",53:"Bruine",55:"Bruine dense",61:"Pluie légère",63:"Pluie",65:"Pluie forte",71:"Neige légère",73:"Neige",75:"Neige forte",80:"Averses",81:"Averses",82:"Averses",95:"Orage",96:"Orage",99:"Orage fort"};
+  var DAYS=["Dim","Lun","Mar","Mer","Jeu","Ven","Sam"];
+  function fmt(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
+  function iconType(c){if(c===0)return"sun";if(c<=2)return"partly";if(c===3)return"cloud";if(c<=48)return"fog";if(c<=67)return"rain";if(c<=77)return"snow";if(c<=82)return"shower";return"storm";}
+  function svgIcon(t,s){s=s||40;var ic={sun:"<svg width='"+s+"' height='"+s+"' viewBox='0 0 48 48' fill='none'><circle cx='24' cy='24' r='10' fill='#c8956c'/><g stroke='#c8956c' stroke-width='2.5' stroke-linecap='round'><line x1='24' y1='4' x2='24' y2='10'/><line x1='24' y1='38' x2='24' y2='44'/><line x1='4' y1='24' x2='10' y2='24'/><line x1='38' y1='24' x2='44' y2='24'/></g></svg>",partly:"<svg width='"+s+"' height='"+s+"' viewBox='0 0 48 48' fill='none'><circle cx='20' cy='20' r='8' fill='#c8956c'/><rect x='10' y='26' width='28' height='12' rx='6' fill='#90caf9'/></svg>",cloud:"<svg width='"+s+"' height='"+s+"' viewBox='0 0 48 48' fill='none'><rect x='6' y='18' width='36' height='18' rx='9' fill='#90caf9'/><ellipse cx='20' cy='20' rx='10' ry='8' fill='#bbdefb'/></svg>",fog:"<svg width='"+s+"' height='"+s+"' viewBox='0 0 48 48' fill='none'><g stroke='#90a4ae' stroke-width='3' stroke-linecap='round'><line x1='8' y1='16' x2='40' y2='16'/><line x1='8' y1='24' x2='40' y2='24'/><line x1='8' y1='32' x2='40' y2='32'/></g></svg>",rain:"<svg width='"+s+"' height='"+s+"' viewBox='0 0 48 48' fill='none'><rect x='8' y='10' width='32' height='16' rx='8' fill='#90caf9'/><g stroke='#1976d2' stroke-width='2.5' stroke-linecap='round'><line x1='16' y1='32' x2='14' y2='40'/><line x1='24' y1='32' x2='22' y2='40'/><line x1='32' y1='32' x2='30' y2='40'/></g></svg>",snow:"<svg width='"+s+"' height='"+s+"' viewBox='0 0 48 48' fill='none'><rect x='8' y='10' width='32' height='16' rx='8' fill='#bbdefb'/><g fill='#90caf9'><circle cx='16' cy='36' r='3'/><circle cx='24' cy='36' r='3'/><circle cx='32' cy='36' r='3'/></g></svg>",shower:"<svg width='"+s+"' height='"+s+"' viewBox='0 0 48 48' fill='none'><circle cx='22' cy='14' r='7' fill='#c8956c'/><rect x='8' y='18' width='32' height='12' rx='6' fill='#90caf9'/><g stroke='#1976d2' stroke-width='2.5' stroke-linecap='round'><line x1='16' y1='34' x2='14' y2='42'/><line x1='24' y1='34' x2='22' y2='42'/><line x1='32' y1='34' x2='30' y2='42'/></g></svg>",storm:"<svg width='"+s+"' height='"+s+"' viewBox='0 0 48 48' fill='none'><rect x='6' y='8' width='36' height='16' rx='8' fill='#546e7a'/><polyline points='26,26 20,36 25,36 19,46' stroke='#fdd835' stroke-width='3' fill='none'/></svg>"};return ic[t]||ic["sun"];}
+  function showMsg(txt,color){var m=document.getElementById("meteo-msg");m.style.display="block";m.style.color=color||"#e07070";m.textContent=txt;}
+  function clearMsg(){document.getElementById("meteo-msg").style.display="none";}
+  window.selectVoyage=function(idx){var v=VOYAGES[idx];if(!v)return;
+    VOYAGES.forEach(function(_,i){var btn=document.getElementById("btn-voyage-"+i);if(!btn)return;if(i===idx)btn.classList.add("active");else btn.classList.remove("active");});
+    var info=document.getElementById("meteo-voyage-info");if(info){var sd=v.start.split("-"),ed=v.end.split("-");info.style.display="block";info.innerHTML=(v.depart?"<strong>"+v.depart+"</strong> → <strong>"+(v.arrivee||'?')+"</strong> &nbsp;|&nbsp; ":"")+"du <strong style='color:var(--accent)'>"+sd[2]+"/"+sd[1]+"/"+sd[0]+"</strong> au <strong style='color:var(--accent)'>"+ed[2]+"/"+ed[1]+"/"+ed[0]+"</strong>";}
+    if(window.showVoyageRoute)window.showVoyageRoute(v.id);loadMeteo(v.start,v.end);};
+  function loadMeteo(startDate,endDate){clearMsg();var loading=document.getElementById("meteo-loading"),daysDiv=document.getElementById("meteo-days");loading.style.display="block";daysDiv.innerHTML="";var today=new Date();today.setHours(0,0,0,0);var maxDate=new Date(today);maxDate.setDate(today.getDate()+14);var sDate=new Date(startDate),eDate=new Date(endDate);if(sDate>maxDate){loading.style.display="none";showMsg("Météo non disponible pour cette période.");return;}if(sDate<today)sDate=today;var partiel=false;if(eDate>maxDate){eDate=maxDate;partiel=true;}var url="https://api.open-meteo.com/v1/forecast?latitude="+lat+"&longitude="+lng+"&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_sum,windspeed_10m_max&timezone=auto&start_date="+fmt(sDate)+"&end_date="+fmt(eDate);
+    fetch(url).then(function(r){return r.json();}).then(function(data){loading.style.display="none";if(data.error){showMsg("Erreur API");return;}var daily=data.daily;if(!daily||!daily.time||daily.time.length===0){showMsg("Aucune donnée.");return;}daysDiv.innerHTML="";for(var i=0;i<daily.time.length;i++){var d=new Date(daily.time[i]),code=daily.weathercode[i];var tmax=Math.round(daily.temperature_2m_max[i]),tmin=Math.round(daily.temperature_2m_min[i]);var pluie=Math.round(daily.precipitation_sum[i]),vent=Math.round(daily.windspeed_10m_max[i]);var card=document.createElement("div");card.className="vl-meteo-card";card.innerHTML="<div style='font-size:13px;font-weight:500;color:var(--body-text)'>"+DAYS[d.getDay()]+"</div><div style='font-size:11px;color:var(--muted-text);margin-bottom:10px'>"+d.getDate()+"/"+(d.getMonth()+1)+"</div><div style='display:flex;justify-content:center;margin-bottom:8px'>"+svgIcon(iconType(code),40)+"</div><div style='font-size:11px;color:var(--muted-text);margin-bottom:10px;min-height:28px;line-height:1.4'>"+(WC[code]||"")+"</div><div style='font-size:18px;font-weight:500;color:var(--accent)'>"+tmax+"°</div><div style='font-size:12px;color:var(--muted-text);margin-bottom:6px'>"+tmin+"°</div><div style='font-size:11px;color:#7ec5e0'>🌧 "+pluie+" mm</div><div style='font-size:11px;color:var(--muted-text)'>💨 "+vent+" km/h</div>";daysDiv.appendChild(card);}if(partiel)showMsg("Affichage partiel (limite 14 jours).");}).catch(function(){document.getElementById("meteo-loading").style.display="none";showMsg("Erreur réseau.");});}
+  if(VOYAGES.length>0){selectVoyage(0);}else{document.getElementById("meteo-loading").style.display="none";showMsg("Aucun voyage associé.");}
+})();
+</script>
+{% endif %}
+
+{# ======================================================
+   YOUTUBE — PLEIN ÉCRAN HORIZONTAL
+   ====================================================== #}
+<div style="height:20px"></div>
+<div class="vl-sep">
+  <div class="vl-sep-line"></div>
+  <span class="vl-sep-label">Découverte en vidéo</span>
+  <div class="vl-sep-line"></div>
+</div>
+
+<div class="vl-fullwidth-section vl-page-bottom">
+  <div class="vl-fullwidth-card">
+    <div class="vl-section-label">YouTube</div>
+    <h3 class="vl-section-title" style="font-size:28px">{{ destination.nom }} en vidéo</h3>
+
+    <div class="vl-yt-fullwidth">
+      {# Vidéo #}
+      <div>
+        <div id="yt-loading" style="text-align:center;color:var(--muted-text);padding:60px;font-size:14px;background:#f9f8f5;border-radius:var(--radius-sm)">⟳ Recherche de la meilleure vidéo...</div>
+        <div id="yt-container" style="display:none">
+          <div class="vl-video-wrap">
+            <iframe id="yt-iframe" src="" frameborder="0" allowfullscreen style="border-radius:var(--radius-sm)"></iframe>
+          </div>
+          <p id="yt-titre" style="font-size:13px;color:var(--muted-text);margin-top:12px;font-weight:400;line-height:1.5"></p>
+        </div>
+        <div id="yt-error" style="display:none;font-size:14px;color:var(--muted-text);text-align:center;padding:40px">Aucune vidéo trouvée.</div>
+      </div>
+
+      {# Infos destination à droite #}
+      <div style="display:flex;flex-direction:column;gap:16px;padding-top:4px">
+        <div style="background:#f9f8f5;border-radius:var(--radius-sm);border:1px solid var(--card-border);padding:24px">
+          <div class="vl-section-label" style="margin-bottom:12px">À propos</div>
+          <h4 style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:400;color:var(--body-text);margin-bottom:12px">{{ destination.nom }}, {{ destination.pays }}</h4>
+          <p style="font-size:14px;font-weight:300;color:var(--muted-text);line-height:1.8">{{ destination.description|slice(0,200) }}{% if destination.description|length > 200 %}…{% endif %}</p>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div style="background:#f9f8f5;border:1px solid var(--card-border);border-radius:var(--radius-sm);padding:16px;text-align:center">
+            <div style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;color:var(--accent)">{{ destination.nbVisites ?? 0 }}</div>
+            <div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted-text);margin-top:4px">Visites</div>
+          </div>
+          <div style="background:#f9f8f5;border:1px solid var(--card-border);border-radius:var(--radius-sm);padding:16px;text-align:center">
+            <div style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;color:var(--accent)">{{ destination.meilleureSaison ?? '—' }}</div>
+            <div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted-text);margin-top:4px">Meilleure saison</div>
+          </div>
+        </div>
+        <a href="{{ path('app_destinations') }}" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:14px;border:1px solid var(--accent-border);border-radius:var(--radius-sm);color:var(--accent);font-size:13px;font-weight:500;text-decoration:none;transition:all 0.2s" onmouseover="this.style.background='var(--accent-light)'" onmouseout="this.style.background='transparent'">
+          ← Voir toutes les destinations
+        </a>
       </div>
     </div>
   </div>
 </div>
+
+<script>
+(function(){
+  fetch('{{ path("app_destination_videos", {"id": destination.id}) }}')
+    .then(function(r){return r.json();})
+    .then(function(v){
+      document.getElementById('yt-loading').style.display='none';
+      if(!v||!v.id){document.getElementById('yt-error').style.display='block';return;}
+      document.getElementById('yt-iframe').src='https://www.youtube.com/embed/'+v.id;
+      document.getElementById('yt-titre').textContent=v.titre||'';
+      document.getElementById('yt-container').style.display='block';
+    })
+    .catch(function(){
+      document.getElementById('yt-loading').style.display='none';
+      document.getElementById('yt-error').style.display='block';
+    });
+})();
+</script>
+
+{# MODAL ITINÉRAIRE #}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<div id="modal-itineraire">
+  <div id="modal-inner">
+    <div style="padding:24px 28px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,0.08);flex-shrink:0">
+      <div>
+        <h3 id="modal-titre" style="color:white;margin:0;font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:400"></h3>
+        <p id="modal-sous-titre" style="color:rgba(255,255,255,0.35);margin:4px 0 0;font-size:12px;letter-spacing:1px;text-transform:uppercase"></p>
+      </div>
+      <div style="display:flex;gap:10px">
+        <button id="btn-pdf" onclick="telechargerPDF()" style="padding:9px 20px;border-radius:30px;border:1px solid var(--accent-border);background:transparent;color:var(--accent);font-size:12px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif">Télécharger PDF</button>
+        <button onclick="fermerModal()" style="width:36px;height:36px;border-radius:50%;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.5);font-size:16px;cursor:pointer">✕</button>
+      </div>
+    </div>
+    <div id="modal-contenu" style="overflow-y:auto;padding:24px 28px;flex:1"></div>
+  </div>
 </div>
+
+<script>
+function genererItineraire(duree){
+  document.getElementById('itineraire-loading').style.display='inline';
+  fetch('{{ path("app_destination_itineraire", {"id": destination.id}) }}',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'duree='+duree})
+  .then(function(r){return r.json();})
+  .then(function(data){document.getElementById('itineraire-loading').style.display='none';if(!data||!data.jours){alert('Erreur.');return;}afficherModal(data.jours,duree);})
+  .catch(function(){document.getElementById('itineraire-loading').style.display='none';});
+}
+function afficherModal(jours,duree){
+  document.getElementById('modal-titre').textContent='Itinéraire {{ destination.nom|e("js") }} — '+duree+' jours';
+  document.getElementById('modal-sous-titre').textContent='{{ destination.pays|e("js") }} · Généré par IA';
+  var slots=[{key:'matin',label:'Matin',icon:'🌅'},{key:'dejeuner',label:'Déjeuner',icon:'🍽️'},{key:'apres_midi',label:'Après-midi',icon:'☀️'},{key:'diner',label:'Dîner',icon:'🌙'},{key:'transport',label:'Transport',icon:'🚗'},{key:'conseil',label:'Conseil',icon:'💡'}];
+  var html='';
+  jours.forEach(function(j){html+='<div class="itin-day-card"><div class="itin-day-header"><div class="itin-day-num">'+j.jour+'</div><div><p class="itin-day-title">'+(j.titre||'Jour '+j.jour)+'</p></div></div><div class="itin-slots">';
+  slots.forEach(function(s){if(!j[s.key])return;html+='<div class="itin-slot"><div class="itin-slot-icon">'+s.icon+'</div><div><div class="itin-slot-lbl">'+s.label+'</div><p class="itin-slot-txt">'+j[s.key]+'</p></div></div>';});
+  html+='</div></div>';});
+  document.getElementById('modal-contenu').innerHTML=html;
+  document.getElementById('modal-itineraire').style.display='flex';
+}
+function fermerModal(){document.getElementById('modal-itineraire').style.display='none';}
+function telechargerPDF(){var btn=document.getElementById('btn-pdf'),titre=document.getElementById('modal-titre').textContent,el=document.getElementById('modal-contenu');btn.textContent='⟳ PDF...';btn.disabled=true;var prevOverflow=el.style.overflow;el.style.overflow='visible';html2canvas(el,{scale:2,useCORS:true,backgroundColor:'#0f172a',logging:false,scrollY:0}).then(function(canvas){el.style.overflow=prevOverflow;var{jsPDF}=window.jspdf;var imgData=canvas.toDataURL('image/png');var cw=canvas.width,ch=canvas.height;var pdf=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});pdf.addImage(imgData,'PNG',6,6,198,198*(ch/cw));pdf.save(titre.replace(/[^a-zA-Z0-9\s\-]/g,'').trim().replace(/\s+/g,'_')+'.pdf');btn.textContent='Télécharger PDF';btn.disabled=false;}).catch(function(){el.style.overflow=prevOverflow;btn.textContent='Télécharger PDF';btn.disabled=false;});}
+document.getElementById('modal-itineraire').addEventListener('click',function(e){if(e.target===this)fermerModal();});
+</script>
 
 {% endblock %}

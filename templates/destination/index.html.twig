@@ -150,20 +150,15 @@
             {% for destination in destinations %}
             <tr>
                 <td><span class="dbadge-id">#{{ destination.id }}</span></td>
-
                 <td><span class="dbadge-nom">{{ destination.nom }}</span></td>
-
                 <td><span class="dbadge-pays">{{ destination.pays }}</span></td>
-
                 <td>
                     {% set s = destination.meilleureSaison %}
                     <span class="dbadge-saison-{{ s }}">{{ s ?? '—' }}</span>
                 </td>
-
                 <td>
                     <span style="font-size:13px;font-weight:600;color:#e2e8f0">{{ destination.nbVisites }}</span>
                 </td>
-
                 <td>
                     {% if destination.statut %}
                         <span class="dbadge-actif">Actif</span>
@@ -171,7 +166,6 @@
                         <span class="dbadge-inactif">Inactif</span>
                     {% endif %}
                 </td>
-
                 <td>
                     {% if destination.voyages|length > 0 %}
                         <span class="dbadge-voyage">{{ destination.voyages|length }} voyage{{ destination.voyages|length > 1 ? 's' : '' }}</span>
@@ -179,7 +173,6 @@
                         <span style="color:#4b5563;font-size:12px">—</span>
                     {% endif %}
                 </td>
-
                 <td>
                     <div class="dact">
                         <a href="{{ path('app_destination_show', {'id': destination.id}) }}" class="dbtn">👁 Voir</a>
@@ -239,8 +232,8 @@
             <div id="stats-loading" style="text-align:center;padding:40px;color:#888;font-size:15px">Chargement des statistiques...</div>
             <div id="stats-loaded" style="display:none">
 
-                {# 6 cartes résumé #}
-                <div id="stats-cards" style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:28px"></div>
+                {# 7 cartes résumé #}
+                <div id="stats-cards" style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px"></div>
 
                 {# Ligne 1 : Top visites + Top likes #}
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px">
@@ -278,6 +271,18 @@
                     </div>
                 </div>
 
+                {# Ligne 4 : Réservations #}
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px">
+                    <div style="background:#12122a;border-radius:12px;padding:20px;border:1px solid #2a2a4a">
+                        <h5 style="margin:0 0 16px;color:#fff;font-size:14px;font-weight:600;border-left:3px solid #10b981;padding-left:10px">📅 Top 5 — Plus réservées</h5>
+                        <canvas id="chartReservations" height="220"></canvas>
+                    </div>
+                    <div style="background:#12122a;border-radius:12px;padding:20px;border:1px solid #2a2a4a">
+                        <h5 style="margin:0 0 16px;color:#fff;font-size:14px;font-weight:600;border-left:3px solid #10b981;padding-left:10px">📅 Réservations par saison</h5>
+                        <canvas id="chartReservationsSaison" height="220"></canvas>
+                    </div>
+                </div>
+
                 {# Tableau classement #}
                 <div style="background:#12122a;border-radius:12px;padding:20px;border:1px solid #2a2a4a">
                     <h5 style="margin:0 0 16px;color:#fff;font-size:14px;font-weight:600;border-left:3px solid #f97316;padding-left:10px">Classement des destinations</h5>
@@ -290,12 +295,14 @@
                                 <th style="padding:10px;text-align:left;color:#888;font-weight:600">Saison</th>
                                 <th style="padding:10px;text-align:left;color:#888;font-weight:600">👁 Visites</th>
                                 <th style="padding:10px;text-align:left;color:#888;font-weight:600">❤️ Likes</th>
+                                <th style="padding:10px;text-align:left;color:#888;font-weight:600">📅 Réservations</th>
                                 <th style="padding:10px;text-align:left;color:#888;font-weight:600">Statut</th>
                             </tr>
                         </thead>
                         <tbody id="stats-table-body"></tbody>
                     </table>
                 </div>
+
             </div>
         </div>
     </div>
@@ -352,14 +359,15 @@ function renderStats(data) {
     document.getElementById('stats-loading').style.display = 'none';
     document.getElementById('stats-loaded').style.display  = 'block';
 
-    // ✅ 6 cartes résumé
+    // ✅ 7 cartes résumé
     var cards = [
-        { label: 'Total destinations',    value: data.total,                color: '#f97316' },
-        { label: 'Actives',               value: data.actifs,               color: '#16a34a' },
-        { label: 'Inactives',             value: data.inactifs,             color: '#e11d48' },
-        { label: '👁 Visites totales',    value: data.totalVisites,         color: '#3b82f6' },
-        { label: '❤️ Likes totaux',       value: data.totalLikes,           color: '#e11d48' },
-        { label: '🎙 Recherches vocales', value: data.totalRechercheVocale, color: '#6c63ff' },
+        { label: 'Total destinations',      value: data.total,                color: '#f97316' },
+        { label: 'Actives',                 value: data.actifs,               color: '#16a34a' },
+        { label: 'Inactives',               value: data.inactifs,             color: '#e11d48' },
+        { label: '👁 Visites totales',      value: data.totalVisites,         color: '#3b82f6' },
+        { label: '❤️ Likes totaux',         value: data.totalLikes,           color: '#e11d48' },
+        { label: '🎙 Recherches vocales',   value: data.totalRechercheVocale, color: '#6c63ff' },
+        { label: '📅 Réservations totales', value: data.totalReservations,    color: '#10b981' },
     ];
     document.getElementById('stats-cards').innerHTML = cards.map(function(c) {
         return '<div style="background:#12122a;border-radius:12px;padding:20px;border:1px solid #2a2a4a;text-align:center">'
@@ -451,7 +459,33 @@ function renderStats(data) {
             plugins: { legend: { position: 'bottom', labels: { color: '#888', padding: 12 } } } }
     }));
 
-    // ✅ Tableau — visites ET likes séparés
+    // ✅ Top 5 réservations — barre horizontale verte
+    statsCharts.push(new Chart(document.getElementById('chartReservations'), {
+        type: 'bar',
+        data: {
+            labels: data.topReservations.map(function(d){ return d.nom; }),
+            datasets: [{ label: '📅 Réservations', data: data.topReservations.map(function(d){ return d.nbRes; }),
+                backgroundColor: '#10b981', borderRadius: 6, borderSkipped: false }]
+        },
+        options: { indexAxis: 'y', responsive: true, plugins: { legend: { display: false } },
+            scales: { x: { grid: { color: '#2a2a4a' }, ticks: { color: '#888', stepSize: 1 } },
+                      y: { grid: { display: false }, ticks: { color: '#ccc' } } } }
+    }));
+
+    // ✅ Réservations par saison — barre verte verticale
+    statsCharts.push(new Chart(document.getElementById('chartReservationsSaison'), {
+        type: 'bar',
+        data: {
+            labels: Object.keys(data.reservationsParSaison),
+            datasets: [{ label: '📅 Réservations', data: Object.values(data.reservationsParSaison),
+                backgroundColor: '#10b981', borderRadius: 6, borderSkipped: false }]
+        },
+        options: { responsive: true, plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true, ticks: { stepSize: 1, color: '#888' }, grid: { color: '#2a2a4a' } },
+                      x: { grid: { display: false }, ticks: { color: '#ccc' } } } }
+    }));
+
+    // ✅ Tableau classement — visites, likes ET réservations
     var maxV = data.topVisites.length > 0 ? data.topVisites[0].nbVisites : 1;
     document.getElementById('stats-table-body').innerHTML = data.topVisites.map(function(d, i) {
         var pct = maxV > 0 ? Math.round(d.nbVisites / maxV * 100) : 0;
@@ -467,6 +501,7 @@ function renderStats(data) {
              +   '<span style="color:#3b82f6;font-weight:700">👁 ' + d.nbVisites + '</span>'
              + '</div></td>'
              + '<td style="padding:10px"><span style="color:#e11d48;font-weight:700">❤️ ' + (d.nbLikes || 0) + '</span></td>'
+             + '<td style="padding:10px"><span style="color:#10b981;font-weight:700">📅 ' + (d.nbRes || 0) + '</span></td>'
              + '<td style="padding:10px"><span style="padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;background:'
              + (d.statut ? '#16a34a' : '#e11d48') + ';color:#fff">' + (d.statut ? 'Actif' : 'Inactif') + '</span></td>'
              + '</tr>';

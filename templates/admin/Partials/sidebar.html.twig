@@ -22,8 +22,7 @@
     <nav class="nav-section">
         <div class="nav-label">Menu principal</div>
 
-        {# ── Dashboard (ROLE_ADMIN uniquement) ── #}
-        {% if is_granted('ROLE_ADMIN') %}
+        {# ── Dashboard ── #}
         <a href="{{ path('app_admin') }}"
            class="nav-item {{ currentRoute == 'app_admin' ? 'active' : '' }}">
             <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -34,10 +33,8 @@
             </svg>
             Tableau de bord
         </a>
-        {% endif %}
 
-        {# ── GESTION DESTINATION (ROLE_ADMIN) ── #}
-        {% if is_granted('ROLE_ADMIN') %}
+        {# ── GESTION DESTINATION ── #}
         <div class="nav-item" onclick="toggleGestion()" style="cursor:pointer;justify-content:space-between;">
             <div style="display:flex;align-items:center;gap:14px;">
                 <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -56,10 +53,8 @@
             <a href="{{ path('app_image_index') }}"       class="nav-item" style="font-size:14px;">Images</a>
             <a href="{{ path('app_transport_index') }}"   class="nav-item" style="font-size:14px;">Transports</a>
         </div>
-        {% endif %}
 
-        {# ── GESTION HÉBERGEMENT (ROLE_ADMIN) ── #}
-        {% if is_granted('ROLE_ADMIN') %}
+        {# ── GESTION HÉBERGEMENT ── #}
         <a href="#" class="nav-item" onclick="toggleMenu(event, 'hebergement-submenu')">
             <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M3 21V8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v13"/>
@@ -108,10 +103,8 @@
                 Types
             </a>
         </div>
-        {% endif %}
 
-        {# ── GESTION ACTIVITÉ (ROLE_ADMIN) ── #}
-        {% if is_granted('ROLE_ADMIN') %}
+        {# ── GESTION ACTIVITÉ ── #}
         <a href="{{ path('admin_activite_index') }}"
            class="nav-item {{ currentRoute starts with 'admin_activite' ? 'active' : '' }}">
             <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -120,10 +113,8 @@
             </svg>
             Gestion Activité
         </a>
-        {% endif %}
 
-        {# ── AVIS & RÉCLAMATIONS (ROLE_ADMIN) ── #}
-        {% if is_granted('ROLE_ADMIN') %}
+        {# ── AVIS & RÉCLAMATIONS ── #}
         <a href="#" class="nav-item" onclick="toggleMenu(event, 'reclamation-submenu')">
             <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
@@ -157,10 +148,8 @@
                 Statistiques
             </a>
         </div>
-        {% endif %}
 
-        {# ── GESTION BLOG (ROLE_ADMIN) ── #}
-        {% if is_granted('ROLE_ADMIN') %}
+        {# ── GESTION BLOG ── #}
         <a href="{{ path('admin_blogs') }}" class="nav-item {{ currentRoute == 'admin_blogs' or currentRoute starts with 'admin_blog' ? 'active' : '' }}">
             <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
@@ -168,10 +157,8 @@
             </svg>
             Gestion Blog
         </a>
-        {% endif %}
 
-        {# ── GESTION UTILISATEURS (ROLE_ADMIN uniquement) ── #}
-        {% if is_granted('ROLE_ADMIN') %}
+        {# ── GESTION UTILISATEURS ── #}
         <a href="#"
            class="nav-item {{ currentRoute in ['admin_users_list', 'add_user', 'admin_user_edit', 'admin_user_profile'] ? 'active' : '' }}"
            onclick="toggleMenu(event, 'users-submenu')">
@@ -206,9 +193,8 @@
                 Ajouter un utilisateur
             </a>
         </div>
-        {% endif %}
 
-        {# ── MON PROFIL (accessible à tous les rôles) ── #}
+        {# ── MON PROFIL ── #}
         <a href="{{ path('admin_profile') }}"
            class="nav-item {{ currentRoute == 'admin_profile' or currentRoute == 'admin_profile_edit' ? 'active' : '' }}">
             <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -223,7 +209,6 @@
     <nav class="nav-section">
         <div class="nav-label">Compte</div>
 
-        {% if is_granted('ROLE_ADMIN') %}
         <a href="{{ path('admin_settings') }}" class="nav-item">
             <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <circle cx="12" cy="12" r="3"/>
@@ -231,7 +216,6 @@
             </svg>
             Paramètres
         </a>
-        {% endif %}
     </nav>
 
     <div class="sidebar-footer">
@@ -294,6 +278,14 @@
 
     document.addEventListener('DOMContentLoaded', function () {
         const currentRoute = '{{ currentRoute }}';
+
+        const gestionDestRoutes = ['app_destination_index', 'app_destination_new', 'app_destination_edit', 'app_destination_show', 'app_voyage_index', 'app_voyage_new', 'app_image_index', 'app_image_new', 'app_transport_index'];
+        if (gestionDestRoutes.includes(currentRoute)) {
+            var menu  = document.getElementById('gestionMenu');
+            var arrow = document.getElementById('gestionArrow');
+            if (menu)  menu.style.display = 'block';
+            if (arrow) arrow.style.transform = 'rotate(180deg)';
+        }
 
         const hebergementRoutes = ['app_hebergement_index', 'app_chambre_index', 'app_disponibilite_index', 'app_type_index'];
         if (hebergementRoutes.includes(currentRoute)) {

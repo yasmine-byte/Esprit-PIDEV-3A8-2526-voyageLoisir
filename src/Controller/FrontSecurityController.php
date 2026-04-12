@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Users;
 use App\Repository\UsersRepository;
 use App\Repository\RoleRepository;
+use App\Repository\VoyageRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -107,12 +108,15 @@ class FrontSecurityController extends AbstractController
     }
 
     #[Route('/profile', name: 'front_profile')]
-    public function profile(): Response
+    public function profile(VoyageRepository $voyageRepository): Response
     {
         $user = $this->getUser();
         if (!$user) {
             return $this->redirectToRoute('app_home');
         }
-        return $this->render('home/profile.html.twig', ['user' => $user]);
+$reservations = $voyageRepository->findByReservedUser($user);        return $this->render('home/profile.html.twig', [
+            'user'         => $user,
+            'reservations' => $reservations,
+        ]);
     }
 }

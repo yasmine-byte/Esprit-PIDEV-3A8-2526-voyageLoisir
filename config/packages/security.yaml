@@ -16,6 +16,7 @@ security:
         main:
             pattern: ^/admin
             lazy: true
+            context: shared_security_context
             provider: app_user_provider
             user_checker: App\Security\UserChecker
             form_login:
@@ -41,6 +42,7 @@ security:
         front:
             pattern: ^/
             lazy: true
+            context: shared_security_context
             provider: app_user_provider
             user_checker: App\Security\UserChecker
             form_login:
