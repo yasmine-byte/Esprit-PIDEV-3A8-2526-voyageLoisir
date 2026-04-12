@@ -1,0 +1,35 @@
+{% extends 'base_front.html.twig' %}
+{% block title %}Paiement réussi - Vianova{% endblock %}
+
+{% block body %}
+<div class="section" style="padding:80px 0; min-height:70vh; display:flex; align-items:center;">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-6 text-center">
+                <div style="background:#fff; border-radius:16px; padding:50px; box-shadow:0 4px 24px rgba(0,0,0,0.08);">
+                    <div style="width:80px; height:80px; background:#22c55e20; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 24px;">
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2">
+                            <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                    </div>
+                    <h3 style="color:#1c1c1e; margin-bottom:12px;">Paiement réussi !</h3>
+                    <p style="color:#888; margin-bottom:8px;">Votre réservation #{{ reservation.id }} est confirmée.</p>
+                    <p style="color:#888; margin-bottom:24px; font-size:14px;">
+                        Un email de confirmation a été envoyé à <strong>{{ reservation.clientEmail }}</strong>
+                    </p>
+                    <div style="background:#f9f9f9; border-radius:10px; padding:16px; margin-bottom:24px; text-align:left;">
+                        <p style="margin:4px 0; font-size:14px;"><strong>Hébergement :</strong> {{ reservation.hebergement ? reservation.hebergement.description : '-' }}</p>
+                        <p style="margin:4px 0; font-size:14px;"><strong>Arrivée :</strong> {{ reservation.dateDebut|date('d/m/Y') }}</p>
+                        <p style="margin:4px 0; font-size:14px;"><strong>Départ :</strong> {{ reservation.dateFin|date('d/m/Y') }}</p>
+                        <p style="margin:4px 0; font-size:14px;"><strong>Total payé :</strong> <span style="color:#22c55e; font-weight:700;">{{ reservation.total }} TND</span></p>
+                    </div>
+                    <a href="{{ path('app_home') }}"
+                       style="display:inline-block; background:#f75959; color:#fff; padding:12px 30px; border-radius:8px; text-decoration:none; font-weight:600;">
+                        Retour à l'accueil
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

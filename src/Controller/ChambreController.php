@@ -2,6 +2,7 @@
 namespace App\Controller;
 
 use App\Entity\Chambre;
+use App\Entity\Disponibilite;
 use App\Entity\Hebergement;
 use App\Form\ChambreType;
 use App\Repository\ChambreRepository;
@@ -43,8 +44,22 @@ final class ChambreController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->persist($chambre);
+
+            // Gérer les disponibilités
+            $dispos = $request->request->all('disponibilites') ?? [];
+            foreach ($dispos as $dispo) {
+                if (!empty($dispo['date_debut']) && !empty($dispo['date_fin'])) {
+                    $disponibilite = new Disponibilite();
+                    $disponibilite->setHebergement($chambre->getHebergement());
+                    $disponibilite->setDateDebut(new \DateTime($dispo['date_debut']));
+                    $disponibilite->setDateFin(new \DateTime($dispo['date_fin']));
+                    $disponibilite->setDisponible(isset($dispo['disponible']) && $dispo['disponible'] === '1');
+                    $entityManager->persist($disponibilite);
+                }
+            }
+
             $entityManager->flush();
-            $this->addFlash('success', 'Chambre ajoutée avec succès !');
+            $this->addFlash('success', 'Chambre et disponibilités ajoutées avec succès !');
             return $this->redirectToRoute('app_hebergement_show', ['id' => $chambre->getHebergement()->getId()]);
         }
 
@@ -64,6 +79,19 @@ final class ChambreController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            // Gérer les disponibilités
+            $dispos = $request->request->all('disponibilites') ?? [];
+            foreach ($dispos as $dispo) {
+                if (!empty($dispo['date_debut']) && !empty($dispo['date_fin'])) {
+                    $disponibilite = new Disponibilite();
+                    $disponibilite->setHebergement($chambre->getHebergement());
+                    $disponibilite->setDateDebut(new \DateTime($dispo['date_debut']));
+                    $disponibilite->setDateFin(new \DateTime($dispo['date_fin']));
+                    $disponibilite->setDisponible(isset($dispo['disponible']) && $dispo['disponible'] === '1');
+                    $entityManager->persist($disponibilite);
+                }
+            }
+
             $entityManager->flush();
             $this->addFlash('success', 'Chambre modifiée avec succès !');
             return $this->redirectToRoute('app_hebergement_show', ['id' => $chambre->getHebergement()->getId()]);

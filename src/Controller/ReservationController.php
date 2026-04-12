@@ -25,13 +25,11 @@ class ReservationController extends AbstractController
         $dateDebut = new \DateTime($request->request->get('dateDebut'));
         $dateFin = new \DateTime($request->request->get('dateFin'));
 
-        // Vérification que dateFin > dateDebut
         if ($dateFin <= $dateDebut) {
             $this->addFlash('error', 'La date de départ doit être après la date d\'arrivée.');
             return $this->redirectToRoute('app_property_details', ['id' => $id]);
         }
 
-        // Vérification de la disponibilité de l'hébergement
         $disponibilites = $disponibiliteRepo->findBy([
             'hebergement' => $hebergement,
             'disponible' => true,
@@ -46,11 +44,10 @@ class ReservationController extends AbstractController
         }
 
         if (!$estDisponible) {
-            $this->addFlash('error', 'Cet hébergement n\'est pas disponible pour les dates choisies. Veuillez choisir d\'autres dates.');
+            $this->addFlash('error', 'Cet hébergement n\'est pas disponible pour les dates choisies.');
             return $this->redirectToRoute('app_property_details', ['id' => $id]);
         }
 
-        // Vérifier qu'il n'y a pas déjà une réservation sur ces dates
         $reservationsExistantes = $em->getRepository(Reservation::class)->createQueryBuilder('r')
             ->where('r.hebergement = :hebergement')
             ->andWhere('r.statut != :annulee')
@@ -63,11 +60,10 @@ class ReservationController extends AbstractController
             ->getResult();
 
         if (count($reservationsExistantes) > 0) {
-            $this->addFlash('error', 'Cet hébergement est déjà réservé pour ces dates. Veuillez choisir d\'autres dates.');
+            $this->addFlash('error', 'Cet hébergement est déjà réservé pour ces dates.');
             return $this->redirectToRoute('app_property_details', ['id' => $id]);
         }
 
-        // Créer la réservation
         $nbNuits = $dateDebut->diff($dateFin)->days;
         $total = $nbNuits * $hebergement->getPrix();
 
@@ -86,7 +82,21 @@ class ReservationController extends AbstractController
         $em->persist($reservation);
         $em->flush();
 
-        $this->addFlash('success', 'Votre réservation a été confirmée ! Nous vous contacterons bientôt.');
-        return $this->redirectToRoute('app_property_details', ['id' => $id]);
+        // Rediriger vers la page récapitulatif avec bouton payer
+        return $this->redirectToRoute('app_reservation_recap', ['id' => $reservation->getId()]);
+    }
+
+    #[Route('/reservation/recap/{id}', name: 'app_reservation_recap', methods: ['GET'])]
+    public function recap(int $id, EntityManagerInterface $em): Response
+    {
+        $reservation = $em->getRepository(Reservation::class)->find($id);
+
+        if (!$reservation) {
+            throw $this->createNotFoundException('Réservation non trouvée.');
+        }
+
+        return $this->render('reservation/recap.html.twig', [
+            'reservation' => $reservation,
+        ]);
     }
 }
