@@ -70,9 +70,16 @@ public function destinationDetail(int $id, DestinationRepository $repo, EntityMa
     $destination = $repo->find($id);
 
     if (!$destination) {
-        return $this->redirectToRoute('app_destinations');
-    }
+    return $this->redirectToRoute('app_destinations');
+}
 
+// ✅ Bloquer les destinations inactives
+if (!$destination->isStatut()) {
+    $this->addFlash('error', 'Cette destination est actuellement inactive.');
+    return $this->redirectToRoute('app_destinations');
+}
+
+// ✅ Incrémenter nb_visites automatiquement à chaque visite
     // ✅ Incrémenter nb_visites automatiquement à chaque visite
     $destination->setNbVisites(($destination->getNbVisites() ?? 0) + 1);
     $em->flush();
