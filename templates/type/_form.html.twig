@@ -1,13 +1,55 @@
-{{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+{{ form_start(form, {'attr': {'novalidate': 'novalidate', 'id': 'type-form'}}) }}
+
+<style>
+.field-error { color: #ef4444; font-size: 12px; margin-top: 4px; display: none; }
+.form-input.invalid { border-color: #ef4444 !important; }
+</style>
+
 <div style="display:grid; gap:20px;">
     <div>
-        {{ form_label(form.nom, 'Nom du type', {'label_attr': {'class': 'form-label'}}) }}
-        {{ form_widget(form.nom, {'attr': {'class': 'form-input', 'placeholder': 'Ex: Hotel, Villa, Appartement...'}}) }}
+        {{ form_label(form.nom, 'Nom du type *', {'label_attr': {'class': 'form-label'}}) }}
+        {{ form_widget(form.nom, {'attr': {
+            'class': 'form-input',
+            'placeholder': 'Ex: Hotel, Villa, Appartement...',
+            'required': 'required',
+            'minlength': '2',
+            'maxlength': '50',
+            'pattern': '[A-Za-zÀ-ÿ\\s\\-]+',
+            'title': 'Le nom doit contenir uniquement des lettres (2-50 caractères)',
+            'oninput': 'validateNom(this)'
+        }}) }}
         <div style="color:#ef4444; font-size:12px; margin-top:4px;">{{ form_errors(form.nom) }}</div>
+        <div id="nom-error" class="field-error">Le nom doit contenir entre 2 et 50 caractères (lettres uniquement).</div>
     </div>
 </div>
+
 <div style="margin-top:28px; display:flex; gap:12px;">
-    <button type="submit" class="btn primary">{{ button_label|default('Enregistrer') }}</button>
+    <button type="submit" class="btn primary" onclick="return validateForm()">
+        {{ button_label|default('Enregistrer') }}
+    </button>
     <a href="{{ path('app_type_index') }}" class="btn">Annuler</a>
 </div>
+
 {{ form_end(form) }}
+
+<script>
+function validateNom(el) {
+    var val = el.value.trim();
+    var err = document.getElementById('nom-error');
+    var pattern = /^[A-Za-zÀ-ÿ\s\-]{2,50}$/;
+    if (!pattern.test(val)) {
+        el.classList.add('invalid');
+        err.style.display = 'block';
+        return false;
+    }
+    el.classList.remove('invalid');
+    err.style.display = 'none';
+    return true;
+}
+
+function validateForm() {
+    var nom = document.querySelector('[name$="[nom]"]');
+    if (nom && !validateNom(nom)) return false;
+    return true;
+}
+</script>

@@ -20,10 +20,9 @@
     </div>
 
     <nav class="nav-section">
-        <div class="nav-label">Menu principal</div>
+        <div class="nav-label">Main Menu</div>
 
-        {# ── Dashboard (ROLE_ADMIN uniquement) ── #}
-        {% if is_granted('ROLE_ADMIN') %}
+        {# Dashboard #}
         <a href="{{ path('app_admin') }}"
            class="nav-item {{ currentRoute == 'app_admin' ? 'active' : '' }}">
             <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -32,12 +31,10 @@
                 <rect x="3" y="14" width="7" height="7" rx="1"/>
                 <rect x="14" y="14" width="7" height="7" rx="1"/>
             </svg>
-            Tableau de bord
+            Dashboard
         </a>
-        {% endif %}
 
-        {# ── GESTION DESTINATION (ROLE_ADMIN) ── #}
-        {% if is_granted('ROLE_ADMIN') %}
+        {# ── GESTION DESTINATION (accordéon) ── #}
         <div class="nav-item" onclick="toggleGestion()" style="cursor:pointer;justify-content:space-between;">
             <div style="display:flex;align-items:center;gap:14px;">
                 <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -50,16 +47,15 @@
                 <polyline points="6 9 12 15 18 9"/>
             </svg>
         </div>
+
         <div id="gestionMenu" style="display:none; padding-left:16px;">
             <a href="{{ path('app_destination_index') }}" class="nav-item" style="font-size:14px;">Destinations</a>
             <a href="{{ path('app_voyage_index') }}"      class="nav-item" style="font-size:14px;">Voyages</a>
             <a href="{{ path('app_image_index') }}"       class="nav-item" style="font-size:14px;">Images</a>
             <a href="{{ path('app_transport_index') }}"   class="nav-item" style="font-size:14px;">Transports</a>
         </div>
-        {% endif %}
 
-        {# ── GESTION HÉBERGEMENT (ROLE_ADMIN) ── #}
-        {% if is_granted('ROLE_ADMIN') %}
+        {# ── GESTION HÉBERGEMENT (accordéon) ── #}
         <a href="#" class="nav-item" onclick="toggleMenu(event, 'hebergement-submenu')">
             <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M3 21V8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v13"/>
@@ -72,46 +68,31 @@
                 <polyline points="6 9 12 15 18 9"/>
             </svg>
         </a>
+
         <div id="hebergement-submenu" style="display:none; padding-left:16px;">
-            <a href="{{ path('app_hebergement_index') }}" class="nav-item {{ currentRoute == 'app_hebergement_index' ? 'active' : '' }}" style="font-size:14px;">
+            <a href="{{ path('app_hebergement_index') }}"
+               class="nav-item {{ currentRoute == 'app_hebergement_index' ? 'active' : '' }}"
+               style="font-size:14px;">
                 <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
                     <polyline points="9 22 9 12 15 12 15 22"/>
                 </svg>
                 Hébergements
             </a>
-            <a href="{{ path('app_chambre_index') }}" class="nav-item {{ currentRoute == 'app_chambre_index' ? 'active' : '' }}" style="font-size:14px;">
-                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M3 22V8a2 2 0 012-2h14a2 2 0 012 2v14"/>
-                    <path d="M3 22H21"/><path d="M9 22V12h6v10"/>
-                </svg>
-                Chambres
-            </a>
-            <a href="{{ path('app_disponibilite_index') }}" class="nav-item {{ currentRoute == 'app_disponibilite_index' ? 'active' : '' }}" style="font-size:14px;">
+            <a href="{{ path('admin_reservation_hebergement_index') }}"
+               class="nav-item {{ currentRoute == 'admin_reservation_hebergement_index' ? 'active' : '' }}"
+               style="font-size:14px;">
                 <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <rect x="3" y="4" width="18" height="18" rx="2"/>
                     <line x1="16" y1="2" x2="16" y2="6"/>
                     <line x1="8" y1="2" x2="8" y2="6"/>
                     <line x1="3" y1="10" x2="21" y2="10"/>
                 </svg>
-                Disponibilités
-            </a>
-            <a href="{{ path('app_type_index') }}" class="nav-item {{ currentRoute == 'app_type_index' ? 'active' : '' }}" style="font-size:14px;">
-                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <line x1="8" y1="6" x2="21" y2="6"/>
-                    <line x1="8" y1="12" x2="21" y2="12"/>
-                    <line x1="8" y1="18" x2="21" y2="18"/>
-                    <line x1="3" y1="6" x2="3.01" y2="6"/>
-                    <line x1="3" y1="12" x2="3.01" y2="12"/>
-                    <line x1="3" y1="18" x2="3.01" y2="18"/>
-                </svg>
-                Types
+                Réservations
             </a>
         </div>
-        {% endif %}
 
-        {# ── GESTION ACTIVITÉ (ROLE_ADMIN) ── #}
-        {% if is_granted('ROLE_ADMIN') %}
+        {# ── GESTION ACTIVITÉ ── #}
         <a href="{{ path('admin_activite_index') }}"
            class="nav-item {{ currentRoute starts with 'admin_activite' ? 'active' : '' }}">
             <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -120,10 +101,8 @@
             </svg>
             Gestion Activité
         </a>
-        {% endif %}
 
-        {# ── AVIS & RÉCLAMATIONS (ROLE_ADMIN) ── #}
-        {% if is_granted('ROLE_ADMIN') %}
+        {# ── Gestion Avis & Réclamations (accordéon) ── #}
         <a href="#" class="nav-item" onclick="toggleMenu(event, 'reclamation-submenu')">
             <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
@@ -157,10 +136,8 @@
                 Statistiques
             </a>
         </div>
-        {% endif %}
 
-        {# ── GESTION BLOG (ROLE_ADMIN) ── #}
-        {% if is_granted('ROLE_ADMIN') %}
+        {# ── GESTION BLOG ── #}
         <a href="{{ path('admin_blogs') }}" class="nav-item {{ currentRoute == 'admin_blogs' or currentRoute starts with 'admin_blog' ? 'active' : '' }}">
             <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
@@ -168,10 +145,8 @@
             </svg>
             Gestion Blog
         </a>
-        {% endif %}
 
-        {# ── GESTION UTILISATEURS (ROLE_ADMIN uniquement) ── #}
-        {% if is_granted('ROLE_ADMIN') %}
+        {# ── GESTION UTILISATEURS (accordéon) ── #}
         <a href="#"
            class="nav-item {{ currentRoute in ['admin_users_list', 'add_user', 'admin_user_edit', 'admin_user_profile'] ? 'active' : '' }}"
            onclick="toggleMenu(event, 'users-submenu')">
@@ -187,7 +162,9 @@
             </svg>
         </a>
         <div id="users-submenu" style="display:none; padding-left:16px;">
-            <a href="{{ path('admin_users_list') }}" class="nav-item {{ currentRoute == 'admin_users_list' ? 'active' : '' }}" style="font-size:14px;">
+            <a href="{{ path('admin_users_list') }}"
+               class="nav-item {{ currentRoute == 'admin_users_list' ? 'active' : '' }}"
+               style="font-size:14px;">
                 <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
                     <circle cx="9" cy="7" r="4"/>
@@ -196,42 +173,30 @@
                 </svg>
                 Liste des utilisateurs
             </a>
-            <a href="{{ path('add_user') }}" class="nav-item {{ currentRoute == 'add_user' ? 'active' : '' }}" style="font-size:14px;">
+            <a href="{{ path('add_user') }}"
+               class="nav-item {{ currentRoute == 'add_user' ? 'active' : '' }}"
+               style="font-size:14px;">
                 <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
                     <circle cx="8.5" cy="7" r="4"/>
                     <line x1="20" y1="8" x2="20" y2="14"/>
                     <line x1="23" y1="11" x2="17" y2="11"/>
                 </svg>
-                Ajouter un utilisateur
+                Ajouter utilisateur
             </a>
         </div>
-        {% endif %}
-
-        {# ── MON PROFIL (accessible à tous les rôles) ── #}
-        <a href="{{ path('admin_profile') }}"
-           class="nav-item {{ currentRoute == 'admin_profile' or currentRoute == 'admin_profile_edit' ? 'active' : '' }}">
-            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
-                <circle cx="12" cy="7" r="4"/>
-            </svg>
-            Mon profil
-        </a>
-
     </nav>
 
     <nav class="nav-section">
-        <div class="nav-label">Compte</div>
+        <div class="nav-label">Account</div>
 
-        {% if is_granted('ROLE_ADMIN') %}
-        <a href="{{ path('admin_settings') }}" class="nav-item">
+        <a href="#" class="nav-item">
             <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <circle cx="12" cy="12" r="3"/>
                 <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/>
             </svg>
-            Paramètres
+            Settings
         </a>
-        {% endif %}
     </nav>
 
     <div class="sidebar-footer">
@@ -248,11 +213,12 @@
                     <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
                     <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
                 </svg>
-                Mode clair
+                Light Mode
             </div>
             <div class="theme-switch" id="themeSwitch"></div>
         </div>
 
+        {# ── BOUTON DÉCONNEXION ── #}
         <a href="{{ path('admin_logout') }}"
            style="display:flex;align-items:center;gap:10px;color:#E24B4A;text-decoration:none;font-size:14px;font-weight:600;padding:10px;border-radius:8px;transition:background 0.2s"
            onmouseover="this.style.background='rgba(226,75,74,0.1)'"
@@ -295,7 +261,7 @@
     document.addEventListener('DOMContentLoaded', function () {
         const currentRoute = '{{ currentRoute }}';
 
-        const hebergementRoutes = ['app_hebergement_index', 'app_chambre_index', 'app_disponibilite_index', 'app_type_index'];
+        const hebergementRoutes = ['app_hebergement_index', 'admin_reservation_hebergement_index'];
         if (hebergementRoutes.includes(currentRoute)) {
             var menu  = document.getElementById('hebergement-submenu');
             var arrow = document.getElementById('arrow-hebergement');

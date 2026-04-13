@@ -72,6 +72,11 @@ class Destination
         $this->voyages = new ArrayCollection();
         $this->images  = new ArrayCollection();
     }
+    #[ORM\Column(nullable: true)]
+private ?int $nbLikes = null;
+
+public function getNbLikes(): ?int { return $this->nbLikes; }
+public function setNbLikes(?int $nbLikes): static { $this->nbLikes = $nbLikes; return $this; }
 
     public function getId(): ?int { return $this->id; }
     public function getNom(): ?string { return $this->nom; }

@@ -7,6 +7,7 @@ use App\Repository\DestinationRepository;
 use App\Repository\HebergementRepository;
 use App\Repository\TypeRepository;
 use App\Repository\ActiviteRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -64,28 +65,39 @@ class HomeController extends AbstractController
     }
 
     #[Route('/destinations/{id}', name: 'app_destination_detail')]
-    public function destinationDetail(int $id, DestinationRepository $repo): Response
-    {
-        $destination = $repo->find($id);
+public function destinationDetail(int $id, DestinationRepository $repo, EntityManagerInterface $em): Response
+{
+    $destination = $repo->find($id);
 
-        if (!$destination) {
-            return $this->redirectToRoute('app_destinations');
-        }
+    if (!$destination) {
+    return $this->redirectToRoute('app_destinations');
+}
 
-        $sharePath = $this->generateUrl('app_destination_detail', [
-            'id' => $destination->getId(),
-        ], UrlGeneratorInterface::ABSOLUTE_PATH);
+// ✅ Bloquer les destinations inactives
+if (!$destination->isStatut()) {
+    $this->addFlash('error', 'Cette destination est actuellement inactive.');
+    return $this->redirectToRoute('app_destinations');
+}
 
-        $shareUrl = rtrim((string) $this->getParameter('public_base_url'), '/') . $sharePath;
+// ✅ Incrémenter nb_visites automatiquement à chaque visite
+    // ✅ Incrémenter nb_visites automatiquement à chaque visite
+    $destination->setNbVisites(($destination->getNbVisites() ?? 0) + 1);
+    $em->flush();
 
-        $qrCodeUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=' . rawurlencode($shareUrl);
+    $sharePath = $this->generateUrl('app_destination_detail', [
+        'id' => $destination->getId(),
+    ], UrlGeneratorInterface::ABSOLUTE_PATH);
 
-        return $this->render('home/destination-detail.html.twig', [
-            'destination' => $destination,
-            'share_url' => $shareUrl,
-            'qr_code_url' => $qrCodeUrl,
-        ]);
-    }
+    $shareUrl = rtrim((string) $this->getParameter('public_base_url'), '/') . $sharePath;
+
+    $qrCodeUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=' . rawurlencode($shareUrl);
+
+    return $this->render('home/destination-detail.html.twig', [
+        'destination' => $destination,
+        'share_url'   => $shareUrl,
+        'qr_code_url' => $qrCodeUrl,
+    ]);
+}
 
     #[Route('/hebergements', name: 'app_hebergements_front')]
     public function hebergements(
