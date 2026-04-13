@@ -1,303 +1,79 @@
-<header class="header-area header-sticky">
+<div class="sub-header">
   <div class="container">
     <div class="row">
-      <div class="col-12">
-        <nav class="main-nav">
-          <a href="{{ path('app_home') }}" class="logo"><h1>ViaNoVa</h1></a>
-          <ul class="nav">
-            <li><a href="{{ path('app_home') }}">Home</a></li>
-            <li><a href="{{ path('app_properties') }}">Properties</a></li>
-            <li><a href="{{ path('app_contact') }}">Contact Us</a></li>
-
-            {# ── Bouton Login conditionnel ── #}
-            <li>
-              {% if app.user %}
-                {# Utilisateur connecté #}
-                <div class="user-nav-info">
-                  <a href="{{ path('front_profile') }}" class="user-nav-name">
-                    <i class="fa fa-user-circle"></i>
-                    {{ app.user.prenom }} {{ app.user.nom }}
-                  </a>
-                  <a href="{{ path('front_logout') }}" class="btn-logout">
-                    <i class="fa fa-sign-out-alt"></i> Déconnexion
-                  </a>
-                </div>
-              {% else %}
-                {# Non connecté #}
-                <a href="#" class="btn-login" data-bs-toggle="modal" data-bs-target="#authModal">
-                  <i class="fa fa-user"></i> Login
-                </a>
-              {% endif %}
-            </li>
-          </ul>
-          <a class='menu-trigger'><span>Menu</span></a>
-        </nav>
-      </div>
-    </div>
-  </div>
-</header>
-
-{# ── MODALE Sign In / Sign Up ── #}
-{% if not app.user %}
-<div class="modal fade" id="authModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content auth-modal">
-
-      <div class="modal-header border-0 pb-0">
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-
-      <div class="modal-body px-4 pb-4">
-        <div class="auth-logo text-center mb-3">
-          <h3>ViaNoVa</h3>
-          <p class="text-muted">Bienvenue sur votre plateforme de voyage</p>
-        </div>
-
-        {# Onglets #}
-        <ul class="nav nav-pills auth-tabs mb-4" id="authTabs">
-          <li class="nav-item flex-fill">
-            <button class="nav-link active w-100" data-bs-toggle="pill" data-bs-target="#signIn">
-              Se connecter
-            </button>
-          </li>
-          <li class="nav-item flex-fill">
-            <button class="nav-link w-100" data-bs-toggle="pill" data-bs-target="#signUp">
-              S'inscrire
-            </button>
-          </li>
+      <div class="col-lg-8 col-md-8">
+        <ul class="info">
+          <li><i class="fa fa-envelope"></i> vianova.com</li>
+          <li><i class="fa fa-map"></i> Tunis, Tunisie Lac1 33160</li>
         </ul>
-
-        <div class="tab-content">
-
-          {# ── SIGN IN ── #}
-          <div class="tab-pane fade show active" id="signIn">
-            {% for message in app.flashes('login_error') %}
-              <div class="alert alert-danger">{{ message }}</div>
-            {% endfor %}
-            {% for message in app.flashes('login_success') %}
-              <div class="alert alert-success">{{ message }}</div>
-            {% endfor %}
-
-            <form method="POST" action="{{ path('front_login_check') }}">
-              <input type="hidden" name="_csrf_token" value="{{ csrf_token('front_authenticate') }}">
-
-              <div class="mb-3">
-                <label class="form-label">Email</label>
-                <input type="email" name="_username" class="form-control auth-input"
-                       placeholder="votre@email.com" required>
-              </div>
-              <div class="mb-3">
-                <label class="form-label">Mot de passe</label>
-                <input type="password" name="_password" class="form-control auth-input"
-                       placeholder="••••••••" required>
-              </div>
-              <div class="mb-3 form-check">
-                <input type="checkbox" class="form-check-input" name="_remember_me" id="rememberMe">
-                <label class="form-check-label" for="rememberMe">Se souvenir de moi</label>
-              </div>
-              <button type="submit" class="btn btn-auth w-100">Se connecter</button>
-            </form>
-          </div>
-
-          {# ── SIGN UP ── #}
-          <div class="tab-pane fade" id="signUp">
-            {% for message in app.flashes('register_error') %}
-              <div class="alert alert-danger">{{ message }}</div>
-            {% endfor %}
-            {% for message in app.flashes('register_success') %}
-              <div class="alert alert-success">{{ message }}</div>
-            {% endfor %}
-
-            <form method="POST" action="{{ path('front_register') }}">
-              <input type="hidden" name="_csrf_token" value="{{ csrf_token('front_register') }}">
-
-              <div class="row">
-                <div class="col-6 mb-3">
-                  <label class="form-label">Nom</label>
-                  <input type="text" name="nom" class="form-control auth-input"
-                         placeholder="Votre nom" required>
-                </div>
-                <div class="col-6 mb-3">
-                  <label class="form-label">Prénom</label>
-                  <input type="text" name="prenom" class="form-control auth-input"
-                         placeholder="Votre prénom" required>
-                </div>
-              </div>
-              <div class="mb-3">
-                <label class="form-label">Email</label>
-                <input type="email" name="email" class="form-control auth-input"
-                       placeholder="votre@email.com" required>
-              </div>
-              <div class="mb-3">
-                <label class="form-label">Téléphone</label>
-                <input type="tel" name="telephone" class="form-control auth-input"
-                       placeholder="+216 XX XXX XXX">
-              </div>
-              <div class="mb-3">
-                <label class="form-label">Mot de passe</label>
-                <input type="password" name="password" class="form-control auth-input"
-                       placeholder="Minimum 8 caractères" required minlength="8">
-              </div>
-              <div class="mb-3">
-                <label class="form-label">Confirmer le mot de passe</label>
-                <input type="password" name="confirm_password" class="form-control auth-input"
-                       placeholder="Répétez le mot de passe" required>
-              </div>
-              <button type="submit" class="btn btn-auth w-100">Créer mon compte</button>
-            </form>
-          </div>
-
-        </div>
+      </div>
+      <div class="col-lg-4 col-md-4">
+        <ul class="social-links">
+          <li><a href="#"><i class="fab fa-facebook"></i></a></li>
+          <li><a href="#"><i class="fab fa-twitter"></i></a></li>
+          <li><a href="#"><i class="fab fa-linkedin"></i></a></li>
+          <li><a href="#"><i class="fab fa-instagram"></i></a></li>
+        </ul>
       </div>
     </div>
   </div>
 </div>
 
-<style>
-/* ── BOUTON LOGIN ── */
-.btn-login {
-  background: linear-gradient(135deg, #e8a87c, #d4845a);
-  color: #fff !important;
-  padding: 9px 22px;
-  border-radius: 25px;
-  font-weight: 600;
-  font-size: 14px;
-  transition: all .3s ease;
-  text-decoration: none;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  border: 2px solid transparent;
-}
-.btn-login i {
-  font-size: 15px;
-}
-.btn-login:hover {
-  background: transparent;
-  border-color: #e8a87c;
-  color: #e8a87c !important;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 15px rgba(212,132,90,0.3);
-  text-decoration: none;
-}
+<header class="header-area header-sticky">
+  <div class="container">
+    <div class="row">
+      <div class="col-12">
+        <nav class="main-nav">
+          <a href="{{ path('app_home') }}" class="logo"><h1>Vianova</h1></a>
+          <ul class="nav">
+            <li><a href="{{ path('app_home') }}">Home</a></li>
+            <li><a href="{{ path('app_destinations') }}">Destination</a></li>
+            <li><a href="{{ path('app_hebergements_front') }}">Hébergement</a></li>
+            <li><a href="{{ path('app_activite_index') }}">Activité</a></li>
+            <li><a href="{{ path('app_properties') }}">Properties</a></li>
+            <li><a href="{{ path('avis_index') }}">Avis</a></li>
+            <li><a href="{{ path('reclamation_index') }}">Réclamations</a></li>
+            <li><a href="{{ path('app_blog_index') }}">Blog</a></li>
+            <li><a href="{{ path('app_contact') }}">
+              <i class="fa fa-envelope" style="margin-right:5px;"></i> Contact
+            </a></li>
 
-/* ── UTILISATEUR CONNECTÉ ── */
-.user-nav-info {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  background: rgba(255,255,255,0.1);
-  padding: 6px 14px;
-  border-radius: 25px;
-  backdrop-filter: blur(4px);
-}
+            {% if app.user %}
+              {# Bouton Admin uniquement pour ROLE_ADMIN #}
+              {% if is_granted('ROLE_ADMIN') %}
+                <li>
+                  <a href="{{ path('app_admin') }}" style="color:#d4845a; font-weight:600;">
+                    <i class="fa fa-cog"></i> Admin
+                  </a>
+                </li>
+              {% endif %}
 
-.user-nav-name {
-  color: #fff !important;
-  font-weight: 600;
-  font-size: 14px;
-  text-decoration: none;
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  transition: color .3s;
-}
-.user-nav-name i {
-  font-size: 18px;
-  color: #e8a87c;
-}
-.user-nav-name:hover {
-  color: #e8a87c !important;
-  text-decoration: none;
-}
+              {# Prénom → page profil #}
+              <li>
+                <a href="{{ path('admin_profile') }}" style="font-weight:600; color:#d4845a;">
+                  <i class="fa fa-user-circle"></i> {{ app.user.prenom }}
+                </a>
+              </li>
 
-.btn-logout {
-  background: rgba(232,168,124,0.2);
-  color: #e8a87c !important;
-  padding: 5px 14px;
-  border-radius: 20px;
-  font-size: 13px;
-  font-weight: 500;
-  text-decoration: none;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  border: 1px solid rgba(232,168,124,0.4);
-  transition: all .3s;
-}
-.btn-logout i { font-size: 13px; }
-.btn-logout:hover {
-  background: #e8a87c;
-  color: #fff !important;
-  text-decoration: none;
-  border-color: #e8a87c;
-}
+              {# Déconnexion #}
+              <li>
+                <a href="{{ path('admin_logout') }}" title="Déconnexion" style="color:#ef4444;">
+                  <i class="fa fa-sign-out-alt"></i>
+                </a>
+              </li>
 
-/* ── SÉPARATEUR VERTICAL ── */
-.user-nav-info::before {
-  content: '';
-  display: none;
-}
-
-/* ── MODALE ── */
-.auth-modal {
-  border-radius: 16px;
-  border: none;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.15);
-}
-.auth-logo h3 {
-  color: #d4845a;
-  font-weight: 700;
-  font-size: 1.8rem;
-  margin-bottom: 4px;
-}
-.auth-logo p { font-size: 14px; }
-.auth-tabs {
-  background: #f8f9fa;
-  border-radius: 10px;
-  padding: 4px;
-  gap: 4px;
-}
-.auth-tabs .nav-link {
-  border-radius: 8px;
-  color: #666;
-  font-weight: 500;
-  border: none;
-  transition: all .2s;
-}
-.auth-tabs .nav-link.active {
-  background: linear-gradient(135deg, #e8a87c, #d4845a);
-  color: #fff;
-  box-shadow: 0 2px 8px rgba(212,132,90,0.3);
-}
-.auth-input {
-  border: 1.5px solid #e0e0e0;
-  border-radius: 8px;
-  padding: 10px 14px;
-  font-size: 14px;
-  transition: all .3s;
-}
-.auth-input:focus {
-  border-color: #d4845a;
-  box-shadow: 0 0 0 3px rgba(212,132,90,0.15);
-  outline: none;
-}
-.btn-auth {
-  background: linear-gradient(135deg, #e8a87c, #d4845a);
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  padding: 12px;
-  font-weight: 600;
-  font-size: 15px;
-  transition: all .3s;
-  letter-spacing: .3px;
-}
-.btn-auth:hover {
-  background: linear-gradient(135deg, #d4845a, #c0703f);
-  color: #fff;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 15px rgba(212,132,90,0.4);
-}
-</style>
-{% endif %}
+            {% else %}
+              {# Bouton Login #}
+              <li>
+                <a href="{{ path('admin_login') }}" style="color:#d4845a; font-weight:600;">
+                  <i class="fa fa-user"></i> Login
+                </a>
+              </li>
+            {% endif %}
+          </ul>
+          <a class="menu-trigger"><span>Menu</span></a>
+        </nav>
+      </div>
+    </div>
+  </div>
+</header>

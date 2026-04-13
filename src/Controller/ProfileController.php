@@ -8,12 +8,37 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use App\Entity\Users;
+use App\Repository\UsersRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Vich\UploaderBundle\Handler\UploadHandler;
+
 
 class ProfileController extends AbstractController
 {
-    public function __construct(private EntityManagerInterface $entityManager)
+    public function __construct(
+        private EntityManagerInterface $entityManager,
+        private UsersRepository        $usersRepository,
+        private UploadHandler          $uploadHandler
+    ) {}
+
+    private function validatePassword(string $password): ?string
     {
+        if (strlen($password) < 6) {
+            return 'Le mot de passe doit contenir au moins 6 caractères.';
+        }
+        if (!preg_match('/[A-Z]/', $password)) {
+            return 'Le mot de passe doit contenir au moins une lettre majuscule.';
+        }
+        if (!preg_match('/[a-z]/', $password)) {
+            return 'Le mot de passe doit contenir au moins une lettre minuscule.';
+        }
+        if (!preg_match('/[0-9]/', $password)) {
+            return 'Le mot de passe doit contenir au moins un chiffre.';
+        }
+        if (!preg_match('/[@$!%*?&#+\-_=.]/', $password)) {
+            return 'Le mot de passe doit contenir au moins un caractère spécial (@$!%*?&#+).';
+        }
+        return null;
     }
 
     #[Route('/admin/profile', name: 'admin_profile')]
@@ -24,13 +49,14 @@ class ProfileController extends AbstractController
             return $this->redirectToRoute('admin_login');
         }
 
-        // Si l'utilisateur est de type UserInterface, on récupère l'entité complète
         if (!$user instanceof Users) {
-            $user = $this->entityManager->getRepository(Users::class)->findOneBy(['email' => $user->getUserIdentifier()]);
+            $user = $this->usersRepository->findOneBy(['email' => $user->getUserIdentifier()]);
         }
 
         return $this->render('admin/users/profile.html.twig', [
-            'user' => $user
+            'user'        => $user,
+            'fieldErrors' => [],
+            'globalError' => null,
         ]);
     }
 
@@ -42,88 +68,123 @@ class ProfileController extends AbstractController
             return $this->redirectToRoute('admin_login');
         }
 
-        // Si l'utilisateur est de type UserInterface, on récupère l'entité complète
         if (!$user instanceof Users) {
-            $user = $this->entityManager->getRepository(Users::class)->findOneBy(['email' => $user->getUserIdentifier()]);
+            $user = $this->usersRepository->findOneBy(['email' => $user->getUserIdentifier()]);
         }
 
+        if (!$user) {
+            return $this->redirectToRoute('admin_login');
+        }
+
+        $fieldErrors = [];
+        $globalError = null;
+
         if ($request->isMethod('POST')) {
-            $nom = $request->request->get('nom');
-            $prenom = $request->request->get('prenom');
-            $email = $request->request->get('email');
-            $telephone = $request->request->get('telephone');
-            $currentPassword = $request->request->get('current_password');
-            $newPassword = $request->request->get('new_password');
-            $confirmPassword = $request->request->get('confirm_password');
+            $nom             = trim($request->request->get('nom', ''));
+            $prenom          = trim($request->request->get('prenom', ''));
+            $email           = trim($request->request->get('email', ''));
+            $telephone       = trim($request->request->get('telephone', ''));
+            $currentPassword = $request->request->get('current_password', '');
+            $newPassword     = $request->request->get('new_password', '');
+            $confirmPassword = $request->request->get('confirm_password', '');
 
-            // Validation
-            if (empty($nom) || empty($prenom) || empty($email)) {
-                $this->addFlash('error', 'Les champs nom, prénom et email sont obligatoires');
-                return $this->redirectToRoute('admin_profile_edit');
+            // ── Validation Nom ──
+            if (empty($nom)) {
+                $fieldErrors['nom'] = 'Le nom est obligatoire.';
+            } elseif (!preg_match('/^[A-Za-zÀ-ÿ\s]{2,50}$/', $nom)) {
+                $fieldErrors['nom'] = 'Le nom doit contenir uniquement des lettres (2-50 caractères).';
             }
 
-            // Vérifier le mot de passe actuel si modification du profil
-            if ($nom !== $user->getNom() || $prenom !== $user->getPrenom() || $email !== $user->getEmail() || $telephone !== $user->getTelephone()) {
-                if (!$passwordHasher->isPasswordValid($user, $currentPassword)) {
-                    $this->addFlash('error', 'Mot de passe actuel incorrect pour modifier vos informations');
-                    return $this->redirectToRoute('admin_profile_edit');
+            // ── Validation Prénom ──
+            if (empty($prenom)) {
+                $fieldErrors['prenom'] = 'Le prénom est obligatoire.';
+            } elseif (!preg_match('/^[A-Za-zÀ-ÿ\s]{2,50}$/', $prenom)) {
+                $fieldErrors['prenom'] = 'Le prénom doit contenir uniquement des lettres (2-50 caractères).';
+            }
+
+            // ── Validation Email ──
+            if (empty($email)) {
+                $fieldErrors['email'] = "L'adresse email est obligatoire.";
+            } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                $fieldErrors['email'] = "Le format de l'adresse email est invalide.";
+            } else {
+                $existingUser = $this->usersRepository->findOneBy(['email' => $email]);
+                if ($existingUser && $existingUser->getId() !== $user->getId()) {
+                    $fieldErrors['email'] = 'Cet email est déjà utilisé par un autre utilisateur.';
                 }
             }
 
-            // Vérifier si l'email existe déjà (pour un autre utilisateur)
-            $existingUser = $this->entityManager->getRepository(Users::class)->findOneBy(['email' => $email]);
-            if ($existingUser && $existingUser->getId() !== $user->getId()) {
-                $this->addFlash('error', 'Cet email est déjà utilisé par un autre utilisateur');
-                return $this->redirectToRoute('admin_profile_edit');
+            // ── Validation Téléphone ──
+            if (empty($telephone)) {
+                $fieldErrors['telephone'] = 'Le numéro de téléphone est obligatoire.';
+            } elseif (!preg_match('/^[0-9]{8}$/', $telephone)) {
+                $fieldErrors['telephone'] = 'Le numéro de téléphone doit contenir exactement 8 chiffres.';
             }
 
-            try {
-                // Mettre à jour les informations
-                $user->setNom($nom);
-                $user->setPrenom($prenom);
-                $user->setEmail($email);
-                $user->setTelephone($telephone ?: null);
+            // ── Vérification mot de passe actuel ──
+            $hasChanges = ($nom !== $user->getNom()
+                || $prenom !== $user->getPrenom()
+                || $email !== $user->getEmail()
+                || $telephone !== $user->getTelephone());
 
-                // Changer le mot de passe si fourni
-                if (!empty($newPassword)) {
-                    if (empty($currentPassword)) {
-                        $this->addFlash('error', 'Veuillez entrer votre mot de passe actuel');
-                        return $this->redirectToRoute('admin_profile_edit');
-                    }
+            if ($hasChanges && empty($currentPassword)) {
+                $fieldErrors['current_password'] = 'Veuillez entrer votre mot de passe actuel pour modifier vos informations.';
+            } elseif ($hasChanges && !empty($currentPassword) && !$passwordHasher->isPasswordValid($user, $currentPassword)) {
+                $fieldErrors['current_password'] = 'Mot de passe actuel incorrect.';
+            }
 
-                    if (!$passwordHasher->isPasswordValid($user, $currentPassword)) {
-                        $this->addFlash('error', 'Mot de passe actuel incorrect');
-                        return $this->redirectToRoute('admin_profile_edit');
-                    }
-
-                    if (strlen($newPassword) < 8) {
-                        $this->addFlash('error', 'Le nouveau mot de passe doit contenir au moins 8 caractères');
-                        return $this->redirectToRoute('admin_profile_edit');
-                    }
-
-                    if ($newPassword !== $confirmPassword) {
-                        $this->addFlash('error', 'Les mots de passe ne correspondent pas');
-                        return $this->redirectToRoute('admin_profile_edit');
-                    }
-
-                    $user->setPasswordHash($passwordHasher->hashPassword($user, $newPassword));
+            // ── Validation nouveau mot de passe ──
+            if (!empty($newPassword)) {
+                if (empty($currentPassword)) {
+                    $fieldErrors['current_password'] = 'Veuillez entrer votre mot de passe actuel.';
+                } elseif (!$passwordHasher->isPasswordValid($user, $currentPassword)) {
+                    $fieldErrors['current_password'] = 'Mot de passe actuel incorrect.';
                 }
 
-                $user->setUpdatedAt(new \DateTime());
+                $passwordError = $this->validatePassword($newPassword);
+                if ($passwordError) {
+                    $fieldErrors['new_password'] = $passwordError;
+                }
 
-                $this->entityManager->flush();
+                if ($newPassword !== $confirmPassword) {
+                    $fieldErrors['confirm_password'] = 'Les mots de passe ne correspondent pas.';
+                }
+            }
 
-                $this->addFlash('success', 'Profil mis à jour avec succès');
-                return $this->redirectToRoute('admin_profile');
+            if (!empty($fieldErrors)) {
+                $globalError = 'Veuillez corriger les erreurs ci-dessous.';
+            } else {
+                try {
+                    $user->setNom($nom);
+                    $user->setPrenom($prenom);
+                    $user->setEmail($email);
+                    $user->setTelephone($telephone ?: null);
 
-            } catch (\Exception $e) {
-                $this->addFlash('error', 'Une erreur est survenue: ' . $e->getMessage());
-                return $this->redirectToRoute('admin_profile_edit');
+                    if (!empty($newPassword)) {
+                        $user->setPasswordHash($passwordHasher->hashPassword($user, $newPassword));
+                    }
+
+                    $avatarFile = $request->files->get('avatarFile');
+if ($avatarFile) {
+    $user->setAvatarFile($avatarFile);
+}
+
+                    $user->setUpdatedAt(new \DateTime());
+                    $this->entityManager->flush();
+
+                    $this->addFlash('success', 'Profil mis à jour avec succès.');
+                    return $this->redirectToRoute('admin_profile');
+
+                } catch (\Exception $e) {
+                    $globalError = 'Une erreur est survenue : ' . $e->getMessage();
+                }
             }
         }
 
         return $this->render('admin/users/profile.html.twig', [
-            'user' => $user
+            'user'        => $user,
+            'fieldErrors' => $fieldErrors,
+            'globalError' => $globalError,
         ]);
     }
 }
