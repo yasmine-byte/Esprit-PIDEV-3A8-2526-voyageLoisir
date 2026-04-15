@@ -31,6 +31,21 @@
         <script src="{{ asset('assets_front/js/js/owl-carousel.js') }}"></script>
         <script src="{{ asset('assets_front/js/js/counter.js') }}"></script>
         <script src="{{ asset('assets_front/js/js/custom.js') }}"></script>
+
+        <script>
+            window.addEventListener('load', function () {
+                const preloader = document.getElementById('js-preloader');
+                if (preloader) {
+                    preloader.style.opacity = '0';
+                    preloader.style.visibility = 'hidden';
+                    preloader.style.pointerEvents = 'none';
+
+                    setTimeout(() => {
+                        preloader.style.display = 'none';
+                    }, 300);
+                }
+            });
+        </script>
     {% endblock %}
 </body>
 </html>

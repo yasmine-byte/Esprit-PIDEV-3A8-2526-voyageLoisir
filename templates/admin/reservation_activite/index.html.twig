@@ -343,6 +343,32 @@
     padding: 32px 12px;
     font-size: 16px;
 }
+.btn-add-reservation {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: #e7b67b;
+    color: #1c1c1c;
+    padding: 12px 20px;
+    border-radius: 12px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 15px;
+    border: none;
+    transition: 0.25s ease;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+}
+
+.btn-add-reservation:hover {
+    background: #dca867;
+    color: #1c1c1c;
+    transform: translateY(-1px);
+}
+
+.btn-add-reservation:active {
+    transform: translateY(0);
+}
 </style>
 
 <div class="reservations-section">
@@ -366,6 +392,11 @@
             <p>Gérez toutes les réservations de votre plateforme</p>
         </div>
     </div>
+    <div style="display:flex; justify-content:flex-end; margin-bottom:20px;">
+    <a href="{{ path('admin_reservation_activite_new', {'id': activite_id}) }}" class="btn-add-reservation">
+        ➕ Ajouter réservation
+    </a>
+</div>
 
     {% if todayCount > 0 %}
         <div style="

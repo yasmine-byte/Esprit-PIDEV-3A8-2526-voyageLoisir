@@ -147,7 +147,13 @@
     </div>
 
     <div class="admin-form-card">
-        {{ form_start(form) }}
+        {{ form_start(form, {
+            'attr': {
+                'novalidate': 'novalidate'
+            }
+        }) }}
+
+            {{ form_errors(form) }}
 
             <div class="admin-form-grid">
                 <div>
