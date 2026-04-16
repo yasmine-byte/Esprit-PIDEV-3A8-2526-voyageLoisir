@@ -25,7 +25,11 @@ security:
                 enable_csrf: true
                 csrf_parameter: _csrf_token
                 csrf_token_id: authenticate
+<<<<<<< HEAD
                 default_target_path: /
+=======
+                default_target_path: admin_profile
+>>>>>>> origin/main
                 always_use_default_target_path: true
                 use_referer: false
                 success_handler: App\Security\LoginSuccessHandler
@@ -38,12 +42,42 @@ security:
                 lifetime: 604800
                 always_remember_me: false
 
+<<<<<<< HEAD
 
 
     role_hierarchy:
         ROLE_ADMIN: [ROLE_USER]
 
 
+=======
+        front:
+            pattern: ^/
+            lazy: true
+            provider: app_user_provider
+            user_checker: App\Security\UserChecker
+            form_login:
+                login_path: app_home
+                check_path: front_login_check
+                username_parameter: _username
+                password_parameter: _password
+                enable_csrf: true
+                csrf_parameter: _csrf_token
+                csrf_token_id: front_authenticate
+                default_target_path: app_home
+                always_use_default_target_path: true
+                use_referer: false
+            logout:
+                path: front_logout
+                target: app_home
+                invalidate_session: false
+            remember_me:
+                secret: '%kernel.secret%'
+                lifetime: 604800
+                always_remember_me: false
+>>>>>>> origin/main
+
+    role_hierarchy:
+        ROLE_ADMIN: [ROLE_USER]
 
     access_control:
         - { path: ^/admin/login$,       roles: PUBLIC_ACCESS }

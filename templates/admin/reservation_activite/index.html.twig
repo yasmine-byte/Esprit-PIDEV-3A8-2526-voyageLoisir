@@ -1,0 +1,529 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}Gestion Réservations{% endblock %}
+
+{% block admin_content %}
+
+<style>
+.reservations-section {
+    margin-top: 10px;
+}
+
+.reservations-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 18px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+}
+
+.reservations-header-text h2 {
+    margin: 0;
+    font-size: 46px;
+    line-height: 1.1;
+    font-weight: 700;
+    color: #1e1e1e;
+}
+
+.reservations-header-text p {
+    margin: 8px 0 0;
+    font-size: 18px;
+    color: #7a7a7a;
+}
+
+/* POPUP NOTIFICATION */
+.reservation-popup {
+    position: fixed;
+    top: 100px;
+    right: 24px;
+    z-index: 9999;
+    width: 340px;
+    background: #ffffff;
+    border-left: 6px solid #d89b5b;
+    border-radius: 16px;
+    box-shadow: 0 16px 35px rgba(0, 0, 0, 0.12);
+    padding: 16px 18px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    animation: slideIn 0.4s ease;
+}
+
+.reservation-popup-icon {
+    font-size: 22px;
+    line-height: 1;
+}
+
+.reservation-popup-content {
+    flex: 1;
+}
+
+.reservation-popup-title {
+    font-weight: 700;
+    font-size: 15px;
+    margin-bottom: 4px;
+    color: #1e1e1e;
+}
+
+.reservation-popup-text {
+    font-size: 14px;
+    color: #666;
+    line-height: 1.4;
+}
+
+.reservation-popup-close {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: #888;
+    line-height: 1;
+    padding: 0;
+}
+
+.reservation-popup-close:hover {
+    color: #000;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px) translateX(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) translateX(0);
+    }
+}
+
+.reservations-calendar-card {
+    background: #ffffff;
+    border: 1px solid #ececec;
+    border-radius: 22px;
+    padding: 22px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
+    margin-bottom: 24px;
+}
+
+.reservations-calendar-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+}
+
+.reservations-calendar-title h3 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 700;
+    color: #1e1e1e;
+}
+
+.reservations-calendar-legend {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: #666;
+    font-weight: 600;
+}
+
+.legend-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.legend-attente { background: #d89b5b; }
+.legend-confirmee { background: #1f8b4c; }
+.legend-annulee { background: #d9534f; }
+
+#calendar {
+    min-height: 520px;
+}
+
+.fc .fc-toolbar-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: #1e1e1e;
+}
+
+.fc .fc-button {
+    background: #e7b67b !important;
+    border-color: #e7b67b !important;
+    color: #1c1c1c !important;
+    box-shadow: none !important;
+}
+
+.fc .fc-button:hover {
+    background: #dca867 !important;
+    border-color: #dca867 !important;
+}
+
+.fc .fc-button-primary:not(:disabled).fc-button-active {
+    background: #c9914f !important;
+    border-color: #c9914f !important;
+}
+
+.reservations-table-card {
+    background: #ffffff;
+    border: 1px solid #ececec;
+    border-radius: 22px;
+    padding: 18px 22px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
+    overflow-x: auto;
+}
+
+.reservations-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 1050px;
+}
+
+.reservations-table thead th {
+    padding: 18px 14px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #9a9a9a;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    border-bottom: 1px solid #ececec;
+    text-align: left;
+}
+
+.reservations-table tbody td {
+    padding: 20px 14px;
+    border-bottom: 1px solid #ececec;
+    vertical-align: middle;
+    color: #1e1e1e;
+    font-size: 16px;
+}
+
+.reservations-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.reservations-table tbody tr:hover {
+    background: rgba(231, 182, 123, 0.06);
+}
+
+.reservation-main-cell {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-width: 280px;
+}
+
+.reservation-icon {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #e7b67b, #d89b5b);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+.reservation-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.reservation-name {
+    font-size: 17px;
+    font-weight: 600;
+    color: #1e1e1e;
+    line-height: 1.2;
+}
+
+.reservation-sub {
+    font-size: 14px;
+    color: #7f7f7f;
+}
+
+.reservation-total {
+    font-weight: 700;
+    color: #1e1e1e;
+}
+
+.reservation-status {
+    display: inline-block;
+    padding: 8px 14px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.status-attente {
+    background: #fff4df;
+    color: #b7791f;
+}
+
+.status-confirmee {
+    background: #e8f8ee;
+    color: #1f8b4c;
+}
+
+.status-annulee {
+    background: #fff1f1;
+    color: #d9534f;
+}
+
+.reservations-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.reservations-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 100px;
+    padding: 10px 16px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    border: 1px solid #e7e7e7;
+    transition: 0.25s ease;
+    cursor: pointer;
+}
+
+.reservations-btn-edit {
+    background: #f3f3f3;
+    color: #1e1e1e;
+}
+
+.reservations-btn-edit:hover {
+    background: #efefef;
+    color: #1e1e1e;
+}
+
+.reservations-btn-add {
+    background: #e7b67b;
+    color: #1c1c1c;
+    border-color: #e7b67b;
+}
+
+.reservations-btn-add:hover {
+    background: #dca867;
+    color: #1c1c1c;
+}
+
+.reservations-btn-delete {
+    background: #ffffff;
+    color: #d9534f;
+    border-color: #f1d0cf;
+}
+
+.reservations-btn-delete:hover {
+    background: #fff5f5;
+    color: #c9302c;
+}
+
+.reservations-empty {
+    text-align: center;
+    color: #7a7a7a;
+    padding: 32px 12px;
+    font-size: 16px;
+}
+</style>
+
+<div class="reservations-section">
+
+    {% if pendingCount > 0 %}
+        <div id="pending-popup" class="reservation-popup">
+            <div class="reservation-popup-icon">🔔</div>
+            <div class="reservation-popup-content">
+                <div class="reservation-popup-title">Notification</div>
+                <div class="reservation-popup-text">
+                    {{ pendingCount }} réservation{{ pendingCount > 1 ? 's' : '' }} en attente de confirmation
+                </div>
+            </div>
+            <button type="button" class="reservation-popup-close" onclick="closePopup()">×</button>
+        </div>
+    {% endif %}
+
+    <div class="reservations-header">
+        <div class="reservations-header-text">
+            <h2>Gestion des Réservations</h2>
+            <p>Gérez toutes les réservations de votre plateforme</p>
+        </div>
+    </div>
+
+    {% if todayCount > 0 %}
+        <div style="
+            background: #e8f4ff;
+            border: 1px solid #b6d4fe;
+            color: #084298;
+            padding: 14px 18px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            font-weight: 600;
+        ">
+            📅 {{ todayCount }} réservation{{ todayCount > 1 ? 's' : '' }} prévue{{ todayCount > 1 ? 's' : '' }} aujourd’hui
+        </div>
+    {% endif %}
+
+    <div class="reservations-calendar-card">
+        <div class="reservations-calendar-title">
+            <h3>Planning des réservations</h3>
+
+            <div class="reservations-calendar-legend">
+                <span class="legend-item">
+                    <span class="legend-dot legend-attente"></span> En attente
+                </span>
+                <span class="legend-item">
+                    <span class="legend-dot legend-confirmee"></span> Confirmée
+                </span>
+                <span class="legend-item">
+                    <span class="legend-dot legend-annulee"></span> Annulée
+                </span>
+            </div>
+        </div>
+
+        <div id="calendar"></div>
+    </div>
+
+    <div class="reservations-table-card">
+        <table class="reservations-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Activité</th>
+                    <th>Date</th>
+                    <th>Personnes</th>
+                    <th>Statut</th>
+                    <th>Total</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+
+            <tbody>
+            {% for reservation in reservation_activites %}
+                <tr>
+                    <td>{{ reservation.id }}</td>
+
+                    <td>
+                        <div class="reservation-main-cell">
+                            <div class="reservation-icon">
+                                {{ reservation.activite ? reservation.activite.nom|slice(0,1)|upper : 'R' }}
+                            </div>
+
+                            <div class="reservation-info">
+                                <div class="reservation-name">
+                                    {{ reservation.activite ? reservation.activite.nom : 'Activité supprimée' }}
+                                </div>
+                                <div class="reservation-sub">
+                                    {{ reservation.activite and reservation.activite.type ? reservation.activite.type : 'Réservation' }}
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+
+                    <td>{{ reservation.dateReservation ? reservation.dateReservation|date('Y-m-d') : 'N/A' }}</td>
+                    <td>{{ reservation.nombrePersonnes }}</td>
+
+                    <td>
+                        <span class="reservation-status
+                            {% if reservation.statut == 'EN_ATTENTE' %}status-attente{% endif %}
+                            {% if reservation.statut == 'CONFIRMEE' %}status-confirmee{% endif %}
+                            {% if reservation.statut == 'ANNULEE' %}status-annulee{% endif %}
+                        ">
+                            {{ reservation.statut }}
+                        </span>
+                    </td>
+
+                    <td class="reservation-total">{{ reservation.total }} TND</td>
+
+                    <td>
+                        <div class="reservations-actions">
+                            <a href="{{ path('admin_reservation_activite_edit', {'id': reservation.id}) }}" class="reservations-btn reservations-btn-edit">
+                                Modifier
+                            </a>
+
+                            {% if reservation.activite %}
+                                <a href="{{ path('admin_reservation_activite_new', {'id': reservation.activite.id}) }}" class="reservations-btn reservations-btn-add">
+                                    Ajouter
+                                </a>
+                            {% endif %}
+
+                            <form method="post"
+                                  action="{{ path('admin_reservation_activite_delete', {'id': reservation.id}) }}"
+                                  onsubmit="return confirm('Supprimer cette réservation ?');"
+                                  style="display:inline;">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ reservation.id) }}">
+                                <button type="submit" class="reservations-btn reservations-btn-delete">
+                                    Supprimer
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="7" class="reservations-empty">Aucune réservation trouvée</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const calendarEl = document.getElementById('calendar');
+
+    if (calendarEl) {
+        const calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            locale: 'fr',
+            height: 520,
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,timeGridWeek,timeGridDay'
+            },
+            events: {{ events|json_encode|raw }}
+        });
+
+        calendar.render();
+    }
+
+    const popup = document.getElementById('pending-popup');
+    if (popup) {
+        setTimeout(() => {
+            popup.style.display = 'none';
+        }, 5000);
+    }
+});
+
+function closePopup() {
+    const popup = document.getElementById('pending-popup');
+    if (popup) {
+        popup.style.display = 'none';
+    }
+}
+</script>
+
+{% endblock %}

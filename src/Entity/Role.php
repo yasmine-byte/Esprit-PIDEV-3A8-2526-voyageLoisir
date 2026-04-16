@@ -21,15 +21,13 @@ class Role
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $description = null;
 
-    #[ORM\Column(nullable: true)]
-    private ?\DateTime $createdAT = null;
+    // FIX : nommage uniforme camelCase avec mapping correct
+    #[ORM\Column(name: 'created_at', nullable: true)]
+    private ?\DateTime $createdAt = null;
 
-    #[ORM\Column(nullable: true)]
+    #[ORM\Column(name: 'updated_at', nullable: true)]
     private ?\DateTime $updatedAt = null;
 
-    /**
-     * @var Collection<int, Users>
-     */
     #[ORM\ManyToMany(targetEntity: Users::class, mappedBy: 'roles')]
     private Collection $no;
 
@@ -51,7 +49,6 @@ class Role
     public function setName(string $name): static
     {
         $this->name = $name;
-
         return $this;
     }
 
@@ -63,19 +60,18 @@ class Role
     public function setDescription(?string $description): static
     {
         $this->description = $description;
-
         return $this;
     }
 
-    public function getCreatedAT(): ?\DateTime
+    // FIX : getCreatedAt (pas getCreatedAT)
+    public function getCreatedAt(): ?\DateTime
     {
-        return $this->createdAT;
+        return $this->createdAt;
     }
 
-    public function setCreatedAT(?\DateTime $createdAT): static
+    public function setCreatedAt(?\DateTime $createdAt): static
     {
-        $this->createdAT = $createdAT;
-
+        $this->createdAt = $createdAt;
         return $this;
     }
 
@@ -87,13 +83,9 @@ class Role
     public function setUpdatedAt(?\DateTime $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
-
         return $this;
     }
 
-    /**
-     * @return Collection<int, Users>
-     */
     public function getNo(): Collection
     {
         return $this->no;
@@ -105,7 +97,6 @@ class Role
             $this->no->add($no);
             $no->addRole($this);
         }
-
         return $this;
     }
 
@@ -114,7 +105,6 @@ class Role
         if ($this->no->removeElement($no)) {
             $no->removeRole($this);
         }
-
         return $this;
     }
 }

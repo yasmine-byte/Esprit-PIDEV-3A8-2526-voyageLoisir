@@ -1,0 +1,75 @@
+{% extends 'base_front.html.twig' %}
+
+{% block title %}Modifier {{ activite.nom }}{% endblock %}
+
+{% block body %}
+
+<div class="page-heading header-text"
+     style="
+        background-image: url('{{ asset('assets_front/images/ajout-activite.jpg') }}');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+     ">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <span class="breadcrumb">
+                    <a href="{{ path('app_home') }}">Home</a> / Modifier activité
+                </span>
+                <h3 style="color:white;">Modifier l’activité</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="contact-page section">
+    <div class="container">
+        <div class="row">
+
+            <div class="col-lg-6">
+                <div class="section-heading">
+                    <h6>| Modifier Activité</h6>
+                    <h2>Mettre à jour cette activité</h2>
+                </div>
+
+                <p>
+                    Modifiez les informations ci-dessous pour mettre à jour l’activité.
+                </p>
+
+            
+            </div>
+
+            <div class="col-lg-6">
+                {{ form_start(form, {'attr': {'id': 'contact-form'}}) }}
+
+                    {{ form_errors(form) }}
+
+                    <div class="row">
+                        <div class="col-lg-12">{{ form_row(form.nom) }}</div>
+                        <div class="col-lg-12">{{ form_row(form.description) }}</div>
+                        <div class="col-lg-12">{{ form_row(form.prix) }}</div>
+                        <div class="col-lg-12">{{ form_row(form.type) }}</div>
+                        <div class="col-lg-12">{{ form_row(form.lieu) }}</div>
+                        <div class="col-lg-12">{{ form_row(form.duree) }}</div>
+                        <div class="col-lg-12">{{ form_row(form.imageUrl) }}</div>
+
+                        <div class="col-lg-12">
+                            <button type="submit" class="orange-button">Enregistrer</button>
+                        </div>
+
+                        <div class="col-lg-12 mt-3">
+                            <a href="{{ path('app_activite_index') }}" class="btn btn-dark">
+                                Retour à la liste
+                            </a>
+                        </div>
+                    </div>
+
+                {{ form_end(form, {'render_rest': false}) }}
+            </div>
+
+        </div>
+    </div>
+</div>
+
+{% endblock %}

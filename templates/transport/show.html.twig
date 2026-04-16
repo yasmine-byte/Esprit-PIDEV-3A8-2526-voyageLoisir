@@ -1,0 +1,33 @@
+{% extends "admin/base_admin.html.twig" %}
+
+{% block title %}Transport #{{ transport.id }}{% endblock %}
+
+{% block admin_content %}
+<div class="page-header">
+    <h1>Detail Transport</h1>
+    <p>Informations du transport</p>
+</div>
+
+<div class="card" style="max-width:600px">
+    <table class="market-table">
+        <tr>
+            <th>ID</th>
+            <td>{{ transport.id }}</td>
+        </tr>
+        <tr>
+            <th>Type de transport</th>
+            <td>{{ transport.typeTransport }}</td>
+        </tr>
+        <tr>
+            <th>Voyage</th>
+            <td>{{ transport.voyage ? transport.voyage.id : "-" }}</td>
+        </tr>
+    </table>
+
+    <div style="margin-top:20px;display:flex;gap:10px">
+        <a href="{{ path("app_transport_index") }}" class="action-btn">Retour</a>
+        <a href="{{ path("app_transport_edit", {"id": transport.id}) }}" class="action-btn">Modifier</a>
+        {{ include("transport/_delete_form.html.twig") }}
+    </div>
+</div>
+{% endblock %}

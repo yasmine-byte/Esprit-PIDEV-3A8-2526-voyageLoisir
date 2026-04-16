@@ -74,6 +74,12 @@ private ?File $avatarFile = null;
     #[ORM\Column(name: 'updated_at', nullable: true)]
     private ?\DateTime $updatedAt = null;
 
+    #[ORM\Column(nullable: true)]
+private ?bool $isVerified = false;
+
+#[ORM\Column(length: 255, nullable: true)]
+private ?string $verificationToken = null;
+
     #[ORM\ManyToMany(targetEntity: Role::class, inversedBy: 'no', fetch: 'EAGER')]
     #[ORM\JoinTable(
         name: 'users_role',
@@ -210,4 +216,9 @@ public function __wakeup(): void
 
     public function getResetTokenExpiresAt(): ?\DateTime { return $this->resetTokenExpiresAt; }
     public function setResetTokenExpiresAt(?\DateTime $resetTokenExpiresAt): static { $this->resetTokenExpiresAt = $resetTokenExpiresAt; return $this; }
+
+    public function isVerified(): ?bool { return $this->isVerified; }
+public function setIsVerified(?bool $isVerified): static { $this->isVerified = $isVerified; return $this; }
+public function getVerificationToken(): ?string { return $this->verificationToken; }
+public function setVerificationToken(?string $token): static { $this->verificationToken = $token; return $this; }
 }

@@ -1,0 +1,207 @@
+﻿{% extends 'admin/base_admin.html.twig' %}
+{% block title %}Voyages{% endblock %}
+
+{% block admin_content %}
+<div class="page-header">
+    <h1>Voyages</h1>
+    <p>Gérer tous les voyages</p>
+</div>
+
+{# ===== FILTRES ===== #}
+<div class="card" style="margin-bottom:20px">
+    <div class="card-header">
+        <h3 class="card-title">Filtres & Recherche</h3>
+    </div>
+    <form method="GET" action="{{ path('app_voyage_index') }}"
+          style="display:flex;flex-wrap:wrap;gap:12px;padding:16px;align-items:flex-end">
+
+        <div style="flex:1;min-width:180px">
+            <label style="display:block;font-size:12px;margin-bottom:4px;color:#888">Recherche (point départ, arrivée, ID)</label>
+            <input type="text" name="search" value="{{ search }}"
+                   placeholder="Rechercher..."
+                   style="width:100%;padding:8px 12px;border-radius:6px;border:1px solid #333;background:#1a1a2e;color:#fff;font-size:13px">
+        </div>
+
+        <div style="min-width:150px">
+            <label style="display:block;font-size:12px;margin-bottom:4px;color:#888">Trier par</label>
+            <select name="tri"
+                    style="width:100%;padding:8px 12px;border-radius:6px;border:1px solid #333;background:#1a1a2e;color:#fff;font-size:13px">
+                <option value="id"            {{ tri == 'id'            ? 'selected' : '' }}>ID</option>
+                <option value="date_depart"   {{ tri == 'date_depart'   ? 'selected' : '' }}>Date Départ</option>
+                <option value="date_arrivee"  {{ tri == 'date_arrivee'  ? 'selected' : '' }}>Date Arrivée</option>
+                <option value="point_depart"  {{ tri == 'point_depart'  ? 'selected' : '' }}>Point Départ</option>
+                <option value="point_arrivee" {{ tri == 'point_arrivee' ? 'selected' : '' }}>Point Arrivée</option>
+                <option value="prix"          {{ tri == 'prix'          ? 'selected' : '' }}>Prix</option>
+            </select>
+        </div>
+
+        <div style="min-width:120px">
+            <label style="display:block;font-size:12px;margin-bottom:4px;color:#888">Ordre</label>
+            <select name="ordre"
+                    style="width:100%;padding:8px 12px;border-radius:6px;border:1px solid #333;background:#1a1a2e;color:#fff;font-size:13px">
+                <option value="ASC"  {{ ordre == 'ASC'  ? 'selected' : '' }}>▲ Croissant</option>
+                <option value="DESC" {{ ordre == 'DESC' ? 'selected' : '' }}>▼ Décroissant</option>
+            </select>
+        </div>
+
+        <div style="display:flex;gap:8px">
+            <button type="submit"
+                    style="padding:8px 18px;border-radius:6px;border:none;background:#6c63ff;color:#fff;font-size:13px;cursor:pointer;font-weight:600">
+                🔍 Filtrer
+            </button>
+            <a href="{{ path('app_voyage_index') }}"
+               style="padding:8px 18px;border-radius:6px;border:1px solid #555;color:#aaa;font-size:13px;text-decoration:none;display:flex;align-items:center">
+                ✕ Reset
+            </a>
+        </div>
+    </form>
+</div>
+
+{# ===== TABLEAU ===== #}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">
+            Liste des Voyages
+            <span style="font-size:13px;color:#888;font-weight:normal;margin-left:8px">
+                ({{ voyages|length }} résultat{{ voyages|length > 1 ? 's' : '' }})
+            </span>
+        </h3>
+        <a href="{{ path('app_voyage_new') }}" class="action-btn primary">+ Ajouter</a>
+    </div>
+
+    {% set params = {search: search} %}
+
+    <style>
+        .voyage-table { width:100%; border-collapse:separate; border-spacing:0; }
+        .voyage-table thead tr { background:#12122a; }
+        .voyage-table thead th { padding:12px 16px; font-size:11px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:#6b7280; border-bottom:1px solid #1e1e3a; white-space:nowrap; }
+        .voyage-table thead th a { color:inherit; text-decoration:none; }
+        .voyage-table thead th a:hover { color:#e0e0e0; }
+        .voyage-table tbody tr { transition:background .15s; border-bottom:1px solid #1a1a30; }
+        .voyage-table tbody tr:hover { background:#14142a; }
+        .voyage-table tbody td { padding:14px 16px; vertical-align:middle; }
+        .vbadge-id   { background:#1e1e2a; color:#818cf8; border-radius:6px; padding:3px 9px; font-size:12px; font-weight:700; }
+        .vbadge-dest { background:#0f2a1a; color:#4ade80; border:1px solid #1a3d28; border-radius:6px; padding:3px 9px; font-size:12px; font-weight:600; }
+        .vbadge-dur  { background:#1e1e2a; color:#a78bfa; border-radius:6px; padding:3px 9px; font-size:11px; font-weight:700; }
+        .vbadge-tp   { background:#1e1e2a; color:#94a3b8; border:1px solid #2a2a3a; border-radius:6px; padding:3px 9px; font-size:11px; font-weight:600; }
+        .trajet-arrow { color:#f97316; margin:0 5px; font-size:12px; }
+        .prix-val { font-size:14px; font-weight:700; color:#fb923c; }
+        .prix-sym { font-size:10px; margin-left:1px; font-weight:400; color:#888; }
+        .vact { display:flex; gap:6px; align-items:center; flex-wrap:nowrap; }
+        .vbtn { display:inline-flex; align-items:center; gap:4px; padding:5px 11px; border-radius:6px; font-size:12px; font-weight:500; text-decoration:none; border:1px solid #2a2a3a; cursor:pointer; background:#1a1a28; color:#94a3b8; transition:color .15s,border-color .15s; white-space:nowrap; }
+        .vbtn:hover { color:#e0e0e0; border-color:#444; }
+        .vbtn-edit { color:#818cf8; border-color:#2e2e50; }
+        .vbtn-tp   { color:#c084fc; border-color:#3a2060; }
+        .vbtn-del  { color:#f87171; border-color:#3d1f1f; }
+        .vbtn-del form, .vbtn-del button { margin:0; padding:0; background:none; border:none; color:inherit; font:inherit; font-size:12px; font-weight:600; cursor:pointer; display:inline; }
+    </style>
+
+    <div style="overflow-x:auto">
+    <table class="voyage-table">
+        <thead>
+            <tr>
+                <th>
+                    <a href="{{ path('app_voyage_index', params|merge({tri: 'id', ordre: (tri == 'id' and ordre == 'ASC') ? 'DESC' : 'ASC'})) }}">
+                        ID {% if tri == 'id' %}{{ ordre == 'ASC' ? '▲' : '▼' }}{% endif %}
+                    </a>
+                </th>
+                <th>Destination</th>
+                <th>
+                    <a href="{{ path('app_voyage_index', params|merge({tri: 'point_depart', ordre: (tri == 'point_depart' and ordre == 'ASC') ? 'DESC' : 'ASC'})) }}">
+                        Trajet {% if tri == 'point_depart' %}{{ ordre == 'ASC' ? '▲' : '▼' }}{% endif %}
+                    </a>
+                </th>
+                <th>
+                    <a href="{{ path('app_voyage_index', params|merge({tri: 'date_depart', ordre: (tri == 'date_depart' and ordre == 'ASC') ? 'DESC' : 'ASC'})) }}">
+                        Dates {% if tri == 'date_depart' %}{{ ordre == 'ASC' ? '▲' : '▼' }}{% endif %}
+                    </a>
+                </th>
+                <th>Durée</th>
+                <th>
+                    <a href="{{ path('app_voyage_index', params|merge({tri: 'prix', ordre: (tri == 'prix' and ordre == 'ASC') ? 'DESC' : 'ASC'})) }}">
+                        Prix {% if tri == 'prix' %}{{ ordre == 'ASC' ? '▲' : '▼' }}{% endif %}
+                    </a>
+                </th>
+                <th>Créé par</th>
+                <th>Réservé par</th>
+                <th>Transports</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for voyage in voyages %}
+            <tr>
+                <td><span class="vbadge-id">#{{ voyage.id }}</span></td>
+                <td>
+                    {% if voyage.destination %}
+                        <span class="vbadge-dest">{{ voyage.destination.nom }}</span>
+                        <div style="font-size:10px;color:#4b5563;margin-top:3px">ID #{{ voyage.destination.id }}</div>
+                    {% else %}
+                        <span style="color:#4b5563">—</span>
+                    {% endif %}
+                </td>
+                <td style="white-space:nowrap">
+                    <span style="color:#e2e8f0;font-weight:600;font-size:13px">{{ voyage.pointDepart ?? '?' }}</span>
+                    <span class="trajet-arrow">→</span>
+                    <span style="color:#e2e8f0;font-weight:600;font-size:13px">{{ voyage.pointArrivee ?? '?' }}</span>
+                </td>
+                <td style="white-space:nowrap">
+                    <div style="font-size:13px;color:#e2e8f0;font-weight:600">
+                        {{ voyage.dateDepart ? voyage.dateDepart|date('d/m/Y') : '—' }}
+                    </div>
+                    <div style="font-size:11px;color:#4b5563;margin-top:2px">
+                        → {{ voyage.dateArrivee ? voyage.dateArrivee|date('d/m/Y') : '—' }}
+                    </div>
+                </td>
+                <td>
+                    {% if voyage.dateDepart and voyage.dateArrivee %}
+                        {% set duree = ((voyage.dateArrivee|date('U') - voyage.dateDepart|date('U')) / 86400)|round %}
+                        <span class="vbadge-dur">{{ duree }}j</span>
+                    {% else %}
+                        <span style="color:#4b5563">—</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if voyage.prix %}
+                        <span class="prix-val">{{ voyage.prix }}<span class="prix-sym">€</span></span>
+                    {% else %}
+                        <span style="color:#4b5563">—</span>
+                    {% endif %}
+                </td>
+                <td>{{ voyage.createdBy ? voyage.createdBy.nom ~ ' ' ~ voyage.createdBy.prenom : '-' }}</td>
+                <td>{{ voyage.reservedBy ? voyage.reservedBy.nom ~ ' ' ~ voyage.reservedBy.prenom : '-' }}</td>
+                <td>
+                    {% if voyage.transports|length > 0 %}
+                        {% set icons = {'Avion': '✈', 'Bus': '🚌', 'Train': '🚆', 'Voiture': '🚗'} %}
+                        <div style="display:flex;flex-wrap:wrap;gap:4px">
+                        {% for t in voyage.transports %}
+                            <span class="vbadge-tp">{{ icons[t.typeTransport] ?? '' }} {{ t.typeTransport }}</span>
+                        {% endfor %}
+                        </div>
+                    {% else %}
+                        <span style="color:#4b5563;font-size:12px">—</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <div class="vact">
+                        <a href="{{ path('app_voyage_show', {'id': voyage.id}) }}" class="vbtn">👁 Voir</a>
+                        <a href="{{ path('app_voyage_edit', {'id': voyage.id}) }}" class="vbtn vbtn-edit">✏️ Modifier</a>
+                        <a href="{{ path('app_transport_new', {'voyage_id': voyage.id}) }}" class="vbtn vbtn-tp">+ Transport</a>
+                        <span class="vbtn vbtn-del">{{ include('voyage/_delete_form.html.twig') }}</span>
+                    </div>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="10" style="text-align:center;color:#4b5563;padding:40px;font-size:14px">
+                    Aucun voyage trouvé
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </div>
+</div>
+
+<footer class="copyright">Copyright &copy; 2026 VoyageLoisir</footer>
+{% endblock %}

@@ -1,0 +1,174 @@
+﻿{% extends 'admin/base_admin.html.twig' %}
+{% block title %}Images{% endblock %}
+
+{% block admin_content %}
+<div class="page-header">
+    <h1>Images</h1>
+    <p>Gérer toutes les images</p>
+</div>
+
+{# ===== FILTRES ===== #}
+<div class="card" style="margin-bottom:20px">
+    <div class="card-header">
+        <h3 class="card-title">Filtres & Recherche</h3>
+    </div>
+    <form method="GET" action="{{ path('app_image_index') }}"
+          style="display:flex;flex-wrap:wrap;gap:12px;padding:16px;align-items:flex-end">
+
+        <div style="flex:1;min-width:220px">
+            <label style="display:block;font-size:12px;margin-bottom:4px;color:#888">
+                Recherche (ID image, ID destination, nom destination, pays)
+            </label>
+            <input type="text" name="search" value="{{ search }}"
+                   placeholder="Ex: Paris, 3, France..."
+                   style="width:100%;padding:8px 12px;border-radius:6px;border:1px solid #333;background:#1a1a2e;color:#fff;font-size:13px">
+        </div>
+
+        <div style="min-width:160px">
+            <label style="display:block;font-size:12px;margin-bottom:4px;color:#888">Trier par</label>
+            <select name="tri"
+                    style="width:100%;padding:8px 12px;border-radius:6px;border:1px solid #333;background:#1a1a2e;color:#fff;font-size:13px">
+                <option value="i.id" {{ tri == 'i.id' ? 'selected' : '' }}>ID Image</option>
+                <option value="d.id" {{ tri == 'd.id' ? 'selected' : '' }}>ID Destination</option>
+                <option value="d.nom" {{ tri == 'd.nom' ? 'selected' : '' }}>Nom Destination</option>
+                <option value="d.pays" {{ tri == 'd.pays' ? 'selected' : '' }}>Pays Destination</option>
+            </select>
+        </div>
+
+        <div style="min-width:120px">
+            <label style="display:block;font-size:12px;margin-bottom:4px;color:#888">Ordre</label>
+            <select name="ordre"
+                    style="width:100%;padding:8px 12px;border-radius:6px;border:1px solid #333;background:#1a1a2e;color:#fff;font-size:13px">
+                <option value="ASC"  {{ ordre == 'ASC'  ? 'selected' : '' }}>▲ Croissant</option>
+                <option value="DESC" {{ ordre == 'DESC' ? 'selected' : '' }}>▼ Décroissant</option>
+            </select>
+        </div>
+
+        <div style="display:flex;gap:8px">
+            <button type="submit"
+                    style="padding:8px 18px;border-radius:6px;border:none;background:#6c63ff;color:#fff;font-size:13px;cursor:pointer;font-weight:600">
+                🔍 Filtrer
+            </button>
+            <a href="{{ path('app_image_index') }}"
+               style="padding:8px 18px;border-radius:6px;border:1px solid #555;color:#aaa;font-size:13px;text-decoration:none;display:flex;align-items:center">
+                ✕ Reset
+            </a>
+        </div>
+    </form>
+</div>
+
+{# ===== TABLEAU ===== #}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">
+            Liste des Images
+            <span style="font-size:13px;color:#888;font-weight:normal;margin-left:8px">
+                ({{ images|length }} résultat{{ images|length > 1 ? 's' : '' }})
+            </span>
+        </h3>
+        <a href="{{ path('app_image_new') }}" class="action-btn primary">+ Ajouter</a>
+    </div>
+
+    {% set params = {search: search} %}
+
+    <style>
+        .img-table { width:100%; border-collapse:separate; border-spacing:0; }
+        .img-table thead tr { background:#12122a; }
+        .img-table thead th {
+            padding:12px 16px; font-size:11px; font-weight:700;
+            letter-spacing:.08em; text-transform:uppercase;
+            color:#6b7280; border-bottom:1px solid #1e1e3a; white-space:nowrap;
+        }
+        .img-table thead th a { color:inherit; text-decoration:none; }
+        .img-table thead th a:hover { color:#e0e0e0; }
+        .img-table tbody tr { transition:background .15s; border-bottom:1px solid #1a1a30; }
+        .img-table tbody tr:hover { background:#14142a; }
+        .img-table tbody td { padding:12px 16px; vertical-align:middle; }
+
+        .ibadge-id   { background:#1e1e2a; color:#818cf8; border-radius:6px; padding:3px 9px; font-size:12px; font-weight:700; }
+        .ibadge-dest { background:#0f2a1a; color:#4ade80; border:1px solid #1a3d28; border-radius:6px; padding:3px 9px; font-size:12px; font-weight:600; }
+        .ibadge-pays { background:#1e1e2a; color:#94a3b8; border:1px solid #2a2a3a; border-radius:6px; padding:3px 9px; font-size:12px; }
+
+        .iact { display:flex; gap:6px; align-items:center; }
+        .ibtn {
+            display:inline-flex; align-items:center; gap:4px;
+            padding:5px 11px; border-radius:6px; font-size:12px; font-weight:500;
+            text-decoration:none; border:1px solid #2a2a3a; cursor:pointer;
+            background:#1a1a28; color:#94a3b8;
+            transition:color .15s, border-color .15s; white-space:nowrap;
+        }
+        .ibtn:hover { color:#e0e0e0; border-color:#444; }
+        .ibtn-edit { color:#818cf8; border-color:#2e2e50; }
+        .ibtn-del  { color:#f87171; border-color:#3d1f1f; }
+        .ibtn-del form, .ibtn-del button {
+            margin:0; padding:0; background:none; border:none;
+            color:inherit; font:inherit; font-size:12px; font-weight:500;
+            cursor:pointer; display:inline;
+        }
+    </style>
+
+    <div style="overflow-x:auto">
+    <table class="img-table">
+        <thead>
+            <tr>
+                <th><a href="{{ path('app_image_index', params|merge({tri: 'i.id', ordre: (tri == 'i.id' and ordre == 'ASC') ? 'DESC' : 'ASC'})) }}">ID {% if tri == 'i.id' %}{{ ordre == 'ASC' ? '▲' : '▼' }}{% endif %}</a></th>
+                <th>Aperçu</th>
+                <th>URL</th>
+                <th><a href="{{ path('app_image_index', params|merge({tri: 'd.nom', ordre: (tri == 'd.nom' and ordre == 'ASC') ? 'DESC' : 'ASC'})) }}">Destination {% if tri == 'd.nom' %}{{ ordre == 'ASC' ? '▲' : '▼' }}{% endif %}</a></th>
+                <th><a href="{{ path('app_image_index', params|merge({tri: 'd.pays', ordre: (tri == 'd.pays' and ordre == 'ASC') ? 'DESC' : 'ASC'})) }}">Pays {% if tri == 'd.pays' %}{{ ordre == 'ASC' ? '▲' : '▼' }}{% endif %}</a></th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for image in images %}
+            <tr>
+                <td><span class="ibadge-id">#{{ image.id }}</span></td>
+
+                <td>
+                    <img src="{{ image.urlImage }}"
+                         style="width:64px;height:42px;object-fit:cover;border-radius:6px;border:1px solid #2a2a3a;">
+                </td>
+
+                <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+                    <span style="font-size:11px;color:#6b7280">{{ image.urlImage }}</span>
+                </td>
+
+                <td>
+                    {% if image.destination %}
+                        <span class="ibadge-dest">{{ image.destination.nom }}</span>
+                        <div style="font-size:10px;color:#4b5563;margin-top:3px">ID #{{ image.destination.id }}</div>
+                    {% else %}
+                        <span style="color:#4b5563">—</span>
+                    {% endif %}
+                </td>
+
+                <td>
+                    {% if image.destination %}
+                        <span class="ibadge-pays">{{ image.destination.pays }}</span>
+                    {% else %}
+                        <span style="color:#4b5563">—</span>
+                    {% endif %}
+                </td>
+
+                <td>
+                    <div class="iact">
+                        <a href="{{ path('app_image_show', {'id': image.id}) }}" class="ibtn">👁 Voir</a>
+                        <a href="{{ path('app_image_edit', {'id': image.id}) }}" class="ibtn ibtn-edit">✏️ Modifier</a>
+                        <span class="ibtn ibtn-del">{{ include('image/_delete_form.html.twig') }}</span>
+                    </div>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="6" style="text-align:center;color:#4b5563;padding:40px;font-size:14px">
+                    Aucune image trouvée
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </div>
+</div>
+
+<footer class="copyright">Copyright &copy; 2026 VoyageLoisir</footer>
+{% endblock %}

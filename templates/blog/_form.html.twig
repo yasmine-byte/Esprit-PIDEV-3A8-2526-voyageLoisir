@@ -1,0 +1,107 @@
+{% set currentBlog = blog|default(form.vars.data) %}
+
+{{ form_start(form, {
+    attr: {
+        class: form_class|default('blog-compose-form')
+    }
+}) }}
+    {{ form_errors(form) }}
+
+    <div class="blog-form-grid">
+        <div class="blog-form-field blog-form-field--full">
+            {{ form_label(form.titre) }}
+            {{ form_widget(form.titre) }}
+            {{ form_errors(form.titre) }}
+        </div>
+
+        <div class="blog-form-field">
+            {{ form_label(form.blogCoverImage) }}
+            {{ form_widget(form.blogCoverImage) }}
+            {{ form_errors(form.blogCoverImage) }}
+            {% if currentBlog and currentBlog.imageCouverture %}
+                <small style="display:block;margin-top:8px;color:#64748b;">
+                    Image actuelle :
+                    <a href="{{ currentBlog.imageCouverture }}" target="_blank" rel="noopener noreferrer">voir le fichier</a>
+                </small>
+            {% endif %}
+        </div>
+
+        <div class="blog-form-field blog-form-field--full">
+            {{ form_label(form.contenu) }}
+            {{ form_widget(form.contenu) }}
+            {{ form_errors(form.contenu) }}
+        </div>
+
+        <div class="blog-form-field blog-form-field--full">
+            <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;">
+                {{ form_label(form.extrait) }}
+                <button type="button" class="blog-form-btn blog-form-btn--secondary" id="generateExcerptButton">Generer un extrait</button>
+            </div>
+            {{ form_widget(form.extrait) }}
+            {{ form_errors(form.extrait) }}
+            <small id="generateExcerptMessage" style="display:block;margin-top:8px;color:#64748b;"></small>
+        </div>
+    </div>
+
+    <div class="blog-form-actions">
+        {{ form_widget(form.saveDraft, {
+            attr: {
+                class: 'blog-form-btn blog-form-btn--secondary'
+            }
+        }) }}
+        {{ form_widget(form.publish, {
+            attr: {
+                class: 'blog-form-btn blog-form-btn--primary'
+            }
+        }) }}
+    </div>
+{{ form_end(form) }}
+
+<script>
+    (function () {
+        const button = document.getElementById('generateExcerptButton');
+        const titleInput = document.getElementById('{{ form.titre.vars.id }}');
+        const contentInput = document.getElementById('{{ form.contenu.vars.id }}');
+        const excerptInput = document.getElementById('{{ form.extrait.vars.id }}');
+        const message = document.getElementById('generateExcerptMessage');
+
+        if (!button || !titleInput || !contentInput || !excerptInput) {
+            return;
+        }
+
+        button.addEventListener('click', async function () {
+            button.disabled = true;
+            if (message) {
+                message.textContent = 'Generation de l extrait...';
+            }
+
+            const response = await fetch('{{ path('api_blog_generate_excerpt') }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({
+                    title: titleInput.value,
+                    content: contentInput.value,
+                    max_length: 180
+                })
+            });
+
+            const payload = await response.json();
+            button.disabled = false;
+
+            if (!response.ok || !payload.success) {
+                if (message) {
+                    message.textContent = payload.message || 'Impossible de generer un extrait pour le moment.';
+                }
+                return;
+            }
+
+            excerptInput.value = payload.excerpt || '';
+            if (message) {
+                message.textContent = 'Extrait genere avec succes.';
+            }
+        });
+    })();
+</script>

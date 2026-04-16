@@ -1,0 +1,12 @@
+<form id="delete-form-{{ image.id }}"
+      method="post"
+      action="{{ path('app_image_delete', {'id': image.id}) }}"
+      style="display:inline">
+    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ image.id) }}">
+    <button type="button"
+            onclick="openDeleteModal(document.getElementById('delete-form-{{ image.id }}'))"
+            class="action-btn"
+            style="color:#c27878;border-color:#c27878;background:none;cursor:pointer">
+        Supprimer
+    </button>
+</form>

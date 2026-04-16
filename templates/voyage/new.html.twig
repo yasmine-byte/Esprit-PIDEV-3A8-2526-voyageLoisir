@@ -1,0 +1,19 @@
+﻿{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}Nouveau Voyage{% endblock %}
+
+{% block admin_content %}
+<div class="page-header">
+    <h1>Nouveau Voyage</h1>
+    <p>Ajouter un nouveau voyage{% if destination_id %} pour la destination <strong>{{ destination_id }}</strong>{% endif %}</p>
+</div>
+
+
+
+<div class="card">
+    {{ include('voyage/_form.html.twig') }}
+    <a href="{{ path('app_destination_index') }}" class="action-btn" style="margin-top:10px">← Retour aux destinations</a>
+</div>
+
+<footer class="copyright">Copyright &copy; 2026 VoyageLoisir</footer>
+{% endblock %}

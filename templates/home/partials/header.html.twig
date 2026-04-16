@@ -14,6 +14,146 @@
           <li><a href="#"><i class="fab fa-linkedin"></i></a></li>
           <li><a href="#"><i class="fab fa-instagram"></i></a></li>
         </ul>
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8 col-md-8">
+        <ul class="info">
+          <li><i class="fa fa-envelope"></i> vianova.com</li>
+          <li><i class="fa fa-map"></i> Tunis, Tunisie Lac1 33160</li>
+        </ul>
+      </div>
+      <div class="col-lg-4 col-md-4">
+        <ul class="social-links">
+          <li><a href="#"><i class="fab fa-facebook"></i></a></li>
+          <li><a href="#"><i class="fab fa-twitter"></i></a></li>
+          <li><a href="#"><i class="fab fa-linkedin"></i></a></li>
+          <li><a href="#"><i class="fab fa-instagram"></i></a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<header class="header-area header-sticky">
+  <div class="container">
+    <div class="row">
+      <div class="col-12">
+        <nav class="main-nav">
+          <a href="{{ path('app_home') }}" class="logo"><h1>Vianova</h1></a>
+          <ul class="nav">
+            <li><a href="{{ path('app_home') }}">Home</a></li>
+            <li><a href="{{ path('app_destinations') }}">Destination</a></li>
+            <li><a href="{{ path('app_hebergements_front') }}">Hébergement</a></li>
+            <li><a href="{{ path('app_activite_index') }}">Activité</a></li>
+            <li><a href="{{ path('app_properties') }}">Properties</a></li>
+            <li><a href="{{ path('avis_index') }}">Avis</a></li>
+            <li><a href="{{ path('reclamation_index') }}">Réclamations</a></li>
+            <li><a href="{{ path('app_blog_index') }}">Blog</a></li>
+            <li><a href="{{ path('app_contact') }}"><i class="fa fa-envelope" style="margin-right:5px;"></i> Contact</a></li>
+            {% if app.user %}
+              {% if is_granted("ROLE_ADMIN") %}
+                <li>
+                  <a href="{{ path('app_admin') }}" style="color:#d4845a; font-weight:600;"><i class="fa fa-cog"></i> Admin</a>
+                </li>
+              {% endif %}
+              <li>
+                <a href="{{ path('front_profile') }}" style="font-weight:600;">
+                  <i class="fa fa-user-circle"></i> {{ app.user.prenom }}
+                </a>
+              </li>
+              <li>
+                <a href="{{ path('front_logout') }}" title="Déconnexion" style="color:#ef4444;">
+                  <i class="fa fa-sign-out-alt"></i>
+                </a>
+              </li>
+            {% else %}
+              <li>
+                <a href="#" data-bs-toggle="modal" data-bs-target="#authModal" style="color:#d4845a; font-weight:600;">
+                  <i class="fa fa-user"></i> Login
+                </a>
+              </li>
+              <li>
+                <a href="{{ path('admin_login') }}" style="color:#f97316; font-weight:600;">
+                  <i class="fa fa-lock"></i> Admin
+                </a>
+              </li>
+            {% endif %}
+          </ul>
+          <a class="menu-trigger"><span>Menu</span></a>
+        </nav>
+      </div>
+    </div>
+  </div>
+</header>
+
+{% if not app.user %}
+<div class="modal fade" id="authModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" style="border-radius:16px;border:none">
+      <div class="modal-header border-0 pb-0">
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body px-4 pb-4">
+        <div class="text-center mb-3">
+          <h3 style="color:#d4845a;font-weight:700">ViaNoVa</h3>
+          <p class="text-muted" style="font-size:14px">Bienvenue sur votre plateforme de voyage</p>
+        </div>
+        <ul class="nav nav-pills mb-4" style="background:#f8f9fa;border-radius:10px;padding:4px;gap:4px">
+          <li class="nav-item flex-fill">
+            <button class="nav-link active w-100" data-bs-toggle="pill" data-bs-target="#signIn">Se connecter</button>
+          </li>
+          <li class="nav-item flex-fill">
+            <button class="nav-link w-100" data-bs-toggle="pill" data-bs-target="#signUp">S'inscrire</button>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane fade show active" id="signIn">
+            <form method="POST" action="{{ path('front_login_check') }}">
+              <input type="hidden" name="_csrf_token" value="{{ csrf_token('front_authenticate') }}">
+              <div class="mb-3">
+                <label class="form-label">Email</label>
+                <input type="email" name="_username" class="form-control" placeholder="votre@email.com" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Mot de passe</label>
+                <input type="password" name="_password" class="form-control" placeholder="Mot de passe" required>
+              </div>
+              <button type="submit" class="btn w-100" style="background:linear-gradient(135deg,#e8a87c,#d4845a);color:#fff;border:none;border-radius:8px;padding:12px;font-weight:600">
+                Se connecter
+              </button>
+            </form>
+          </div>
+          <div class="tab-pane fade" id="signUp">
+            <form method="POST" action="{{ path('front_register') }}">
+              <input type="hidden" name="_csrf_token" value="{{ csrf_token('front_register') }}">
+              <div class="row">
+                <div class="col-6 mb-3">
+                  <label class="form-label">Nom</label>
+                  <input type="text" name="nom" class="form-control" placeholder="Votre nom" required>
+                </div>
+                <div class="col-6 mb-3">
+                  <label class="form-label">Prenom</label>
+                  <input type="text" name="prenom" class="form-control" placeholder="Votre prenom" required>
+                </div>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Email</label>
+                <input type="email" name="email" class="form-control" placeholder="votre@email.com" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Mot de passe</label>
+                <input type="password" name="password" class="form-control" placeholder="Minimum 8 caracteres" required minlength="8">
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Confirmer le mot de passe</label>
+                <input type="password" name="confirm_password" class="form-control" placeholder="Repetez le mot de passe" required>
+              </div>
+              <button type="submit" class="btn w-100" style="background:linear-gradient(135deg,#e8a87c,#d4845a);color:#fff;border:none;border-radius:8px;padding:12px;font-weight:600">
+                Creer mon compte
+              </button>
+            </form>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -77,3 +217,4 @@
     </div>
   </div>
 </header>
+{% endif %}
