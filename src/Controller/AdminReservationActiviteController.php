@@ -86,37 +86,42 @@ public function index(Request $request, ReservationActiviteRepository $reservati
 }
 
     #[Route('/new/{id}', name: 'admin_reservation_activite_new', methods: ['GET', 'POST'])]
-    public function new(
-        Activite $activite,
-        Request $request,
-        EntityManagerInterface $entityManager
-    ): Response {
-        $reservationActivite = new ReservationActivite();
-        $reservationActivite->setActivite($activite);
-        $reservationActivite->setStatut('EN_ATTENTE');
+public function new(
+    Activite $activite,
+    Request $request,
+    EntityManagerInterface $entityManager
+): Response {
+    $reservationActivite = new ReservationActivite();
+    $reservationActivite->setActivite($activite);
+    $reservationActivite->setStatut('EN_ATTENTE');
 
-        $form = $this->createForm(ReservationActiviteType::class, $reservationActivite);
-        $form->handleRequest($request);
+    $form = $this->createForm(ReservationActiviteType::class, $reservationActivite);
+    $form->handleRequest($request);
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            $prix = $reservationActivite->getActivite()?->getPrix() ?? 0;
-            $nb = $reservationActivite->getNombrePersonnes() ?? 0;
-            $reservationActivite->setTotal($prix * $nb);
+    if ($form->isSubmitted() && $form->isValid()) {
 
-            $entityManager->persist($reservationActivite);
-            $entityManager->flush();
+        // 🔥 CALCUL TOTAL
+        $prix = $reservationActivite->getActivite()?->getPrix() ?? 0;
+        $nb = $reservationActivite->getNombrePersonnes() ?? 0;
+        $reservationActivite->setTotal($prix * $nb);
 
-            return $this->redirectToRoute('admin_reservation_activite_index', [
-                'activite' => $activite->getId(),
-            ]);
-        }
+        // 🔥🔥🔥 LIGNE CRITIQUE (AJOUTÉE)
+        $reservationActivite->setUser($this->getUser());
 
-        return $this->render('admin/reservation_activite/new.html.twig', [
-            'reservation_activite' => $reservationActivite,
-            'form' => $form->createView(),
-            'activite' => $activite,
+        $entityManager->persist($reservationActivite);
+        $entityManager->flush();
+
+        return $this->redirectToRoute('admin_reservation_activite_index', [
+            'activite' => $activite->getId(),
         ]);
     }
+
+    return $this->render('admin/reservation_activite/new.html.twig', [
+        'reservation_activite' => $reservationActivite,
+        'form' => $form->createView(),
+        'activite' => $activite,
+    ]);
+}
 
     #[Route('/{id}/edit', name: 'admin_reservation_activite_edit', methods: ['GET', 'POST'])]
     public function edit(

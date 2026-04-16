@@ -187,7 +187,7 @@
 .reservations-table {
     width: 100%;
     border-collapse: collapse;
-    min-width: 1050px;
+    min-width: 1320px;
 }
 
 .reservations-table thead th {
@@ -256,6 +256,24 @@
     color: #7f7f7f;
 }
 
+.reservation-user {
+    min-width: 180px;
+}
+
+.reservation-user-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: #1e1e1e;
+    line-height: 1.2;
+}
+
+.reservation-user-email {
+    margin-top: 4px;
+    font-size: 13px;
+    color: #7f7f7f;
+    word-break: break-word;
+}
+
 .reservation-total {
     font-weight: 700;
     color: #1e1e1e;
@@ -282,6 +300,42 @@
 .status-annulee {
     background: #fff1f1;
     color: #d9534f;
+}
+
+/* WEATHER BADGES */
+.weather-badge {
+    display: inline-block;
+    min-width: 120px;
+    text-align: center;
+    padding: 8px 12px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.weather-loading {
+    background: #f3f3f3;
+    color: #777;
+}
+
+.weather-good {
+    background: #e8f7ec;
+    color: #1f8f4d;
+}
+
+.weather-warning {
+    background: #fff4df;
+    color: #b7791f;
+}
+
+.weather-bad {
+    background: #fdeaea;
+    color: #c0392b;
+}
+
+.weather-error {
+    background: #f1f1f1;
+    color: #666;
 }
 
 .reservations-actions {
@@ -343,6 +397,7 @@
     padding: 32px 12px;
     font-size: 16px;
 }
+
 .btn-add-reservation {
     display: inline-flex;
     align-items: center;
@@ -392,11 +447,12 @@
             <p>Gérez toutes les réservations de votre plateforme</p>
         </div>
     </div>
+
     <div style="display:flex; justify-content:flex-end; margin-bottom:20px;">
-    <a href="{{ path('admin_reservation_activite_new', {'id': activite_id}) }}" class="btn-add-reservation">
-        ➕ Ajouter réservation
-    </a>
-</div>
+        <a href="{{ path('admin_reservation_activite_new', {'id': activite_id}) }}" class="btn-add-reservation">
+            ➕ Ajouter réservation
+        </a>
+    </div>
 
     {% if todayCount > 0 %}
         <div style="
@@ -437,11 +493,13 @@
             <thead>
                 <tr>
                     <th>#</th>
+                    <th>Utilisateur</th>
                     <th>Activité</th>
                     <th>Date</th>
                     <th>Personnes</th>
                     <th>Statut</th>
                     <th>Total</th>
+                    <th>Météo</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -450,6 +508,22 @@
             {% for reservation in reservation_activites %}
                 <tr>
                     <td>{{ reservation.id }}</td>
+
+                    <td>
+                        <div class="reservation-user">
+                            {% if reservation.user %}
+                                <div class="reservation-user-name">
+                                    {{ reservation.user.nom }} {{ reservation.user.prenom }}
+                                </div>
+                                <div class="reservation-user-email">
+                                    {{ reservation.user.email }}
+                                </div>
+                            {% else %}
+                                <div class="reservation-user-name">Utilisateur inconnu</div>
+                                <div class="reservation-user-email">Aucun utilisateur lié</div>
+                            {% endif %}
+                        </div>
+                    </td>
 
                     <td>
                         <div class="reservation-main-cell">
@@ -484,6 +558,13 @@
                     <td class="reservation-total">{{ reservation.total }} TND</td>
 
                     <td>
+                        <span class="weather-badge weather-loading"
+                              data-reservation-id="{{ reservation.id }}">
+                            Chargement...
+                        </span>
+                    </td>
+
+                    <td>
                         <div class="reservations-actions">
                             <a href="{{ path('admin_reservation_activite_edit', {'id': reservation.id}) }}" class="reservations-btn reservations-btn-edit">
                                 Modifier
@@ -509,7 +590,7 @@
                 </tr>
             {% else %}
                 <tr>
-                    <td colspan="7" class="reservations-empty">Aucune réservation trouvée</td>
+                    <td colspan="9" class="reservations-empty">Aucune réservation trouvée</td>
                 </tr>
             {% endfor %}
             </tbody>
@@ -547,6 +628,43 @@ document.addEventListener('DOMContentLoaded', function () {
             popup.style.display = 'none';
         }, 5000);
     }
+
+    const weatherBadges = document.querySelectorAll('.weather-badge[data-reservation-id]');
+
+    weatherBadges.forEach(async function (badge) {
+        const reservationId = badge.dataset.reservationId;
+
+        try {
+            const response = await fetch('/api/activite/reservation/' + reservationId + '/weather-alert');
+            const data = await response.json();
+
+            if (!data.success) {
+                badge.textContent = 'Indisponible';
+                badge.classList.remove('weather-loading');
+                badge.classList.add('weather-error');
+                return;
+            }
+
+            badge.textContent = data.label;
+            badge.title = data.advice || '';
+
+            badge.classList.remove('weather-loading');
+
+            if (data.level === 'good') {
+                badge.classList.add('weather-good');
+            } else if (data.level === 'warning') {
+                badge.classList.add('weather-warning');
+            } else if (data.level === 'bad') {
+                badge.classList.add('weather-bad');
+            } else {
+                badge.classList.add('weather-error');
+            }
+        } catch (error) {
+            badge.textContent = 'Erreur';
+            badge.classList.remove('weather-loading');
+            badge.classList.add('weather-error');
+        }
+    });
 });
 
 function closePopup() {

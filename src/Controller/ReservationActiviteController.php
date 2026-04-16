@@ -24,8 +24,11 @@ final class ReservationActiviteController extends AbstractController
     }
 
     #[Route('/new/{id}', name: 'app_reservation_activite_new', methods: ['GET', 'POST'])]
-    public function new(Activite $activite, Request $request, EntityManagerInterface $entityManager): Response
-    {
+    public function new(
+        Activite $activite,
+        Request $request,
+        EntityManagerInterface $entityManager
+    ): Response {
         $reservationActivite = new ReservationActivite();
         $reservationActivite->setActivite($activite);
         $reservationActivite->setStatut('EN_ATTENTE');
@@ -37,6 +40,9 @@ final class ReservationActiviteController extends AbstractController
             $prix = $activite->getPrix() ?? 0;
             $nb = $reservationActivite->getNombrePersonnes() ?? 0;
             $reservationActivite->setTotal($prix * $nb);
+
+            // Lier la réservation à l'utilisateur connecté
+            $reservationActivite->setUser($this->getUser());
 
             $entityManager->persist($reservationActivite);
             $entityManager->flush();
@@ -61,8 +67,11 @@ final class ReservationActiviteController extends AbstractController
     }
 
     #[Route('/{id}/edit', name: 'app_reservation_activite_edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, ReservationActivite $reservationActivite, EntityManagerInterface $entityManager): Response
-    {
+    public function edit(
+        Request $request,
+        ReservationActivite $reservationActivite,
+        EntityManagerInterface $entityManager
+    ): Response {
         $form = $this->createForm(ReservationActiviteType::class, $reservationActivite);
         $form->handleRequest($request);
 
@@ -83,14 +92,16 @@ final class ReservationActiviteController extends AbstractController
     }
 
     #[Route('/{id}', name: 'app_reservation_activite_delete', methods: ['POST'])]
-    public function delete(Request $request, ReservationActivite $reservationActivite, EntityManagerInterface $entityManager): Response
-    {
-        if ($this->isCsrfTokenValid('delete'.$reservationActivite->getId(), $request->request->get('_token'))) {
+    public function delete(
+        Request $request,
+        ReservationActivite $reservationActivite,
+        EntityManagerInterface $entityManager
+    ): Response {
+        if ($this->isCsrfTokenValid('delete' . $reservationActivite->getId(), $request->request->get('_token'))) {
             $entityManager->remove($reservationActivite);
             $entityManager->flush();
         }
 
         return $this->redirectToRoute('app_reservation_activite_index', [], Response::HTTP_SEE_OTHER);
     }
-    
 }

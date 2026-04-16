@@ -70,6 +70,34 @@
                             {{ form_row(form.dateReservation) }}
                         </div>
 
+                        <div class="col-lg-12 mb-3">
+                            <div id="date-recommendation-box" class="date-recommendation-card" style="display: none;">
+                                <div class="recommendation-title">
+                                    📅 Date conseillée pour cette activité
+                                </div>
+
+                                <div class="recommendation-line">
+                                    <strong>Date choisie :</strong>
+                                    <span id="recommended-chosen-date">-</span>
+                                </div>
+
+                                <div class="recommendation-line">
+                                    <strong>Statut :</strong>
+                                    <span id="recommended-status" class="status-badge">-</span>
+                                </div>
+
+                                <div class="recommendation-line">
+                                    <strong>Période recommandée :</strong>
+                                    <span id="recommended-period">-</span>
+                                </div>
+
+                                <div class="recommendation-line">
+                                    <strong>Conseil :</strong>
+                                    <span id="recommended-advice">-</span>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="col-lg-12">
                             {{ form_row(form.nombrePersonnes) }}
                         </div>
@@ -90,5 +118,124 @@
         </div>
     </div>
 </div>
+
+<style>
+    .date-recommendation-card {
+        background: #fffaf2;
+        border: 1px solid #f0dcc0;
+        border-left: 5px solid #f5a623;
+        border-radius: 16px;
+        padding: 18px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.06);
+    }
+
+    .recommendation-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: #1e1e1e;
+        margin-bottom: 14px;
+    }
+
+    .recommendation-line {
+        margin-bottom: 10px;
+        font-size: 15px;
+        color: #333;
+        line-height: 1.5;
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 999px;
+        font-weight: 700;
+        font-size: 13px;
+        margin-left: 6px;
+    }
+
+    .status-good {
+        background: #e8f7ec;
+        color: #1f8f4d;
+    }
+
+    .status-correct {
+        background: #fff4df;
+        color: #b7791f;
+    }
+
+    .status-bad {
+        background: #fdeaea;
+        color: #c0392b;
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const dateInput = document.getElementById('{{ form.dateReservation.vars.id }}');
+
+    const box = document.getElementById('date-recommendation-box');
+    const chosenDate = document.getElementById('recommended-chosen-date');
+    const status = document.getElementById('recommended-status');
+    const period = document.getElementById('recommended-period');
+    const advice = document.getElementById('recommended-advice');
+
+    function updateStatusClass(statusText) {
+        status.classList.remove('status-good', 'status-correct', 'status-bad');
+
+        if (statusText === 'Bon choix') {
+            status.classList.add('status-good');
+        } else if (statusText === 'Correct') {
+            status.classList.add('status-correct');
+        } else if (statusText === 'À éviter') {
+            status.classList.add('status-bad');
+        }
+    }
+
+    async function loadRecommendation(selectedDate) {
+        if (!selectedDate) {
+            box.style.display = 'none';
+            return;
+        }
+
+        try {
+            const response = await fetch('{{ path('app_activite_recommend_date', { id: activite.id }) }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    date: selectedDate
+                })
+            });
+
+            const data = await response.json();
+
+            if (!data.success) {
+                box.style.display = 'none';
+                return;
+            }
+
+            chosenDate.textContent = data.chosen_date || '-';
+            status.textContent = data.status || '-';
+            period.textContent = data.recommended_period || '-';
+            advice.textContent = data.advice || '-';
+
+            updateStatusClass(data.status || '');
+            box.style.display = 'block';
+        } catch (error) {
+            box.style.display = 'none';
+        }
+    }
+
+    if (dateInput) {
+        dateInput.addEventListener('change', function () {
+            loadRecommendation(this.value);
+        });
+
+        if (dateInput.value) {
+            loadRecommendation(dateInput.value);
+        }
+    }
+});
+</script>
 
 {% endblock %}
