@@ -1,39 +1,100 @@
 security:
-    # https://symfony.com/doc/current/security.html#registering-the-user-hashing-passwords
     password_hashers:
-        Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
+        App\Entity\Users: 'auto'
 
-    # https://symfony.com/doc/current/security.html#loading-the-user-the-user-provider
     providers:
-        users_in_memory: { memory: null }
+        app_user_provider:
+            entity:
+                class: App\Entity\Users
+                property: email
 
     firewalls:
         dev:
-            # Ensure dev tools and static assets are always allowed
             pattern: ^/(_profiler|_wdt|assets|build)/
             security: false
+
         main:
+            pattern: ^/admin
             lazy: true
-            provider: users_in_memory
+            provider: app_user_provider
+            user_checker: App\Security\UserChecker
+            form_login:
+                login_path: admin_login
+                check_path: admin_login_check
+                username_parameter: _username
+                password_parameter: _password
+                enable_csrf: true
+                csrf_parameter: _csrf_token
+                csrf_token_id: authenticate
+                default_target_path: admin_profile
+                always_use_default_target_path: true
+                use_referer: false
+            logout:
+                path: admin_logout
+                target: admin_login
+                invalidate_session: true
+            remember_me:
+                secret: '%kernel.secret%'
+                lifetime: 604800
+                always_remember_me: false
 
-            # Activate different ways to authenticate:
-            # https://symfony.com/doc/current/security.html#the-firewall
+        front:
+            pattern: ^/
+            lazy: true
+            provider: app_user_provider
+            user_checker: App\Security\UserChecker
+            form_login:
+                login_path: app_home
+                check_path: front_login_check
+                username_parameter: _username
+                password_parameter: _password
+                enable_csrf: true
+                csrf_parameter: _csrf_token
+                csrf_token_id: front_authenticate
+                default_target_path: app_home
+                always_use_default_target_path: true
+                use_referer: false
+            logout:
+                path: front_logout
+                target: app_home
+                invalidate_session: false
+            remember_me:
+                secret: '%kernel.secret%'
+                lifetime: 604800
+                always_remember_me: false
 
-            # https://symfony.com/doc/current/security/impersonating_user.html
-            # switch_user: true
+    role_hierarchy:
+        ROLE_ADMIN: [ROLE_USER]
 
-    # Note: Only the *first* matching rule is applied
     access_control:
-        # - { path: ^/admin, roles: ROLE_ADMIN }
-        # - { path: ^/profile, roles: ROLE_USER }
+        - { path: ^/admin/login$,       roles: PUBLIC_ACCESS }
+        - { path: ^/admin/logout,       roles: ROLE_USER }
+        - { path: ^/admin/profile$,     roles: ROLE_USER }
+        - { path: ^/admin/profile/edit, roles: ROLE_USER }
+        - { path: ^/admin/profile/\d+,  roles: ROLE_USER }
+        - { path: ^/admin,              roles: ROLE_ADMIN }
+        - { path: ^/register,           roles: PUBLIC_ACCESS }
+        - { path: ^/login,              roles: PUBLIC_ACCESS }
+        - { path: ^/$,                  roles: PUBLIC_ACCESS }
+        - { path: ^/home,               roles: PUBLIC_ACCESS }
+        - { path: ^/destinations,       roles: PUBLIC_ACCESS }
+        - { path: ^/hebergements,       roles: PUBLIC_ACCESS }
+        - { path: ^/properties,         roles: PUBLIC_ACCESS }
+        - { path: ^/contact,            roles: PUBLIC_ACCESS }
+        - { path: ^/blog,               roles: PUBLIC_ACCESS }
+        - { path: ^/activite$,          roles: PUBLIC_ACCESS }
+        - { path: ^/activite/\d+$,      roles: PUBLIC_ACCESS }
+        - { path: ^/avis,               roles: PUBLIC_ACCESS }
+        - { path: ^/reclamation,        roles: PUBLIC_ACCESS }
+        - { path: ^/reservation,        roles: PUBLIC_ACCESS }
+        - { path: ^/profile,            roles: ROLE_USER }
+        - { path: ^/,                   roles: PUBLIC_ACCESS }
 
 when@test:
     security:
         password_hashers:
-            # Password hashers are resource-intensive by design to ensure security.
-            # In tests, it's safe to reduce their cost to improve performance.
             Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface:
                 algorithm: auto
-                cost: 4 # Lowest possible value for bcrypt
-                time_cost: 3 # Lowest possible value for argon
-                memory_cost: 10 # Lowest possible value for argon
+                cost: 4
+                time_cost: 3
+                memory_cost: 10

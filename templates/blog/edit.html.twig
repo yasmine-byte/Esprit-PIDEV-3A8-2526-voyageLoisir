@@ -1,0 +1,13 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier le blog{% endblock %}
+
+{% block body %}
+    <h1>Modifier le blog</h1>
+
+    {{ include('blog/_form.html.twig', {'button_label': 'Update'}) }}
+
+    <a href="{{ path('app_blog_index') }}">Retour a la liste</a>
+
+    {{ include('blog/_delete_form.html.twig') }}
+{% endblock %}

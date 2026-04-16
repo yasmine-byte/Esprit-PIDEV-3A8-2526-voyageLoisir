@@ -1,0 +1,20 @@
+{{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+
+<div style="margin-bottom:20px">
+    <label class="form-label">Images * (selectionnez plusieurs fichiers)</label>
+    {{ form_widget(form.url_image, {'attr': {'class': 'form-input'}}) }}
+    {% for err in form.url_image.vars.errors %}
+        <small style="display:block;color:#E24B4A;font-size:12px;margin-top:2px">{{ err.message }}</small>
+    {% endfor %}
+</div>
+
+<div style="margin-bottom:20px">
+    <label class="form-label">Destination *</label>
+    {{ form_widget(form.destination, {'attr': {'class': 'form-select'}}) }}
+    {% for err in form.destination.vars.errors %}
+        <small style="display:block;color:#E24B4A;font-size:12px;margin-top:2px">{{ err.message }}</small>
+    {% endfor %}
+</div>
+
+<button type="submit" class="btn primary">Sauvegarder</button>
+{{ form_end(form) }}

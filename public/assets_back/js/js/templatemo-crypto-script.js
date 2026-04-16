@@ -24,11 +24,11 @@ https://templatemo.com/tm-609-crypto-vault
         const themeSwitch = document.getElementById('themeSwitch');
         const themeToggleBtn = document.getElementById('themeToggle');
         const html = document.documentElement;
-        
+
         // Load saved theme
         const savedTheme = localStorage.getItem('theme') || 'dark';
         html.setAttribute('data-theme', savedTheme);
-        
+
         // Dashboard theme switch (sidebar)
         if (themeSwitch) {
             themeSwitch.addEventListener('click', function() {
@@ -36,12 +36,12 @@ https://templatemo.com/tm-609-crypto-vault
                 const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
                 html.setAttribute('data-theme', newTheme);
                 localStorage.setItem('theme', newTheme);
-                
+
                 // Update dark mode toggle in settings if exists
                 updateDarkModeToggle();
             });
         }
-        
+
         // Login page theme toggle button
         if (themeToggleBtn) {
             themeToggleBtn.addEventListener('click', function() {
@@ -59,7 +59,7 @@ https://templatemo.com/tm-609-crypto-vault
     function updateDarkModeToggle() {
         const darkModeToggle = document.getElementById('darkModeToggle');
         const html = document.documentElement;
-        
+
         if (darkModeToggle) {
             if (html.getAttribute('data-theme') === 'dark') {
                 darkModeToggle.classList.add('active');
@@ -72,9 +72,9 @@ https://templatemo.com/tm-609-crypto-vault
     function initDarkModeToggle() {
         const darkModeToggle = document.getElementById('darkModeToggle');
         const themeSwitch = document.getElementById('themeSwitch');
-        
+
         updateDarkModeToggle();
-        
+
         if (darkModeToggle && themeSwitch) {
             darkModeToggle.addEventListener('click', function() {
                 themeSwitch.click();
@@ -150,7 +150,7 @@ https://templatemo.com/tm-609-crypto-vault
                     navigator.clipboard.writeText(address).then(function() {
                         // Show success state
                         btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6b8e6b" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>';
-                        
+
                         // Reset after 2 seconds
                         setTimeout(function() {
                             btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>';
@@ -171,15 +171,15 @@ https://templatemo.com/tm-609-crypto-vault
                 document.querySelectorAll('.settings-tab').forEach(function(t) {
                     t.classList.remove('active');
                 });
-                
+
                 // Remove active from all content
                 document.querySelectorAll('.settings-content').forEach(function(c) {
                     c.classList.remove('active');
                 });
-                
+
                 // Add active to clicked tab
                 tab.classList.add('active');
-                
+
                 // Show corresponding content
                 const targetId = tab.dataset.tab;
                 const targetContent = document.getElementById(targetId);
@@ -221,15 +221,15 @@ https://templatemo.com/tm-609-crypto-vault
     ======================================== */
     function initSearch() {
         const searchInput = document.getElementById('searchInput');
-        
+
         if (searchInput) {
             searchInput.addEventListener('input', function(e) {
                 const search = e.target.value.toLowerCase();
-                
+
                 document.querySelectorAll('.market-table tbody tr').forEach(function(row) {
                     const nameElement = row.querySelector('.coin-name');
                     const symbolElement = row.querySelector('.coin-symbol');
-                    
+
                     if (nameElement && symbolElement) {
                         const name = nameElement.textContent.toLowerCase();
                         const symbol = symbolElement.textContent.toLowerCase();
@@ -262,7 +262,7 @@ https://templatemo.com/tm-609-crypto-vault
             btn.addEventListener('click', function() {
                 const targetId = btn.dataset.target;
                 const input = document.getElementById(targetId);
-                
+
                 if (input) {
                     const type = input.type === 'password' ? 'text' : 'password';
                     input.type = type;
@@ -277,7 +277,7 @@ https://templatemo.com/tm-609-crypto-vault
     function initPasswordStrength() {
         const passwordInput = document.getElementById('registerPassword');
         const strengthBars = document.querySelectorAll('.strength-bar');
-        
+
         if (passwordInput && strengthBars.length > 0) {
             passwordInput.addEventListener('input', function() {
                 const password = passwordInput.value;
@@ -357,36 +357,31 @@ https://templatemo.com/tm-609-crypto-vault
        Form Submissions
     ======================================== */
     function initFormSubmissions() {
-        const loginForm = document.getElementById('loginForm');
-        const registerForm = document.getElementById('registerForm');
+    // Login : on laisse Symfony gérer complètement, on ne touche pas au formulaire
+    // Le form a déjà action="{{ path('admin_login_check') }}" dans le Twig
 
-        if (loginForm) {
-            loginForm.addEventListener('submit', function(e) {
-                e.preventDefault();
-                window.location.href = 'index.html';
-            });
-        }
+    const registerForm = document.getElementById('registerForm');
 
-        if (registerForm) {
-            registerForm.addEventListener('submit', function(e) {
-                e.preventDefault();
-                
-                const successMessage = document.getElementById('successMessage');
-                const formHeader = document.querySelector('.form-header');
-                const authTabs = document.querySelector('.auth-tabs');
-                
-                if (successMessage) {
-                    registerForm.style.display = 'none';
-                    if (authTabs) authTabs.style.display = 'none';
-                    successMessage.classList.add('active');
-                    if (formHeader) {
-                        formHeader.querySelector('h1').textContent = 'Success!';
-                        formHeader.querySelector('p').textContent = '';
-                    }
+    if (registerForm) {
+        registerForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const successMessage = document.getElementById('successMessage');
+            const formHeader = document.querySelector('.form-header');
+            const authTabs = document.querySelector('.auth-tabs');
+
+            if (successMessage) {
+                registerForm.style.display = 'none';
+                if (authTabs) authTabs.style.display = 'none';
+                successMessage.classList.add('active');
+                if (formHeader) {
+                    formHeader.querySelector('h1').textContent = 'Success!';
+                    formHeader.querySelector('p').textContent = '';
                 }
-            });
-        }
+            }
+        });
     }
+}
 
     /* ========================================
        Initialize All

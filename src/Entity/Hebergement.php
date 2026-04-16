@@ -7,6 +7,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: HebergementRepository::class)]
 class Hebergement
@@ -17,16 +18,30 @@ class Hebergement
     private ?int $id = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Assert\NotBlank(message: "La description est obligatoire.")]
+    #[Assert\Length(min: 10, minMessage: "La description doit contenir au moins {{ limit }} caractères.")]
     private ?string $description = null;
 
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
+    #[Assert\NotBlank(message: "Le prix est obligatoire.")]
+    #[Assert\Positive(message: "Le prix doit être un nombre positif.")]
     private ?string $prix = null;
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $imagePath = null;
 
     #[ORM\ManyToOne]
+    #[Assert\NotNull(message: "Le type est obligatoire.")]
     private ?Type $type = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?float $latitude = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?float $longitude = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $adresse = null;
 
     /**
      * @var Collection<int, Chambre>
@@ -52,7 +67,6 @@ class Hebergement
     public function setDescription(?string $description): static
     {
         $this->description = $description;
-
         return $this;
     }
 
@@ -64,7 +78,6 @@ class Hebergement
     public function setPrix(?string $prix): static
     {
         $this->prix = $prix;
-
         return $this;
     }
 
@@ -76,7 +89,6 @@ class Hebergement
     public function setImagePath(?string $imagePath): static
     {
         $this->imagePath = $imagePath;
-
         return $this;
     }
 
@@ -88,13 +100,42 @@ class Hebergement
     public function setType(?Type $type): static
     {
         $this->type = $type;
-
         return $this;
     }
 
-    /**
-     * @return Collection<int, Chambre>
-     */
+    public function getLatitude(): ?float
+    {
+        return $this->latitude;
+    }
+
+    public function setLatitude(?float $latitude): static
+    {
+        $this->latitude = $latitude;
+        return $this;
+    }
+
+    public function getLongitude(): ?float
+    {
+        return $this->longitude;
+    }
+
+    public function setLongitude(?float $longitude): static
+    {
+        $this->longitude = $longitude;
+        return $this;
+    }
+
+    public function getAdresse(): ?string
+    {
+        return $this->adresse;
+    }
+
+    public function setAdresse(?string $adresse): static
+    {
+        $this->adresse = $adresse;
+        return $this;
+    }
+
     public function getNo(): Collection
     {
         return $this->no;
@@ -106,19 +147,16 @@ class Hebergement
             $this->no->add($no);
             $no->setHebergement($this);
         }
-
         return $this;
     }
 
     public function removeNo(Chambre $no): static
     {
         if ($this->no->removeElement($no)) {
-            // set the owning side to null (unless already changed)
             if ($no->getHebergement() === $this) {
                 $no->setHebergement(null);
             }
         }
-
         return $this;
     }
 }

@@ -1,0 +1,396 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}Profil — {{ user.nom }} {{ user.prenom }}{% endblock %}
+
+{% block admin_content %}
+
+{# ── Messages flash ── #}
+{% for message in app.flashes('success') %}
+    <div class="alert alert-success">✓ {{ message }}</div>
+{% endfor %}
+{% for message in app.flashes('error') %}
+    <div class="alert alert-danger">✗ {{ message }}</div>
+{% endfor %}
+{% if globalError is defined and globalError %}
+    <div class="alert alert-danger">{{ globalError }}</div>
+{% endif %}
+
+<div class="profile-wrapper">
+
+    {# ── COLONNE GAUCHE ── #}
+    <div class="profile-left">
+
+        {# Carte avatar #}
+        <div class="avatar-card">
+            <div class="avatar-circle">
+                {{ user.nom|first|upper }}{{ user.prenom|first|upper }}
+            </div>
+            <div class="avatar-name">{{ user.nom }} {{ user.prenom }}</div>
+            <div class="avatar-email">{{ user.email }}</div>
+            <div style="margin-top:12px; display:flex; gap:8px; justify-content:center; flex-wrap:wrap;">
+                <span class="badge-status {{ user.isActive ? 'badge-active' : 'badge-inactive' }}">
+                    {{ user.isActive ? '● Actif' : '○ Inactif' }}
+                </span>
+                {% for role in user.rolesCollection %}
+                    <span class="badge-role">{{ role.name }}</span>
+                {% endfor %}
+            </div>
+        </div>
+
+        {# Stats rapides #}
+        <div class="stats-card">
+            <div class="stat-item">
+                <div class="stat-icon">📅</div>
+                <div class="stat-body">
+                    <div class="stat-label">Membre depuis</div>
+                    <div class="stat-value">{{ user.createdAt ? user.createdAt|date('d/m/Y') : '—' }}</div>
+                </div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-icon">🔄</div>
+                <div class="stat-body">
+                    <div class="stat-label">Dernière mise à jour</div>
+                    <div class="stat-value">{{ user.updatedAt ? user.updatedAt|date('d/m/Y') : '—' }}</div>
+                </div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-icon">🔐</div>
+                <div class="stat-body">
+                    <div class="stat-label">Sécurité</div>
+                    <div class="stat-value" style="color:#34d399;">Compte protégé</div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    {# ── COLONNE DROITE ── #}
+    <div class="profile-right">
+
+        {# En-tête avec bouton #}
+        <div class="section-header">
+            <div>
+                <h2 id="section-title" style="margin:0; font-size:18px;">Informations personnelles</h2>
+                <p style="margin:4px 0 0; color:var(--text-muted); font-size:13px;" id="section-subtitle">
+                    Consultez vos informations de profil
+                </p>
+            </div>
+            <div style="display:flex; gap:8px;">
+                <button id="btn-edit" onclick="toggleEdit(true)" class="btn-modern btn-edit">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+                        <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                    </svg>
+                    Modifier le profil
+                </button>
+                <button id="btn-cancel" onclick="toggleEdit(false)" class="btn-modern btn-cancel" style="display:none;">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                    Annuler
+                </button>
+            </div>
+        </div>
+
+        {# ── MODE AFFICHAGE ── #}
+        <div id="view-mode" class="info-section">
+            <div class="info-grid-modern">
+                <div class="info-field">
+                    <div class="field-label">Nom</div>
+                    <div class="field-value">{{ user.nom }}</div>
+                </div>
+                <div class="info-field">
+                    <div class="field-label">Prénom</div>
+                    <div class="field-value">{{ user.prenom }}</div>
+                </div>
+                <div class="info-field full-width">
+                    <div class="field-label">Adresse email</div>
+                    <div class="field-value">{{ user.email }}</div>
+                </div>
+                <div class="info-field">
+                    <div class="field-label">Téléphone</div>
+                    <div class="field-value">{{ user.telephone ?: '—' }}</div>
+                </div>
+                <div class="info-field">
+                    <div class="field-label">Mot de passe</div>
+                    <div class="field-value" style="letter-spacing:3px; font-family:monospace;">••••••••••</div>
+                </div>
+            </div>
+        </div>
+
+        {# ── MODE ÉDITION ── #}
+        <div id="edit-mode" style="display:none;">
+            <form method="POST" action="{{ path('admin_profile_edit') }}">
+
+                <div class="form-grid">
+                    <div class="form-field">
+                        <label>Nom *</label>
+                        <input type="text" name="nom"
+                               class="input-modern {% if fieldErrors is defined and fieldErrors.nom is defined %}input-err{% endif %}"
+                               value="{{ user.nom }}" maxlength="50">
+                        {% if fieldErrors is defined and fieldErrors.nom is defined %}
+                            <span class="err-msg">{{ fieldErrors.nom }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="form-field">
+                        <label>Prénom *</label>
+                        <input type="text" name="prenom"
+                               class="input-modern {% if fieldErrors is defined and fieldErrors.prenom is defined %}input-err{% endif %}"
+                               value="{{ user.prenom }}" maxlength="50">
+                        {% if fieldErrors is defined and fieldErrors.prenom is defined %}
+                            <span class="err-msg">{{ fieldErrors.prenom }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="form-field full-width">
+                        <label>Adresse email *</label>
+                        <input type="email" name="email"
+                               class="input-modern {% if fieldErrors is defined and fieldErrors.email is defined %}input-err{% endif %}"
+                               value="{{ user.email }}" maxlength="100">
+                        {% if fieldErrors is defined and fieldErrors.email is defined %}
+                            <span class="err-msg">{{ fieldErrors.email }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="form-field full-width">
+                        <label>Numéro de téléphone *</label>
+                        <input type="tel" name="telephone"
+                               class="input-modern {% if fieldErrors is defined and fieldErrors.telephone is defined %}input-err{% endif %}"
+                               value="{{ user.telephone }}" maxlength="8">
+                        {% if fieldErrors is defined and fieldErrors.telephone is defined %}
+                            <span class="err-msg">{{ fieldErrors.telephone }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="password-section">
+                    <div class="password-section-title">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                            <path d="M7 11V7a5 5 0 0110 0v4"/>
+                        </svg>
+                        Changer le mot de passe
+                        <span style="font-size:12px; color:var(--text-muted); font-weight:400;">— optionnel</span>
+                    </div>
+                    <div class="form-grid">
+                        <div class="form-field full-width">
+                            <label>Mot de passe actuel</label>
+                            <input type="password" name="current_password"
+                                   class="input-modern {% if fieldErrors is defined and fieldErrors.current_password is defined %}input-err{% endif %}"
+                                   placeholder="Requis pour toute modification">
+                            {% if fieldErrors is defined and fieldErrors.current_password is defined %}
+                                <span class="err-msg">{{ fieldErrors.current_password }}</span>
+                            {% endif %}
+                        </div>
+                        <div class="form-field">
+                            <label>Nouveau mot de passe</label>
+                            <input type="password" name="new_password"
+                                   class="input-modern {% if fieldErrors is defined and fieldErrors.new_password is defined %}input-err{% endif %}"
+                                   placeholder="Min. 8 caractères">
+                            {% if fieldErrors is defined and fieldErrors.new_password is defined %}
+                                <span class="err-msg">{{ fieldErrors.new_password }}</span>
+                            {% endif %}
+                        </div>
+                        <div class="form-field">
+                            <label>Confirmer le mot de passe</label>
+                            <input type="password" name="confirm_password"
+                                   class="input-modern {% if fieldErrors is defined and fieldErrors.confirm_password is defined %}input-err{% endif %}"
+                                   placeholder="Confirmez le nouveau mot de passe">
+                            {% if fieldErrors is defined and fieldErrors.confirm_password is defined %}
+                                <span class="err-msg">{{ fieldErrors.confirm_password }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" onclick="toggleEdit(false)" class="btn-modern btn-cancel">Annuler</button>
+                    <button type="submit" class="btn-modern btn-save">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/>
+                            <polyline points="17 21 17 13 7 13 7 21"/>
+                            <polyline points="7 3 7 8 15 8"/>
+                        </svg>
+                        Enregistrer
+                    </button>
+                </div>
+
+            </form>
+        </div>
+
+    </div>
+</div>
+
+<style>
+.alert { padding: 14px 16px; border-radius: 10px; margin-bottom: 20px; font-size: 14px; }
+.alert-success { background: rgba(52,211,153,0.1); border: 1px solid rgba(52,211,153,0.3); color: #34d399; }
+.alert-danger { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); color: #ef4444; }
+
+.profile-wrapper {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 24px;
+    max-width: 1100px;
+    margin: 0 auto;
+    align-items: start;
+}
+
+/* ── Colonne gauche ── */
+.profile-left { display: flex; flex-direction: column; gap: 16px; }
+
+.avatar-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px 20px;
+    text-align: center;
+}
+.avatar-circle {
+    width: 88px; height: 88px; border-radius: 50%;
+    background: var(--accent-copper);
+    color: #1c1c1e; font-size: 30px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 16px;
+}
+.avatar-name { font-size: 18px; font-weight: 600; color: var(--text-primary); margin-bottom: 4px; }
+.avatar-email { font-size: 13px; color: var(--text-muted); margin-bottom: 4px; word-break: break-all; }
+
+.badge-status { display: inline-block; padding: 4px 12px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+.badge-active { background: rgba(52,211,153,0.15); color: #34d399; border: 1px solid rgba(52,211,153,0.3); }
+.badge-inactive { background: rgba(239,68,68,0.15); color: #ef4444; border: 1px solid rgba(239,68,68,0.3); }
+.badge-role { display: inline-block; background: var(--bg-secondary); color: var(--text-secondary); border: 1px solid var(--border); padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: 600; }
+
+.stats-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+}
+.stat-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+}
+.stat-item:last-child { border-bottom: none; }
+.stat-icon { font-size: 18px; width: 32px; text-align: center; flex-shrink: 0; }
+.stat-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.stat-value { font-size: 13px; font-weight: 500; color: var(--text-primary); margin-top: 2px; }
+
+/* ── Colonne droite ── */
+.profile-right {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+}
+.section-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 24px 28px;
+    border-bottom: 1px solid var(--border);
+}
+.info-section { padding: 24px 28px; }
+
+.info-grid-modern {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+}
+.info-field {
+    padding: 16px 0;
+    border-bottom: 1px solid var(--border);
+}
+.info-field:nth-last-child(-n+2) { border-bottom: none; }
+.info-field.full-width { grid-column: 1 / -1; }
+.field-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
+.field-value { font-size: 15px; color: var(--text-primary); font-weight: 500; }
+
+/* ── Formulaire ── */
+.form-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 16px; padding: 24px 28px 0;
+}
+.form-field { display: flex; flex-direction: column; gap: 6px; }
+.form-field.full-width { grid-column: 1 / -1; }
+.form-field label { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.input-modern {
+    padding: 11px 14px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    font-size: 14px;
+    transition: all 0.2s;
+    width: 100%; box-sizing: border-box;
+}
+.input-modern:focus { outline: none; border-color: var(--accent-copper); background: var(--bg-card); box-shadow: 0 0 0 3px rgba(255,159,67,0.1); }
+.input-err { border-color: #ef4444 !important; }
+.err-msg { font-size: 12px; color: #ef4444; }
+
+.password-section {
+    margin: 20px 28px 0;
+    padding: 20px;
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+}
+.password-section .form-grid { padding: 16px 0 0; }
+.password-section-title {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 14px; font-weight: 600; color: var(--text-primary);
+}
+
+.form-actions {
+    display: flex; justify-content: flex-end; gap: 10px;
+    padding: 20px 28px;
+    border-top: 1px solid var(--border);
+    margin-top: 20px;
+}
+
+/* ── Boutons ── */
+.btn-modern {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 9px 18px; border-radius: 10px;
+    font-size: 13px; font-weight: 500; cursor: pointer;
+    border: 1px solid var(--border); transition: all 0.2s;
+    background: transparent; color: var(--text-primary);
+}
+.btn-edit {
+    border-color: var(--accent-copper);
+    color: var(--accent-copper);
+}
+.btn-edit:hover { background: var(--accent-copper); color: #1c1c1e; }
+.btn-cancel { color: var(--text-muted); }
+.btn-cancel:hover { background: var(--bg-secondary); }
+.btn-save {
+    background: var(--accent-copper);
+    color: #1c1c1e; border-color: var(--accent-copper);
+    font-weight: 600;
+}
+.btn-save:hover { opacity: 0.85; }
+
+@media (max-width: 900px) {
+    .profile-wrapper { grid-template-columns: 1fr; }
+    .info-grid-modern { grid-template-columns: 1fr; }
+    .form-grid { grid-template-columns: 1fr; padding: 16px 20px 0; }
+    .section-header { padding: 20px; }
+    .info-section { padding: 20px; }
+    .form-actions { padding: 16px 20px; }
+    .password-section { margin: 16px 20px 0; }
+}
+</style>
+
+<script>
+function toggleEdit(show) {
+    document.getElementById('view-mode').style.display  = show ? 'none'  : 'block';
+    document.getElementById('edit-mode').style.display  = show ? 'block' : 'none';
+    document.getElementById('btn-edit').style.display   = show ? 'none'  : 'inline-flex';
+    document.getElementById('btn-cancel').style.display = show ? 'inline-flex' : 'none';
+    document.getElementById('section-title').textContent   = show ? 'Modifier mes informations' : 'Informations personnelles';
+    document.getElementById('section-subtitle').textContent = show ? 'Mettez à jour vos informations personnelles' : 'Consultez vos informations de profil';
+}
+
+{% if fieldErrors is defined and fieldErrors|length > 0 %}
+document.addEventListener('DOMContentLoaded', function() { toggleEdit(true); });
+{% endif %}
+</script>
+
+{% endblock %}

@@ -56,6 +56,7 @@ final class ReservationActiviteController extends AbstractController
     {
         return $this->render('reservation_activite/show.html.twig', [
             'reservation_activite' => $reservationActivite,
+            'activite' => $reservationActivite->getActivite(),
         ]);
     }
 

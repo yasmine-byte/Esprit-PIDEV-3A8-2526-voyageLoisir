@@ -26,13 +26,39 @@
         </button>
 
         <!-- User -->
-        <div class="user-menu">
-            <div class="user-avatar">VN</div>
-            <div class="user-info">
-                <span class="user-name">Admin Vianova</span>
-                <span class="user-role">Administrateur</span>
+        {% if app.user %}
+            <a href="{{ path('admin_user_profile', {'id': app.user.id}) }}" style="text-decoration:none;display:flex;align-items:center;gap:10px">
+                <div class="user-avatar">
+                    {{ app.user.nom is defined ? app.user.nom|first : app.user.email|first|upper }}
+                </div>
+                <div class="user-info">
+                    <span class="user-name">
+                        {{ app.user.nom is defined and app.user.nom ? app.user.nom : app.user.email }}
+                    </span>
+                    <span class="user-role">
+    {% if is_granted('ROLE_ADMIN') %}
+        Administrateur
+    {% else %}
+        Utilisateur
+    {% endif %}
+</span>
+                </div>
+            </a>
+        {% else %}
+            <div class="user-menu">
+                <div class="user-avatar">VN</div>
+                <div class="user-info">
+                    <span class="user-name">Admin Vianova</span>
+                    <span class="user-role">
+    {% if is_granted('ROLE_ADMIN') %}
+        Administrateur
+    {% else %}
+        Utilisateur
+    {% endif %}
+</span>
+                </div>
             </div>
-        </div>
+        {% endif %}
 
     </div>
 </div>

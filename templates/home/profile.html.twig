@@ -1,0 +1,228 @@
+{% extends "base_front.html.twig" %}
+{% block title %}Mon Profil - ViaNoVa{% endblock %}
+{% block body %}
+
+<div class="page-heading header-text">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-12">
+        <span class="breadcrumb"><a href="{{ path("app_home") }}">Accueil</a> / Mon Profil</span>
+        <h3>Mon Profil</h3>
+        <p style="font-size:12px;color:#ccc">Roles : {{ app.user.roles|join(", ") }}</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+{# ===== PROFIL ===== #}
+<div class="section">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-6">
+        <div style="background:#fff;border-radius:16px;padding:30px;border:1px solid #eee;text-align:center">
+          <div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#e8a87c,#d4845a);color:#fff;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:700;margin:0 auto 20px">
+            {{ user.prenom|first|upper }}{{ user.nom|first|upper }}
+          </div>
+          <h4 style="margin-bottom:4px">{{ user.prenom }} {{ user.nom }}</h4>
+          <p style="color:#888;font-size:14px;margin-bottom:24px">{{ user.email }}</p>
+          <table style="width:100%;text-align:left;font-size:14px">
+            <tr style="border-bottom:1px solid #eee">
+              <td style="padding:10px 0;color:#888;width:40%">Nom</td>
+              <td style="padding:10px 0;font-weight:600">{{ user.nom }}</td>
+            </tr>
+            <tr style="border-bottom:1px solid #eee">
+              <td style="padding:10px 0;color:#888">Prenom</td>
+              <td style="padding:10px 0;font-weight:600">{{ user.prenom }}</td>
+            </tr>
+            <tr style="border-bottom:1px solid #eee">
+              <td style="padding:10px 0;color:#888">Email</td>
+              <td style="padding:10px 0;font-weight:600">{{ user.email }}</td>
+            </tr>
+            {% if user.telephone %}
+            <tr style="border-bottom:1px solid #eee">
+              <td style="padding:10px 0;color:#888">Telephone</td>
+              <td style="padding:10px 0;font-weight:600">{{ user.telephone }}</td>
+            </tr>
+            {% endif %}
+            <tr>
+              <td style="padding:10px 0;color:#888">Statut</td>
+              <td style="padding:10px 0">
+                <span style="background:{% if user.isActive %}#E1F5EE{% else %}#ffebee{% endif %};color:{% if user.isActive %}#085041{% else %}#E24B4A{% endif %};padding:3px 10px;border-radius:10px;font-size:12px;font-weight:600">
+                  {{ user.isActive ? "Actif" : "Inactif" }}
+                </span>
+              </td>
+            </tr>
+          </table>
+          <div style="margin-top:24px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+            {% if "ROLE_ADMIN" in app.user.roles %}
+            <a href="{{ path('app_destination_index') }}" style="display:inline-block;padding:10px 24px;background:#f97316;color:#fff;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px">
+              Dashboard Admin
+            </a>
+            {% endif %}
+            <a href="{{ path('front_logout') }}" style="display:inline-block;padding:10px 24px;background:#E24B4A;color:#fff;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px">
+              Deconnexion
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{# ===== RESERVATIONS ===== #}
+<div class="section" style="padding-top:0;padding-bottom:60px">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-7">
+
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px">
+          <h5 style="margin:0;font-size:20px;font-weight:800;color:#1e293b">✈ Mes Réservations</h5>
+          {% if reservations is defined %}
+            <span style="background:#f1f5f9;color:#64748b;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700">
+              {{ reservations|length }} voyage{{ reservations|length > 1 ? 's' : '' }}
+            </span>
+          {% endif %}
+        </div>
+
+        {% if reservations is defined and reservations|length > 0 %}
+          {% for voyage in reservations %}
+
+          {# Déterminer l'état #}
+          {% set dest_inactive = voyage.destination and not voyage.destination.statut %}
+          {% set is_paid = voyage.paid %}
+
+          <div style="background:#fff;border-radius:20px;overflow:hidden;border:1.5px solid {% if dest_inactive %}#fecaca{% elseif is_paid %}#bbf7d0{% else %}#e2e8f0{% endif %};margin-bottom:20px;box-shadow:0 4px 20px rgba(0,0,0,.06)">
+
+            {# Barre de couleur en haut #}
+            <div style="height:5px;background:{% if dest_inactive %}linear-gradient(90deg,#ef4444,#f87171){% elseif is_paid %}linear-gradient(90deg,#16a34a,#4ade80){% else %}linear-gradient(90deg,#635bff,#818cf8){% endif %}"></div>
+
+            <div style="padding:20px 24px">
+
+              {# Badge statut destination inactive #}
+              {% if dest_inactive %}
+                <div style="display:inline-flex;align-items:center;gap:6px;background:#ffebee;color:#E24B4A;padding:5px 12px;border-radius:20px;font-size:12px;font-weight:700;margin-bottom:14px;border:1px solid #fecaca">
+                  🚫 Destination inactive pour le moment
+                </div>
+              {% endif %}
+
+              {# Badge payé #}
+              {% if is_paid %}
+                <div style="display:inline-flex;align-items:center;gap:6px;background:#E1F5EE;color:#085041;padding:5px 12px;border-radius:20px;font-size:12px;font-weight:700;margin-bottom:14px;border:1px solid #bbf7d0">
+                  ✅ Paiement confirmé
+                </div>
+              {% endif %}
+
+              {# Info destination #}
+              {% if voyage.destination %}
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
+                  <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#fff7ed,#ffedd5);border:1px solid #fed7aa;display:flex;align-items:center;justify-content:center;font-size:18px">
+                    📍
+                  </div>
+                  <div>
+                    <div style="font-size:15px;font-weight:800;color:#1e293b">{{ voyage.destination.nom }}</div>
+                    <div style="font-size:12px;color:#94a3b8;font-weight:600">{{ voyage.destination.pays }}</div>
+                  </div>
+                </div>
+              {% endif %}
+
+              {# Trajet #}
+              <div style="background:#f8fafc;border-radius:14px;padding:14px 18px;margin-bottom:16px;border:1px solid #f0f4f8">
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+                  <div style="text-align:left">
+                    <div style="font-size:11px;color:#94a3b8;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px">Départ</div>
+                    <div style="font-size:16px;font-weight:800;color:#1e293b">{{ voyage.pointDepart ?? "—" }}</div>
+                    <div style="font-size:11px;color:#f97316;font-weight:600;margin-top:3px">
+                      {{ voyage.dateDepart ? voyage.dateDepart|date("d/m/Y") : "—" }}
+                    </div>
+                  </div>
+                  <div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex-shrink:0">
+                    <div style="display:flex;align-items:center;gap:4px">
+                      <div style="width:6px;height:6px;border-radius:50%;background:#f97316"></div>
+                      <div style="width:40px;height:2px;background:linear-gradient(90deg,#f97316,#635bff)"></div>
+                      <span style="font-size:18px">✈</span>
+                      <div style="width:40px;height:2px;background:linear-gradient(90deg,#635bff,#f97316)"></div>
+                      <div style="width:6px;height:6px;border-radius:50%;background:#635bff"></div>
+                    </div>
+                    {% if voyage.dateDepart and voyage.dateArrivee %}
+                      {% set duree = ((voyage.dateArrivee|date('U') - voyage.dateDepart|date('U')) / 86400)|round %}
+                      <span style="font-size:10px;color:#94a3b8;font-weight:700">{{ duree }}j</span>
+                    {% endif %}
+                  </div>
+                  <div style="text-align:right">
+                    <div style="font-size:11px;color:#94a3b8;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px">Arrivée</div>
+                    <div style="font-size:16px;font-weight:800;color:#1e293b">{{ voyage.pointArrivee ?? "—" }}</div>
+                    <div style="font-size:11px;color:#635bff;font-weight:600;margin-top:3px">
+                      {{ voyage.dateArrivee ? voyage.dateArrivee|date("d/m/Y") : "—" }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {# Prix + actions #}
+              <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+                <div>
+                  <div style="font-size:11px;color:#94a3b8;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:2px">Prix total</div>
+                  <div style="font-size:24px;font-weight:900;color:#f97316;letter-spacing:-1px">
+                    {{ voyage.prix ? voyage.prix ~ " €" : "—" }}
+                  </div>
+                </div>
+
+                <div style="display:flex;flex-direction:column;gap:8px;min-width:180px">
+
+                  {# Bouton payer #}
+                  {% if is_paid %}
+                    <div style="padding:10px 16px;background:#E1F5EE;color:#085041;border-radius:10px;font-size:13px;font-weight:700;text-align:center;border:1px solid #bbf7d0">
+                      ✅ Payé
+                    </div>
+                  {% elseif dest_inactive %}
+                    <div style="padding:10px 16px;background:#ffebee;color:#E24B4A;border-radius:10px;font-size:13px;font-weight:700;text-align:center;border:1px solid #fecaca">
+                      🚫 Paiement indisponible
+                    </div>
+                  {% else %}
+                    <form action="{{ path('app_payment_checkout', {id: voyage.id}) }}" method="POST" style="margin:0">
+                      <input type="hidden" name="_token" value="{{ csrf_token('payment' ~ voyage.id) }}">
+                      <button type="submit"
+                              style="width:100%;padding:10px 16px;border-radius:10px;border:none;background:linear-gradient(135deg,#635bff,#4f46e5);color:#fff;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(99,91,255,0.35);transition:transform .2s"
+                              onmouseover="this.style.transform='translateY(-2px)'"
+                              onmouseout="this.style.transform=''">
+                        💳 Payer maintenant
+                      </button>
+                    </form>
+                  {% endif %}
+
+                  {# Bouton annuler — seulement si pas payé #}
+                  {% if not is_paid %}
+                    <form action="{{ path('app_voyage_cancel', {id: voyage.id}) }}" method="POST" style="margin:0">
+                      <input type="hidden" name="_token" value="{{ csrf_token('cancel' ~ voyage.id) }}">
+                      <button type="submit"
+                              style="width:100%;padding:8px 16px;border-radius:10px;border:1.5px solid #e2e8f0;background:#fff;color:#94a3b8;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s"
+                              onmouseover="this.style.borderColor='#E24B4A';this.style.color='#E24B4A'"
+                              onmouseout="this.style.borderColor='#e2e8f0';this.style.color='#94a3b8'">
+                        ✕ Annuler la réservation
+                      </button>
+                    </form>
+                  {% endif %}
+
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          {% endfor %}
+        {% else %}
+          <div style="text-align:center;padding:60px 20px;background:#fff;border-radius:20px;border:1.5px dashed #e2e8f0">
+            <div style="font-size:48px;margin-bottom:16px">✈</div>
+            <h6 style="color:#94a3b8;font-size:15px;font-weight:600;margin:0">Aucune réservation pour le moment.</h6>
+            <a href="{{ path('app_destinations') }}" style="display:inline-block;margin-top:16px;padding:10px 24px;background:#f97316;color:#fff;border-radius:10px;text-decoration:none;font-weight:700;font-size:14px">
+              Explorer les destinations
+            </a>
+          </div>
+        {% endif %}
+
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

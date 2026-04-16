@@ -7,6 +7,31 @@
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
+    images_directory: '%kernel.project_dir%/public/uploads/hebergements'
+    public_base_url: '%env(DEFAULT_URI)%'
+    blog_translation_provider_url: '%env(default::BLOG_TRANSLATION_PROVIDER_URL)%'
+    blog_translation_provider_api_key: '%env(default::BLOG_TRANSLATION_PROVIDER_API_KEY)%'
+    blog_bad_words:
+        - merde
+        - putain
+        - con
+        - connard
+        - connasse
+        - salope
+        - salaud
+        - idiot
+        - imbecile
+        - debile
+        - stupid
+        - idiot
+        - dumb
+        - hell
+        - damn
+        - shit
+        - bullshit
+        - fuck
+        - asshole
+        - bastard
 
 services:
     # default configuration for services in *this* file
@@ -19,5 +44,16 @@ services:
     App\:
         resource: '../src/'
 
+    App\Service\CommentModerationService:
+        arguments:
+            $blockedTerms: '%blog_bad_words%'
+
+    App\Service\BlogTranslationService:
+        arguments:
+            $providerUrl: '%blog_translation_provider_url%'
+            $providerApiKey: '%blog_translation_provider_api_key%'
+
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
+
+    

@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Repository\ReclamationRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: ReclamationRepository::class)]
 class Reclamation
@@ -25,9 +26,13 @@ class Reclamation
     private ?Avis $avis = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: "Le titre est obligatoire")]
+    #[Assert\Length(min: 5, max: 255, minMessage: "Minimum 5 caractères", maxMessage: "Maximum 255 caractères")]
     private ?string $titre = null;
 
     #[ORM\Column(type: Types::TEXT)]
+    #[Assert\NotBlank(message: "Le contenu est obligatoire")]
+    #[Assert\Length(min: 10, minMessage: "Minimum 10 caractères")]
     private ?string $contenu = null;
 
     #[ORM\Column(length: 20)]
@@ -37,6 +42,8 @@ class Reclamation
     private ?string $statut = null;
 
     #[ORM\Column(length: 20)]
+    #[Assert\NotBlank(message: "La priorité est obligatoire")]
+    #[Assert\Choice(choices: ['Basse', 'Moyenne', 'Haute', 'Urgente'])]
     private ?string $priorite = null;
 
     #[ORM\Column]
@@ -151,6 +158,21 @@ class Reclamation
     public function setDateCreation(\DateTime $dateCreation): static
     {
         $this->dateCreation = $dateCreation;
+
+        return $this;
+    }
+
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $reponse = null;
+
+    public function getReponse(): ?string
+    {
+        return $this->reponse;
+    }
+
+    public function setReponse(?string $reponse): static
+    {
+        $this->reponse = $reponse;
 
         return $this;
     }

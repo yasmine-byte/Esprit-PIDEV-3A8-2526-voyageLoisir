@@ -10,6 +10,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: ActiviteRepository::class)]
+#[ORM\Table(name: 'activite')]
 class Activite
 {
     #[ORM\Id]

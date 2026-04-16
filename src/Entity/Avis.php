@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Repository\AvisRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: AvisRepository::class)]
 class Avis
@@ -19,12 +20,17 @@ class Avis
 
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
+    #[Assert\NotNull(message: "Le type est obligatoire")]
     private ?TypeAvis $type = null;
 
     #[ORM\Column(type: Types::TEXT)]
+    #[Assert\NotBlank(message: "Le contenu est obligatoire")]
+    #[Assert\Length(min: 10, minMessage: "Minimum 10 caractères")]
     private ?string $contenu = null;
 
     #[ORM\Column]
+    #[Assert\NotBlank]
+    #[Assert\Range(min: 1, max: 5, notInRangeMessage: "Entre 1 et 5 étoiles")]
     private ?int $nbEtoiles = null;
 
     #[ORM\Column(length: 20)]
@@ -106,6 +112,21 @@ class Avis
     public function setDateAvis(\DateTime $dateAvis): static
     {
         $this->dateAvis = $dateAvis;
+
+        return $this;
+    }
+
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $reponse = null;
+
+    public function getReponse(): ?string
+    {
+        return $this->reponse;
+    }
+
+    public function setReponse(?string $reponse): static
+    {
+        $this->reponse = $reponse;
 
         return $this;
     }
