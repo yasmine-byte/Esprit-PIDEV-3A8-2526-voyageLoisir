@@ -1,4 +1,4 @@
-{% extends 'base_front.html.twig' %}
+﻿{% extends 'base_front.html.twig' %}
 
 {% block title %}Villa Agency - Home{% endblock %}
 
@@ -246,13 +246,13 @@
         <div class="item" style="background-image: url('{{ asset('assets_front/images/images/banner-02.jpg') }}'); background-size:cover; background-position:center;">
             <div class="header-text">
                 <span class="category">Sousse, <em>Tunisie</em></span>
-                <h2>Trouvez<br>l'hébergement idéal</h2>
+                <h2>Trouvez<br>l'hÃ©bergement idÃ©al</h2>
             </div>
         </div>
         <div class="item" style="background-image: url('{{ asset('assets_front/images/images/banner-03.jpg') }}'); background-size:cover; background-position:center;">
             <div class="header-text">
                 <span class="category">Djerba, <em>Tunisie</em></span>
-                <h2>Réservez<br>dès maintenant !</h2>
+                <h2>RÃ©servez<br>dÃ¨s maintenant !</h2>
             </div>
         </div>
     </div>
@@ -372,8 +372,8 @@
         <div class="row">
             <div class="col-lg-4 offset-lg-4">
                 <div class="section-heading text-center">
-                    <h6>| Hébergements</h6>
-                    <h2>Nos Meilleurs Hébergements</h2>
+                    <h6>| HÃ©bergements</h6>
+                    <h2>Nos Meilleurs HÃ©bergements</h2>
                 </div>
             </div>
         </div>
@@ -386,20 +386,20 @@
                     {% else %}
                         <img src="{{ asset('assets_front/images/images/property-01.jpg') }}" alt="">
                     {% endif %}
-                    <span class="category">{{ hebergement.type ? hebergement.type.nom : 'Hébergement' }}</span>
+                    <span class="category">{{ hebergement.type ? hebergement.type.nom : 'HÃ©bergement' }}</span>
                     <h6>{{ hebergement.prix }} TND</h6>
                     <h4>{{ hebergement.description|slice(0,40) }}</h4>
                     <ul>
                         <li>Chambres: <span>{{ hebergement.no|length }}</span></li>
                     </ul>
                     <div class="main-button">
-                        <a href="{{ path('app_property_details', {'id': hebergement.id}) }}">Voir & Réserver</a>
+                        <a href="{{ path('app_property_details', {'id': hebergement.id}) }}">Voir & RÃ©server</a>
                     </div>
                 </div>
             </div>
             {% else %}
             <div class="col-12 text-center">
-                <p>Aucun hébergement disponible pour le moment.</p>
+                <p>Aucun hÃ©bergement disponible pour le moment.</p>
             </div>
             {% endfor %}
         </div>
@@ -412,7 +412,7 @@
             <div class="col-lg-4 offset-lg-4">
                 <div class="section-heading text-center">
                     <h6>| Destinations</h6>
-                    <h2>Quelques Destinations à Découvrir</h2>
+                    <h2>Quelques Destinations Ã  DÃ©couvrir</h2>
                 </div>
             </div>
         </div>
@@ -527,7 +527,66 @@
     </div>
   </section>
 
-  <section class="reviews-section">
+  
+  {# ===== RECOMMANDATIONS ===== #}
+  {% if recommandations is defined and recommandations|length > 0 %}
+  <section style="padding:60px 0;background:#f8fafc;">
+    <div class="container">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:36px;flex-wrap:wrap;gap:16px;">
+        <div>
+          <span style="display:inline-block;margin-bottom:8px;color:#f97316;font-size:0.88rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;">
+            {{ isPersonalized ? '✨ Personnalisé pour vous' : '🔥 Populaires' }}
+          </span>
+          <h2 style="margin:0;color:#111827;font-size:clamp(1.6rem,3vw,2.2rem);font-weight:700;">
+            {{ isPersonalized ? 'Hébergements recommandés' : 'Les plus réservés' }}
+          </h2>
+          <p style="margin:8px 0 0;color:#6b7280;font-size:0.95rem;">
+            {{ isPersonalized ? 'Basé sur vos réservations précédentes' : 'Découvrez nos hébergements les plus populaires' }}
+          </p>
+        </div>
+        <a href="{{ path('app_properties') }}" style="display:inline-flex;align-items:center;gap:6px;padding:12px 24px;background:#f97316;color:#fff;border-radius:10px;text-decoration:none;font-weight:600;font-size:0.9rem;">Voir tous →</a>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:24px;">
+        {% for item in recommandations %}
+          {% set heb = item.hebergement %}
+          {% set score = item.score %}
+          <div style="background:#fff;border-radius:16px;overflow:hidden;border:1px solid #e5e7eb;box-shadow:0 4px 20px rgba(0,0,0,0.06);">
+            <div style="position:relative;height:200px;overflow:hidden;">
+              {% if heb.imagePath %}
+                <img src="{{ asset('uploads/hebergements/' ~ heb.imagePath) }}" alt="" style="width:100%;height:100%;object-fit:cover;">
+              {% else %}
+                <div style="width:100%;height:100%;background:linear-gradient(135deg,#f97316,#fb923c);display:flex;align-items:center;justify-content:center;font-size:3rem;">🏠</div>
+              {% endif %}
+              {% if score is not null %}
+                <div style="position:absolute;top:12px;right:12px;background:{% if score >= 80 %}#16a34a{% elseif score >= 60 %}#f97316{% else %}#635bff{% endif %};color:#fff;padding:4px 10px;border-radius:20px;font-size:0.75rem;font-weight:700;">{{ score }}% match</div>
+              {% endif %}
+              {% if heb.type %}
+                <div style="position:absolute;top:12px;left:12px;background:rgba(0,0,0,0.6);color:#fff;padding:4px 10px;border-radius:20px;font-size:0.75rem;font-weight:600;">{{ heb.type.nom }}</div>
+              {% endif %}
+            </div>
+            <div style="padding:18px;">
+              <h4 style="margin:0 0 6px;font-size:1rem;font-weight:700;color:#111827;">{{ heb.description|slice(0,50) }}{% if heb.description|length > 50 %}...{% endif %}</h4>
+              {% if heb.adresse %}<p style="margin:0 0 12px;font-size:0.83rem;color:#6b7280;">📍 {{ heb.adresse|slice(0,40) }}</p>{% endif %}
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-top:14px;">
+                <div>
+                  <span style="font-size:0.75rem;color:#9ca3af;">À partir de</span>
+                  <div style="font-size:1.3rem;font-weight:800;color:#f97316;">{{ heb.prix }} TND<span style="font-size:0.75rem;font-weight:500;color:#9ca3af;">/nuit</span></div>
+                </div>
+                <a href="{{ path('app_property_details', {'id': heb.id}) }}" style="padding:9px 18px;background:linear-gradient(135deg,#f97316,#fb923c);color:#fff;border-radius:8px;text-decoration:none;font-size:0.85rem;font-weight:600;">Réserver</a>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+      {% if not isPersonalized %}
+        <div style="text-align:center;margin-top:28px;">
+          <p style="color:#6b7280;font-size:0.9rem;">Connectez-vous pour des recommandations personnalisées.</p>
+        </div>
+      {% endif %}
+    </div>
+  </section>
+  {% endif %}
+<section class="reviews-section">
     <div class="container">
       <div class="reviews-heading">
         <h2>Blogs</h2>
@@ -740,3 +799,4 @@
     });
   </script>
 {% endblock %}
+

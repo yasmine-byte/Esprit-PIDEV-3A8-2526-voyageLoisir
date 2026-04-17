@@ -47,7 +47,7 @@ final class DestinationController extends AbstractController
             $pays = $destination->getPays();
             if ($nom && $pays) {
                 $prompt = "Génère UNIQUEMENT une description touristique courte et attractive de $nom situé en $pays. Maximum 100 mots. Réponds avec le texte de la description uniquement, sans titre, sans introduction, sans explication.";
-                $apiKey = $_ENV['GROQ_API_KEY'];
+                $apiKey = $_ENV['GROQ_API_KEY'] ?? '';
                 $ch = curl_init();
                 curl_setopt_array($ch, [
                     CURLOPT_URL            => "https://api.groq.com/openai/v1/chat/completions",
@@ -75,34 +75,16 @@ final class DestinationController extends AbstractController
         }
 
         if ($form->isSubmitted() && $form->isValid()) {
-        $entityManager->persist($destination);
-        $entityManager->flush();
-
-        // ✅ Notification WhatsApp CallMeBot
-        $phone  = $_ENV['CALLMEBOT_PHONE'];
-        $apiKey = $_ENV['CALLMEBOT_APIKEY'];
-        $msg    = "🌍 *VoyageLoisir — Nouvelle destination !*\n\n"
-                . "📍 *{$destination->getNom()}* — {$destination->getPays()}\n"
-                . "🌤 Meilleure saison : " . ($destination->getMeilleureSaison() ?? 'N/A') . "\n\n"
-                . "Connectez-vous pour voir les détails.";
-        $url = sprintf(
-            'https://api.callmebot.com/whatsapp.php?phone=%s&text=%s&apikey=%s',
-            urlencode($phone), urlencode($msg), urlencode($apiKey)
-        );
-        $ch = curl_init();
-        curl_setopt_array($ch, [CURLOPT_URL => $url, CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 10, CURLOPT_SSL_VERIFYPEER => false]);
-        curl_exec($ch); curl_close($ch);
-
-        return $this->redirectToRoute('app_destination_index', [], Response::HTTP_SEE_OTHER);
-    }
-
-            return $this->render('destination/new.html.twig', [
-                'destination' => $destination,
-                'form'        => $form->createView(),
-            ]);
+            $entityManager->persist($destination);
+            $entityManager->flush();
+            return $this->redirectToRoute('app_destination_index', [], Response::HTTP_SEE_OTHER);
         }
 
-    // ✅ TOUTES LES ROUTES FIXES AVANT /{id}
+        return $this->render('destination/new.html.twig', [
+            'destination' => $destination,
+            'form'        => $form->createView(),
+        ]);
+    }
 
     #[Route('/voice-search', name: 'app_destination_voice_search', methods: ['GET'])]
     public function voiceSearch(): Response
@@ -115,19 +97,17 @@ final class DestinationController extends AbstractController
     {
         $query = $request->toArray()['query'] ?? '';
 
-        // ✅ Compter les recherches vocales en session
         $session = $request->getSession();
         $session->start();
         $session->set('total_recherches_vocales',
             ($session->get('total_recherches_vocales', 0)) + 1
         );
 
-        // ✅ Compter par saison recherchée
         $saisonsMots = [
             'Printemps' => ['printemps', 'spring', 'mars', 'avril', 'mai'],
             'Ete'       => ['été', 'ete', 'summer', 'juin', 'juillet', 'août', 'aout'],
             'Automne'   => ['automne', 'autumn', 'fall', 'septembre', 'octobre', 'novembre'],
-            'Hiver'     => ['hiver', 'winter', 'décembre', 'décembre', 'janvier', 'février'],
+            'Hiver'     => ['hiver', 'winter', 'décembre', 'janvier', 'février'],
         ];
         $queryLower = mb_strtolower($query);
         foreach ($saisonsMots as $saison => $mots) {
@@ -189,7 +169,7 @@ Every field (nom, pays, message, infos, conseil, description) must be a simple s
 The id in 'disponibles' must be the exact numeric id from the catalogue.
 If all results are from the catalogue, set hors_catalogue.existe = false.";
 
-        $apiKey = $_ENV['GROQ_API_KEY'];
+        $apiKey = $_ENV['GROQ_API_KEY'] ?? '';
         $ch = curl_init();
         curl_setopt_array($ch, [
             CURLOPT_URL            => "https://api.groq.com/openai/v1/chat/completions",
@@ -228,7 +208,7 @@ If all results are from the catalogue, set hors_catalogue.existe = false.";
     #[Route('/exchange/{from}/{to}', name: 'app_exchange_rate', methods: ['GET'])]
     public function exchangeRate(string $from, string $to): Response
     {
-        $apiKey = $_ENV['EXCHANGERATE_API_KEY'];
+        $apiKey = $_ENV['EXCHANGERATE_API_KEY'] ?? '';
         $url    = "https://v6.exchangerate-api.com/v6/$apiKey/pair/$from/$to";
         $ch = curl_init();
         curl_setopt_array($ch, [CURLOPT_URL => $url, CURLOPT_RETURNTRANSFER => true]);
@@ -242,7 +222,6 @@ If all results are from the catalogue, set hors_catalogue.existe = false.";
     {
         $destinations = $destinationRepository->findAll();
 
-        // Par pays
         $parPays = [];
         foreach ($destinations as $d) {
             $pays = $d->getPays() ?? 'Inconnu';
@@ -250,53 +229,38 @@ If all results are from the catalogue, set hors_catalogue.existe = false.";
         }
         arsort($parPays);
 
-        // Par saison — nombre de destinations
         $parSaison = ['Printemps' => 0, 'Ete' => 0, 'Automne' => 0, 'Hiver' => 0];
         foreach ($destinations as $d) {
             $s = $d->getMeilleureSaison() ?? '';
             if (isset($parSaison[$s])) $parSaison[$s]++;
         }
 
-        // ✅ Visites par saison
         $visitesSaison = ['Printemps' => 0, 'Ete' => 0, 'Automne' => 0, 'Hiver' => 0];
         foreach ($destinations as $d) {
             $s = $d->getMeilleureSaison() ?? '';
-            if (isset($visitesSaison[$s])) {
-                $visitesSaison[$s] += $d->getNbVisites() ?? 0;
-            }
+            if (isset($visitesSaison[$s])) $visitesSaison[$s] += $d->getNbVisites() ?? 0;
         }
 
-        // ✅ Likes par saison
         $likesSaison = ['Printemps' => 0, 'Ete' => 0, 'Automne' => 0, 'Hiver' => 0];
         foreach ($destinations as $d) {
             $s = $d->getMeilleureSaison() ?? '';
-            if (isset($likesSaison[$s])) {
-                $likesSaison[$s] += $d->getNbLikes() ?? 0;
-            }
+            if (isset($likesSaison[$s])) $likesSaison[$s] += $d->getNbLikes() ?? 0;
         }
 
-        // Top 5 par visites
         $topVisites = $destinations;
-        usort($topVisites, function($a, $b) {
-            return $b->getNbVisites() - $a->getNbVisites();
-        });
+        usort($topVisites, fn($a, $b) => $b->getNbVisites() - $a->getNbVisites());
         $topVisites = array_slice($topVisites, 0, 5);
 
-        // Top 5 par likes
         $topLikes = $destinations;
-        usort($topLikes, function($a, $b) {
-            return ($b->getNbLikes() ?? 0) - ($a->getNbLikes() ?? 0);
-        });
+        usort($topLikes, fn($a, $b) => ($b->getNbLikes() ?? 0) - ($a->getNbLikes() ?? 0));
         $topLikes = array_slice($topLikes, 0, 5);
 
-        // Actifs / Inactifs
         $actifs = 0;
         foreach ($destinations as $d) {
             if ($d->isStatut()) $actifs++;
         }
         $inactifs = count($destinations) - $actifs;
 
-        // Totaux visites & likes
         $totalVisites = 0;
         $totalLikes   = 0;
         foreach ($destinations as $d) {
@@ -304,7 +268,6 @@ If all results are from the catalogue, set hors_catalogue.existe = false.";
             $totalLikes   += $d->getNbLikes()   ?? 0;
         }
 
-        // ✅ Recherches vocales et par saison depuis session
         $session = $request->getSession();
         $session->start();
         $totalRechercheVocale = $session->get('total_recherches_vocales', 0);
@@ -315,7 +278,6 @@ If all results are from the catalogue, set hors_catalogue.existe = false.";
             'Hiver'     => $session->get('recherche_saison_Hiver', 0),
         ];
 
-        // ✅ Réservations (via voyages → collection users)
         $totalReservations     = 0;
         $reservationsParSaison = ['Printemps' => 0, 'Ete' => 0, 'Automne' => 0, 'Hiver' => 0];
         $topReservations       = [];
@@ -326,12 +288,8 @@ If all results are from the catalogue, set hors_catalogue.existe = false.";
                 $nbRes += $voyage->getReservedByUsers()->count();
             }
             $totalReservations += $nbRes;
-
             $s = $d->getMeilleureSaison() ?? '';
-            if (isset($reservationsParSaison[$s])) {
-                $reservationsParSaison[$s] += $nbRes;
-            }
-
+            if (isset($reservationsParSaison[$s])) $reservationsParSaison[$s] += $nbRes;
             $topReservations[] = [
                 'nom'    => $d->getNom(),
                 'pays'   => $d->getPays(),
@@ -344,7 +302,6 @@ If all results are from the catalogue, set hors_catalogue.existe = false.";
         usort($topReservations, fn($a, $b) => $b['nbRes'] - $a['nbRes']);
         $topReservations = array_slice($topReservations, 0, 5);
 
-        // ✅ Top visites data (avec nbRes inclus pour le tableau classement)
         $topVisitesData = [];
         foreach ($topVisites as $d) {
             $nbResD = 0;
@@ -362,7 +319,6 @@ If all results are from the catalogue, set hors_catalogue.existe = false.";
             ];
         }
 
-        // Top likes data
         $topLikesData = [];
         foreach ($topLikes as $d) {
             $topLikesData[] = [
@@ -392,7 +348,6 @@ If all results are from the catalogue, set hors_catalogue.existe = false.";
         ]);
     }
 
-    // ✅ ROUTES LIKE AVANT /{id}
     #[Route('/like/{id}', name: 'app_destination_like', methods: ['POST'])]
     public function like(Destination $destination, Request $request, EntityManagerInterface $em): Response
     {
@@ -432,7 +387,6 @@ If all results are from the catalogue, set hors_catalogue.existe = false.";
         ]);
     }
 
-    // ✅ ROUTES AVEC /{id} EN DERNIER
     #[Route('/{id}', name: 'app_destination_show', methods: ['GET'])]
     public function show(Destination $destination): Response
     {
@@ -452,7 +406,7 @@ If all results are from the catalogue, set hors_catalogue.existe = false.";
             $pays = $destination->getPays();
             if ($nom && $pays) {
                 $prompt = "Génère UNIQUEMENT une description touristique courte et attractive de $nom situé en $pays. Maximum 100 mots. Réponds avec le texte de la description uniquement, sans titre, sans introduction, sans explication.";
-                $apiKey = $_ENV['GROQ_API_KEY'];
+                $apiKey = $_ENV['GROQ_API_KEY'] ?? '';
                 $ch = curl_init();
                 curl_setopt_array($ch, [
                     CURLOPT_URL            => "https://api.groq.com/openai/v1/chat/completions",
@@ -510,7 +464,7 @@ If all results are from the catalogue, set hors_catalogue.existe = false.";
 Pour chaque jour, donne exactement ce format JSON :
 {\"jours\":[{\"jour\":1,\"titre\":\"Titre du jour\",\"matin\":\"...\",\"dejeuner\":\"...\",\"apres_midi\":\"...\",\"diner\":\"...\",\"transport\":\"...\",\"conseil\":\"...\"}]}
 Réponds UNIQUEMENT avec le JSON, sans texte avant ou après.";
-        $apiKey = $_ENV['GROQ_API_KEY'];
+        $apiKey = $_ENV['GROQ_API_KEY'] ?? '';
         $ch = curl_init();
         curl_setopt_array($ch, [
             CURLOPT_URL            => "https://api.groq.com/openai/v1/chat/completions",
@@ -534,7 +488,7 @@ Réponds UNIQUEMENT avec le JSON, sans texte avant ou après.";
     {
         $nom    = $destination->getNom();
         $pays   = $destination->getPays();
-        $apiKey = $_ENV['YOUTUBE_API_KEY'];
+        $apiKey = $_ENV['YOUTUBE_API_KEY'] ?? '';
         $query  = urlencode("voyage $nom $pays");
         $url    = "https://www.googleapis.com/youtube/v3/search?part=snippet&q=$query&type=video&maxResults=1&key=$apiKey";
         $ch = curl_init();

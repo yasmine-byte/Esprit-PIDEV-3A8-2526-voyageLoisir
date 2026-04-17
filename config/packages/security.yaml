@@ -69,28 +69,29 @@ security:
         ROLE_ADMIN: [ROLE_USER]
 
     access_control:
-        - { path: ^/admin/login$,       roles: PUBLIC_ACCESS }
-        - { path: ^/admin/logout,       roles: ROLE_USER }
-        - { path: ^/admin/profile$,     roles: ROLE_USER }
-        - { path: ^/admin/profile/edit, roles: ROLE_USER }
-        - { path: ^/admin/profile/\d+,  roles: ROLE_USER }
-        - { path: ^/admin,              roles: ROLE_ADMIN }
-        - { path: ^/register,           roles: PUBLIC_ACCESS }
-        - { path: ^/login,              roles: PUBLIC_ACCESS }
-        - { path: ^/$,                  roles: PUBLIC_ACCESS }
-        - { path: ^/home,               roles: PUBLIC_ACCESS }
-        - { path: ^/destinations,       roles: PUBLIC_ACCESS }
-        - { path: ^/hebergements,       roles: PUBLIC_ACCESS }
-        - { path: ^/properties,         roles: PUBLIC_ACCESS }
-        - { path: ^/contact,            roles: PUBLIC_ACCESS }
-        - { path: ^/blog,               roles: PUBLIC_ACCESS }
-        - { path: ^/activite$,          roles: PUBLIC_ACCESS }
-        - { path: ^/activite/\d+$,      roles: PUBLIC_ACCESS }
-        - { path: ^/avis,               roles: PUBLIC_ACCESS }
-        - { path: ^/reclamation,        roles: PUBLIC_ACCESS }
-        - { path: ^/reservation,        roles: PUBLIC_ACCESS }
-        - { path: ^/profile,            roles: ROLE_USER }
-        - { path: ^/,                   roles: PUBLIC_ACCESS }
+        - { path: ^/admin/login$,            roles: PUBLIC_ACCESS }
+        - { path: ^/admin/logout,            roles: ROLE_USER }
+        - { path: ^/admin/profile$,          roles: ROLE_USER }
+        - { path: ^/admin/profile/edit,      roles: ROLE_USER }
+        - { path: ^/admin/profile/\d+,       roles: ROLE_USER }
+        - { path: ^/admin,                   roles: ROLE_ADMIN }
+        - { path: ^/register,                roles: PUBLIC_ACCESS }
+        - { path: ^/login,                   roles: PUBLIC_ACCESS }
+        - { path: ^/$,                       roles: PUBLIC_ACCESS }
+        - { path: ^/home,                    roles: PUBLIC_ACCESS }
+        - { path: ^/destinations,            roles: PUBLIC_ACCESS }
+        - { path: ^/hebergements,            roles: PUBLIC_ACCESS }
+        - { path: ^/properties,              roles: PUBLIC_ACCESS }
+        - { path: ^/contact,                 roles: PUBLIC_ACCESS }
+        - { path: ^/blog,                    roles: PUBLIC_ACCESS }
+        - { path: ^/activite$,               roles: PUBLIC_ACCESS }
+        - { path: ^/activite/\d+$,           roles: PUBLIC_ACCESS }
+        - { path: ^/avis,                    roles: PUBLIC_ACCESS }
+        - { path: ^/reclamation,             roles: PUBLIC_ACCESS }
+        - { path: ^/reservation,             roles: PUBLIC_ACCESS }
+        - { path: ^/reservation-hebergement, roles: ROLE_USER }
+        - { path: ^/profile,                 roles: ROLE_USER }
+        - { path: ^/,                        roles: PUBLIC_ACCESS }
 
 when@test:
     security:

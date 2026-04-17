@@ -69,12 +69,11 @@
   </div>
 </div>
 
-{# ===== RESERVATIONS ===== #}
-<div class="section" style="padding-top:0;padding-bottom:60px">
+{# ===== RESERVATIONS VOYAGE ===== #}
+<div class="section" style="padding-top:0;padding-bottom:40px">
   <div class="container">
     <div class="row justify-content-center">
       <div class="col-lg-7">
-
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px">
           <h5 style="margin:0;font-size:20px;font-weight:800;color:#1e293b">✈ Mes Réservations</h5>
           {% if reservations is defined %}
@@ -86,54 +85,36 @@
 
         {% if reservations is defined and reservations|length > 0 %}
           {% for voyage in reservations %}
-
-          {# Déterminer l'état #}
           {% set dest_inactive = voyage.destination and not voyage.destination.statut %}
           {% set is_paid = voyage.paid %}
-
           <div style="background:#fff;border-radius:20px;overflow:hidden;border:1.5px solid {% if dest_inactive %}#fecaca{% elseif is_paid %}#bbf7d0{% else %}#e2e8f0{% endif %};margin-bottom:20px;box-shadow:0 4px 20px rgba(0,0,0,.06)">
-
-            {# Barre de couleur en haut #}
             <div style="height:5px;background:{% if dest_inactive %}linear-gradient(90deg,#ef4444,#f87171){% elseif is_paid %}linear-gradient(90deg,#16a34a,#4ade80){% else %}linear-gradient(90deg,#635bff,#818cf8){% endif %}"></div>
-
             <div style="padding:20px 24px">
-
-              {# Badge statut destination inactive #}
               {% if dest_inactive %}
                 <div style="display:inline-flex;align-items:center;gap:6px;background:#ffebee;color:#E24B4A;padding:5px 12px;border-radius:20px;font-size:12px;font-weight:700;margin-bottom:14px;border:1px solid #fecaca">
                   🚫 Destination inactive pour le moment
                 </div>
               {% endif %}
-
-              {# Badge payé #}
               {% if is_paid %}
                 <div style="display:inline-flex;align-items:center;gap:6px;background:#E1F5EE;color:#085041;padding:5px 12px;border-radius:20px;font-size:12px;font-weight:700;margin-bottom:14px;border:1px solid #bbf7d0">
                   ✅ Paiement confirmé
                 </div>
               {% endif %}
-
-              {# Info destination #}
               {% if voyage.destination %}
                 <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
-                  <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#fff7ed,#ffedd5);border:1px solid #fed7aa;display:flex;align-items:center;justify-content:center;font-size:18px">
-                    📍
-                  </div>
+                  <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#fff7ed,#ffedd5);border:1px solid #fed7aa;display:flex;align-items:center;justify-content:center;font-size:18px">📍</div>
                   <div>
                     <div style="font-size:15px;font-weight:800;color:#1e293b">{{ voyage.destination.nom }}</div>
                     <div style="font-size:12px;color:#94a3b8;font-weight:600">{{ voyage.destination.pays }}</div>
                   </div>
                 </div>
               {% endif %}
-
-              {# Trajet #}
               <div style="background:#f8fafc;border-radius:14px;padding:14px 18px;margin-bottom:16px;border:1px solid #f0f4f8">
                 <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
-                  <div style="text-align:left">
+                  <div>
                     <div style="font-size:11px;color:#94a3b8;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px">Départ</div>
                     <div style="font-size:16px;font-weight:800;color:#1e293b">{{ voyage.pointDepart ?? "—" }}</div>
-                    <div style="font-size:11px;color:#f97316;font-weight:600;margin-top:3px">
-                      {{ voyage.dateDepart ? voyage.dateDepart|date("d/m/Y") : "—" }}
-                    </div>
+                    <div style="font-size:11px;color:#f97316;font-weight:600;margin-top:3px">{{ voyage.dateDepart ? voyage.dateDepart|date("d/m/Y") : "—" }}</div>
                   </div>
                   <div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex-shrink:0">
                     <div style="display:flex;align-items:center;gap:4px">
@@ -151,64 +132,40 @@
                   <div style="text-align:right">
                     <div style="font-size:11px;color:#94a3b8;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px">Arrivée</div>
                     <div style="font-size:16px;font-weight:800;color:#1e293b">{{ voyage.pointArrivee ?? "—" }}</div>
-                    <div style="font-size:11px;color:#635bff;font-weight:600;margin-top:3px">
-                      {{ voyage.dateArrivee ? voyage.dateArrivee|date("d/m/Y") : "—" }}
-                    </div>
+                    <div style="font-size:11px;color:#635bff;font-weight:600;margin-top:3px">{{ voyage.dateArrivee ? voyage.dateArrivee|date("d/m/Y") : "—" }}</div>
                   </div>
                 </div>
               </div>
-
-              {# Prix + actions #}
               <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
                 <div>
                   <div style="font-size:11px;color:#94a3b8;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:2px">Prix total</div>
-                  <div style="font-size:24px;font-weight:900;color:#f97316;letter-spacing:-1px">
-                    {{ voyage.prix ? voyage.prix ~ " €" : "—" }}
-                  </div>
+                  <div style="font-size:24px;font-weight:900;color:#f97316;letter-spacing:-1px">{{ voyage.prix ? voyage.prix ~ " €" : "—" }}</div>
                 </div>
-
                 <div style="display:flex;flex-direction:column;gap:8px;min-width:180px">
-
-                  {# Bouton payer #}
                   {% if is_paid %}
-                    <div style="padding:10px 16px;background:#E1F5EE;color:#085041;border-radius:10px;font-size:13px;font-weight:700;text-align:center;border:1px solid #bbf7d0">
-                      ✅ Payé
-                    </div>
+                    <div style="padding:10px 16px;background:#E1F5EE;color:#085041;border-radius:10px;font-size:13px;font-weight:700;text-align:center;border:1px solid #bbf7d0">✅ Payé</div>
                   {% elseif dest_inactive %}
-                    <div style="padding:10px 16px;background:#ffebee;color:#E24B4A;border-radius:10px;font-size:13px;font-weight:700;text-align:center;border:1px solid #fecaca">
-                      🚫 Paiement indisponible
-                    </div>
+                    <div style="padding:10px 16px;background:#ffebee;color:#E24B4A;border-radius:10px;font-size:13px;font-weight:700;text-align:center;border:1px solid #fecaca">🚫 Paiement indisponible</div>
                   {% else %}
                     <form action="{{ path('app_payment_checkout', {id: voyage.id}) }}" method="POST" style="margin:0">
                       <input type="hidden" name="_token" value="{{ csrf_token('payment' ~ voyage.id) }}">
-                      <button type="submit"
-                              style="width:100%;padding:10px 16px;border-radius:10px;border:none;background:linear-gradient(135deg,#635bff,#4f46e5);color:#fff;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(99,91,255,0.35);transition:transform .2s"
-                              onmouseover="this.style.transform='translateY(-2px)'"
-                              onmouseout="this.style.transform=''">
+                      <button type="submit" style="width:100%;padding:10px 16px;border-radius:10px;border:none;background:linear-gradient(135deg,#635bff,#4f46e5);color:#fff;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(99,91,255,0.35)">
                         💳 Payer maintenant
                       </button>
                     </form>
                   {% endif %}
-
-                  {# Bouton annuler — seulement si pas payé #}
                   {% if not is_paid %}
                     <form action="{{ path('app_voyage_cancel', {id: voyage.id}) }}" method="POST" style="margin:0">
                       <input type="hidden" name="_token" value="{{ csrf_token('cancel' ~ voyage.id) }}">
-                      <button type="submit"
-                              style="width:100%;padding:8px 16px;border-radius:10px;border:1.5px solid #e2e8f0;background:#fff;color:#94a3b8;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s"
-                              onmouseover="this.style.borderColor='#E24B4A';this.style.color='#E24B4A'"
-                              onmouseout="this.style.borderColor='#e2e8f0';this.style.color='#94a3b8'">
+                      <button type="submit" style="width:100%;padding:8px 16px;border-radius:10px;border:1.5px solid #e2e8f0;background:#fff;color:#94a3b8;font-size:12px;font-weight:600;cursor:pointer">
                         ✕ Annuler la réservation
                       </button>
                     </form>
                   {% endif %}
-
                 </div>
               </div>
-
             </div>
           </div>
-
           {% endfor %}
         {% else %}
           <div style="text-align:center;padding:60px 20px;background:#fff;border-radius:20px;border:1.5px dashed #e2e8f0">
@@ -219,10 +176,148 @@
             </a>
           </div>
         {% endif %}
-
       </div>
     </div>
   </div>
 </div>
+
+{# ===== RESERVATIONS HEBERGEMENT ===== #}
+<div class="section" style="padding-top:0;padding-bottom:60px">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-7">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px">
+          <h5 style="margin:0;font-size:20px;font-weight:800;color:#1e293b">🏨 Mes Réservations Hébergement</h5>
+          {% if reservationsHebergement is defined %}
+            <span style="background:#f1f5f9;color:#64748b;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700">
+              {{ reservationsHebergement|length }} hébergement{{ reservationsHebergement|length > 1 ? 's' : '' }}
+            </span>
+          {% endif %}
+        </div>
+
+        {% if reservationsHebergement is defined and reservationsHebergement|length > 0 %}
+          {% for resa in reservationsHebergement %}
+          {% set is_confirmed = resa.statut == 'confirmee' %}
+          {% set is_waiting   = resa.statut == 'en_attente' %}
+          <div style="background:#fff;border-radius:20px;overflow:hidden;border:1.5px solid {% if is_confirmed %}#bbf7d0{% elseif is_waiting %}#fde68a{% else %}#fecaca{% endif %};margin-bottom:20px;box-shadow:0 4px 20px rgba(0,0,0,.06)">
+            <div style="height:5px;background:{% if is_confirmed %}linear-gradient(90deg,#16a34a,#4ade80){% elseif is_waiting %}linear-gradient(90deg,#f59e0b,#fcd34d){% else %}linear-gradient(90deg,#ef4444,#f87171){% endif %}"></div>
+            <div style="padding:20px 24px">
+              <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px">
+                <div style="display:flex;align-items:center;gap:12px">
+                  <div style="width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,#fff7ed,#ffedd5);border:1px solid #fed7aa;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">🏠</div>
+                  <div>
+                    <div style="font-size:15px;font-weight:800;color:#1e293b">{{ resa.hebergement ? resa.hebergement.description : 'Hébergement' }}</div>
+                    <div style="font-size:12px;color:#94a3b8;margin-top:2px">Réservé par : {{ resa.clientNom ?? user.prenom ~ ' ' ~ user.nom }}</div>
+                  </div>
+                </div>
+                <span style="padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;white-space:nowrap;{% if is_confirmed %}background:#dcfce7;color:#16a34a;border:1px solid #bbf7d0;{% elseif is_waiting %}background:#fef9c3;color:#b45309;border:1px solid #fde68a;{% else %}background:#fee2e2;color:#dc2626;border:1px solid #fecaca;{% endif %}">
+                  {% if is_confirmed %}✅ Confirmée{% elseif is_waiting %}⏳ En attente{% else %}❌ Annulée{% endif %}
+                </span>
+              </div>
+              <div style="background:#f8fafc;border-radius:14px;padding:14px 18px;margin-bottom:16px;border:1px solid #f0f4f8">
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+                  <div>
+                    <div style="font-size:11px;color:#94a3b8;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px">Arrivée</div>
+                    <div style="font-size:16px;font-weight:800;color:#1e293b">{{ resa.dateDebut ? resa.dateDebut|date('d/m/Y') : '—' }}</div>
+                  </div>
+                  <div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex-shrink:0">
+                    <div style="display:flex;align-items:center;gap:4px">
+                      <div style="width:6px;height:6px;border-radius:50%;background:#f97316"></div>
+                      <div style="width:35px;height:2px;background:linear-gradient(90deg,#f97316,#635bff)"></div>
+                      <span style="font-size:16px">🌙</span>
+                      <div style="width:35px;height:2px;background:linear-gradient(90deg,#635bff,#f97316)"></div>
+                      <div style="width:6px;height:6px;border-radius:50%;background:#635bff"></div>
+                    </div>
+                    <span style="font-size:10px;color:#94a3b8;font-weight:700">{{ resa.nbNuits ?? '—' }} nuit{{ (resa.nbNuits ?? 0) > 1 ? 's' : '' }}</span>
+                  </div>
+                  <div style="text-align:right">
+                    <div style="font-size:11px;color:#94a3b8;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px">Départ</div>
+                    <div style="font-size:16px;font-weight:800;color:#1e293b">{{ resa.dateFin ? resa.dateFin|date('d/m/Y') : '—' }}</div>
+                  </div>
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+                <div>
+                  <div style="font-size:11px;color:#94a3b8;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:2px">Prix total</div>
+                  <div style="font-size:24px;font-weight:900;color:#f97316;letter-spacing:-1px">{{ resa.total ?? '0' }} €</div>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:8px;min-width:180px">
+                  {% if is_confirmed %}
+                    <div style="padding:10px 16px;background:#E1F5EE;color:#085041;border-radius:10px;font-size:13px;font-weight:700;text-align:center;border:1px solid #bbf7d0">✅ Payée &amp; Confirmée</div>
+                  {% elseif is_waiting %}
+                    <form action="{{ path('app_stripe_checkout', {'id': resa.id}) }}" method="POST" style="margin:0">
+                      <input type="hidden" name="_token" value="{{ csrf_token('payment_heb' ~ resa.id) }}">
+                      <button type="submit" style="width:100%;padding:10px 16px;border-radius:10px;border:none;background:linear-gradient(135deg,#635bff,#4f46e5);color:#fff;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(99,91,255,0.35)">
+                        💳 Payer maintenant
+                      </button>
+                    </form>
+                    <form action="{{ path('app_reservation_hebergement_cancel', {'id': resa.id}) }}" method="POST" style="margin:0">
+                      <input type="hidden" name="_token" value="{{ csrf_token('cancel_heb' ~ resa.id) }}">
+                      <button type="submit" onclick="return confirm('Confirmer l\'annulation ?')" style="width:100%;padding:8px 16px;border-radius:10px;border:1.5px solid #e2e8f0;background:#fff;color:#94a3b8;font-size:12px;font-weight:600;cursor:pointer">
+                        ✕ Annuler la réservation
+                      </button>
+                    </form>
+                  {% else %}
+                    <div style="padding:10px 16px;background:#ffebee;color:#E24B4A;border-radius:10px;font-size:13px;font-weight:700;text-align:center;border:1px solid #fecaca">❌ Annulée</div>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        {% else %}
+          <div style="text-align:center;padding:60px 20px;background:#fff;border-radius:20px;border:1.5px dashed #e2e8f0">
+            <div style="font-size:48px;margin-bottom:16px">🏨</div>
+            <h6 style="color:#94a3b8;font-size:15px;font-weight:600;margin:0">Aucune réservation d'hébergement pour le moment.</h6>
+            <a href="{{ path('app_properties') }}" style="display:inline-block;margin-top:16px;padding:10px 24px;background:#f97316;color:#fff;border-radius:10px;text-decoration:none;font-weight:700;font-size:14px">
+              Découvrir les hébergements
+            </a>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+{# ===== SCRIPT FCM ===== #}
+<script type="module">
+  import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getMessaging, getToken } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBjdiADDYJ-ED0fLWQDwch68lbKlW0excE",
+    authDomain: "voyage-app-90eb2.firebaseapp.com",
+    projectId: "voyage-app-90eb2",
+    storageBucket: "voyage-app-90eb2.firebasestorage.app",
+    messagingSenderId: "280920414423",
+    appId: "1:280920414423:web:18c223c1f9e256d637f892"
+  };
+
+  // ✅ Fix duplicate-app : réutiliser l'app existante si déjà initialisée
+  const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
+  const messaging = getMessaging(app);
+
+  window.addEventListener('load', async () => {
+    try {
+      const permission = await Notification.requestPermission();
+      if (permission !== 'granted') return;
+      const token = await getToken(messaging, { vapidKey: "BHpJUmtacJ-xDRRImB6l7a1sntB0ylSLGsxfM6VlSrktZuemTcojNLcx6j7COTe7TIfd5m-JjjRjw6LjIDMZ1Ww" });
+      if (!token) return;
+      localStorage.setItem('fcm_token', token);
+      document.querySelectorAll('form[action*="checkout"]').forEach(form => {
+        if (!form.querySelector('input[name="fcm_token"]')) {
+          const input = document.createElement('input');
+          input.type = 'hidden';
+          input.name = 'fcm_token';
+          input.value = token;
+          form.appendChild(input);
+        }
+      });
+      console.log('[FCM] Token injecté dans les formulaires ✅');
+    } catch (e) {
+      console.warn('[FCM] Erreur token :', e.message);
+    }
+  });
+</script>
 
 {% endblock %}

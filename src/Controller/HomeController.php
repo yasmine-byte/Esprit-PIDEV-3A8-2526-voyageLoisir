@@ -7,6 +7,7 @@ use App\Repository\DestinationRepository;
 use App\Repository\HebergementRepository;
 use App\Repository\TypeRepository;
 use App\Repository\ActiviteRepository;
+use App\Service\HebergementRecommandationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -22,12 +23,12 @@ class HomeController extends AbstractController
         HebergementRepository $hebergementRepository,
         DestinationRepository $destinationRepository,
         ActiviteRepository $activiteRepository,
-        BlogRepository $blogRepository
+        BlogRepository $blogRepository,
+        HebergementRecommandationService $recommandationService
     ): Response {
         $blogs = array_map(function (Blog $blog): array {
-            $image = trim((string) $blog->getImageCouverture());
+            $image   = trim((string) $blog->getImageCouverture());
             $excerpt = trim((string) ($blog->getExtrait() ?: $blog->getContenu()));
-
             return [
                 'id'           => $blog->getId(),
                 'title'        => $blog->getTitre(),
@@ -42,11 +43,42 @@ class HomeController extends AbstractController
             ];
         }, $blogRepository->findBy(['status' => true], ['datePublication' => 'DESC', 'id' => 'DESC'], 6));
 
+        // ✅ Recommandations personnalisées
+        $user = $this->getUser();
+        $recommandations = [];
+        $isPersonalized  = false;
+
+        if ($user) {
+            // User connecté → recommandations basées sur son historique
+            $email = $user->getUserIdentifier();
+            $recommandations = $recommandationService->recommanderPourClient($email, 4);
+            $isPersonalized  = true;
+
+            // Calculer les scores
+            $recommandations = array_map(function($heb) use ($recommandationService, $email) {
+                return [
+                    'hebergement' => $heb,
+                    'score'       => $recommandationService->calculerScore($heb, $email),
+                ];
+            }, $recommandations);
+        } else {
+            // Visiteur non connecté → hébergements populaires
+            $populaires = $recommandationService->getHebPopulaires(4);
+            $recommandations = array_map(function($heb) {
+                return [
+                    'hebergement' => $heb,
+                    'score'       => null,
+                ];
+            }, $populaires);
+        }
+
         return $this->render('home/index.html.twig', [
-            'hebergements' => $hebergementRepository->findAll(),
-            'destinations' => $destinationRepository->findAll(),
-            'activites'    => $activiteRepository->findAll(),
-            'blogs'        => $blogs,
+            'hebergements'    => $hebergementRepository->findAll(),
+            'destinations'    => $destinationRepository->findAll(),
+            'activites'       => $activiteRepository->findAll(),
+            'blogs'           => $blogs,
+            'recommandations' => $recommandations,
+            'isPersonalized'  => $isPersonalized,
         ]);
     }
 
@@ -56,7 +88,6 @@ class HomeController extends AbstractController
         $search = $request->query->get('search', '');
         $saison = $request->query->get('saison', '');
         $destinations = $repo->findByFilters($search, $saison, '', 'id', 'ASC');
-
         return $this->render('home/destinations.html.twig', [
             'destinations' => $destinations,
             'search'       => $search,
@@ -65,46 +96,33 @@ class HomeController extends AbstractController
     }
 
     #[Route('/destinations/{id}', name: 'app_destination_detail')]
-public function destinationDetail(int $id, DestinationRepository $repo, EntityManagerInterface $em): Response
-{
-    $destination = $repo->find($id);
+    public function destinationDetail(int $id, DestinationRepository $repo, EntityManagerInterface $em): Response
+    {
+        $destination = $repo->find($id);
+        if (!$destination) {
+            return $this->redirectToRoute('app_destinations');
+        }
+        if (!$destination->isStatut()) {
+            $this->addFlash('error', 'Cette destination est actuellement inactive.');
+            return $this->redirectToRoute('app_destinations');
+        }
+        $destination->setNbVisites(($destination->getNbVisites() ?? 0) + 1);
+        $em->flush();
 
-    if (!$destination) {
-    return $this->redirectToRoute('app_destinations');
-}
+        $sharePath = $this->generateUrl('app_destination_detail', ['id' => $destination->getId()], UrlGeneratorInterface::ABSOLUTE_PATH);
+        $shareUrl  = rtrim((string) $this->getParameter('public_base_url'), '/') . $sharePath;
+        $qrCodeUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=' . rawurlencode($shareUrl);
 
-// ✅ Bloquer les destinations inactives
-if (!$destination->isStatut()) {
-    $this->addFlash('error', 'Cette destination est actuellement inactive.');
-    return $this->redirectToRoute('app_destinations');
-}
-
-// ✅ Incrémenter nb_visites automatiquement à chaque visite
-    // ✅ Incrémenter nb_visites automatiquement à chaque visite
-    $destination->setNbVisites(($destination->getNbVisites() ?? 0) + 1);
-    $em->flush();
-
-    $sharePath = $this->generateUrl('app_destination_detail', [
-        'id' => $destination->getId(),
-    ], UrlGeneratorInterface::ABSOLUTE_PATH);
-
-    $shareUrl = rtrim((string) $this->getParameter('public_base_url'), '/') . $sharePath;
-
-    $qrCodeUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=' . rawurlencode($shareUrl);
-
-    return $this->render('home/destination-detail.html.twig', [
-        'destination' => $destination,
-        'share_url'   => $shareUrl,
-        'qr_code_url' => $qrCodeUrl,
-    ]);
-}
+        return $this->render('home/destination-detail.html.twig', [
+            'destination' => $destination,
+            'share_url'   => $shareUrl,
+            'qr_code_url' => $qrCodeUrl,
+        ]);
+    }
 
     #[Route('/hebergements', name: 'app_hebergements_front')]
-    public function hebergements(
-        Request $request,
-        HebergementRepository $hebergementRepository,
-        TypeRepository $typeRepository
-    ): Response {
+    public function hebergements(Request $request, HebergementRepository $hebergementRepository, TypeRepository $typeRepository): Response
+    {
         $description  = $request->query->get('description');
         $typeId       = $request->query->get('type') ? (int)$request->query->get('type') : null;
         $prixMin      = $request->query->get('prixMin') ? (float)$request->query->get('prixMin') : null;
@@ -115,31 +133,18 @@ if (!$destination->isStatut()) {
         $dateDebut    = $dateDebutStr ? new \DateTime($dateDebutStr) : null;
         $dateFin      = $dateFinStr   ? new \DateTime($dateFinStr)   : null;
 
-        $hebergements = $hebergementRepository->search(
-            $description, $typeId, $prixMin, $prixMax, $tri, $dateDebut, $dateFin
-        );
+        $hebergements = $hebergementRepository->search($description, $typeId, $prixMin, $prixMax, $tri, $dateDebut, $dateFin);
 
         return $this->render('home/properties.html.twig', [
             'hebergements' => $hebergements,
             'types'        => $typeRepository->findAll(),
-            'filters'      => [
-                'description' => $description,
-                'type'        => $typeId,
-                'prixMin'     => $prixMin,
-                'prixMax'     => $prixMax,
-                'tri'         => $tri,
-                'dateDebut'   => $dateDebutStr,
-                'dateFin'     => $dateFinStr,
-            ],
+            'filters'      => compact('description', 'typeId', 'prixMin', 'prixMax', 'tri', 'dateDebutStr', 'dateFinStr'),
         ]);
     }
 
     #[Route('/properties', name: 'app_properties')]
-    public function properties(
-        Request $request,
-        HebergementRepository $hebergementRepository,
-        TypeRepository $typeRepository
-    ): Response {
+    public function properties(Request $request, HebergementRepository $hebergementRepository, TypeRepository $typeRepository): Response
+    {
         $description  = $request->query->get('description');
         $typeId       = $request->query->get('type') ? (int)$request->query->get('type') : null;
         $prixMin      = $request->query->get('prixMin') ? (float)$request->query->get('prixMin') : null;
@@ -150,9 +155,7 @@ if (!$destination->isStatut()) {
         $dateDebut    = $dateDebutStr ? new \DateTime($dateDebutStr) : null;
         $dateFin      = $dateFinStr   ? new \DateTime($dateFinStr)   : null;
 
-        $hebergements = $hebergementRepository->search(
-            $description, $typeId, $prixMin, $prixMax, $tri, $dateDebut, $dateFin
-        );
+        $hebergements = $hebergementRepository->search($description, $typeId, $prixMin, $prixMax, $tri, $dateDebut, $dateFin);
 
         return $this->render('home/properties.html.twig', [
             'hebergements' => $hebergements,
@@ -173,11 +176,9 @@ if (!$destination->isStatut()) {
     public function propertyDetails(int $id, HebergementRepository $hebergementRepository): Response
     {
         $hebergement = $hebergementRepository->find($id);
-
         if (!$hebergement) {
             throw $this->createNotFoundException('Hébergement introuvable.');
         }
-
         return $this->render('home/property-details.html.twig', [
             'hebergement' => $hebergement,
         ]);

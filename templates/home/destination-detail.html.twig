@@ -1005,7 +1005,7 @@ document.addEventListener('click',function(e){if(!e.target.closest('.vl-trad-bar
               <div class="vl-ticket-line">
                 <div class="vl-ticket-dot"></div>
                 <div class="vl-ticket-seg"></div>
-                <span style="font-size:14px;margin:0 4px">{{ tp_icons[primaryTransport.typeTransport] ?? '✈' }}</span>
+                <span style="font-size:14px;margin:0 4px">{{ primaryTransport ? (tp_icons[primaryTransport.typeTransport] ?? '✈') : '✈' }}</span>
                 <div class="vl-ticket-seg"></div>
                 <div class="vl-ticket-dot"></div>
               </div>

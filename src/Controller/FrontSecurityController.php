@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Users;
+use App\Entity\Reservation;
 use App\Repository\UsersRepository;
 use App\Repository\RoleRepository;
 use App\Repository\VoyageRepository;
@@ -16,6 +17,10 @@ use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 
 class FrontSecurityController extends AbstractController
 {
+    public function __construct(
+        private EntityManagerInterface $entityManager
+    ) {}
+
     #[Route('/login', name: 'front_login')]
     public function login(AuthenticationUtils $authenticationUtils): Response
     {
@@ -52,7 +57,6 @@ class FrontSecurityController extends AbstractController
         $password        = $request->request->get('password', '');
         $confirmPassword = $request->request->get('confirm_password', '');
 
-        // ── Validations ──
         if (empty($nom) || empty($prenom) || empty($email) || empty($password)) {
             $this->addFlash('register_error', 'Tous les champs obligatoires doivent être remplis.');
             return $this->redirectToRoute('admin_login');
@@ -83,7 +87,6 @@ class FrontSecurityController extends AbstractController
             return $this->redirectToRoute('admin_login');
         }
 
-        // ── Créer l'utilisateur avec ROLE_USER par défaut ──
         $user = new Users();
         $user->setNom($nom);
         $user->setPrenom($prenom);
@@ -94,7 +97,6 @@ class FrontSecurityController extends AbstractController
         $user->setUpdatedAt(new \DateTime());
         $user->setPasswordHash($hasher->hashPassword($user, $password));
 
-        // Assigner ROLE_USER uniquement
         $roleUser = $roleRepository->findOneBy(['name' => 'ROLE_USER']);
         if ($roleUser) {
             $user->addRole($roleUser);
@@ -114,9 +116,46 @@ class FrontSecurityController extends AbstractController
         if (!$user) {
             return $this->redirectToRoute('app_home');
         }
-$reservations = $voyageRepository->findByReservedUser($user);        return $this->render('home/profile.html.twig', [
-            'user'         => $user,
-            'reservations' => $reservations,
+
+        // Réservations voyages (existant)
+        $reservations = $voyageRepository->findByReservedUser($user);
+
+        // ✅ Réservations hébergement par email du user connecté
+        $reservationsHebergement = $this->entityManager
+            ->getRepository(Reservation::class)
+            ->findBy(
+                ['clientEmail' => $user->getUserIdentifier()],
+                ['createdAt' => 'DESC']
+            );
+
+        return $this->render('home/profile.html.twig', [
+            'user'                    => $user,
+            'reservations'            => $reservations,
+            'reservationsHebergement' => $reservationsHebergement,
         ]);
+    }
+
+    // ── Annuler une réservation hébergement ─────────────────────────────────────
+    #[Route('/profile/reservation/{id}/cancel', name: 'app_reservation_hebergement_cancel', methods: ['POST'])]
+    public function cancelHebergement(int $id): Response
+    {
+        $reservation = $this->entityManager->getRepository(Reservation::class)->find($id);
+
+        if (!$reservation) {
+            $this->addFlash('error', 'Réservation introuvable.');
+            return $this->redirectToRoute('front_profile');
+        }
+
+        // Vérifier que la réservation appartient bien au user connecté
+        if ($reservation->getClientEmail() !== $this->getUser()->getUserIdentifier()) {
+            $this->addFlash('error', 'Action non autorisée.');
+            return $this->redirectToRoute('front_profile');
+        }
+
+        $reservation->setStatut('annulee');
+        $this->entityManager->flush();
+
+        $this->addFlash('success', 'Réservation annulée avec succès.');
+        return $this->redirectToRoute('front_profile');
     }
 }
