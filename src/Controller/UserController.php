@@ -11,6 +11,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Knp\Component\Pager\PaginatorInterface;
 
 class UserController extends AbstractController
 {
@@ -21,72 +22,56 @@ class UserController extends AbstractController
         private UserPasswordHasherInterface $passwordHasher
     ) {}
 
+    // ── Validation mot de passe complexe ───────────────────────────────────────
+    private function validatePassword(string $password): ?string
+    {
+        if (empty($password)) {
+            return 'Le mot de passe est obligatoire.';
+        }
+        if (strlen($password) < 6) {
+            return 'Le mot de passe doit contenir au moins 6 caractères.';
+        }
+        if (!preg_match('/[A-Z]/', $password)) {
+            return 'Le mot de passe doit contenir au moins une lettre majuscule.';
+        }
+        if (!preg_match('/[a-z]/', $password)) {
+            return 'Le mot de passe doit contenir au moins une lettre minuscule.';
+        }
+        if (!preg_match('/[0-9]/', $password)) {
+            return 'Le mot de passe doit contenir au moins un chiffre.';
+        }
+        if (!preg_match('/[@$!%*?&#+\-_=.]/', $password)) {
+            return 'Le mot de passe doit contenir au moins un caractère spécial (@$!%*?&#+).';
+        }
+        return null;
+    }
+
     // ── Liste des utilisateurs ──────────────────────────────────────────────────
-    #[Route('/admin/users', name: 'admin_users_list')]
-    public function listUsers(): Response
-    {
-        return $this->render('admin/users/list.html.twig', [
-            'users' => $this->usersRepository->findAll(),
-            'roles' => $this->roleRepository->findAll(),
-        ]);
-    }
+   #[Route('/admin/users', name: 'admin_users_list')]
+public function listUsers(Request $request, PaginatorInterface $paginator): Response
+{
+    $query = $this->usersRepository->createQueryBuilder('u')->getQuery();
 
-    // ── Dashboard utilisateurs ──────────────────────────────────────────────────
-    #[Route('/admin/users/dashboard', name: 'admin_users_dashboard')]
-    public function dashboard(RoleRepository $roleRepository): Response
-    {
-        $users = $this->usersRepository->findAll();
-        $roles = $roleRepository->findAll();
+    $users = $paginator->paginate(
+        $query,
+        $request->query->getInt('page', 1), // page courante
+        10 // nombre d'utilisateurs par page
+    );
 
-        $totalUsers    = count($users);
-        $activeUsers   = count(array_filter($users, fn($u) => $u->isActive()));
-        $inactiveUsers = $totalUsers - $activeUsers;
-        $totalRoles    = count($roles);
-
-        $latestUsers = $this->usersRepository->findBy([], ['createdAt' => 'DESC'], 5);
-
-        $monthlyData = [];
-        for ($i = 5; $i >= 0; $i--) {
-            $date = new \DateTime("-$i months");
-            $key  = $date->format('Y-m');
-            $monthlyData[$key] = 0;
-        }
-        foreach ($users as $user) {
-            if ($user->getCreatedAt()) {
-                $key = $user->getCreatedAt()->format('Y-m');
-                if (isset($monthlyData[$key])) {
-                    $monthlyData[$key]++;
-                }
-            }
-        }
-
-        $roleStats = [];
-        foreach ($users as $user) {
-            foreach ($user->getRolesCollection() as $role) {
-                $name = $role->getName();
-                $roleStats[$name] = ($roleStats[$name] ?? 0) + 1;
-            }
-        }
-
-        return $this->render('admin/dashboard.html.twig', [
-            'totalUsers'    => $totalUsers,
-            'activeUsers'   => $activeUsers,
-            'inactiveUsers' => $inactiveUsers,
-            'totalRoles'    => $totalRoles,
-            'latestUsers'   => $latestUsers,
-            'monthlyData'   => $monthlyData,
-            'roleStats'     => $roleStats,
-        ]);
-    }
+    return $this->render('admin/users/list.html.twig', [
+        'users' => $users,
+        'roles' => $this->roleRepository->findAll(),
+    ]);
+}
 
     // ── Ajouter un utilisateur ──────────────────────────────────────────────────
     #[Route('/admin/add-user', name: 'add_user')]
     public function addUser(Request $request): Response
     {
-        $fieldErrors  = [];
-        $globalError  = null;
-        $successMsg   = null;
-        $formData     = [];
+        $fieldErrors = [];
+        $globalError = null;
+        $successMsg  = null;
+        $formData    = [];
 
         if ($request->isMethod('POST')) {
             $nom             = trim($request->request->get('nom', ''));
@@ -100,18 +85,21 @@ class UserController extends AbstractController
 
             $formData = compact('nom', 'prenom', 'email', 'telephone');
 
+            // ── Validation Nom ──
             if (empty($nom)) {
                 $fieldErrors['nom'] = 'Le nom est obligatoire.';
             } elseif (!preg_match('/^[A-Za-zÀ-ÿ\s]{2,50}$/', $nom)) {
                 $fieldErrors['nom'] = 'Le nom doit contenir uniquement des lettres (2-50 caractères).';
             }
 
+            // ── Validation Prénom ──
             if (empty($prenom)) {
                 $fieldErrors['prenom'] = 'Le prénom est obligatoire.';
             } elseif (!preg_match('/^[A-Za-zÀ-ÿ\s]{2,50}$/', $prenom)) {
                 $fieldErrors['prenom'] = 'Le prénom doit contenir uniquement des lettres (2-50 caractères).';
             }
 
+            // ── Validation Email ──
             if (empty($email)) {
                 $fieldErrors['email'] = "L'adresse email est obligatoire.";
             } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
@@ -120,26 +108,27 @@ class UserController extends AbstractController
                 $fieldErrors['email'] = 'Cette adresse email est déjà utilisée par un autre compte.';
             }
 
+            // ── Validation Téléphone ──
             if (empty($telephone)) {
                 $fieldErrors['telephone'] = 'Le numéro de téléphone est obligatoire.';
             } elseif (!preg_match('/^[0-9]{8}$/', $telephone)) {
                 $fieldErrors['telephone'] = 'Le numéro de téléphone doit contenir exactement 8 chiffres.';
             }
 
-            if (empty($password)) {
-                $fieldErrors['password'] = 'Le mot de passe est obligatoire.';
-            } elseif (strlen($password) < 8) {
-                $fieldErrors['password'] = 'Le mot de passe doit contenir au moins 8 caractères.';
-            } elseif (!preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/', $password)) {
-                $fieldErrors['password'] = 'Le mot de passe doit contenir une majuscule, une minuscule, un chiffre et un caractère spécial.';
+            // ── Validation Mot de passe ──
+            $passwordError = $this->validatePassword($password);
+            if ($passwordError) {
+                $fieldErrors['password'] = $passwordError;
             }
 
+            // ── Validation Confirmation mot de passe ──
             if (empty($confirmPassword)) {
                 $fieldErrors['confirm_password'] = 'La confirmation du mot de passe est obligatoire.';
             } elseif ($password !== $confirmPassword) {
                 $fieldErrors['confirm_password'] = 'Les mots de passe ne correspondent pas.';
             }
 
+            // ── Validation Rôles ──
             if (empty($roleIds)) {
                 $fieldErrors['roles'] = 'Veuillez sélectionner au moins un rôle.';
             }
@@ -200,12 +189,21 @@ class UserController extends AbstractController
             $telephone = trim($request->request->get('telephone', ''));
             $password  = $request->request->get('password', '');
 
+            // ── Validation Nom ──
             if (empty($nom)) {
                 $fieldErrors['nom'] = 'Le nom est obligatoire.';
+            } elseif (!preg_match('/^[A-Za-zÀ-ÿ\s]{2,50}$/', $nom)) {
+                $fieldErrors['nom'] = 'Le nom doit contenir uniquement des lettres (2-50 caractères).';
             }
+
+            // ── Validation Prénom ──
             if (empty($prenom)) {
                 $fieldErrors['prenom'] = 'Le prénom est obligatoire.';
+            } elseif (!preg_match('/^[A-Za-zÀ-ÿ\s]{2,50}$/', $prenom)) {
+                $fieldErrors['prenom'] = 'Le prénom doit contenir uniquement des lettres (2-50 caractères).';
             }
+
+            // ── Validation Email ──
             if (empty($email)) {
                 $fieldErrors['email'] = "L'adresse email est obligatoire.";
             } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
@@ -217,14 +215,19 @@ class UserController extends AbstractController
                 }
             }
 
+            // ── Validation Téléphone ──
             if (empty($telephone)) {
                 $fieldErrors['telephone'] = 'Le numéro de téléphone est obligatoire.';
             } elseif (!preg_match('/^[0-9]{8}$/', $telephone)) {
                 $fieldErrors['telephone'] = 'Le numéro de téléphone doit contenir exactement 8 chiffres.';
             }
 
-            if (!empty($password) && strlen($password) < 8) {
-                $fieldErrors['password'] = 'Le mot de passe doit contenir au moins 8 caractères.';
+            // ── Validation Mot de passe (optionnel à la modification) ──
+            if (!empty($password)) {
+                $passwordError = $this->validatePassword($password);
+                if ($passwordError) {
+                    $fieldErrors['password'] = $passwordError;
+                }
             }
 
             if (!empty($fieldErrors)) {
@@ -264,6 +267,7 @@ class UserController extends AbstractController
     }
 
     // ── Supprimer un utilisateur ────────────────────────────────────────────────
+    // ── Supprimer un utilisateur ────────────────────────────────────────────
     #[Route('/admin/users/{id}/delete', name: 'admin_user_delete', methods: ['POST'])]
     public function deleteUser(Users $user, Request $request): Response
     {
@@ -281,6 +285,22 @@ class UserController extends AbstractController
         $nom    = $user->getNom();
         $prenom = $user->getPrenom();
 
+        // Supprimer les entrées ManyToMany dans voyage_reservations
+        // avant de pouvoir supprimer le user
+        $voyages = $this->entityManager->createQueryBuilder()
+            ->select('v')
+            ->from('App\Entity\Voyage', 'v')
+            ->innerJoin('v.reservedByUsers', 'u')
+            ->where('u = :user')
+            ->setParameter('user', $user)
+            ->getQuery()
+            ->getResult();
+
+        foreach ($voyages as $voyage) {
+            $voyage->removeReservation($user);
+        }
+
+        $this->entityManager->flush();
         $this->entityManager->remove($user);
         $this->entityManager->flush();
 
@@ -312,22 +332,15 @@ class UserController extends AbstractController
         return $this->redirectToRoute('admin_users_list');
     }
 
-    // ── Activités ───────────────────────────────────────────────────────────────
-    #[Route('/admin/activities', name: 'admin_activities')]
-    public function userActivities(): Response
-    {
-        $users = $this->usersRepository->findAll();
-        return $this->render('admin/activities/index.html.twig', [
-            'users' => $users
-        ]);
-    }
-
     // ── Profil d'un utilisateur ─────────────────────────────────────────────────
     #[Route('/admin/profile/{id}', name: 'admin_user_profile')]
-    public function profile(Users $user): Response
+    public function profile(Users $user, Request $request): Response
     {
-        return $this->render('admin/users/profile.html.twig', [
-            'user' => $user,
-        ]);
+        // Rediriger vers la page de profil unique avec l'utilisateur spécifié
+        // On utilise une session temporaire pour savoir quel utilisateur afficher
+        $session = $request->getSession();
+        $session->set('viewing_user_id', $user->getId());
+
+        return $this->redirectToRoute('front_profile');
     }
 }

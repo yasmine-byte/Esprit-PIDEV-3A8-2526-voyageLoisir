@@ -15,8 +15,8 @@ security:
 
         main:
             pattern: ^/admin
+            context: app_context
             lazy: true
-            context: shared_security_context
             provider: app_user_provider
             user_checker: App\Security\UserChecker
             form_login:
@@ -30,9 +30,10 @@ security:
                 default_target_path: admin_profile
                 always_use_default_target_path: true
                 use_referer: false
+                success_handler: App\Security\LoginSuccessHandler
             logout:
                 path: admin_logout
-                target: admin_login
+                target: /
                 invalidate_session: true
             remember_me:
                 secret: '%kernel.secret%'
@@ -41,8 +42,8 @@ security:
 
         front:
             pattern: ^/
+            context: app_context
             lazy: true
-            context: shared_security_context
             provider: app_user_provider
             user_checker: App\Security\UserChecker
             form_login:
@@ -77,6 +78,9 @@ security:
         - { path: ^/admin,                   roles: ROLE_ADMIN }
         - { path: ^/register,                roles: PUBLIC_ACCESS }
         - { path: ^/login,                   roles: PUBLIC_ACCESS }
+        - { path: ^/forgot-password,         roles: PUBLIC_ACCESS }
+        - { path: ^/reset-password,          roles: PUBLIC_ACCESS }
+        - { path: ^/verify/email,            roles: PUBLIC_ACCESS }
         - { path: ^/$,                       roles: PUBLIC_ACCESS }
         - { path: ^/home,                    roles: PUBLIC_ACCESS }
         - { path: ^/destinations,            roles: PUBLIC_ACCESS }

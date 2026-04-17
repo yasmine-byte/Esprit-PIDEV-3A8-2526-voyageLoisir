@@ -18,7 +18,7 @@
 
 <div class="card">
     <div class="card-header">
-        <h3>Utilisateurs ({{ users|length }})</h3>
+        <h3>Utilisateurs ({{ users.getTotalItemCount() }})</h3>
         <a href="{{ path('add_user') }}" class="btn btn-primary">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <circle cx="12" cy="12" r="10"/>
@@ -49,8 +49,20 @@
                         {% for user in users %}
                             <tr>
                                 <td>{{ user.id }}</td>
-                                <td>{{ user.nom }}</td>
-                                <td>{{ user.prenom }}</td>
+                                <td>
+                                    <a href="{{ path('admin_user_profile', {'id': user.id}) }}"
+                                       style="color: #d4845a; text-decoration: none; font-weight: 600;"
+                                       title="Voir le profil de {{ user.prenom }} {{ user.nom }}">
+                                        {{ user.nom }}
+                                    </a>
+                                </td>
+                                <td>
+                                    <a href="{{ path('admin_user_profile', {'id': user.id}) }}"
+                                       style="color: #d4845a; text-decoration: none; font-weight: 600;"
+                                       title="Voir le profil de {{ user.prenom }} {{ user.nom }}">
+                                        {{ user.prenom }}
+                                    </a>
+                                </td>
                                 <td>{{ user.email }}</td>
                                 <td>{{ user.telephone ?: 'Non renseigné' }}</td>
                                 <td>
@@ -129,6 +141,10 @@
                         {% endfor %}
                     </tbody>
                 </table>
+                {# ── Pagination ── #}
+                <div class="pagination-wrapper">
+                    {{ knp_pagination_render(users) }}
+                </div>
             </div>
         {% else %}
             <div class="empty-state">
@@ -190,5 +206,36 @@
 .btn-sm { padding: 6px 12px; font-size: 12px; }
 
 form { margin: 0; }
+.pagination-wrapper {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+    padding: 10px 0;
+}
+.pagination-wrapper .pagination {
+    display: flex;
+    gap: 8px;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.pagination-wrapper .page-item .page-link {
+    padding: 8px 14px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg-card);
+    color: var(--text-primary);
+    text-decoration: none;
+    font-size: 14px;
+}
+.pagination-wrapper .page-item.active .page-link {
+    background: var(--accent-copper);
+    color: #1c1c1e;
+    border-color: var(--accent-copper);
+}
+.pagination-wrapper .page-item .page-link:hover {
+    border-color: var(--accent-copper);
+    color: var(--accent-copper);
+}
 </style>
 {% endblock %}

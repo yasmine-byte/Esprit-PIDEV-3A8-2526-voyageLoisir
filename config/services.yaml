@@ -43,7 +43,6 @@ services:
             $providerUrl: '%blog_translation_provider_url%'
             $providerApiKey: '%blog_translation_provider_api_key%'
 
-    # ✅ Bien indenté DANS services:
     App\Service\NotificationService:
         arguments:
             $fcmProjectId: '%env(FCM_PROJECT_ID)%'
