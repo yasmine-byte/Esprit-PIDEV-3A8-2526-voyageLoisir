@@ -43,18 +43,14 @@ class HomeController extends AbstractController
             ];
         }, $blogRepository->findBy(['status' => true], ['datePublication' => 'DESC', 'id' => 'DESC'], 6));
 
-        // ✅ Recommandations personnalisées
         $user = $this->getUser();
         $recommandations = [];
         $isPersonalized  = false;
 
         if ($user) {
-            // User connecté → recommandations basées sur son historique
             $email = $user->getUserIdentifier();
             $recommandations = $recommandationService->recommanderPourClient($email, 4);
             $isPersonalized  = true;
-
-            // Calculer les scores
             $recommandations = array_map(function($heb) use ($recommandationService, $email) {
                 return [
                     'hebergement' => $heb,
@@ -62,13 +58,9 @@ class HomeController extends AbstractController
                 ];
             }, $recommandations);
         } else {
-            // Visiteur non connecté → hébergements populaires
             $populaires = $recommandationService->getHebPopulaires(4);
             $recommandations = array_map(function($heb) {
-                return [
-                    'hebergement' => $heb,
-                    'score'       => null,
-                ];
+                return ['hebergement' => $heb, 'score' => null];
             }, $populaires);
         }
 
@@ -138,7 +130,15 @@ class HomeController extends AbstractController
         return $this->render('home/properties.html.twig', [
             'hebergements' => $hebergements,
             'types'        => $typeRepository->findAll(),
-            'filters'      => compact('description', 'typeId', 'prixMin', 'prixMax', 'tri', 'dateDebutStr', 'dateFinStr'),
+            'filters'      => [
+                'description' => $description,
+                'type'        => $typeId,
+                'prixMin'     => $prixMin,
+                'prixMax'     => $prixMax,
+                'tri'         => $tri,
+                'dateDebut'   => $dateDebutStr,
+                'dateFin'     => $dateFinStr,
+            ],
         ]);
     }
 
