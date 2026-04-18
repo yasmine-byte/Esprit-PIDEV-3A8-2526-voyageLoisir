@@ -1,0 +1,177 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}Signalements commentaires{% endblock %}
+
+{% block admin_content %}
+    <style>
+        .report-page { display: grid; gap: 20px; }
+        .report-card {
+            background: #fff;
+            border-radius: 18px;
+            box-shadow: 0 12px 35px rgba(15, 23, 42, 0.08);
+            padding: 22px;
+        }
+        .report-filters {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .report-filters select,
+        .report-filters button,
+        .report-filters a {
+            padding: 10px 14px;
+            border-radius: 10px;
+            border: 1px solid #dbe2ea;
+            background: #fff;
+            text-decoration: none;
+            color: #0f172a;
+        }
+        .report-filters button {
+            background: #e8652a;
+            border-color: #e8652a;
+            color: #fff;
+        }
+        .report-table-wrap { overflow: auto; }
+        .report-table {
+            width: 100%;
+            min-width: 1040px;
+            border-collapse: collapse;
+        }
+        .report-table th,
+        .report-table td {
+            padding: 12px 14px;
+            border-bottom: 1px solid #edf2f7;
+            text-align: left;
+            vertical-align: top;
+        }
+        .report-table th {
+            font-size: 0.82rem;
+            text-transform: uppercase;
+            color: #475569;
+            letter-spacing: 0.04em;
+        }
+        .report-badge {
+            display: inline-flex;
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-size: 0.78rem;
+            font-weight: 700;
+        }
+        .report-badge--pending { background: #fff7ed; color: #c2410c; }
+        .report-badge--reviewed { background: #ecfdf5; color: #047857; }
+        .report-badge--dismissed { background: #f1f5f9; color: #475569; }
+        .report-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .report-actions form { margin: 0; }
+        .report-actions button {
+            padding: 8px 12px;
+            border-radius: 999px;
+            border: 1px solid #dbe2ea;
+            background: #fff;
+            font-size: 0.82rem;
+            font-weight: 600;
+        }
+        .report-actions .danger {
+            background: #fff5f5;
+            border-color: #fecaca;
+            color: #b91c1c;
+        }
+    </style>
+
+    <main class="report-page">
+        <section class="report-card">
+            <h1 style="margin:0 0 14px;">Signalements de commentaires</h1>
+            <form method="get" class="report-filters">
+                <select name="status">
+                    <option value="all" {{ status_filter == 'all' ? 'selected' : '' }}>Tous statuts</option>
+                    {% for status in all_statuses %}
+                        <option value="{{ status }}" {{ status_filter == status ? 'selected' : '' }}>{{ status|capitalize }}</option>
+                    {% endfor %}
+                </select>
+                <select name="reason">
+                    <option value="all" {{ reason_filter == 'all' ? 'selected' : '' }}>Toutes raisons</option>
+                    {% for reason in all_reasons %}
+                        <option value="{{ reason }}" {{ reason_filter == reason ? 'selected' : '' }}>{{ reason|capitalize }}</option>
+                    {% endfor %}
+                </select>
+                <button type="submit">Filtrer</button>
+                <a href="{{ path('admin_comment_reports_index') }}">Reset</a>
+            </form>
+        </section>
+
+        {% for label, messages in app.flashes %}
+            <section class="report-card">
+                {% for message in messages %}
+                    <div>{{ message }}</div>
+                {% endfor %}
+            </section>
+        {% endfor %}
+
+        <section class="report-card report-table-wrap">
+            {% if reports is empty %}
+                <p style="margin:0;">Aucun signalement trouve.</p>
+            {% else %}
+                <table class="report-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Date</th>
+                            <th>Utilisateur</th>
+                            <th>Blog</th>
+                            <th>Commentaire</th>
+                            <th>Raison</th>
+                            <th>Statut</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for report in reports %}
+                            {% set statusClass = report.status == 'reviewed' ? 'report-badge--reviewed' : (report.status == 'dismissed' ? 'report-badge--dismissed' : 'report-badge--pending') %}
+                            <tr>
+                                <td>#{{ report.id }}</td>
+                                <td>{{ report.createdAt ? report.createdAt|date('Y-m-d H:i') : '-' }}</td>
+                                <td>{{ report.user ? report.user.email : '-' }}</td>
+                                <td>
+                                    {% if report.commentaire and report.commentaire.blog %}
+                                        <a href="{{ path('admin_blog_show', {'id': report.commentaire.blog.id}) }}">{{ report.commentaire.blog.titre }}</a>
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+                                <td>{{ report.commentaire ? report.commentaire.contenu|slice(0, 130) ~ (report.commentaire.contenu|length > 130 ? '...' : '') : 'Commentaire supprime' }}</td>
+                                <td>{{ report.reason|capitalize }}</td>
+                                <td><span class="report-badge {{ statusClass }}">{{ report.status|capitalize }}</span></td>
+                                <td>
+                                    <div class="report-actions">
+                                        <form method="post" action="{{ path('admin_comment_report_review', {'id': report.id}) }}">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('admin_review_report_' ~ report.id) }}">
+                                            <input type="hidden" name="status_filter" value="{{ status_filter }}">
+                                            <input type="hidden" name="reason_filter" value="{{ reason_filter }}">
+                                            <button type="submit">Traite</button>
+                                        </form>
+                                        <form method="post" action="{{ path('admin_comment_report_dismiss', {'id': report.id}) }}">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('admin_dismiss_report_' ~ report.id) }}">
+                                            <input type="hidden" name="status_filter" value="{{ status_filter }}">
+                                            <input type="hidden" name="reason_filter" value="{{ reason_filter }}">
+                                            <button type="submit">Ignorer</button>
+                                        </form>
+                                        <form method="post" action="{{ path('admin_comment_report_delete_comment', {'id': report.id}) }}" onsubmit="return confirm('Supprimer ce commentaire ?');">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('admin_delete_report_comment_' ~ report.id) }}">
+                                            <input type="hidden" name="status_filter" value="{{ status_filter }}">
+                                            <input type="hidden" name="reason_filter" value="{{ reason_filter }}">
+                                            <button class="danger" type="submit">Supprimer commentaire</button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% endif %}
+        </section>
+    </main>
+{% endblock %}
