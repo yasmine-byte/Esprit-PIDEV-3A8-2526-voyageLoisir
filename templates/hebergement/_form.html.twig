@@ -1,44 +1,296 @@
-{{ form_start(form, {'attr': {'novalidate': 'novalidate', 'enctype': 'multipart/form-data'}}) }}
+{{ form_start(form, {'attr': {'novalidate': 'novalidate', 'enctype': 'multipart/form-data', 'id': 'hebergement-form'}}) }}
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<style>
+#map { z-index: 1 !important; position: relative !important; }
+.leaflet-container { z-index: 1 !important; }
+.leaflet-pane, .leaflet-tile, .leaflet-marker-icon, .leaflet-marker-shadow,
+.leaflet-tile-container, .leaflet-map-pane svg, .leaflet-map-pane canvas,
+.leaflet-zoom-box, .leaflet-image-layer, .leaflet-layer {
+    pointer-events: auto !important;
+}
+#generate-btn {
+    padding: 8px 16px; border-radius: 6px; border: none;
+    background: linear-gradient(135deg, #6c63ff, #a855f7);
+    color: #fff; font-size: 13px; cursor: pointer; font-weight: 600;
+    white-space: nowrap; display: flex; align-items: center; gap: 6px;
+}
+#generate-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.field-error { color: #ef4444; font-size: 12px; margin-top: 4px; display: none; }
+.form-input.invalid, .form-select.invalid { border-color: #ef4444 !important; }
+</style>
 
 <div style="display:grid; gap:20px;">
 
+    {# ===== DESCRIPTION + BOUTON IA ===== #}
     <div>
-        {{ form_label(form.description, 'Description', {'label_attr': {'style': 'display:block; color:var(--text-secondary); font-size:13px; font-weight:600; margin-bottom:8px;'}}) }}
-        {{ form_widget(form.description, {'attr': {'style': 'width:100%; background:var(--bg-secondary); border:1px solid var(--border-color); border-radius:8px; padding:10px 14px; color:var(--text-primary); font-size:14px; resize:vertical; min-height:100px;', 'placeholder': 'Décrivez l\'hébergement...'}}) }}
-        {{ form_errors(form.description) }}
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+            {{ form_label(form.description, 'Description *', {'label_attr': {'class': 'form-label', 'style': 'margin:0'}}) }}
+            <button type="button" id="generate-btn" onclick="generateDescription()">
+                ✨ Générer avec IA
+            </button>
+        </div>
+        {{ form_widget(form.description, {'attr': {
+            'class': 'form-input',
+            'placeholder': 'Décrivez l\'hébergement ou cliquez sur "Générer avec IA"...',
+            'rows': 4,
+            'id': 'description-field',
+            'minlength': '10',
+            'maxlength': '1000',
+            'required': 'required',
+            'oninput': 'validateField(this, 10, 1000)'
+        }}) }}
+        <div style="color:#ef4444; font-size:12px; margin-top:4px;">{{ form_errors(form.description) }}</div>
+        <div id="description-error" class="field-error">La description doit contenir entre 10 et 1000 caractères.</div>
+        <div id="ia-status" style="display:none; margin-top:6px; font-size:12px; color:#a855f7; font-style:italic;">
+            ✨ Génération en cours...
+        </div>
+    </div>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+        <div>
+            {{ form_label(form.prix, 'Prix (TND) *', {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.prix, {'attr': {
+                'class': 'form-input',
+                'placeholder': 'Ex: 150.00',
+                'id': 'prix-field',
+                'min': '1',
+                'max': '99999',
+                'step': '0.01',
+                'required': 'required',
+                'oninput': 'validatePrix(this)'
+            }}) }}
+            <div style="color:#ef4444; font-size:12px; margin-top:4px;">{{ form_errors(form.prix) }}</div>
+            <div id="prix-error" class="field-error">Le prix doit être un nombre positif (ex: 150.00).</div>
+        </div>
+        <div>
+            {{ form_label(form.type, 'Type d\'hébergement *', {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.type, {'attr': {
+                'class': 'form-select',
+                'id': 'type-field',
+                'required': 'required',
+                'onchange': 'validateSelect(this)'
+            }}) }}
+            <div style="color:#ef4444; font-size:12px; margin-top:4px;">{{ form_errors(form.type) }}</div>
+            <div id="type-error" class="field-error">Veuillez sélectionner un type.</div>
+        </div>
     </div>
 
     <div>
-        {{ form_label(form.prix, 'Prix (TND)', {'label_attr': {'style': 'display:block; color:var(--text-secondary); font-size:13px; font-weight:600; margin-bottom:8px;'}}) }}
-        {{ form_widget(form.prix, {'attr': {'style': 'width:100%; background:var(--bg-secondary); border:1px solid var(--border-color); border-radius:8px; padding:10px 14px; color:var(--text-primary); font-size:14px;', 'placeholder': 'Ex: 150.00'}}) }}
-        {{ form_errors(form.prix) }}
+        {{ form_label(form.imageFile, 'Image (JPG, PNG)', {'label_attr': {'class': 'form-label'}}) }}
+        {{ form_widget(form.imageFile, {'attr': {
+            'class': 'form-input',
+            'accept': 'image/jpeg,image/png,image/webp',
+            'onchange': 'validateImage(this)'
+        }}) }}
+        <div style="color:#ef4444; font-size:12px; margin-top:4px;">{{ form_errors(form.imageFile) }}</div>
+        <div id="image-error" class="field-error">Fichier invalide. Formats acceptés : JPG, PNG, WEBP (max 2MB).</div>
     </div>
 
-    <div>
-    {{ form_label(form.imageFile, 'Image (JPG, PNG)', {'label_attr': {'style': 'display:block; color:var(--text-secondary); font-size:13px; font-weight:600; margin-bottom:8px;'}}) }}
-    {{ form_widget(form.imageFile) }}
-    {{ form_errors(form.imageFile) }}
-</div>
-
-    <div>
-        {{ form_label(form.type, 'Type d\'hébergement', {'label_attr': {'style': 'display:block; color:var(--text-secondary); font-size:13px; font-weight:600; margin-bottom:8px;'}}) }}
-        {{ form_widget(form.type, {'attr': {'style': 'width:100%; background:var(--bg-secondary); border:1px solid var(--border-color); border-radius:8px; padding:10px 14px; color:var(--text-primary); font-size:14px;'}}) }}
-        {{ form_errors(form.type) }}
+    {# ===== SECTION CARTE ===== #}
+    <div style="border:1px solid #333; border-radius:10px; padding:20px;">
+        <h3 style="margin:0 0 8px; font-size:15px; color:#fff;">📍 Localisation</h3>
+        <p style="color:#888; font-size:13px; margin:0 0 14px;">
+            Cliquez sur la carte pour sélectionner la position de l'hébergement.
+        </p>
+        <div id="map" style="height:350px; border-radius:8px; border:1px solid #333; cursor:crosshair;"></div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:12px;">
+            <div>
+                <label class="form-label" style="font-size:12px; color:#888;">Latitude</label>
+                {{ form_widget(form.latitude, {'attr': {'class': 'form-input', 'id': 'latitude-input', 'readonly': 'readonly', 'style': 'background:#111; color:#6c63ff; font-weight:600;'}}) }}
+            </div>
+            <div>
+                <label class="form-label" style="font-size:12px; color:#888;">Longitude</label>
+                {{ form_widget(form.longitude, {'attr': {'class': 'form-input', 'id': 'longitude-input', 'readonly': 'readonly', 'style': 'background:#111; color:#6c63ff; font-weight:600;'}}) }}
+            </div>
+        </div>
+        {{ form_widget(form.adresse, {'attr': {'style': 'display:none;', 'id': 'adresse-field'}}) }}
+        <div id="map-info" style="display:none; margin-top:10px; padding:10px; background:#1a1a2e; border-radius:8px; border:1px solid #6c63ff; font-size:13px; color:#aaa;">
+            ✅ Position : <span id="map-address" style="color:#fff;"></span>
+        </div>
     </div>
 
 </div>
 
 <div style="margin-top:28px; display:flex; gap:12px;">
-    <button type="submit" style="background:var(--accent-primary); color:#fff; padding:10px 28px; border:none; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer;">
+    <button type="submit" class="btn primary" onclick="return validateForm()">
         {{ button_label|default('Enregistrer') }}
     </button>
-    <a href="{{ path('app_hebergement_index') }}" style="background:var(--bg-secondary); color:var(--text-secondary); padding:10px 28px; border-radius:8px; text-decoration:none; font-size:14px; font-weight:600;">
-        Annuler
-    </a>
+    <a href="{{ path('app_hebergement_index') }}" class="btn">Annuler</a>
 </div>
 
 {{ form_end(form) }}
 
-<style>
-.form-error { color: #ef4444; font-size: 12px; margin-top: 4px; display: block; }
-</style>
+<script>
+function validateField(el, min, max) {
+    var val = el.value.trim();
+    var errId = el.id.replace('-field', '') + '-error';
+    var err = document.getElementById(errId);
+    if (val.length < min || val.length > max) {
+        el.classList.add('invalid');
+        if (err) err.style.display = 'block';
+        return false;
+    } else {
+        el.classList.remove('invalid');
+        if (err) err.style.display = 'none';
+        return true;
+    }
+}
+
+function validatePrix(el) {
+    var val = parseFloat(el.value);
+    var err = document.getElementById('prix-error');
+    if (isNaN(val) || val <= 0 || val > 99999) {
+        el.classList.add('invalid');
+        err.style.display = 'block';
+        return false;
+    } else {
+        el.classList.remove('invalid');
+        err.style.display = 'none';
+        return true;
+    }
+}
+
+function validateSelect(el) {
+    var err = document.getElementById(el.id.replace('-field', '') + '-error');
+    if (!el.value) {
+        el.classList.add('invalid');
+        if (err) err.style.display = 'block';
+        return false;
+    } else {
+        el.classList.remove('invalid');
+        if (err) err.style.display = 'none';
+        return true;
+    }
+}
+
+function validateImage(el) {
+    var err = document.getElementById('image-error');
+    if (el.files.length > 0) {
+        var file = el.files[0];
+        var validTypes = ['image/jpeg', 'image/png', 'image/webp'];
+        var maxSize = 2 * 1024 * 1024;
+        if (!validTypes.includes(file.type) || file.size > maxSize) {
+            el.classList.add('invalid');
+            err.style.display = 'block';
+            return false;
+        }
+    }
+    el.classList.remove('invalid');
+    err.style.display = 'none';
+    return true;
+}
+
+function validateForm() {
+    var desc = document.getElementById('description-field');
+    var prix = document.getElementById('prix-field');
+    var type = document.getElementById('type-field');
+    var image = document.querySelector('[name$="[imageFile]"]');
+
+    var valid = true;
+    if (desc && !validateField(desc, 10, 1000)) valid = false;
+    if (prix && !validatePrix(prix)) valid = false;
+    if (type && !validateSelect(type)) valid = false;
+    if (image && !validateImage(image)) valid = false;
+    return valid;
+}
+
+// ===== GÉNÉRATION IA =====
+function generateDescription() {
+    var prix = document.querySelector('[name="hebergement[prix]"]')?.value || '';
+    var typeSelect = document.querySelector('[name="hebergement[type]"]');
+    var typeText = typeSelect?.options[typeSelect.selectedIndex]?.text || '';
+    var adresse = document.getElementById('map-address')?.textContent || '';
+
+    if (!prix && !typeText) {
+        alert('Veuillez d\'abord remplir le prix et le type avant de générer la description.');
+        return;
+    }
+
+    var btn = document.getElementById('generate-btn');
+    var status = document.getElementById('ia-status');
+    btn.disabled = true;
+    btn.textContent = '⏳ Génération...';
+    status.style.display = 'block';
+
+    var prompt = 'Génère une description marketing attrayante en français pour un hébergement avec ces caractéristiques :'
+        + ' Type: ' + (typeText || 'hébergement')
+        + ', Prix: ' + (prix || 'non spécifié') + ' TND par nuit'
+        + (adresse ? ', Adresse: ' + adresse : '')
+        + '. La description doit être professionnelle, attrayante, entre 50 et 100 mots.';
+
+    fetch('/api/generate-description', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: prompt })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        if (data.description) {
+            document.querySelector('[name="hebergement[description]"]').value = data.description;
+        }
+        btn.disabled = false;
+        btn.innerHTML = '✨ Générer avec IA';
+        status.style.display = 'none';
+    })
+    .catch(function() {
+        alert('Erreur lors de la génération.');
+        btn.disabled = false;
+        btn.innerHTML = '✨ Générer avec IA';
+        status.style.display = 'none';
+    });
+}
+
+// ===== CARTE LEAFLET =====
+window.addEventListener('load', function() {
+    var defaultLat = {{ form.vars.value.latitude is not null ? form.vars.value.latitude : 36.8065 }};
+    var defaultLng = {{ form.vars.value.longitude is not null ? form.vars.value.longitude : 10.1815 }};
+    var defaultZoom = {{ form.vars.value.latitude is not null ? 13 : 7 }};
+
+    var map = L.map('map', { zoomControl: true, scrollWheelZoom: true })
+               .setView([defaultLat, defaultLng], defaultZoom);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    setTimeout(function() { map.invalidateSize(); }, 300);
+
+    var marker = null;
+
+    {% if form.vars.value.latitude is not null %}
+    marker = L.marker([{{ form.vars.value.latitude }}, {{ form.vars.value.longitude }}]).addTo(map);
+    marker.bindPopup('📍 Position actuelle').openPopup();
+    document.getElementById('map-info').style.display = 'block';
+    document.getElementById('map-address').textContent = '{{ form.vars.value.latitude }}, {{ form.vars.value.longitude }}';
+    {% endif %}
+
+    map.on('click', function(e) {
+        var lat = e.latlng.lat.toFixed(6);
+        var lng = e.latlng.lng.toFixed(6);
+
+        document.querySelector('[name="hebergement[latitude]"]').value = lat;
+        document.querySelector('[name="hebergement[longitude]"]').value = lng;
+
+        if (marker) { marker.setLatLng(e.latlng); }
+        else { marker = L.marker(e.latlng).addTo(map); }
+
+        marker.bindPopup('📍 Lat: ' + lat + '<br>Lng: ' + lng).openPopup();
+
+        fetch('https://nominatim.openstreetmap.org/reverse?format=json&lat=' + lat + '&lon=' + lng)
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                var adresse = data.display_name || (lat + ', ' + lng);
+                document.querySelector('[name="hebergement[adresse]"]').value = adresse;
+                document.getElementById('map-address').textContent = adresse;
+                document.getElementById('map-info').style.display = 'block';
+            })
+            .catch(function() {
+                document.getElementById('map-address').textContent = lat + ', ' + lng;
+                document.getElementById('map-info').style.display = 'block';
+            });
+    });
+});
+</script>

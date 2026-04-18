@@ -1,53 +1,261 @@
-{{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+{{ form_start(form, {'attr': {'novalidate': 'novalidate', 'id': 'chambre-form'}}) }}
+
+<style>
+.field-error { color: #ef4444; font-size: 12px; margin-top: 4px; display: none; }
+.form-input.invalid, .form-select.invalid { border-color: #ef4444 !important; }
+</style>
+
 <div style="display:grid; gap:20px;">
 
     <div>
-        {{ form_label(form.hebergement, 'Hébergement', {'label_attr': {'class': 'form-label'}}) }}
-        {{ form_widget(form.hebergement, {'attr': {'class': 'form-select'}}) }}
+        {{ form_label(form.hebergement, 'Hébergement *', {'label_attr': {'class': 'form-label'}}) }}
+        {{ form_widget(form.hebergement, {'attr': {
+            'class': 'form-select',
+            'required': 'required',
+            'onchange': 'validateRequired(this)'
+        }}) }}
         <div style="color:#ef4444; font-size:12px; margin-top:4px;">{{ form_errors(form.hebergement) }}</div>
+        <div id="hebergement-error" class="field-error">Veuillez sélectionner un hébergement.</div>
     </div>
 
     <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
         <div>
-            {{ form_label(form.numero, 'Numéro', {'label_attr': {'class': 'form-label'}}) }}
-            {{ form_widget(form.numero, {'attr': {'class': 'form-input', 'placeholder': 'Ex: 101'}}) }}
+            {{ form_label(form.numero, 'Numéro *', {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.numero, {'attr': {
+                'class': 'form-input',
+                'placeholder': 'Ex: 101',
+                'required': 'required',
+                'min': '1',
+                'max': '9999',
+                'pattern': '[0-9]+',
+                'title': 'Le numéro doit être un entier positif',
+                'oninput': 'validateNumero(this)'
+            }}) }}
             <div style="color:#ef4444; font-size:12px; margin-top:4px;">{{ form_errors(form.numero) }}</div>
+            <div id="numero-error" class="field-error">Le numéro doit être un entier entre 1 et 9999.</div>
         </div>
         <div>
-            {{ form_label(form.typeChambre, 'Type de chambre', {'label_attr': {'class': 'form-label'}}) }}
-            {{ form_widget(form.typeChambre, {'attr': {'class': 'form-select'}}) }}
+            {{ form_label(form.typeChambre, 'Type de chambre *', {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.typeChambre, {'attr': {
+                'class': 'form-select',
+                'required': 'required',
+                'onchange': 'validateRequired(this)'
+            }}) }}
             <div style="color:#ef4444; font-size:12px; margin-top:4px;">{{ form_errors(form.typeChambre) }}</div>
+            <div id="typeChambre-error" class="field-error">Veuillez sélectionner un type de chambre.</div>
         </div>
     </div>
 
     <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
         <div>
-            {{ form_label(form.prixNuit, 'Prix / nuit (TND)', {'label_attr': {'class': 'form-label'}}) }}
-            {{ form_widget(form.prixNuit, {'attr': {'class': 'form-input', 'placeholder': 'Ex: 80.00'}}) }}
+            {{ form_label(form.prixNuit, 'Prix / nuit (TND) *', {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.prixNuit, {'attr': {
+                'class': 'form-input',
+                'placeholder': 'Ex: 80.00',
+                'required': 'required',
+                'min': '1',
+                'max': '99999',
+                'step': '0.01',
+                'oninput': 'validatePrix(this)'
+            }}) }}
             <div style="color:#ef4444; font-size:12px; margin-top:4px;">{{ form_errors(form.prixNuit) }}</div>
+            <div id="prixNuit-error" class="field-error">Le prix doit être un nombre positif (min: 1 TND).</div>
         </div>
         <div>
-            {{ form_label(form.capacite, 'Capacité (personnes)', {'label_attr': {'class': 'form-label'}}) }}
-            {{ form_widget(form.capacite, {'attr': {'class': 'form-input', 'placeholder': 'Ex: 2'}}) }}
+            {{ form_label(form.capacite, 'Capacité (personnes) *', {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.capacite, {'attr': {
+                'class': 'form-input',
+                'placeholder': 'Ex: 2',
+                'required': 'required',
+                'min': '1',
+                'max': '20',
+                'pattern': '[0-9]+',
+                'title': 'La capacité doit être entre 1 et 20 personnes',
+                'oninput': 'validateCapacite(this)'
+            }}) }}
             <div style="color:#ef4444; font-size:12px; margin-top:4px;">{{ form_errors(form.capacite) }}</div>
+            <div id="capacite-error" class="field-error">La capacité doit être entre 1 et 20 personnes.</div>
         </div>
     </div>
 
     <div>
         {{ form_label(form.equipements, 'Équipements', {'label_attr': {'class': 'form-label'}}) }}
-        {{ form_widget(form.equipements, {'attr': {'class': 'form-input', 'placeholder': 'Ex: TV, Climatisation, WiFi, Minibar...', 'rows': 3}}) }}
+        {{ form_widget(form.equipements, {'attr': {
+            'class': 'form-input',
+            'placeholder': 'Ex: TV, Climatisation, WiFi, Minibar...',
+            'rows': 3,
+            'maxlength': '500',
+            'oninput': 'validateEquipements(this)'
+        }}) }}
         <div style="color:#ef4444; font-size:12px; margin-top:4px;">{{ form_errors(form.equipements) }}</div>
+        <div id="equipements-error" class="field-error">Les équipements ne peuvent pas dépasser 500 caractères.</div>
+    </div>
+
+    {# ===== SECTION DISPONIBILITÉS ===== #}
+    <div style="border:1px solid #333; border-radius:10px; padding:20px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+            <h3 style="margin:0; font-size:15px; color:#fff;">📅 Disponibilités</h3>
+            <button type="button" onclick="addDispo()"
+                    style="padding:6px 14px; border-radius:6px; border:none; background:#6c63ff; color:#fff; font-size:13px; cursor:pointer; font-weight:600;">
+                + Ajouter une période
+            </button>
+        </div>
+        <div id="dispos-container"></div>
+        <p id="no-dispo-msg" style="color:#888; font-size:13px; margin:0;">
+            Aucune disponibilité ajoutée. Cliquez sur "+ Ajouter une période" pour en ajouter.
+        </p>
     </div>
 
 </div>
 
 <div style="margin-top:28px; display:flex; gap:12px;">
-    <button type="submit" class="btn primary">
+    <button type="submit" class="btn primary" onclick="return validateForm()">
         {{ button_label|default('Enregistrer') }}
     </button>
-    <a href="{{ path('app_chambre_index') }}" class="btn">
-        Annuler
-    </a>
+    <a href="{{ path('app_chambre_index') }}" class="btn">Annuler</a>
 </div>
 
 {{ form_end(form) }}
+
+<script>
+var dispoCount = 0;
+var today = new Date().toISOString().split('T')[0];
+
+function validateRequired(el) {
+    var errId = el.name.replace(/.*\[(\w+)\]$/, '$1') + '-error';
+    var err = document.getElementById(errId);
+    if (!el.value) {
+        el.classList.add('invalid');
+        if (err) err.style.display = 'block';
+        return false;
+    }
+    el.classList.remove('invalid');
+    if (err) err.style.display = 'none';
+    return true;
+}
+
+function validateNumero(el) {
+    var val = parseInt(el.value);
+    var err = document.getElementById('numero-error');
+    if (isNaN(val) || val < 1 || val > 9999) {
+        el.classList.add('invalid');
+        err.style.display = 'block';
+        return false;
+    }
+    el.classList.remove('invalid');
+    err.style.display = 'none';
+    return true;
+}
+
+function validatePrix(el) {
+    var val = parseFloat(el.value);
+    var err = document.getElementById('prixNuit-error');
+    if (isNaN(val) || val < 1 || val > 99999) {
+        el.classList.add('invalid');
+        err.style.display = 'block';
+        return false;
+    }
+    el.classList.remove('invalid');
+    err.style.display = 'none';
+    return true;
+}
+
+function validateCapacite(el) {
+    var val = parseInt(el.value);
+    var err = document.getElementById('capacite-error');
+    if (isNaN(val) || val < 1 || val > 20) {
+        el.classList.add('invalid');
+        err.style.display = 'block';
+        return false;
+    }
+    el.classList.remove('invalid');
+    err.style.display = 'none';
+    return true;
+}
+
+function validateEquipements(el) {
+    var err = document.getElementById('equipements-error');
+    if (el.value.length > 500) {
+        el.classList.add('invalid');
+        err.style.display = 'block';
+        return false;
+    }
+    el.classList.remove('invalid');
+    err.style.display = 'none';
+    return true;
+}
+
+function validateForm() {
+    var valid = true;
+    var heb = document.querySelector('[name$="[hebergement]"]');
+    var num = document.querySelector('[name$="[numero]"]');
+    var type = document.querySelector('[name$="[typeChambre]"]');
+    var prix = document.querySelector('[name$="[prixNuit]"]');
+    var cap = document.querySelector('[name$="[capacite]"]');
+
+    if (heb && !heb.value) { heb.classList.add('invalid'); document.getElementById('hebergement-error').style.display='block'; valid=false; }
+    if (num && !validateNumero(num)) valid = false;
+    if (type && !type.value) { type.classList.add('invalid'); document.getElementById('typeChambre-error').style.display='block'; valid=false; }
+    if (prix && !validatePrix(prix)) valid = false;
+    if (cap && !validateCapacite(cap)) valid = false;
+
+    // Validate dispos
+    var dateDebuts = document.querySelectorAll('[name$="[date_debut]"]');
+    var dateFins = document.querySelectorAll('[name$="[date_fin]"]');
+    dateDebuts.forEach(function(dd, i) {
+        if (dateFins[i] && dd.value >= dateFins[i].value) {
+            dd.style.borderColor = '#ef4444';
+            dateFins[i].style.borderColor = '#ef4444';
+            valid = false;
+            alert('La date de fin doit être après la date de début pour chaque disponibilité.');
+        }
+    });
+
+    return valid;
+}
+
+function addDispo() {
+    dispoCount++;
+    var container = document.getElementById('dispos-container');
+    document.getElementById('no-dispo-msg').style.display = 'none';
+
+    var div = document.createElement('div');
+    div.id = 'dispo-' + dispoCount;
+    div.style.cssText = 'display:grid; grid-template-columns:1fr 1fr auto auto; gap:12px; align-items:end; margin-bottom:12px; padding:12px; background:#1a1a2e; border-radius:8px; border:1px solid #333;';
+    div.innerHTML = `
+        <div>
+            <label style="display:block; font-size:12px; color:#888; margin-bottom:4px;">Date début *</label>
+            <input type="date" name="disponibilites[${dispoCount}][date_debut]"
+                   style="width:100%; padding:8px; border-radius:6px; border:1px solid #333; background:#0f0f1a; color:#fff; font-size:13px;"
+                   min="${today}" required>
+        </div>
+        <div>
+            <label style="display:block; font-size:12px; color:#888; margin-bottom:4px;">Date fin *</label>
+            <input type="date" name="disponibilites[${dispoCount}][date_fin]"
+                   style="width:100%; padding:8px; border-radius:6px; border:1px solid #333; background:#0f0f1a; color:#fff; font-size:13px;"
+                   min="${today}" required>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px; padding-bottom:4px;">
+            <input type="checkbox" name="disponibilites[${dispoCount}][disponible]" value="1"
+                   id="dispo-check-${dispoCount}" checked
+                   style="width:16px; height:16px; cursor:pointer;">
+            <label for="dispo-check-${dispoCount}" style="font-size:13px; color:#aaa; cursor:pointer;">Disponible</label>
+        </div>
+        <div>
+            <button type="button" onclick="removeDispo(${dispoCount})"
+                    style="padding:8px 12px; border-radius:6px; border:none; background:#c0392b; color:#fff; font-size:13px; cursor:pointer;">
+                ✕
+            </button>
+        </div>
+    `;
+    container.appendChild(div);
+}
+
+function removeDispo(id) {
+    var el = document.getElementById('dispo-' + id);
+    if (el) el.remove();
+    if (document.getElementById('dispos-container').children.length === 0) {
+        document.getElementById('no-dispo-msg').style.display = 'block';
+    }
+}
+</script>

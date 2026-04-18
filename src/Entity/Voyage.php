@@ -64,10 +64,15 @@ class Voyage
     #[ORM\JoinTable(name: "voyage_reservations")]
     private Collection $reservedByUsers;
 
+    #[ORM\ManyToMany(targetEntity: Hebergement::class, inversedBy: 'voyages')]
+    #[ORM\JoinTable(name: "voyage_hebergement")]
+    private Collection $hebergements;
+
     public function __construct()
     {
         $this->transports      = new ArrayCollection();
         $this->reservedByUsers = new ArrayCollection();
+        $this->hebergements    = new ArrayCollection();
     }
 
     // ----------------------------------------------------------------
@@ -263,8 +268,34 @@ public function isPaidByUser($user): bool
         return $this->reservedByUsers->first() ?: null;
     }
     #[ORM\Column(type: "boolean", options: ["default" => false])]
-private bool $paid = false;
+    private bool $paid = false;
 
-public function isPaid(): bool { return $this->paid; }
-public function setPaid(bool $paid): static { $this->paid = $paid; return $this; }
+    public function isPaid(): bool { return $this->paid; }
+    public function setPaid(bool $paid): static { $this->paid = $paid; return $this; }
+
+    // ----------------------------------------------------------------
+    // Hébergements (ManyToMany)
+    // ----------------------------------------------------------------
+
+    public function getHebergements(): Collection
+    {
+        return $this->hebergements;
+    }
+
+    public function addHebergement(Hebergement $hebergement): static
+    {
+        if (!$this->hebergements->contains($hebergement)) {
+            $this->hebergements->add($hebergement);
+            $hebergement->addVoyage($this);
+        }
+        return $this;
+    }
+
+    public function removeHebergement(Hebergement $hebergement): static
+    {
+        if ($this->hebergements->removeElement($hebergement)) {
+            $hebergement->removeVoyage($this);
+        }
+        return $this;
+    }
 }

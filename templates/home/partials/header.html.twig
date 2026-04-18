@@ -34,11 +34,18 @@
             <li><a href="{{ path('avis_index') }}">Avis</a></li>
             <li><a href="{{ path('reclamation_index') }}">Réclamations</a></li>
             <li><a href="{{ path('app_blog_index') }}">Blog</a></li>
-            <li><a href="{{ path('app_contact') }}"><i class="fa fa-envelope" style="margin-right:5px;"></i> Contact</a></li>
+            <li>
+              <a href="{{ path('app_contact') }}">
+                <i class="fa fa-envelope" style="margin-right:5px;"></i> Contact
+              </a>
+            </li>
+
             {% if app.user %}
-              {% if is_granted("ROLE_ADMIN") %}
+              {% if is_granted('ROLE_ADMIN') %}
                 <li>
-                  <a href="{{ path('app_admin') }}" style="color:#d4845a; font-weight:600;"><i class="fa fa-cog"></i> Admin</a>
+                  <a href="{{ path('app_admin') }}" style="color:#d4845a; font-weight:600;">
+                    <i class="fa fa-cog"></i> Admin
+                  </a>
                 </li>
               {% endif %}
               <li>
@@ -117,8 +124,8 @@
                   <input type="text" name="nom" class="form-control" placeholder="Votre nom" required>
                 </div>
                 <div class="col-6 mb-3">
-                  <label class="form-label">Prenom</label>
-                  <input type="text" name="prenom" class="form-control" placeholder="Votre prenom" required>
+                  <label class="form-label">Prénom</label>
+                  <input type="text" name="prenom" class="form-control" placeholder="Votre prénom" required>
                 </div>
               </div>
               <div class="mb-3">
@@ -127,14 +134,14 @@
               </div>
               <div class="mb-3">
                 <label class="form-label">Mot de passe</label>
-                <input type="password" name="password" class="form-control" placeholder="Minimum 8 caracteres" required minlength="8">
+                <input type="password" name="password" class="form-control" placeholder="Minimum 8 caractères" required minlength="8">
               </div>
               <div class="mb-3">
                 <label class="form-label">Confirmer le mot de passe</label>
-                <input type="password" name="confirm_password" class="form-control" placeholder="Repetez le mot de passe" required>
+                <input type="password" name="confirm_password" class="form-control" placeholder="Répétez le mot de passe" required>
               </div>
               <button type="submit" class="btn w-100" style="background:linear-gradient(135deg,#e8a87c,#d4845a);color:#fff;border:none;border-radius:8px;padding:12px;font-weight:600">
-                Creer mon compte
+                Créer mon compte
               </button>
             </form>
           </div>

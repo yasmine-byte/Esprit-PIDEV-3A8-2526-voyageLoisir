@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Test Notifications - Vianova</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 600px; margin: 40px auto; padding: 20px; }
+    h2 { color: #f75959; }
+    button { padding: 12px 24px; margin: 8px 4px; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; }
+    #btnToken  { background: #635bff; color: #fff; }
+    #btnPaymt  { background: #16a34a; color: #fff; }
+    #btnConfirm{ background: #f97316; color: #fff; }
+    #btnAnnule { background: #ef4444; color: #fff; }
+    #token { word-break:break-all; background:#f0f0f0; padding:12px; border-radius:8px; margin:12px 0; font-size:12px; min-height:40px; }
+    #result { padding:12px; border-radius:8px; margin-top:12px; font-weight:600; }
+    .success { background:#dcfce7; color:#16a34a; }
+    .error   { background:#fee2e2; color:#dc2626; }
+    label { font-weight: 600; display: block; margin-top: 12px; }
+    input { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 6px; margin-top: 4px; box-sizing: border-box; }
+  </style>
+</head>
+<body>
+
+<h2>🔔 Test Notifications Firebase - Vianova</h2>
+
+<label>Reservation ID (pour tester)</label>
+<input type="number" id="resaId" value="1" />
+
+<label>Nom client</label>
+<input type="text" id="clientNom" value="Mehdi" />
+
+<label>Montant (DT)</label>
+<input type="text" id="montant" value="150" />
+
+<hr style="margin:20px 0">
+
+<p><strong>Étape 1 :</strong> Cliquez pour obtenir votre token FCM</p>
+<button id="btnToken" onclick="getToken()">📱 Obtenir mon Token FCM</button>
+
+<p><strong>Token FCM :</strong></p>
+<div id="token">Cliquez sur le bouton ci-dessus...</div>
+
+<hr style="margin:20px 0">
+
+<p><strong>Étape 2 :</strong> Testez une notification</p>
+<button id="btnPaymt"   onclick="testPaiement()">💳 Tester Paiement Reçu</button>
+<button id="btnConfirm" onclick="testConfirm()">✅ Tester Réservation Confirmée</button>
+<button id="btnAnnule"  onclick="testAnnule()">❌ Tester Réservation Annulée</button>
+
+<div id="result"></div>
+
+<script type="module">
+  import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging.js";
+
+  const firebaseConfig = {
+    apiKey:            "AIzaSyBjdiADDYJ-ED0fLWQDwch68lbKlW0excE",
+    authDomain:        "voyage-app-90eb2.firebaseapp.com",
+    projectId:         "voyage-app-90eb2",
+    storageBucket:     "voyage-app-90eb2.firebasestorage.app",
+    messagingSenderId: "280920414423",
+    appId:             "1:280920414423:web:18c223c1f9e256d637f892"
+  };
+
+  const VAPID_KEY = "BHpJUmtacJ-xDRRImB6l7a1sntB0ylSLGsxfM6VlSrktZuemTcojNLcx6j7COTe7TIfd5m-JjjRjw6LjIDMZ1Ww"; // ← à remplacer
+
+  const app       = initializeApp(firebaseConfig);
+  const messaging = getMessaging(app);
+
+  // Écouter les notifications en foreground
+  onMessage(messaging, (payload) => {
+    showResult('🔔 Notification reçue : ' + payload.notification?.title, 'success');
+  });
+
+  window.getToken = async () => {
+    try {
+      const permission = await Notification.requestPermission();
+      if (permission !== 'granted') {
+        showResult('❌ Permission refusée par le navigateur', 'error');
+        return;
+      }
+      const token = await getToken(messaging, { vapidKey: VAPID_KEY });
+      document.getElementById('token').innerText = token;
+      showResult('✅ Token obtenu avec succès !', 'success');
+    } catch (e) {
+      showResult('❌ Erreur : ' + e.message, 'error');
+    }
+  };
+
+  window.testPaiement = async () => {
+    const token = document.getElementById('token').innerText;
+    if (!token || token.includes('Cliquez')) { showResult('⚠️ Obtenez d\'abord le token', 'error'); return; }
+    await callApi('/api/notifications/paiement-recu', {
+      fcm_token:  token,
+      client_nom: document.getElementById('clientNom').value,
+      montant:    document.getElementById('montant').value
+    });
+  };
+
+  window.testConfirm = async () => {
+    const token = document.getElementById('token').innerText;
+    if (!token || token.includes('Cliquez')) { showResult('⚠️ Obtenez d\'abord le token', 'error'); return; }
+    await callApi('/api/notifications/reservation-confirmee', {
+      fcm_token:      token,
+      reservation_id: parseInt(document.getElementById('resaId').value)
+    });
+  };
+
+  window.testAnnule = async () => {
+    const token = document.getElementById('token').innerText;
+    if (!token || token.includes('Cliquez')) { showResult('⚠️ Obtenez d\'abord le token', 'error'); return; }
+    await callApi('/api/notifications/reservation-annulee', {
+      fcm_token:      token,
+      reservation_id: parseInt(document.getElementById('resaId').value)
+    });
+  };
+
+  async function callApi(url, body) {
+    try {
+      showResult('⏳ Envoi en cours...', '');
+      const res  = await fetch(url, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify(body)
+      });
+      const data = await res.json();
+      if (data.success) {
+        showResult('✅ Notification envoyée avec succès !', 'success');
+      } else {
+        showResult('❌ Échec : ' + JSON.stringify(data), 'error');
+      }
+    } catch (e) {
+      showResult('❌ Erreur réseau : ' + e.message, 'error');
+    }
+  }
+
+  function showResult(msg, type) {
+    const el = document.getElementById('result');
+    el.innerText  = msg;
+    el.className  = type;
+  }
+</script>
+
+</body>
+</html>
