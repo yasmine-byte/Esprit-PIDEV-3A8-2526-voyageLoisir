@@ -1,0 +1,120 @@
+{# templates/avis/pdf.html.twig #}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; color: #1a1a2e !important; }
+        body { font-family: DejaVu Sans, Arial, sans-serif; background: #ffffff; font-size: 12px; line-height: 1.6; padding: 30px 40px; }
+        .header { background: #e85d04; border-radius: 6px; padding: 20px 24px; margin-bottom: 24px; display: table; width: 100%; }
+        .header-left { display: table-cell; width: 60%; vertical-align: middle; }
+        .header-right { display: table-cell; width: 40%; text-align: right; vertical-align: middle; }
+        .brand { font-size: 26px; font-weight: bold; color: #ffffff !important; letter-spacing: 2px; }
+        .doc-title { font-size: 13px; color: #ffe8d6 !important; margin-top: 4px; }
+        .doc-num { font-size: 22px; font-weight: bold; color: #ffffff !important; }
+        .doc-date { font-size: 10px; color: #ffe8d6 !important; margin-top: 4px; }
+        .section { background: #fff8f5; border: 1px solid #fde8d8; border-left: 4px solid #e85d04; border-radius: 4px; padding: 14px 16px; margin-bottom: 16px; }
+        .section-title { font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; color: #e85d04 !important; margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px dashed #fbd5bd; }
+        .info-table { width: 100%; border-collapse: collapse; }
+        .info-table td { padding: 5px 8px; vertical-align: top; font-size: 11px; }
+        .info-table td:first-child { font-weight: bold; color: #374151 !important; width: 38%; }
+        .info-table td:last-child { color: #1a1a2e !important; }
+        .text-block { background: #ffffff; border: 1px solid #fde8d8; border-radius: 4px; padding: 12px 14px; font-size: 11.5px; line-height: 1.7; color: #1a1a2e !important; margin-top: 4px; white-space: pre-wrap; }
+        .stars { font-size: 18px; letter-spacing: 3px; color: #f59e0b !important; }
+        .badge { display: inline-block; padding: 3px 12px; border-radius: 12px; font-size: 10px; font-weight: bold; }
+        .badge-attente { background: #fef3c7; color: #92400e !important; border: 1px solid #f59e0b; }
+        .badge-valide  { background: #d1fae5; color: #065f46 !important; border: 1px solid #10b981; }
+        .badge-rejete  { background: #fee2e2; color: #991b1b !important; border: 1px solid #ef4444; }
+        .reponse-section { background: #f0fdf4; border: 1px solid #bbf7d0; border-left: 4px solid #22c55e; border-radius: 4px; padding: 14px 16px; margin-bottom: 16px; }
+        .reponse-section .section-title { color: #15803d !important; border-bottom-color: #bbf7d0; }
+        .reclamation-section { background: #faf5ff; border: 1px solid #e9d5ff; border-left: 4px solid #8b5cf6; border-radius: 4px; padding: 14px 16px; margin-bottom: 16px; }
+        .reclamation-section .section-title { color: #6d28d9 !important; border-bottom-color: #e9d5ff; }
+        .divider { border: none; border-top: 1px dashed #fde8d8; margin: 10px 0; }
+        .footer { border-top: 2px solid #fde8d8; padding-top: 12px; margin-top: 24px; text-align: center; font-size: 9px; color: #9ca3af !important; }
+        .footer strong { color: #e85d04 !important; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="header-left">
+            <div class="brand">VIANOVA</div>
+            <div class="doc-title">⭐ Récapitulatif de mon avis</div>
+        </div>
+        <div class="header-right">
+            <div style="font-size:10px; color:#ffe8d6 !important;">Avis N°</div>
+            <div class="doc-num">#{{ avis.id }}</div>
+            <div class="doc-date">Document généré le {{ "now"|date('d/m/Y à H:i') }}</div>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">👤 Informations Client</div>
+        <table class="info-table">
+            {% if user is defined and user is not null %}
+            <tr><td>Nom complet :</td><td><strong>{{ user.prenom }} {{ user.nom }}</strong></td></tr>
+            <tr><td>Email :</td><td>{{ user.email }}</td></tr>
+            {% else %}
+            <tr><td>Identifiant client :</td><td>#{{ avis.userId }}</td></tr>
+            {% endif %}
+        </table>
+    </div>
+
+    <div class="section">
+        <div class="section-title">⭐ Détails de l'Avis</div>
+        <table class="info-table">
+            <tr><td>Type d'avis :</td><td><strong>{{ avis.type ? avis.type.nom : '—' }}</strong></td></tr>
+            <tr>
+                <td>Note :</td>
+                <td>
+                    <span class="stars">
+                        {% for i in 1..5 %}{% if i <= avis.nbEtoiles %}★{% else %}☆{% endif %}{% endfor %}
+                    </span>
+                    &nbsp;{{ avis.nbEtoiles }}/5
+                </td>
+            </tr>
+            <tr>
+                <td>Statut :</td>
+                <td>
+                    {% if avis.statut == 'En attente' %}<span class="badge badge-attente">⏳ En attente</span>
+                    {% elseif avis.statut == 'Validé' %}<span class="badge badge-valide">✅ Validé</span>
+                    {% elseif avis.statut == 'Rejeté' %}<span class="badge badge-rejete">❌ Rejeté</span>
+                    {% else %}<span class="badge">{{ avis.statut }}</span>{% endif %}
+                </td>
+            </tr>
+            <tr><td>Date de l'avis :</td><td>{{ avis.dateAvis|date('d/m/Y à H:i') }}</td></tr>
+        </table>
+        <hr class="divider">
+        <div style="font-weight:bold; font-size:11px; color:#374151 !important; margin-bottom:6px;">💬 Description de l'avis :</div>
+        <div class="text-block">{{ avis.contenu }}</div>
+    </div>
+
+    {% if avis.reponse %}
+    <div class="reponse-section">
+        <div class="section-title">💼 Réponse de l'Administrateur</div>
+        <div class="text-block" style="background:#f0fdf4; border-color:#bbf7d0;">{{ avis.reponse }}</div>
+    </div>
+    {% endif %}
+
+    {% if reclamation is defined and reclamation is not null %}
+    <div class="reclamation-section">
+        <div class="section-title">📋 Réclamation liée (N° {{ reclamation.id }})</div>
+        <table class="info-table">
+            <tr><td>Titre :</td><td><strong>{{ reclamation.titre }}</strong></td></tr>
+            <tr><td>Priorité :</td><td>{% set p = reclamation.priorite %}{% if p == 'Urgente' %}🚨{% elseif p == 'Haute' %}🔴{% elseif p == 'Moyenne' %}🟡{% else %}🟢{% endif %} {{ p }}</td></tr>
+            <tr><td>Statut :</td><td>{{ reclamation.statut }}</td></tr>
+            <tr><td>Date :</td><td>{{ reclamation.dateCreation|date('d/m/Y') }}</td></tr>
+        </table>
+        <hr class="divider">
+        <div style="font-weight:bold; font-size:11px; color:#6d28d9 !important; margin-bottom:6px;">📄 Description de la réclamation :</div>
+        <div class="text-block" style="border-color:#e9d5ff;">{{ reclamation.contenu }}</div>
+    </div>
+    {% endif %}
+
+    <div class="footer">
+        <strong>VIANOVA</strong> — Plateforme de Voyage &amp; Loisirs &nbsp;|&nbsp;
+        Avis #{{ avis.id }} &nbsp;|&nbsp; {{ "now"|date('d/m/Y') }}
+    </div>
+
+</body>
+</html>

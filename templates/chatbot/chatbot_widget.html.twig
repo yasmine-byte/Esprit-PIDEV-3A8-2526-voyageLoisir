@@ -1,0 +1,197 @@
+{# templates/chatbot/chatbot_widget.html.twig #}
+<style>
+    /* Nouveau design Chatbot assorti au template */
+    #chatbot-container {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        width: 350px;
+        background: #fff;
+        border-radius: 15px;
+        box-shadow: 0 10px 25px rgba(243, 85, 37, 0.15);
+        display: none;
+        flex-direction: column;
+        z-index: 1000;
+        overflow: hidden;
+        border: 1px solid #ffebe6;
+    }
+    #chatbot-header {
+        background: linear-gradient(135deg, #f35525 0%, #ff8966 100%);
+        color: white;
+        padding: 15px;
+        font-weight: bold;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 2px solid #eb4a19;
+    }
+    #chatbot-close {
+        cursor: pointer;
+        font-size: 18px;
+    }
+    #chat-messages {
+        height: 300px;
+        overflow-y: auto;
+        padding: 15px;
+        background: #f9f9f9;
+    }
+    .user-message, .bot-message {
+        margin-bottom: 10px;
+        padding: 8px 12px;
+        border-radius: 15px;
+        max-width: 80%;
+        word-wrap: break-word;
+    }
+    .user-message {
+        background: #f35525;
+        color: white;
+        align-self: flex-end;
+        margin-left: auto;
+        border-bottom-right-radius: 2px;
+        box-shadow: 0 2px 5px rgba(243, 85, 37, 0.3);
+    }
+    .bot-message {
+        background: #e9ecef;
+        color: black;
+        align-self: flex-start;
+        margin-right: auto;
+    }
+    #chatbot-input-area {
+        display: flex;
+        border-top: 1px solid #ddd;
+        padding: 10px;
+    }
+    #chat-input {
+        flex: 1;
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        outline: none;
+    }
+    #chat-send {
+        background: #f35525;
+        color: white;
+        border: none;
+        padding: 8px 18px;
+        margin-left: 10px;
+        border-radius: 20px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: background 0.3s ease;
+    }
+    #chat-send:hover {
+        background: #d94215;
+    }
+    #chat-send:active {
+        background: #be350d;
+    }
+    .loader {
+        border: 3px solid #f3f3f3;
+        border-top: 3px solid #f35525;
+        border-radius: 50%;
+        width: 15px;
+        height: 15px;
+        animation: spin 1s linear infinite;
+        display: inline-block;
+        margin-left:5px;
+    }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+</style>
+
+<div id="chatbot-container" style="position: fixed; bottom: 20px; right: 20px; z-index:9999; border-radius: 15px; overflow:hidden;">
+    <div id="chatbot-header">
+        <span>🤖 Assistant IA Réclamations</span>
+        <span id="chatbot-close">✕</span>
+    </div>
+    <div id="chat-messages">
+        <div class="bot-message">Bonjour ! Je suis l'assistant de VoyageLoisir. Voulez-vous créer une réclamation ? Quel est le motif ?</div>
+    </div>
+    <div id="chatbot-input-area">
+        <input type="text" id="chat-input" placeholder="Écrivez votre message...">
+        <button id="chat-send">Envoyer</button>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(document).ready(function() {
+    let conversationHistory = [];
+
+    $('#chatbot-btn').click(function() {
+        $(this).hide();
+        $('#chatbot-container').css('display', 'flex');
+        $('#chat-messages').scrollTop($('#chat-messages')[0].scrollHeight);
+    });
+
+    $('#chatbot-close').click(function() {
+        $('#chatbot-container').hide();
+        $('#chatbot-btn').show();
+    });
+
+    function sendMessage() {
+        let message = $('#chat-input').val().trim();
+        if (message === '') return;
+        
+        // Afficher message utilisateur
+        $('#chat-messages').append('<div class="user-message">' + escapeHtml(message) + '</div>');
+        $('#chat-input').val('');
+        
+        // Indicateur
+        let $loader = $('<div class="bot-message"><span class="loader"></span> Patientez...</div>');
+        $('#chat-messages').append($loader);
+        $('#chat-messages').scrollTop($('#chat-messages')[0].scrollHeight);
+        
+        // Envoyer à l'API
+        $.post('/chatbot/message', {
+            message: message,
+            history: conversationHistory
+        }, function(data) {
+            $loader.remove();
+
+            let txt = data.response;
+            if(data.is_confirmation) {
+               txt = "Merci ! Je crée votre réclamation avec ces informations... ⏳";
+            }
+            // Afficher réponse bot
+            $('#chat-messages').append('<div class="bot-message">' + escapeHtml(txt) + '</div>');
+            $('#chat-messages').scrollTop($('#chat-messages')[0].scrollHeight);
+            
+            conversationHistory.push({user: message, bot: data.response});
+            
+            // Si confirmation, créer la réclamation
+            if (data.is_confirmation) {
+                $.post('/chatbot/create', {
+                    confirmation: data.response
+                }, function(res) {
+                    if(res.success) {
+                        $('#chat-messages').append('<div class="bot-message" style="background:#28a745;color:white;">✅ Réclamation #'+res.id+' créee avec succès !</div>');
+                        setTimeout(function(){
+                            window.location.reload();
+                        }, 2000);
+                    } else {
+                        $('#chat-messages').append('<div class="bot-message" style="background:#dc3545;color:white;">Erreur lors de la création.</div>');
+                    }
+                    $('#chat-messages').scrollTop($('#chat-messages')[0].scrollHeight);
+                });
+            }
+        }).fail(function() {
+             $loader.remove();
+             $('#chat-messages').append('<div class="bot-message" style="color:red;">Erreur de communication avec l\'assistant.</div>');
+        });
+    }
+
+    $('#chat-send').click(sendMessage);
+    $('#chat-input').keypress(function(e) {
+        if(e.which == 13) { sendMessage(); }
+    });
+    
+    function escapeHtml(unsafe) {
+        return unsafe
+             .replace(/&/g, "&amp;")
+             .replace(/</g, "&lt;")
+             .replace(/>/g, "&gt;")
+             .replace(/"/g, "&quot;")
+             .replace(/'/g, "&#039;");
+    }
+});
+</script>

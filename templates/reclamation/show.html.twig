@@ -3,7 +3,6 @@
 {% block title %}Détail de la Réclamation - Villa Agency{% endblock %}
 
 {% block body %}
-    
 
     <div class="page-heading header-text">
         <div class="container">
@@ -17,6 +16,11 @@
     </div>
 
     <div class="container mt-5 mb-5 pb-5 pt-3" style="min-height: 40vh;">
+
+        {% for message in app.flashes('success') %}
+            <div class="alert alert-success alert-dismissible fade show mb-3">{{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+        {% endfor %}
+
         <div class="row justify-content-center">
             <div class="col-md-8">
                 <div class="card shadow-sm border-0 mb-4 p-4">
@@ -32,14 +36,24 @@
                             <span class="badge bg-warning text-dark py-2 px-3">En attente</span>
                         {% endif %}
                     </div>
-                    
+
+                    {# Numéro de suivi #}
                     <div class="row mb-3">
-                        <div class="col-sm-3 fw-bold text-muted">Type:</div>
+                        <div class="col-sm-3 fw-bold text-muted">Numéro de suivi :</div>
+                        <div class="col-sm-9">
+                            <span class="badge rounded-pill" style="background:#fff3f0; color:#f35525; border:1px solid #f35525; font-size:0.9rem;">
+                                REC-{{ reclamation.id }}-{{ reclamation.dateCreation ? reclamation.dateCreation|date('Ymd') : '' }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-sm-3 fw-bold text-muted">Type :</div>
                         <div class="col-sm-9">{{ reclamation.type.nom }}</div>
                     </div>
-                    
+
                     <div class="row mb-3">
-                        <div class="col-sm-3 fw-bold text-muted">Priorité:</div>
+                        <div class="col-sm-3 fw-bold text-muted">Priorité :</div>
                         <div class="col-sm-9">
                             {% if reclamation.priorite == 'Basse' %}
                                 <span class="badge bg-secondary">Basse</span>
@@ -48,24 +62,52 @@
                             {% elseif reclamation.priorite == 'Haute' %}
                                 <span class="badge bg-warning text-dark">Haute</span>
                             {% elseif reclamation.priorite == 'Urgente' %}
-                                <span class="badge bg-danger">Urgente</span>
+                                <span class="badge bg-danger">🚨 Urgente</span>
                             {% endif %}
                         </div>
                     </div>
 
                     <div class="row mb-3">
-                        <div class="col-sm-3 fw-bold text-muted">Date:</div>
+                        <div class="col-sm-3 fw-bold text-muted">Date :</div>
                         <div class="col-sm-9">{{ reclamation.dateCreation ? reclamation.dateCreation|date('d/m/Y') : '' }}</div>
                     </div>
-                    
+
                     <div class="row mb-3">
-                        <div class="col-sm-3 fw-bold text-muted">Description:</div>
+                        <div class="col-sm-3 fw-bold text-muted">Description :</div>
                         <div class="col-sm-9 bg-light p-3 rounded" style="font-size:1.05rem;">
                             {{ reclamation.contenu|nl2br }}
                         </div>
                     </div>
 
-                    <div class="mt-4 pt-3 border-top d-flex justify-content-between">
+                    {# Avis lié (si réclamation générée depuis un avis) #}
+                    {% if avis %}
+                    <div class="row mb-3">
+                        <div class="col-sm-3 fw-bold text-muted">Avis à l'origine :</div>
+                        <div class="col-sm-9">
+                            <div style="background:#fff5f2; border:1px solid #f35525; border-radius:8px; padding:12px 16px;">
+                                <div style="font-size:0.75rem; color:#f35525; font-weight:700; margin-bottom:6px;">🔗 Avis lié #{{ avis.id }}</div>
+                                <div style="font-size:0.9rem; color:#555;">{{ avis.contenu|slice(0, 120) }}{% if avis.contenu|length > 120 %}...{% endif %}</div>
+                                <a href="{{ path('avis_show', {'id': avis.id}) }}" class="btn btn-sm mt-2 rounded-pill" style="background:#fff3f0; color:#f35525; border:1px solid #f35525; font-size:0.78rem;">Voir l'avis complet</a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {# Réponse admin #}
+                    {% if reclamation.reponse %}
+                    <div class="row mb-3">
+                        <div class="col-sm-3 fw-bold text-muted">Réponse admin :</div>
+                        <div class="col-sm-9">
+                            <div style="background:#f0fff4; border:1px solid #b2dfdb; border-radius:10px; padding:14px 18px;">
+                                <div style="color:#28a745; font-weight:700; font-size:0.75rem; text-transform:uppercase; margin-bottom:8px;">💬 Réponse de l'administrateur</div>
+                                <div style="color:#155724; font-style:italic;">{{ reclamation.reponse }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {# Actions #}
+                    <div class="mt-4 pt-3 border-top d-flex justify-content-between align-items-center flex-wrap gap-2">
                         <div>
                             {% if reclamation.statut != 'Fermée' %}
                                 <a href="{{ path('reclamation_edit', {'id': reclamation.id}) }}" class="btn btn-outline-dark px-4 py-2 rounded-pill me-2">Modifier</a>
@@ -75,14 +117,134 @@
                                 <button class="btn btn-outline-danger px-4 py-2 rounded-pill">Supprimer</button>
                             </form>
                         </div>
-                        <a href="{{ path('reclamation_index') }}" class="btn text-white px-4 py-2 rounded-pill" style="background-color: #f35525;">Retour à la liste</a>
+                        <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                            {# ── Bouton PDF ── #}
+                            <button onclick="downloadReclamationPDF()"
+                                    style="background:#fff; color:#f35525; border:2px solid #f35525; border-radius:50px; padding:10px 20px; font-weight:600; font-size:0.88rem; cursor:pointer; transition:all 0.2s;"
+                                    onmouseover="this.style.background='#f35525';this.style.color='#fff';"
+                                    onmouseout="this.style.background='#fff';this.style.color='#f35525';">
+                                📄 Télécharger ma réclamation en PDF
+                            </button>
+                            <a href="{{ path('reclamation_index') }}" class="btn text-white px-4 py-2 rounded-pill" style="background-color: #f35525;">Retour à la liste</a>
+                        </div>
                     </div>
                 </div>
-
-
             </div>
         </div>
     </div>
 
-    
+    {# ═══════════════════════════════════════════════════
+       EXPORT PDF — html2pdf.js (CDN)
+    ════════════════════════════════════════════════════ #}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script>
+    function downloadReclamationPDF() {
+        const now = new Date().toLocaleDateString('fr-FR');
+
+        {# Bloc avis lié (optionnel — fond rouge) #}
+        {% if avis %}
+        const avisHtml = `
+            <div style="background:#fff5f2; border:2px solid #f35525; border-radius:10px; padding:14px 18px; margin-top:16px;">
+                <div style="color:#f35525; font-weight:700; font-size:0.8rem; text-transform:uppercase; margin-bottom:8px;">🔗 Avis à l'origine (#{{ avis.id }})</div>
+                <p style="color:#555; margin:0; font-size:0.9rem;">{{ avis.contenu|slice(0,200)|raw|replace({'\n': ' ', '\r': ''}) }}{% if avis.contenu|length > 200 %}...{% endif %}</p>
+            </div>`;
+        {% else %}
+        const avisHtml = '';
+        {% endif %}
+
+        {# Bloc réponse admin (optionnel — fond vert) #}
+        {% if reclamation.reponse %}
+        const reponseHtml = `
+            <div style="background:#f0fff4; border:2px solid #28a745; border-radius:10px; padding:14px 18px; margin-top:16px;">
+                <div style="color:#28a745; font-weight:700; font-size:0.8rem; text-transform:uppercase; margin-bottom:8px;">💬 Réponse de l'administrateur</div>
+                <p style="color:#155724; font-style:italic; margin:0;">{{ reclamation.reponse|raw|replace({'\n': '<br>', '\r': ''}) }}</p>
+                <p style="color:#555; margin:6px 0 0; font-size:0.85rem;">Nouveau statut : <strong>{{ reclamation.statut }}</strong></p>
+            </div>`;
+        {% else %}
+        const reponseHtml = '';
+        {% endif %}
+
+        const htmlContent = `
+            <div style="font-family: Arial, sans-serif; color:#333; padding:0; margin:0;">
+
+                <!-- En-tête -->
+                <div style="background:#f35525; color:#fff; padding:20px 24px; border-radius:10px 10px 0 0; text-align:center;">
+                    <h1 style="margin:0; font-size:1.5rem; font-weight:900;">🏖️ Villa Agency</h1>
+                    <p style="margin:6px 0 0; font-size:0.8rem; opacity:0.85;">Document généré le ${now}</p>
+                </div>
+
+                <!-- Titre -->
+                <div style="background:#fff7f5; padding:16px 24px; border-bottom:3px solid #f35525;">
+                    <h2 style="margin:0; color:#f35525; font-size:1.1rem;">Récapitulatif de ma réclamation</h2>
+                </div>
+
+                <!-- Corps -->
+                <div style="padding:20px 24px; background:#fff;">
+
+                    <!-- Numéro de suivi -->
+                    <div style="background:#fff7f5; border:2px dashed #f35525; border-radius:10px; padding:12px 16px; margin-bottom:16px; text-align:center;">
+                        <div style="font-size:0.75rem; color:#888; text-transform:uppercase; margin-bottom:4px;">Numéro de suivi</div>
+                        <div style="font-size:1.3rem; font-weight:900; color:#f35525;">REC-{{ reclamation.id }}-{{ reclamation.dateCreation ? reclamation.dateCreation|date('Ymd') : '' }}</div>
+                    </div>
+
+                    <table style="width:100%; border-collapse:collapse; margin-bottom:16px;">
+                        <tr style="background:#f8f9fa;">
+                            <td style="padding:10px 12px; font-weight:700; color:#555; width:35%; border-bottom:1px solid #eee;">Client</td>
+                            <td style="padding:10px 12px; color:#333; border-bottom:1px solid #eee;">
+                                {% if app.user %}{{ app.user.prenom }} {{ app.user.nom }}{% else %}Non connecté{% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding:10px 12px; font-weight:700; color:#555; width:35%; border-bottom:1px solid #eee;">Titre</td>
+                            <td style="padding:10px 12px; color:#333; border-bottom:1px solid #eee;">{{ reclamation.titre }}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding:10px 12px; font-weight:700; color:#555; border-bottom:1px solid #eee;">Catégorie</td>
+                            <td style="padding:10px 12px; color:#333; border-bottom:1px solid #eee;">{{ reclamation.type.nom }}</td>
+                        </tr>
+                        <tr style="background:#f8f9fa;">
+                            <td style="padding:10px 12px; font-weight:700; color:#555; border-bottom:1px solid #eee;">Priorité</td>
+                            <td style="padding:10px 12px; color:#333; border-bottom:1px solid #eee;">{{ reclamation.priorite }}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding:10px 12px; font-weight:700; color:#555; border-bottom:1px solid #eee;">Statut</td>
+                            <td style="padding:10px 12px; color:#333; border-bottom:1px solid #eee;">{{ reclamation.statut }}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding:10px 12px; font-weight:700; color:#555; border-bottom:1px solid #eee;">Date</td>
+                            <td style="padding:10px 12px; color:#333; border-bottom:1px solid #eee;">{{ reclamation.dateCreation ? reclamation.dateCreation|date('d/m/Y') : '' }}</td>
+                        </tr>
+                        <tr style="background:#f8f9fa;">
+                            <td style="padding:10px 12px; font-weight:700; color:#555;">Description</td>
+                            <td style="padding:10px 12px; color:#444; line-height:1.6;">
+                                {{ reclamation.contenu|raw|replace({'\n': '<br>', '\r': ''}) }}
+                            </td>
+                        </tr>
+                    </table>
+
+                    ${avisHtml}
+                    ${reponseHtml}
+                </div>
+
+                <!-- Pied de page -->
+                <div style="background:#f8f9fa; padding:12px 24px; text-align:center; border-radius:0 0 10px 10px; border-top:1px solid #eee;">
+                    <p style="margin:0; color:#aaa; font-size:0.72rem;">Villa Agency — Document généré automatiquement</p>
+                </div>
+            </div>`;
+
+        const container = document.createElement('div');
+        container.innerHTML = htmlContent;
+        document.body.appendChild(container);
+
+        html2pdf().set({
+            margin:      [10, 10, 10, 10],
+            filename:    'reclamation-{{ reclamation.id }}.pdf',
+            html2canvas: { scale: 2, useCORS: true },
+            jsPDF:       { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        }).from(container).save().then(() => {
+            document.body.removeChild(container);
+        });
+    }
+    </script>
+
 {% endblock %}

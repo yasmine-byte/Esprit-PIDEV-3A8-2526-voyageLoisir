@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: Arial; background: #f5f5f5; }
+        .container { max-width: 600px; margin: 0 auto; background: white; padding: 30px; }
+        .header { background: #28a745; color: white; padding: 20px; text-align: center; }
+        .content { padding: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>✅ Réponse à votre réclamation</h1>
+        </div>
+        <div class="content">
+            <p>Bonjour {{ client.prenom ?? 'Client' }},</p>
+            <p>Nous avons traité votre réclamation <strong>#{{ reclamation.id }}</strong></p>
+            <p><strong>Votre réclamation :</strong></p>
+            <p>{{ reclamation.contenu }}</p>
+            <hr>
+            <p><strong>Notre réponse :</strong></p>
+            <p>{{ reclamation.reponse }}</p>
+            <p>Cordialement,<br>L'équipe VoyageLoisir</p>
+        </div>
+    </div>
+</body>
+</html>

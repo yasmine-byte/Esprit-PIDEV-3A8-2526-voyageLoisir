@@ -31,11 +31,16 @@
         {# Header #}
         <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
             <h4 class="mb-0 fw-bold">Toutes mes réclamations</h4>
-            <a href="{{ path('reclamation_new') }}" class="btn text-white rounded-pill px-4 py-2"
-               style="background-color:#f35525; font-weight:600;">
-                <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16" style="margin-right:5px;"><path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/></svg>
-                Nouvelle réclamation
-            </a>
+            <div class="d-flex gap-2">
+                <button id="chatbot-btn" class="btn text-white rounded-pill px-4 py-2" style="background-color:#007bff; font-weight:600; border:none; box-shadow:0px 2px 5px rgba(0,0,0,0.2);">
+                    💬 Assistant IA
+                </button>
+                <a href="{{ path('reclamation_new') }}" class="btn text-white rounded-pill px-4 py-2"
+                   style="background-color:#f35525; font-weight:600;">
+                    <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16" style="margin-right:5px;"><path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/></svg>
+                    Nouvelle réclamation
+                </a>
+            </div>
         </div>
 
         {# Filtres — tout auto via JS #}
@@ -223,55 +228,130 @@
     
 
 <script>
-(function() {
-    const searchInput    = document.getElementById('searchInput');
-    const filterStatut   = document.getElementById('filterStatut');
-    const filterPriorite = document.getElementById('filterPriorite');
-    const sortSelect     = document.getElementById('sortSelect');
-    const tbody          = document.getElementById('reclBody');
-    const resultCount    = document.getElementById('resultCount');
-    const noResults      = document.getElementById('noResults');
+// ── Recherche AJAX côté serveur — réclamations ───────────────────────────
+(function () {
+  'use strict';
 
-    function filterAndSort() {
-        const q        = searchInput    ? searchInput.value.toLowerCase().trim() : '';
-        const statut   = filterStatut   ? filterStatut.value   : '';
-        const priorite = filterPriorite ? filterPriorite.value : '';
-        const sort     = sortSelect     ? sortSelect.value     : '';
+  const searchURL      = '{{ path("reclamation_search") }}';
+  const searchInput    = document.getElementById('searchInput');
+  const filterStatut   = document.getElementById('filterStatut');
+  const filterPriorite = document.getElementById('filterPriorite');
+  const sortSelect     = document.getElementById('sortSelect');
+  const tbody          = document.getElementById('reclBody');
+  const resultCount    = document.getElementById('resultCount');
 
-        const rows = Array.from(tbody.querySelectorAll('tr[data-titre]'));
-        let visible = 0;
+  // Spinner
+  const spinner = document.createElement('div');
+  spinner.id    = 'ajax-spinner';
+  spinner.innerHTML = '<div style="text-align:center; padding:20px; color:#f35525;">⏳ Recherche en cours...</div>';
+  spinner.style.display = 'none';
+  if (tbody.parentNode) tbody.parentNode.insertBefore(spinner, tbody);
 
-        rows.forEach(function(row) {
-            const okQ = !q        || (row.dataset.titre || '').includes(q);
-            const okS = !statut   || row.dataset.statut   === statut;
-            const okP = !priorite || row.dataset.priorite === priorite;
-
-            if (okQ && okS && okP) { row.style.display = ''; visible++; }
-            else                    { row.style.display = 'none'; }
-        });
-
-        if (resultCount) resultCount.textContent = visible + ' réclamation' + (visible > 1 ? 's' : '') + ' affichée' + (visible > 1 ? 's' : '');
-        if (noResults)   noResults.style.display = visible === 0 ? 'block' : 'none';
-
-        if (sort) {
-            const vis = rows.filter(r => r.style.display !== 'none');
-            vis.sort(function(a, b) {
-                if (sort === 'date-desc')     return b.dataset.date.localeCompare(a.dataset.date);
-                if (sort === 'date-asc')      return a.dataset.date.localeCompare(b.dataset.date);
-                if (sort === 'priorite-desc') return parseInt(b.dataset.prioriteVal) - parseInt(a.dataset.prioriteVal);
-                if (sort === 'priorite-asc')  return parseInt(a.dataset.prioriteVal) - parseInt(b.dataset.prioriteVal);
-                return 0;
-            });
-            vis.forEach(r => tbody.appendChild(r));
-        }
+  // ── Rendu des lignes ────────────────────────────────────────────────────────────
+  function renderRows(results) {
+    tbody.innerHTML = '';
+    if (results.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="8" class="text-center py-5" style="color:#bbb;"><div style="font-size:2.5rem;margin-bottom:10px;">🔍</div>Aucune réclamation trouvée.</td></tr>';
+      return;
     }
 
-    if (searchInput)    searchInput.addEventListener('input',   filterAndSort);
-    if (filterStatut)   filterStatut.addEventListener('change',  filterAndSort);
-    if (filterPriorite) filterPriorite.addEventListener('change', filterAndSort);
-    if (sortSelect)     sortSelect.addEventListener('change',    filterAndSort);
+    results.forEach(function (r) {
+      // Badge priorité
+      const prioBadge =
+        r.priorite === 'Basse'   ? '<span class="badge rounded-pill bg-secondary">Basse</span>' :
+        r.priorite === 'Moyenne' ? '<span class="badge rounded-pill bg-info text-dark">Moyenne</span>' :
+        r.priorite === 'Haute'   ? '<span class="badge rounded-pill bg-warning text-dark">⚠ Haute</span>' :
+                                   '<span class="badge rounded-pill bg-danger">🚨 Urgente</span>';
 
-    filterAndSort();
+      // Badge statut
+      const statBadge =
+        r.statut === 'En attente' ? '<span class="badge rounded-pill bg-warning text-dark">⏳ En attente</span>' :
+        r.statut === 'En cours'   ? '<span class="badge rounded-pill bg-primary">🔄 En cours</span>' :
+        r.statut === 'Traitée'    ? '<span class="badge rounded-pill bg-success">✓ Traitée</span>' :
+                                    '<span class="badge rounded-pill bg-secondary">🔒 Fermée</span>';
+
+      // Avis lié
+      const avisHtml = r.avisId
+        ? `<a href="${r.avisShowUrl}" class="badge rounded-pill text-decoration-none" style="background:#fff3f0;color:#f35525;border:1px solid #f35525;">#${r.avisId}</a>`
+        : '<span style="font-size:0.8rem;color:#bbb;">—</span>';
+
+      // Réponse admin
+      const repHtml = r.reponse
+        ? `<div style="background:#f0fff4;border-left:3px solid #28a745;border-radius:6px;padding:6px 10px;">
+             <div style="font-size:0.7rem;color:#28a745;font-weight:600;margin-bottom:2px;">Réponse admin :</div>
+             <div style="font-size:0.82rem;color:#333;">${r.reponse}</div></div>`
+        : '<span style="font-size:0.8rem;color:#bbb;font-style:italic;">En attente...</span>';
+
+      const canEdit   = r.statut !== 'Fermée' && r.statut !== 'Traitée';
+      const editBtn   = canEdit
+        ? `<a href="${r.editUrl}" class="btn btn-sm rounded-pill" style="background:#fff8e1;color:#e65100;border:1px solid #ffcc80;font-size:0.78rem;padding:4px 10px;font-weight:600;">✏ Modifier</a>`
+        : `<span class="btn btn-sm rounded-pill" style="background:#f5f5f5;color:#bbb;border:1px solid #e0e0e0;font-size:0.78rem;padding:4px 10px;cursor:not-allowed;">✏ Modifier</span>`;
+
+      const delBtn    = r.statut === 'En attente'
+        ? `<form method="post" action="${r.deleteUrl}" onsubmit="return confirm('Supprimer ?');" style="display:inline;margin:0;">
+             <input type="hidden" name="_token" value="${r.csrfToken}">
+             <button class="btn btn-sm rounded-pill" style="background:#fff0f0;color:#c0392b;border:1px solid #ffb3b3;font-size:0.78rem;padding:4px 10px;font-weight:600;">🗑 Supprimer</button></form>`
+        : `<span class="btn btn-sm rounded-pill" style="background:#f5f5f5;color:#bbb;border:1px solid #e0e0e0;font-size:0.78rem;padding:4px 10px;cursor:not-allowed;">🗑 Supprimer</span>`;
+
+      tbody.insertAdjacentHTML('beforeend', `
+        <tr>
+          <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600;" title="${r.titre}">${r.titre}</td>
+          <td style="font-size:0.85rem;">${r.type}</td>
+          <td>${prioBadge}</td>
+          <td>${statBadge}</td>
+          <td>${avisHtml}</td>
+          <td style="white-space:nowrap;font-size:0.85rem;color:#888;">${r.dateCreation}</td>
+          <td style="max-width:200px;">${repHtml}</td>
+          <td style="white-space:nowrap;">
+            <div style="display:flex;gap:5px;align-items:center;flex-wrap:nowrap;">
+              <a href="${r.showUrl}" class="btn btn-sm rounded-pill" style="background:#f0f5ff;color:#3a7bd5;border:1px solid #c5d8ff;font-size:0.78rem;padding:4px 10px;font-weight:600;">👁 Voir</a>
+              ${editBtn}
+              ${delBtn}
+            </div>
+          </td>
+        </tr>`);
+    });
+
+    if (resultCount) {
+      resultCount.textContent = results.length + ' réclamation' + (results.length > 1 ? 's' : '') + ' affichée' + (results.length > 1 ? 's' : '');
+    }
+  }
+
+  // ── Appel AJAX ────────────────────────────────────────────────────────────
+  async function doSearch() {
+    spinner.style.display = 'block';
+    tbody.style.opacity   = '0.4';
+
+    const params = new URLSearchParams({
+      q:        searchInput    ? searchInput.value.trim()    : '',
+      statut:   filterStatut  ? filterStatut.value          : '',
+      priorite: filterPriorite? filterPriorite.value        : '',
+      sort:     sortSelect    ? sortSelect.value            : 'date-desc',
+    });
+
+    try {
+      const res  = await fetch(searchURL + '?' + params.toString());
+      const data = await res.json();
+      renderRows(data.results || []);
+    } catch (e) {
+      tbody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-danger">Erreur lors de la recherche.</td></tr>';
+    } finally {
+      spinner.style.display = 'none';
+      tbody.style.opacity   = '1';
+    }
+  }
+
+  // Debounce 300ms
+  let timer = null;
+  function debounced() { clearTimeout(timer); timer = setTimeout(doSearch, 300); }
+
+  if (searchInput)    searchInput.addEventListener('input',   debounced);
+  if (filterStatut)   filterStatut.addEventListener('change',  doSearch);
+  if (filterPriorite) filterPriorite.addEventListener('change', doSearch);
+  if (sortSelect)     sortSelect.addEventListener('change',    doSearch);
+
+  doSearch(); // Chargement initial
 })();
 </script>
+
 {% endblock %}

@@ -208,76 +208,136 @@
     
 
 <script>
-(function() {
-    const searchInput   = document.getElementById('searchInput');
-    const filterStatut  = document.getElementById('filterStatut');
-    const filterEtoiles = document.getElementById('filterEtoiles');
-    const sortSelect    = document.getElementById('sortSelect');
-    const tbody         = document.getElementById('avisBody');
-    const resultCount   = document.getElementById('resultCount');
-    const noResults     = document.getElementById('noResults');
+// ── Recherche AJAX côté serveur — avis ───────────────────────────────────
+// Remplace le filtrage JS client par des appels AJAX vers GET /avis/search
+// Debounce 300ms sur l'input texte pour éviter les requêtes intempestives
+(function () {
+  'use strict';
 
-    function getRows() {
-        return Array.from(tbody.querySelectorAll('tr[data-contenu]'));
+  const searchURL    = '{{ path("avis_search") }}';
+  const searchInput  = document.getElementById('searchInput');
+  const filterStatut = document.getElementById('filterStatut');
+  const filterEtoiles= document.getElementById('filterEtoiles');
+  const sortSelect   = document.getElementById('sortSelect');
+  const tbody        = document.getElementById('avisBody');
+  const resultCount  = document.getElementById('resultCount');
+  const noResults    = document.getElementById('noResults');
+
+  // Spinner (ajouté dynamiquement)
+  const spinner = document.createElement('div');
+  spinner.id    = 'ajax-spinner';
+  spinner.innerHTML = '<div style="text-align:center; padding:20px; color:#f35525;">⏳ Recherche en cours...</div>';
+  spinner.style.display = 'none';
+  if (tbody.parentNode) tbody.parentNode.insertBefore(spinner, tbody);
+
+  // ── Reconstruction des lignes du tableau depuis JSON ────────────────────
+  function renderRows(results) {
+    tbody.innerHTML = '';
+
+    if (results.length === 0) {
+      tbody.innerHTML = `
+        <tr><td colspan="7" class="text-center py-5" style="color:#bbb;">
+          <div style="font-size:2.5rem; margin-bottom:10px;">🔍</div>
+          Aucun avis ne correspond à votre recherche.
+        </td></tr>`;
+      if (noResults) noResults.style.display = 'none';
+    } else {
+      results.forEach(function (a) {
+        // Étoiles
+        let stars = '';
+        for (let i = 1; i <= 5; i++) {
+          stars += `<span style="color:${i <= a.nbEtoiles ? '#f35525' : '#ddd'};">★</span>`;
+        }
+
+        // Badge statut
+        const statutBadge = a.statut === 'Validé'
+          ? '<span class="badge rounded-pill bg-success">✓ Validé</span>'
+          : a.statut === 'Rejeté'
+            ? '<span class="badge rounded-pill bg-danger">✗ Rejeté</span>'
+            : '<span class="badge rounded-pill bg-warning text-dark">⏳ En attente</span>';
+
+        // Réponse admin
+        const reponseHtml = a.reponse
+          ? `<div style="background:#f0fff4;border-left:3px solid #28a745;border-radius:6px;padding:6px 10px;">
+               <div style="font-size:0.7rem;color:#28a745;font-weight:600;margin-bottom:2px;">Réponse admin :</div>
+               <div style="font-size:0.82rem;color:#333;">${a.reponse}</div>
+             </div>`
+          : '<span style="font-size:0.8rem;color:#bbb;font-style:italic;">En attente...</span>';
+
+        // Boutons d'action selon statut
+        const canEdit   = a.statut === 'En attente';
+        const editBtn   = canEdit
+          ? `<a href="${a.editUrl}" class="btn btn-sm rounded-pill" style="background:#fff8e1;color:#e65100;border:1px solid #ffcc80;font-size:0.78rem;padding:4px 10px;font-weight:600;">✏ Modifier</a>`
+          : `<span class="btn btn-sm rounded-pill" style="background:#f5f5f5;color:#bbb;border:1px solid #e0e0e0;font-size:0.78rem;padding:4px 10px;cursor:not-allowed;">✏ Modifier</span>`;
+
+        const delBtn  = a.statut === 'En attente'
+        ? `<form method="post" action="${a.deleteUrl}" onsubmit="return confirm('Supprimer cet avis ?');" style="display:inline;margin:0;">
+             <input type="hidden" name="_token" value="${a.csrfToken}">
+             <button class="btn btn-sm rounded-pill" style="background:#fff0f0;color:#c0392b;border:1px solid #ffb3b3;font-size:0.78rem;padding:4px 10px;font-weight:600;">🗑 Supprimer</button></form>`
+        : `<span class="btn btn-sm rounded-pill" style="background:#f5f5f5;color:#bbb;border:1px solid #e0e0e0;font-size:0.78rem;padding:4px 10px;cursor:not-allowed;">🗑 Supprimer</span>`;
+
+        tbody.insertAdjacentHTML('beforeend', `
+          <tr>
+            <td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${a.contenu}">${a.contenu}</td>
+            <td style="white-space:nowrap;">${stars}</td>
+            <td>${a.type}</td>
+            <td>${statutBadge}</td>
+            <td style="white-space:nowrap;font-size:0.85rem;color:#888;">${a.dateAvis}</td>
+            <td style="max-width:200px;">${reponseHtml}</td>
+            <td style="white-space:nowrap;">
+              <div style="display:flex;gap:5px;align-items:center;flex-wrap:nowrap;">
+                <a href="${a.showUrl}" class="btn btn-sm rounded-pill" style="background:#f0f5ff;color:#3a7bd5;border:1px solid #c5d8ff;font-size:0.78rem;padding:4px 10px;font-weight:600;">👁 Voir</a>
+                ${editBtn}
+                ${delBtn}
+              </div>
+            </td>
+          </tr>`);
+      });
     }
 
-    function filterAndSort() {
-        const q       = searchInput   ? searchInput.value.toLowerCase().trim() : '';
-        const statut  = filterStatut  ? filterStatut.value  : '';
-        const etoiles = filterEtoiles ? filterEtoiles.value : '';
-        const sort    = sortSelect    ? sortSelect.value    : '';
-
-        let rows = getRows();
-
-        // Filtrage
-        let visible = 0;
-        rows.forEach(function(row) {
-            const contenu = row.dataset.contenu || '';
-            const rs      = row.dataset.statut  || '';
-            const re      = row.dataset.etoiles || '';
-
-            const okQ = !q       || contenu.includes(q);
-            const okS = !statut  || rs === statut;
-            const okE = !etoiles || re === etoiles;
-
-            if (okQ && okS && okE) {
-                row.style.display = '';
-                visible++;
-            } else {
-                row.style.display = 'none';
-            }
-        });
-
-        // Compteur
-        if (resultCount) {
-            resultCount.textContent = visible + ' avis affiché' + (visible > 1 ? 's' : '');
-        }
-        if (noResults) {
-            noResults.style.display = visible === 0 ? 'block' : 'none';
-        }
-
-        // Tri
-        if (sort) {
-            const visibleRows = rows.filter(r => r.style.display !== 'none');
-            visibleRows.sort(function(a, b) {
-                if (sort === 'date-desc') return b.dataset.date.localeCompare(a.dataset.date);
-                if (sort === 'date-asc')  return a.dataset.date.localeCompare(b.dataset.date);
-                if (sort === 'etoiles-desc') return parseInt(b.dataset.etoiles) - parseInt(a.dataset.etoiles);
-                if (sort === 'etoiles-asc')  return parseInt(a.dataset.etoiles) - parseInt(b.dataset.etoiles);
-                return 0;
-            });
-            visibleRows.forEach(r => tbody.appendChild(r));
-        }
+    if (resultCount) {
+      resultCount.textContent = results.length + ' avis affiché' + (results.length > 1 ? 's' : '');
     }
+  }
 
-    // Événements — déclenchement automatique immédiat
-    if (searchInput)   searchInput.addEventListener('input',  filterAndSort);
-    if (filterStatut)  filterStatut.addEventListener('change', filterAndSort);
-    if (filterEtoiles) filterEtoiles.addEventListener('change', filterAndSort);
-    if (sortSelect)    sortSelect.addEventListener('change', filterAndSort);
+  // ── Appel AJAX ─────────────────────────────────────────────────────────
+  async function doSearch() {
+    spinner.style.display = 'block';
+    tbody.style.opacity   = '0.4';
 
-    // Init
-    filterAndSort();
+    const params = new URLSearchParams({
+      q:       searchInput  ? searchInput.value.trim()  : '',
+      statut:  filterStatut ? filterStatut.value        : '',
+      etoiles: filterEtoiles? filterEtoiles.value       : '',
+      sort:    sortSelect   ? sortSelect.value          : 'date-desc',
+    });
+
+    try {
+      const res  = await fetch(searchURL + '?' + params.toString());
+      const data = await res.json();
+      renderRows(data.results || []);
+    } catch (e) {
+      tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-danger">Erreur lors de la recherche.</td></tr>';
+    } finally {
+      spinner.style.display = 'none';
+      tbody.style.opacity   = '1';
+    }
+  }
+
+  // ── Debounce pour l'input texte (300ms) ────────────────────────────────
+  let debounceTimer = null;
+  function debounced() {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(doSearch, 300);
+  }
+
+  if (searchInput)   searchInput.addEventListener('input',  debounced);
+  if (filterStatut)  filterStatut.addEventListener('change', doSearch);
+  if (filterEtoiles) filterEtoiles.addEventListener('change', doSearch);
+  if (sortSelect)    sortSelect.addEventListener('change',    doSearch);
+
+  // Chargement initial
+  doSearch();
 })();
 </script>
 {% endblock %}

@@ -96,6 +96,19 @@
                             <div class="text-danger small mt-1">{{ form_errors(form.contenu) }}</div>
                         </div>
 
+                        {# ── Bouton IA Suggestion de Priorité ── #}
+                        <div class="mb-4" id="ia-priority-section">
+                            <button type="button" id="btn-ia-priority"
+                                onclick="suggestPriorityIA()"
+                                style="background:linear-gradient(135deg,#667eea,#764ba2); color:#fff; border:none; border-radius:50px; padding:10px 24px; font-weight:600; font-size:0.88rem; cursor:pointer; transition:all 0.25s; display:inline-flex; align-items:center; gap:8px;">
+                                🤖 Suggérer la priorité avec l'IA
+                            </button>
+                            <div id="ia-priority-result" style="display:none; margin-top:12px; padding:12px 16px; border-radius:10px; background:linear-gradient(135deg,#f8f0ff,#ede7ff); border:1px solid #c5b3f0;">
+                                <div style="font-size:0.8rem; color:#6a3ea1; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">🤖 Suggestion IA</div>
+                                <div id="ia-priority-text" style="color:#4a235a; font-size:0.9rem;"></div>
+                            </div>
+                        </div>
+
                         {# Boutons : Envoyer + Annuler #}
                         <div class="mt-5 d-flex justify-content-center gap-3 flex-wrap">
                             <button type="submit" class="btn-submit" id="btn-submit">
@@ -162,5 +175,66 @@
         const btnSub   = document.getElementById('btn-submit');
         if(formRecl) { formRecl.addEventListener('submit', function(){ btnSub.classList.add('loading'); }); }
     });
+
+    // ── Suggestion de priorité IA — appel AJAX vers /reclamation/suggest-priority ──
+    async function suggestPriorityIA() {
+        const btn     = document.getElementById('btn-ia-priority');
+        const result  = document.getElementById('ia-priority-result');
+        const text    = document.getElementById('ia-priority-text');
+        const titre   = document.getElementById('input-titre')  ? document.getElementById('input-titre').value  : '';
+        const contenu = document.getElementById('input-desc')   ? document.getElementById('input-desc').value   : '';
+
+        if (!titre && !contenu) {
+            alert('Veuillez remplir le titre et/ou le contenu pour obtenir une suggestion.');
+            return;
+        }
+
+        // État chargement
+        btn.textContent = '⏳ Analyse en cours...';
+        btn.disabled = true;
+        result.style.display = 'none';
+
+        try {
+            const formData = new FormData();
+            formData.append('titre',   titre);
+            formData.append('contenu', contenu);
+
+            const res  = await fetch('{{ path("reclamation_suggest_priority") }}', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await res.json();
+
+            const priorite = data.priorite || 'Moyenne';
+            const raison   = data.raison   || '';
+
+            // Mettre à jour le sélecteur de priorité caché
+            const hiddenPrio = document.getElementById('hidden-priorite');
+            if (hiddenPrio) {
+                hiddenPrio.value = priorite;
+            }
+
+            // Activer la carte correspondante
+            document.querySelectorAll('.prio-card').forEach(function(c) {
+                c.classList.remove('active');
+                if (c.getAttribute('data-val') === priorite) {
+                    c.classList.add('active');
+                }
+            });
+
+            // Afficher le résultat
+            const icons = { 'Urgente': '🚨', 'Haute': '⚠️', 'Moyenne': '🔵', 'Basse': '🟢' };
+            text.innerHTML = `${icons[priorite] || ''} <strong>L'IA suggère : ${priorite}</strong><br>
+                              <span style="font-size:0.82rem; color:#6a3ea1;">${raison}</span>`;
+            result.style.display = 'block';
+
+        } catch (e) {
+            text.innerHTML = '⚠️ Impossible d\'obtenir une suggestion pour le moment.';
+            result.style.display = 'block';
+        } finally {
+            btn.innerHTML = '🤖 Suggérer la priorité avec l\'IA';
+            btn.disabled  = false;
+        }
+    }
     </script>
 {% endblock %}

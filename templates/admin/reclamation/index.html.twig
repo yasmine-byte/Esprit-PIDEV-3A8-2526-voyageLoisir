@@ -271,6 +271,42 @@
             Aucune réclamation ne correspond à votre recherche.
         </div>
     </div>
+
+{# ── Pagination ──────────────────────────────── #}
+<div class="d-flex justify-content-center mt-4">
+    <nav aria-label="Pagination réclamations">
+        <ul class="pagination pagination-sm">
+            {% if reclamations.currentPageNumber > 1 %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ reclamations.currentPageNumber - 1 }}&statut={{ currentStatut }}&priorite={{ currentPriorite }}&recherche={{ currentRecherche }}">
+                    &laquo; Précédent
+                </a>
+            </li>
+            {% endif %}
+
+            {% for page in reclamations.paginationData.pagesInRange %}
+            <li class="page-item {{ page == reclamations.currentPageNumber ? 'active' : '' }}">
+                <a class="page-link" href="?page={{ page }}&statut={{ currentStatut }}&priorite={{ currentPriorite }}&recherche={{ currentRecherche }}">
+                    {{ page }}
+                </a>
+            </li>
+            {% endfor %}
+
+            {% if reclamations.currentPageNumber < reclamations.pageCount %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ reclamations.currentPageNumber + 1 }}&statut={{ currentStatut }}&priorite={{ currentPriorite }}&recherche={{ currentRecherche }}">
+                    Suivant &raquo;
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+</div>
+<div class="text-center text-muted small mt-2">
+    Page {{ reclamations.currentPageNumber }} sur {{ reclamations.pageCount }}
+    &mdash; Total : {{ reclamations.totalItemCount }} réclamation(s)
+</div>
+
 </div>
 
 <script>

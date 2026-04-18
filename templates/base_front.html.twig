@@ -21,6 +21,17 @@
 
     {% include 'home/partials/header.html.twig' %}
 
+    <div class="container" style="padding-top: 120px;">
+        {% for label, messages in app.flashes %}
+            {% for message in messages %}
+                <div class="alert alert-{{ label == 'register_error' ? 'danger' : (label == 'register_success' ? 'success' : label) }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endfor %}
+    </div>
+
     {% block body %}{% endblock %}
 
     {% include 'home/partials/footer.html.twig' %}
@@ -33,5 +44,11 @@
         <script src="{{ asset('assets_front/js/js/counter.js') }}"></script>
         <script src="{{ asset('assets_front/js/js/custom.js') }}"></script>
     {% endblock %}
+
+    {# ── Widget Chatbot IA — visible uniquement sur les pages réclamation et avis ── #}
+    {% if app.request.attributes.get('_route') starts with 'reclamation' or app.request.attributes.get('_route') starts with 'avis' %}
+        {% include 'components/chatbot.html.twig' %}
+    {% endif %}
+
 </body>
 </html>

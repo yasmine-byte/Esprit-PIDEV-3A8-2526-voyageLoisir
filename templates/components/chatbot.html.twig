@@ -1,0 +1,498 @@
+{#
+  Widget Chatbot IA — Villa Agency
+  À inclure dans base_front.html.twig juste avant </body>
+
+  Caractéristiques :
+  - Bouton rond orange (#f35525) fixé en bas à droite
+  - Fenêtre de chat s'ouvre au clic
+  - Bulles user (droite, orange) et bot (gauche, gris)
+  - Indicateur "En train d'écrire..." pendant la réponse
+  - Appel AJAX POST vers /chatbot/ask
+#}
+
+<!-- ═══════════════════════════════════════════════════════════
+     CHATBOT WIDGET — Styles
+════════════════════════════════════════════════════════════════ -->
+<style>
+  /* ── Bouton flottant ── */
+  #chatbot-fab {
+    position: fixed;
+    bottom: 28px;
+    right: 28px;
+    z-index: 9999;
+    width: 58px;
+    height: 58px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #f35525 0%, #e84318 100%);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.6rem;
+    box-shadow: 0 4px 20px rgba(243,85,37,0.45);
+    transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.2s;
+    animation: chatbot-pulse 3s infinite;
+  }
+  #chatbot-fab:hover {
+    transform: scale(1.12);
+    box-shadow: 0 8px 28px rgba(243,85,37,0.55);
+  }
+  @keyframes chatbot-pulse {
+    0%, 100% { box-shadow: 0 4px 20px rgba(243,85,37,0.45); }
+    50%       { box-shadow: 0 4px 32px rgba(243,85,37,0.7);  }
+  }
+
+  /* ── Fenêtre de chat ── */
+  #chatbot-window {
+    position: fixed;
+    bottom: 100px;
+    right: 28px;
+    z-index: 9998;
+    width: 360px;
+    max-width: calc(100vw - 40px);
+    background: #fff;
+    border-radius: 20px;
+    box-shadow: 0 12px 48px rgba(0,0,0,0.18);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transform: translateY(20px) scale(0.95);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease, transform 0.25s cubic-bezier(0.34,1.3,0.64,1);
+  }
+  #chatbot-window.open {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: all;
+  }
+
+  /* ── En-tête ── */
+  #chatbot-header {
+    background: linear-gradient(135deg, #f35525 0%, #e84318 100%);
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  #chatbot-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+  }
+  #chatbot-header-info h6 {
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.9rem;
+    margin: 0;
+  }
+  #chatbot-header-info small {
+    color: rgba(255,255,255,0.8);
+    font-size: 0.72rem;
+  }
+  #chatbot-close {
+    margin-left: auto;
+    background: none;
+    border: none;
+    color: rgba(255,255,255,0.8);
+    font-size: 1.3rem;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0 4px;
+    transition: color 0.15s;
+  }
+  #chatbot-close:hover { color: #fff; }
+
+  /* ── Zone de messages ── */
+  #chatbot-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 350px;
+    background: #f8f9fb;
+  }
+  #chatbot-messages::-webkit-scrollbar       { width: 4px; }
+  #chatbot-messages::-webkit-scrollbar-track  { background: transparent; }
+  #chatbot-messages::-webkit-scrollbar-thumb  { background: #ddd; border-radius: 4px; }
+
+  /* ── Bulles ── */
+  .cb-bubble {
+    max-width: 82%;
+    padding: 9px 13px;
+    border-radius: 16px;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    word-break: break-word;
+    animation: cb-fade-in 0.2s ease;
+  }
+  @keyframes cb-fade-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+  /* Bot : gauche, gris */
+  .cb-bubble.bot {
+    background: #fff;
+    color: #333;
+    border: 1px solid #e8e8e8;
+    border-bottom-left-radius: 4px;
+    align-self: flex-start;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+  /* User : droite, orange */
+  .cb-bubble.user {
+    background: linear-gradient(135deg, #f35525, #e84318);
+    color: #fff;
+    border-bottom-right-radius: 4px;
+    align-self: flex-end;
+    box-shadow: 0 2px 8px rgba(243,85,37,0.3);
+  }
+
+  /* ── Indicateur "En train d'écrire..." ── */
+  .cb-typing {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    align-self: flex-start;
+    background: #fff;
+    border: 1px solid #e8e8e8;
+    border-radius: 16px;
+    border-bottom-left-radius: 4px;
+    padding: 10px 14px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+  .cb-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #bbb;
+    animation: cb-bounce 1.2s infinite;
+  }
+  .cb-dot:nth-child(2) { animation-delay: 0.2s; }
+  .cb-dot:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes cb-bounce {
+    0%, 80%, 100% { transform: translateY(0); background: #ccc; }
+    40%            { transform: translateY(-6px); background: #f35525; }
+  }
+
+  /* ── Zone de saisie ── */
+  #chatbot-input-area {
+    background: #fff;
+    border-top: 1px solid #eee;
+    padding: 10px 12px;
+    display: flex;
+    gap: 8px;
+    align-items: flex-end;
+  }
+  #chatbot-input {
+    flex: 1;
+    border: 1.5px solid #e8e8e8;
+    border-radius: 20px;
+    padding: 8px 14px;
+    font-size: 0.875rem;
+    outline: none;
+    resize: none;
+    max-height: 80px;
+    line-height: 1.4;
+    transition: border-color 0.2s;
+    font-family: inherit;
+  }
+  #chatbot-input:focus { border-color: #f35525; }
+  #chatbot-send {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #f35525, #e84318);
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    transition: transform 0.2s, opacity 0.2s;
+    flex-shrink: 0;
+  }
+  #chatbot-send:hover  { transform: scale(1.1); }
+  #chatbot-send:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+</style>
+
+<!-- ═══════════════════════════════════════════════════════════
+     CHATBOT WIDGET — HTML
+════════════════════════════════════════════════════════════════ -->
+
+<!-- Bouton flottant -->
+<button id="chatbot-fab" title="Assistant Villa Agency" aria-label="Ouvrir l'assistant IA">
+  💬
+</button>
+
+<!-- Fenêtre de conversation -->
+<div id="chatbot-window" role="dialog" aria-label="Assistant IA Villa Agency">
+
+  <!-- En-tête -->
+  <div id="chatbot-header">
+    <div id="chatbot-avatar">🤖</div>
+    <div id="chatbot-header-info">
+      <h6>Assistant Villa Agency</h6>
+      <small>🟢 En ligne — Propulsé par IA</small>
+    </div>
+    <button id="chatbot-close" aria-label="Fermer">✕</button>
+  </div>
+
+  <!-- Messages -->
+  <div id="chatbot-messages" aria-live="polite">
+    <!-- Message de bienvenue (injecté par JS) -->
+  </div>
+
+  <!-- Zone de saisie -->
+  <div id="chatbot-input-area">
+    <textarea
+      id="chatbot-input"
+      placeholder="Posez votre question..."
+      rows="1"
+      aria-label="Votre message"
+    ></textarea>
+    <button id="chatbot-send" aria-label="Envoyer">➤</button>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     CHATBOT WIDGET — JavaScript
+════════════════════════════════════════════════════════════════ -->
+<script>
+(function () {
+  'use strict';
+
+  // ── Éléments DOM ──────────────────────────────────────────
+  const fab      = document.getElementById('chatbot-fab');
+  const win      = document.getElementById('chatbot-window');
+  const closeBtn = document.getElementById('chatbot-close');
+  const messages = document.getElementById('chatbot-messages');
+  const input    = document.getElementById('chatbot-input');
+  const sendBtn  = document.getElementById('chatbot-send');
+
+  // ── URL de l'endpoint ────────────────────────────────────
+  const ASK_URL = '{{ path("chatbot_ask") }}';
+
+  // ── Ouvrir / fermer ──────────────────────────────────────
+  let isOpen = false;
+  let welcomed = false;
+  let chatHistory = [];
+
+  function openChat() {
+    win.classList.add('open');
+    isOpen = true;
+    input.focus();
+
+    // Message de bienvenue — affiché une seule fois
+    if (!welcomed) {
+      welcomed = true;
+      addBotMessage(
+        '👋 Bonjour ! Je suis l\'assistant virtuel de <strong>Villa Agency</strong>.<br>'
+        + 'Je peux vous aider à rédiger vos avis, suivre vos réclamations '
+        + 'et choisir la bonne priorité.<br><br>'
+        + 'Comment puis-je vous aider aujourd\'hui ?'
+      );
+    }
+  }
+
+  function closeChat() {
+    win.classList.remove('open');
+    isOpen = false;
+  }
+
+  fab.addEventListener('click', function () {
+    isOpen ? closeChat() : openChat();
+  });
+  closeBtn.addEventListener('click', closeChat);
+
+  // ── Ajouter un message ────────────────────────────────────
+
+  function addUserMessage(text) {
+    const div = document.createElement('div');
+    div.className = 'cb-bubble user';
+    div.textContent = text;
+    messages.appendChild(div);
+    scrollBottom();
+  }
+
+  function addBotMessage(html) {
+    const div = document.createElement('div');
+    div.className = 'cb-bubble bot';
+    div.innerHTML = html;
+    messages.appendChild(div);
+    scrollBottom();
+  }
+
+  function scrollBottom() {
+    messages.scrollTop = messages.scrollHeight;
+  }
+
+  // ── Indicateur "En train d'écrire..." ────────────────────
+
+  function showTyping() {
+    const el = document.createElement('div');
+    el.className = 'cb-typing';
+    el.id = 'cb-typing';
+    el.innerHTML = '<div class="cb-dot"></div><div class="cb-dot"></div><div class="cb-dot"></div>';
+    messages.appendChild(el);
+    scrollBottom();
+    return el;
+  }
+
+  function hideTyping() {
+    const el = document.getElementById('cb-typing');
+    if (el) el.remove();
+  }
+
+  // ── Envoyer un message ────────────────────────────────────
+
+  async function sendMessage() {
+    const userMessage = input.value.trim();
+    if (!userMessage) return;
+
+    // Afficher le message utilisateur
+    addUserMessage(userMessage);
+    input.value = '';
+    autoResize();
+
+    // Désactiver l'input pendant la réponse
+    sendBtn.disabled = true;
+    input.disabled   = true;
+
+    // Indicateur de saisie
+    const typing = showTyping();
+
+    try {
+      // Appel AJAX POST vers /chatbot/ask
+      chatHistory.push({ role: 'user', content: userMessage });
+
+      const res  = await fetch(ASK_URL, {
+        method: 'POST',
+        body: new URLSearchParams({
+          message: userMessage,
+          history: JSON.stringify(chatHistory)
+        })
+      });
+      const data = await res.json();
+
+      hideTyping();
+
+      let botText = data.response || 'Aucune réponse reçue.';
+
+      // Vérifier si la réponse est un JSON de création de réclamation
+      try {
+        const jsonMatch = botText.match(/\{[^{}]*"action"\s*:\s*"create_reclamation"[^{}]*\}/s);
+        if (jsonMatch) {
+          const parsed = JSON.parse(jsonMatch[0]);
+          // Appel automatique pour créer la réclamation
+          fetch('/chatbot/submit-reclamation', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({
+              titre:    parsed.titre    || '',
+              contenu:  parsed.contenu  || '',
+              priorite: parsed.priorite || 'Moyenne'
+            })
+          })
+          .then(r => r.json())
+          .then(result => {
+            let finalText;
+            if (result.success) {
+              finalText = '✅ Votre réclamation a été créée automatiquement !<br><br>'
+                + '📌 <strong>Titre :</strong> ' + parsed.titre + '<br>'
+                + '📄 <strong>Description :</strong> ' + parsed.contenu + '<br>'
+                + '🚨 <strong>Priorité :</strong> ' + parsed.priorite + '<br><br>'
+                + 'Vous pouvez la consulter dans <a href="/reclamation/" style="color:#e85d04;font-weight:bold;">Mes réclamations</a>';
+            } else {
+              finalText = '❌ Erreur lors de la création : ' + result.message;
+            }
+            addBotMessage(finalText);
+            chatHistory.push({ role: 'assistant', content: finalText });
+          })
+          .catch(() => {
+            addBotMessage('❌ Erreur de connexion lors de la création de la réclamation.');
+          });
+          chatHistory.push({ role: 'assistant', content: botText });
+          return; // Ne pas afficher le JSON brut
+        }
+
+        // Gérer la création automatique d'un avis
+        const avisMatch = botText.match(/\{[^{}]*"action"\s*:\s*"create_avis"[^{}]*\}/s);
+        if (avisMatch) {
+          const parsed = JSON.parse(avisMatch[0]);
+          fetch('/chatbot/submit-avis', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({
+              contenu:   parsed.contenu   || '',
+              nbEtoiles: parsed.nbEtoiles || 3,
+              type:      parsed.type      || ''
+            })
+          })
+          .then(r => r.json())
+          .then(result => {
+            let msg;
+            if (result.success) {
+              const nb = parseInt(parsed.nbEtoiles) || 3;
+              const stars = '⭐'.repeat(nb) + '☆'.repeat(5 - nb);
+              msg = '✅ Votre avis a été publié automatiquement !<br><br>'
+                + stars + ' <strong>' + nb + '/5</strong><br>'
+                + '💬 ' + parsed.contenu + '<br><br>'
+                + 'Vous pouvez le consulter dans <a href="/avis/" style="color:#e85d04;font-weight:bold;">Mes avis</a>';
+            } else {
+              msg = '❌ Erreur : ' + result.message;
+            }
+            addBotMessage(msg);
+            chatHistory.push({ role: 'assistant', content: msg });
+          })
+          .catch(() => {
+            addBotMessage('❌ Erreur de connexion lors de la création de l\'avis.');
+          });
+          chatHistory.push({ role: 'assistant', content: botText });
+          return;
+        }
+
+      } catch(e) { /* Pas un JSON valide, affichage normal */ }
+
+      // Affichage normal si pas de JSON
+      addBotMessage(botText);
+      chatHistory.push({ role: 'assistant', content: botText });
+    } catch (err) {
+      hideTyping();
+      addBotMessage('⚠️ Erreur de connexion au service IA. Veuillez réessayer.');
+    } finally {
+      sendBtn.disabled = false;
+      input.disabled   = false;
+      input.focus();
+    }
+  }
+
+  // ── Événements ────────────────────────────────────────────
+
+  sendBtn.addEventListener('click', sendMessage);
+
+  input.addEventListener('keydown', function (e) {
+    // Envoyer avec Entrée (sans Shift)
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  });
+
+  // Auto-resize du textarea selon le contenu
+  function autoResize() {
+    input.style.height = 'auto';
+    input.style.height = Math.min(input.scrollHeight, 80) + 'px';
+  }
+  input.addEventListener('input', autoResize);
+
+})();
+</script>
