@@ -38,12 +38,18 @@
             {% if app.user %}
               {% if is_granted("ROLE_ADMIN") %}
                 <li>
-                  <a href="{{ path('app_admin') }}" style="color:#d4845a; font-weight:600;"><i class="fa fa-cog"></i> Admin</a>
+                  <a href="{{ path('app_admin') }}" style="color:#d4845a; font-weight:600;"><i class="fa fa-cog"></i> Admin Dashboard</a>
+                </li>
+              {% endif %}
+              {% if is_granted('ROLE_USER') %}
+                <li>
+                  <a href="{{ path('app_mon_espace') }}" style="color:#E8602D; font-weight:600;"><i class="fa fa-compass"></i> Mon Espace</a>
                 </li>
               {% endif %}
               <li>
                 <a href="{{ path('front_profile') }}" style="font-weight:600;">
-                  <i class="fa fa-user-circle"></i> {{ app.user.prenom }}
+                  <i class="fa fa-user-circle"></i>
+                  {{ (app.user.prenom|default('') ~ ' ' ~ app.user.nom|default(''))|trim ?: app.user.userIdentifier }}
                 </a>
               </li>
               <li>
@@ -54,12 +60,12 @@
             {% else %}
               <li>
                 <a href="#" data-bs-toggle="modal" data-bs-target="#authModal" style="color:#d4845a; font-weight:600;">
-                  <i class="fa fa-user"></i> Login
+                  <i class="fa fa-user"></i> Se connecter
                 </a>
               </li>
               <li>
-                <a href="{{ path('admin_login') }}" style="color:#f97316; font-weight:600;">
-                  <i class="fa fa-lock"></i> Admin
+                <a href="#" data-bs-toggle="modal" data-bs-target="#authModal" style="color:#f97316; font-weight:600;">
+                  <i class="fa fa-user-plus"></i> S'inscrire
                 </a>
               </li>
             {% endif %}

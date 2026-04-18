@@ -1,0 +1,141 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}Analytics Blog{% endblock %}
+
+{% block admin_content %}
+    <style>
+        .analytics-page { display: grid; gap: 20px; }
+        .analytics-card {
+            background: #1e1e2e;
+            border: 1px solid #2d2d3f;
+            border-radius: 14px;
+            box-shadow: 0 10px 24px rgba(0, 0, 0, .25);
+        }
+        .kpi-grid { display: grid; gap: 14px; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+        .kpi-card { padding: 18px; }
+        .kpi-card small { color: #9ca3af; display: block; margin-bottom: 6px; }
+        .kpi-card strong { color: #ffffff; font-size: 1.7rem; line-height: 1; }
+
+        .chart-grid-3 { display: grid; gap: 14px; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        .chart-grid-2 { display: grid; gap: 14px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .chart-card { padding: 16px; }
+        .chart-card h3 { margin: 0 0 12px; color: #ffffff; font-size: 1.02rem; }
+        .chart-wrap { position: relative; height: 300px; }
+        .chart-wrap--small { height: 250px; }
+
+        @media (max-width: 1200px) {
+            .chart-grid-3 { grid-template-columns: 1fr 1fr; }
+        }
+        @media (max-width: 980px) {
+            .kpi-grid, .chart-grid-3, .chart-grid-2 { grid-template-columns: 1fr; }
+        }
+    </style>
+
+    <main class="analytics-page">
+        <div class="page-header">
+            <h1>Analytics</h1>
+            <p>Vue analytique globale des articles, commentaires, réactions et signalements.</p>
+        </div>
+
+        <section class="kpi-grid">
+            <article class="analytics-card kpi-card">
+                <small>Total articles publiés</small>
+                <strong>{{ kpis.published }}</strong>
+            </article>
+            <article class="analytics-card kpi-card">
+                <small>Total commentaires</small>
+                <strong>{{ kpis.comments }}</strong>
+            </article>
+            <article class="analytics-card kpi-card">
+                <small>Total réactions</small>
+                <strong>{{ kpis.reactions }}</strong>
+            </article>
+            <article class="analytics-card kpi-card">
+                <small>Utilisateurs actifs</small>
+                <strong>{{ kpis.active_users }}</strong>
+            </article>
+        </section>
+
+        <section class="chart-grid-3">
+            <article class="analytics-card chart-card">
+                <h3>Répartition des articles par catégorie</h3>
+                <div class="chart-wrap"><canvas id="categoryPie"></canvas></div>
+            </article>
+            <article class="analytics-card chart-card">
+                <h3>Répartition des réactions</h3>
+                <div class="chart-wrap"><canvas id="reactionPie"></canvas></div>
+            </article>
+            <article class="analytics-card chart-card">
+                <h3>Statut des articles</h3>
+                <div class="chart-wrap"><canvas id="statusPie"></canvas></div>
+            </article>
+        </section>
+
+        <section class="chart-grid-2">
+            <article class="analytics-card chart-card">
+                <h3>Articles publiés par mois (12 derniers mois)</h3>
+                <div class="chart-wrap chart-wrap--small"><canvas id="articlesByMonthBar"></canvas></div>
+            </article>
+            <article class="analytics-card chart-card">
+                <h3>Répartition des signalements par raison</h3>
+                <div class="chart-wrap chart-wrap--small"><canvas id="reportReasonDoughnut"></canvas></div>
+            </article>
+        </section>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const chartPalette = ['#f97316', '#8b5cf6', '#3b82f6', '#22c55e', '#ef4444', '#eab308', '#14b8a6', '#a855f7'];
+        const commonLegend = {
+            labels: { color: '#ffffff', usePointStyle: true, pointStyle: 'circle' }
+        };
+
+        const categoryData = {{ category_distribution|json_encode|raw }};
+        const reactionData = {{ reaction_distribution|json_encode|raw }};
+        const statusData = {{ status_distribution|json_encode|raw }};
+        const monthData = {{ articles_by_month|json_encode|raw }};
+        const reportReasonData = {{ report_reason_distribution|json_encode|raw }};
+
+        function pieChart(canvasId, labels, data) {
+            new Chart(document.getElementById(canvasId), {
+                type: 'pie',
+                data: {
+                    labels: labels,
+                    datasets: [{ data: data, backgroundColor: chartPalette, borderColor: '#1e1e2e', borderWidth: 2 }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: commonLegend } }
+            });
+        }
+
+        pieChart('categoryPie', categoryData.labels, categoryData.data);
+        pieChart('reactionPie', reactionData.labels, reactionData.data);
+        pieChart('statusPie', statusData.labels, statusData.data);
+
+        new Chart(document.getElementById('articlesByMonthBar'), {
+            type: 'bar',
+            data: {
+                labels: monthData.labels,
+                datasets: [{ label: 'Articles', data: monthData.data, backgroundColor: '#3b82f6', borderRadius: 8 }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { labels: { color: '#ffffff' } } },
+                scales: {
+                    x: { ticks: { color: '#d1d5db' }, grid: { color: 'rgba(255,255,255,0.08)' } },
+                    y: { ticks: { color: '#d1d5db', precision: 0 }, grid: { color: 'rgba(255,255,255,0.08)' } }
+                }
+            }
+        });
+
+        new Chart(document.getElementById('reportReasonDoughnut'), {
+            type: 'doughnut',
+            data: {
+                labels: reportReasonData.labels,
+                datasets: [{ data: reportReasonData.data, backgroundColor: chartPalette, borderColor: '#1e1e2e', borderWidth: 2 }]
+            },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: commonLegend } }
+        });
+    </script>
+{% endblock %}
+

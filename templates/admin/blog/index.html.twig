@@ -1,0 +1,609 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}Gestion des articles{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+{% endblock %}
+
+{% block admin_content %}
+    <style>
+        .admin-blog-page { display: grid; gap: 24px; }
+        .admin-breadcrumb { font-size: 13px; color: var(--text-secondary); margin-bottom: 10px; }
+        .admin-breadcrumb a { color: inherit; text-decoration: none; }
+        .admin-breadcrumb span { margin: 0 6px; opacity: .65; }
+
+        .stats-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin-bottom: 22px; }
+        .market-stat { border: 1px solid var(--border-color); }
+
+        .toolbar-row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
+        .toolbar-field {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            border-radius: 10px;
+            padding: 10px 12px;
+            min-height: 42px;
+        }
+        .toolbar-search { flex: 1 1 320px; min-width: 260px; }
+        .toolbar-btn {
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            background: var(--card-bg);
+            color: var(--text-primary);
+            padding: 10px 14px;
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+        }
+        .toolbar-btn--primary { background: var(--accent-color); border-color: var(--accent-color); color: #fff; }
+
+        .dropdown-filter .dropdown-toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #1e1e2e;
+            color: #fff;
+            border: 1px solid #2d2d3f;
+            border-radius: 10px;
+            padding: 10px 14px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        .dropdown-filter { position: relative; }
+        .dropdown-filter .dropdown-menu {
+            position: absolute;
+            right: 0;
+            left: auto;
+            width: 320px;
+            max-width: 320px;
+            padding: 12px 16px;
+            background: #171722;
+            border: 1px solid #2d2d3f;
+            border-radius: 12px;
+            z-index: 1050;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+        .filter-section + .filter-section {
+            margin-top: 14px;
+            padding-top: 14px;
+            border-top: 1px solid #2d2d3f;
+        }
+        .filter-title {
+            margin: 0 0 8px;
+            color: #9ca3af;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: .05em;
+            text-transform: uppercase;
+        }
+        .filter-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #d1d5db;
+            font-size: 13px;
+            margin-bottom: 6px;
+        }
+        .filter-option input { accent-color: #f97316; }
+        .filter-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4px 10px;
+        }
+        .filter-actions {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-top: 12px;
+        }
+        .btn-apply {
+            width: 100%;
+            border: none;
+            background: #f97316;
+            color: #fff;
+            border-radius: 10px;
+            padding: 10px 12px;
+            font-weight: 700;
+            font-size: 13px;
+        }
+        .btn-reset {
+            border: none;
+            background: transparent;
+            color: #9ca3af;
+            padding: 6px 2px;
+            font-weight: 600;
+            font-size: 12px;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+        .filter-count-badge {
+            display: inline-flex;
+            min-width: 20px;
+            height: 20px;
+            border-radius: 999px;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            background: #f97316;
+            color: #fff;
+        }
+
+        .active-filters {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 8px;
+        }
+        .filter-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: #1f2937;
+            color: #d1d5db;
+            border: 1px solid #374151;
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .filter-tag .x { color: #f9fafb; }
+
+        .market-table tbody tr.admin-article-row {
+            background: #1e1e2e;
+            border-bottom: 1px solid #2d2d3f;
+            transition: background-color .2s ease;
+        }
+        .market-table tbody tr.admin-article-row:hover { background: #2a2a3e; }
+        .market-table tbody tr.admin-article-row td { color: #d1d5db; }
+        .article-title { color: #ffffff; font-weight: 700; }
+        .article-slug { color: #9ca3af; font-size: 12px; }
+
+        .thumb-wrap {
+            width: 60px;
+            height: 60px;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #374151;
+            background: #374151;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: #9ca3af;
+            font-size: 18px;
+        }
+        .thumb-wrap img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+            display: block;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            padding: 5px 11px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 700;
+            color: #fff;
+        }
+        .status-badge--publie { background: #22c55e; }
+        .status-badge--brouillon { background: #f97316; }
+        .status-badge--attente { background: #3b82f6; }
+
+        .icon-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .icon-btn {
+            width: 34px;
+            height: 34px;
+            border-radius: 10px;
+            border: 1px solid transparent;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            font-size: 16px;
+        }
+        .icon-btn i { line-height: 1; }
+        .icon-btn--view { background: #1f2937; color: #e5e7eb; border-color: #374151; }
+        .icon-btn--publish { background: #14532d; color: #bbf7d0; border-color: #15803d; }
+        .icon-btn--unpublish { background: #7c2d12; color: #fed7aa; border-color: #c2410c; }
+        .icon-btn--delete { background: #7f1d1d; color: #fecaca; border-color: #dc2626; }
+        .icon-form { margin: 0; display: inline-flex; }
+
+        .pagination-wrap {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            flex-wrap: wrap;
+            padding: 16px 20px 20px;
+            border-top: 1px solid #2d2d3f;
+            background: #1a1a28;
+        }
+        .pagination-info { color: #9ca3af; font-size: 13px; font-weight: 600; }
+        .pagination-nav { display: flex; gap: 8px; }
+        .pagination-btn {
+            border-radius: 8px;
+            border: 1px solid #374151;
+            background: #1f2937;
+            color: #d1d5db;
+            padding: 8px 12px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        @media (max-width: 1100px) { .stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+        @media (max-width: 768px) { .stats-grid { grid-template-columns: 1fr; } .filter-grid { grid-template-columns: 1fr; } }
+    </style>
+
+    {% set vues_totales = 0 %}
+    {% for item in blog_metrics %}
+        {% set vues_totales = vues_totales + (item.views|default(0)) %}
+    {% endfor %}
+    {% set page_courante = app.request.query.getInt('page', 1) %}
+    {% set total_pages = 1 %}
+    {% set selected_statuses = selected_statuses|default(['all']) %}
+    {% set selected_categories = selected_categories|default([]) %}
+    {% set period_filter = period_filter|default('all') %}
+    {% set sort_filter = sort|default('recent') %}
+
+    {% set active_count = 0 %}
+    {% for s in selected_statuses %}
+        {% if s != 'all' %}
+            {% set active_count = active_count + 1 %}
+        {% endif %}
+    {% endfor %}
+    {% set active_count = active_count + (selected_categories|length) %}
+    {% if period_filter != 'all' %}
+        {% set active_count = active_count + 1 %}
+    {% endif %}
+
+    <main class="admin-blog-page">
+        <div class="page-header">
+            <div class="admin-breadcrumb">
+                <a href="{{ path('app_admin') }}">Tableau de bord</a><span>&gt;</span>Articles
+            </div>
+            <h1>Gestion des articles</h1>
+            <p>Suivez et modérez la publication des articles du blog.</p>
+        </div>
+
+        <div class="stats-grid">
+            <div class="market-stat">
+                <div class="market-stat-label">Total articles</div>
+                <div class="market-stat-value">{{ stats.total }}</div>
+            </div>
+            <div class="market-stat">
+                <div class="market-stat-label">Articles publiés</div>
+                <div class="market-stat-value">{{ stats.published }}</div>
+            </div>
+            <div class="market-stat">
+                <div class="market-stat-label">Articles en brouillon</div>
+                <div class="market-stat-value">{{ stats.drafts }}</div>
+            </div>
+            <div class="market-stat">
+                <div class="market-stat-label">Vues totales</div>
+                <div class="market-stat-value">{{ vues_totales }}</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Liste des articles</h3>
+                <span style="color:var(--text-secondary);font-size:13px;font-weight:600;">{{ blogs|length }} résultats</span>
+            </div>
+
+            <div style="padding:18px 20px 10px;">
+                <form method="get" action="{{ path('admin_blogs') }}" id="blogFiltersForm">
+                    <div class="toolbar-row">
+                        <input class="toolbar-field toolbar-search" type="text" name="q" value="{{ search }}" placeholder="Rechercher un article...">
+
+                        <div style="position: relative; display: inline-block;">
+                            <button type="button" id="filterToggleBtn"
+                                    style="background:#2a2a3e; border:1px solid #444; color:white; padding:8px 16px; border-radius:8px; cursor:pointer;">
+                                <i class="bi bi-funnel"></i> Filtrer
+                                <span id="filterCount" style="display:none; background:#f97316; color:white; border-radius:50%; padding:1px 6px; font-size:11px; margin-left:4px;"></span>
+                                <i class="bi bi-chevron-down"></i>
+                            </button>
+                            <div id="filterPanel"
+                                 style="display:none; position:absolute; right:0; top:110%; width:320px; background:#1e1e2e; border:1px solid #333; border-radius:12px; padding:16px; z-index:9999;">
+                                <div class="filter-section">
+                                    <p class="filter-title">Statut</p>
+                                    <label class="filter-option"><input type="checkbox" name="statuses[]" value="all" {{ 'all' in selected_statuses ? 'checked' : '' }} data-filter-all-status> Tous</label>
+                                    <label class="filter-option"><input type="checkbox" name="statuses[]" value="published" {{ 'published' in selected_statuses ? 'checked' : '' }}> Publié</label>
+                                    <label class="filter-option"><input type="checkbox" name="statuses[]" value="draft" {{ 'draft' in selected_statuses ? 'checked' : '' }}> Brouillon</label>
+                                    <label class="filter-option"><input type="checkbox" name="statuses[]" value="pending" {{ 'pending' in selected_statuses ? 'checked' : '' }}> En attente</label>
+                                </div>
+
+                                <div class="filter-section">
+                                    <p class="filter-title">Catégorie</p>
+                                    <div class="filter-grid">
+                                        {% for category in available_categories|default([]) %}
+                                            <label class="filter-option"><input type="checkbox" name="categories[]" value="{{ category }}" {{ category in selected_categories ? 'checked' : '' }}> {{ category }}</label>
+                                        {% else %}
+                                            <span style="color:#9ca3af;font-size:12px;">Aucune catégorie disponible</span>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+
+                                <div class="filter-section">
+                                    <p class="filter-title">Période</p>
+                                    <label class="filter-option"><input type="radio" name="period" value="today" {{ period_filter == 'today' ? 'checked' : '' }}> Aujourd'hui</label>
+                                    <label class="filter-option"><input type="radio" name="period" value="week" {{ period_filter == 'week' ? 'checked' : '' }}> Cette semaine</label>
+                                    <label class="filter-option"><input type="radio" name="period" value="month" {{ period_filter == 'month' ? 'checked' : '' }}> Ce mois</label>
+                                    <label class="filter-option"><input type="radio" name="period" value="all" {{ period_filter == 'all' ? 'checked' : '' }}> Tout</label>
+                                </div>
+
+                                <div class="filter-section">
+                                    <p class="filter-title">Tri</p>
+                                    <label class="filter-option"><input type="radio" name="sort" value="recent" {{ sort_filter == 'recent' ? 'checked' : '' }}> Plus récent</label>
+                                    <label class="filter-option"><input type="radio" name="sort" value="oldest" {{ sort_filter == 'oldest' ? 'checked' : '' }}> Plus ancien</label>
+                                    <label class="filter-option"><input type="radio" name="sort" value="most_viewed" {{ sort_filter == 'most_viewed' ? 'checked' : '' }}> Plus vu</label>
+                                    <label class="filter-option"><input type="radio" name="sort" value="alpha" {{ sort_filter == 'alpha' ? 'checked' : '' }}> Alphabétique</label>
+                                </div>
+
+                                <div class="filter-actions">
+                                    <button type="button" class="btn-apply" id="applyFilters">Appliquer les filtres</button>
+                                    <a class="btn-reset" href="{{ path('admin_blogs') }}">Réinitialiser</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button class="toolbar-btn toolbar-btn--primary" type="submit">Rechercher</button>
+                    </div>
+                </form>
+
+                {% if active_count > 0 %}
+                    <div class="active-filters">
+                        {% for s in selected_statuses %}
+                            {% if s != 'all' %}
+                                <button type="button" class="filter-tag js-remove-filter" data-kind="status" data-value="{{ s }}">
+                                    {{ s == 'published' ? 'Publié' : (s == 'draft' ? 'Brouillon' : 'En attente') }} <span class="x">&times;</span>
+                                </button>
+                            {% endif %}
+                        {% endfor %}
+                        {% for c in selected_categories %}
+                            <button type="button" class="filter-tag js-remove-filter" data-kind="category" data-value="{{ c }}">
+                                {{ c }} <span class="x">&times;</span>
+                            </button>
+                        {% endfor %}
+                        {% if period_filter != 'all' %}
+                            <button type="button" class="filter-tag js-remove-filter" data-kind="period" data-value="{{ period_filter }}">
+                                {{ period_filter == 'today' ? "Aujourd'hui" : (period_filter == 'week' ? 'Cette semaine' : 'Ce mois') }} <span class="x">&times;</span>
+                            </button>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+
+            {% for label, messages in app.flashes %}
+                <div style="padding:0 20px 14px;">
+                    {% for message in messages %}
+                        {% set msg = message %}
+                        {% if message == 'Blog published successfully.' %}
+                            {% set msg = 'Article publié avec succès' %}
+                        {% elseif message == 'Blog deleted successfully.' %}
+                            {% set msg = 'Article supprimé' %}
+                        {% elseif message == 'Blog moved back to draft.' %}
+                            {% set msg = 'Modifications enregistrées' %}
+                        {% endif %}
+                        <div style="padding:10px 12px;border-radius:10px;background:#dcfce7;color:#166534;border:1px solid #bbf7d0;font-size:13px;font-weight:600;">{{ msg }}</div>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+
+            {% if blogs is empty %}
+                <div style="padding:20px;color:#9ca3af;background:#1e1e2e;">Aucun article ne correspond à votre recherche.</div>
+            {% else %}
+                <table class="market-table">
+                    <thead>
+                        <tr>
+                            <th>Image</th>
+                            <th>Titre</th>
+                            <th>Auteur</th>
+                            <th>Catégorie</th>
+                            <th>Date</th>
+                            <th>Statut</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for blog in blogs %}
+                            {% set metrics = blog_metrics[blog.id] ?? {} %}
+                            {% set cover = metrics.cover_image|default(blog.imageCouverture ?: '') %}
+                            {% set statusLabel = blog.status ? 'Publié' : 'Brouillon' %}
+                            {% set statusClass = blog.status ? 'status-badge--publie' : 'status-badge--brouillon' %}
+                            {% if blog.publicationRequested and not blog.status %}
+                                {% set statusLabel = 'En attente' %}
+                                {% set statusClass = 'status-badge--attente' %}
+                            {% endif %}
+                            <tr class="admin-article-row">
+                                <td>
+                                    <div class="thumb-wrap">
+                                        {% if cover %}
+                                            <img src="{{ cover }}" alt="{{ blog.titre }}" loading="lazy">
+                                        {% else %}
+                                            <i class="bi bi-image" aria-hidden="true"></i>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="article-title">{{ blog.titre }}</div>
+                                    <div class="article-slug">{{ blog.slug ?: 'Aucun slug' }}</div>
+                                </td>
+                                <td>{{ blog.authorId ?: 'Utilisateur' }}</td>
+                                <td>{{ metrics.category|default('Non catégorisé') }}</td>
+                                <td>{{ blog.datePublication ? blog.datePublication|date('d/m/Y') : (blog.dateCreation ? blog.dateCreation|date('d/m/Y') : '-') }}</td>
+                                <td><span class="status-badge {{ statusClass }}">{{ statusLabel }}</span></td>
+                                <td>
+                                    <div class="icon-actions">
+                                        <a href="{{ path('admin_blog_show', {'id': blog.id}) }}" class="icon-btn icon-btn--view" data-bs-toggle="tooltip" data-bs-title="Voir" aria-label="Voir">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <form class="icon-form" method="post" action="{{ path('admin_blog_workflow', {'id': blog.id}) }}">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('admin_workflow_blog_' ~ blog.id) }}">
+                                            <input type="hidden" name="action" value="{{ blog.status ? 'draft' : 'publish' }}">
+                                            <input type="hidden" name="q" value="{{ search }}">
+                                            <input type="hidden" name="sort" value="{{ sort_filter }}">
+                                            <input type="hidden" name="period" value="{{ period_filter }}">
+                                            {% for s in selected_statuses %}<input type="hidden" name="statuses[]" value="{{ s }}">{% endfor %}
+                                            {% for c in selected_categories %}<input type="hidden" name="categories[]" value="{{ c }}">{% endfor %}
+                                            <button type="submit" class="icon-btn {{ blog.status ? 'icon-btn--unpublish' : 'icon-btn--publish' }}" data-bs-toggle="tooltip" data-bs-title="{{ blog.status ? 'Dépublier' : 'Publier' }}" aria-label="{{ blog.status ? 'Dépublier' : 'Publier' }}">
+                                                <i class="bi {{ blog.status ? 'bi-x-circle' : 'bi-check-circle' }}"></i>
+                                            </button>
+                                        </form>
+                                        <form class="icon-form" method="post" action="{{ path('admin_blog_delete', {'id': blog.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet article ?');">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('admin_delete_blog_' ~ blog.id) }}">
+                                            <button type="submit" class="icon-btn icon-btn--delete" data-bs-toggle="tooltip" data-bs-title="Supprimer" aria-label="Supprimer">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                <div class="pagination-wrap">
+                    <span class="pagination-info">Page {{ page_courante }} sur {{ total_pages }}</span>
+                    <div class="pagination-nav">
+                        <button type="button" class="pagination-btn" disabled>Précédent</button>
+                        <button type="button" class="pagination-btn" disabled>Suivant</button>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            if (window.bootstrap && bootstrap.Tooltip) {
+                document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(function (element) {
+                    bootstrap.Tooltip.getOrCreateInstance(element);
+                });
+            }
+
+            const filtersForm = document.getElementById('blogFiltersForm');
+            const panel = document.getElementById('filterPanel');
+            const toggleBtn = document.getElementById('filterToggleBtn');
+            if (!filtersForm || !panel || !toggleBtn) {
+                return;
+            }
+
+            const dropdownRoot = panel;
+            const countBadge = document.getElementById('filterCount');
+            const allStatusCheckbox = dropdownRoot.querySelector('[data-filter-all-status]');
+            const statusCheckboxes = dropdownRoot.querySelectorAll('input[name="statuses[]"]:not([data-filter-all-status])');
+
+            (function() {
+                toggleBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+                });
+                document.addEventListener('click', function(e) {
+                    if (!panel.contains(e.target) && e.target !== toggleBtn) {
+                        panel.style.display = 'none';
+                    }
+                });
+                document.getElementById('applyFilters').addEventListener('click', function() {
+                    panel.style.display = 'none';
+                });
+            })();
+
+            function syncStatusSelection(changed) {
+                if (!allStatusCheckbox) {
+                    return;
+                }
+                if (changed === allStatusCheckbox && allStatusCheckbox.checked) {
+                    statusCheckboxes.forEach(function (cb) { cb.checked = false; });
+                    return;
+                }
+                const anySpecificChecked = Array.from(statusCheckboxes).some(function (cb) { return cb.checked; });
+                if (anySpecificChecked) {
+                    allStatusCheckbox.checked = false;
+                } else if (changed !== allStatusCheckbox) {
+                    allStatusCheckbox.checked = true;
+                }
+            }
+
+            function updateFilterCount() {
+                const checkedStatuses = Array.from(statusCheckboxes).filter(function (cb) { return cb.checked; }).length;
+                const checkedCategories = dropdownRoot.querySelectorAll('input[name="categories[]"]:checked').length;
+                const period = dropdownRoot.querySelector('input[name="period"]:checked');
+                const sort = dropdownRoot.querySelector('input[name="sort"]:checked');
+                const periodCount = period && period.value !== 'all' ? 1 : 0;
+                const sortCount = sort && sort.value !== 'recent' ? 1 : 0;
+                const total = checkedStatuses + checkedCategories + periodCount + sortCount;
+                if (total > 0) {
+                    countBadge.textContent = total.toString();
+                    countBadge.style.display = 'inline-block';
+                } else {
+                    countBadge.style.display = 'none';
+                }
+            }
+
+            if (allStatusCheckbox) {
+                allStatusCheckbox.addEventListener('change', function () {
+                    syncStatusSelection(allStatusCheckbox);
+                    updateFilterCount();
+                });
+            }
+            statusCheckboxes.forEach(function (cb) {
+                cb.addEventListener('change', function () {
+                    syncStatusSelection(cb);
+                    updateFilterCount();
+                });
+            });
+            dropdownRoot.querySelectorAll('input[name="categories[]"], input[name="period"], input[name="sort"]').forEach(function (el) {
+                el.addEventListener('change', updateFilterCount);
+            });
+
+            document.querySelectorAll('.js-remove-filter').forEach(function (button) {
+                button.addEventListener('click', function () {
+                    if (!filtersForm) {
+                        return;
+                    }
+
+                    const kind = button.getAttribute('data-kind');
+                    const value = button.getAttribute('data-value');
+
+                    if (kind === 'status') {
+                        const target = filtersForm.querySelector('input[name="statuses[]"][value="' + value + '"]');
+                        if (target) {
+                            target.checked = false;
+                        }
+                        syncStatusSelection(target);
+                    } else if (kind === 'category') {
+                        const target = filtersForm.querySelector('input[name="categories[]"][value="' + value + '"]');
+                        if (target) {
+                            target.checked = false;
+                        }
+                    } else if (kind === 'period') {
+                        const target = filtersForm.querySelector('input[name="period"][value="all"]');
+                        if (target) {
+                            target.checked = true;
+                        }
+                    }
+
+                    filtersForm.requestSubmit();
+                });
+            });
+
+            if (document.getElementById('applyFilters')) {
+                document.getElementById('applyFilters').addEventListener('click', function() {
+                    setTimeout(function () {
+                        filtersForm.requestSubmit();
+                    }, 40);
+                });
+            }
+
+            updateFilterCount();
+        });
+    </script>
+{% endblock %}

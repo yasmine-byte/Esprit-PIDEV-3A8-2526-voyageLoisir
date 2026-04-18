@@ -161,13 +161,37 @@
 
         {# ── GESTION BLOG (ROLE_ADMIN) ── #}
         {% if is_granted('ROLE_ADMIN') %}
-        <a href="{{ path('admin_blogs') }}" class="nav-item {{ currentRoute == 'admin_blogs' or currentRoute starts with 'admin_blog' ? 'active' : '' }}">
+        <a href="#" class="nav-item {{ currentRoute == 'admin_blogs' or currentRoute starts with 'admin_blog' or currentRoute starts with 'admin_comment_report' or currentRoute == 'admin_comment_reports_index' or currentRoute == 'admin_analytics' ? 'active' : '' }}" onclick="toggleMenu(event, 'blog-submenu')">
             <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
                 <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
             </svg>
             Gestion Blog
+            <svg id="arrow-blog" style="margin-left:auto; width:16px; transition:transform 0.3s;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"/>
+            </svg>
         </a>
+        <div id="blog-submenu" style="display:none; padding-left:16px;">
+            <a href="{{ path('admin_blogs') }}" class="nav-item {{ currentRoute == 'admin_blogs' or currentRoute starts with 'admin_blog' ? 'active' : '' }}" style="font-size:14px;">
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                </svg>
+                Gestion Blog
+            </a>
+            <a href="{{ path('admin_comment_reports_index') }}" class="nav-item {{ currentRoute starts with 'admin_comment_report' or currentRoute == 'admin_comment_reports_index' ? 'active' : '' }}" style="font-size:14px;">
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                    <line x1="12" y1="9" x2="12" y2="13"/>
+                    <line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+                Signalements commentaires
+            </a>
+            <a href="{{ path('admin_analytics') }}" class="nav-item {{ currentRoute == 'admin_analytics' ? 'active' : '' }}" style="font-size:14px;">
+                <i class="bi bi-bar-chart-line nav-icon"></i>
+                Analytics
+            </a>
+        </div>
         {% endif %}
 
         {# ── GESTION UTILISATEURS (ROLE_ADMIN uniquement) ── #}
@@ -309,6 +333,14 @@
             var arrow = document.getElementById('arrow-users');
             if (menu)  menu.style.display = 'block';
             if (arrow) arrow.style.transform = 'rotate(180deg)';
+        }
+
+        const blogRoutes = ['admin_blogs', 'admin_comment_reports_index', 'admin_comment_report_dismiss', 'admin_comment_report_review', 'admin_comment_report_delete_comment', 'admin_analytics'];
+        if (blogRoutes.includes(currentRoute)) {
+            var blogMenu  = document.getElementById('blog-submenu');
+            var blogArrow = document.getElementById('arrow-blog');
+            if (blogMenu)  blogMenu.style.display = 'block';
+            if (blogArrow) blogArrow.style.transform = 'rotate(180deg)';
         }
 
         var p = window.location.pathname;

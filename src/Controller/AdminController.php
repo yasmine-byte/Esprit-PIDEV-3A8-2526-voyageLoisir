@@ -2,9 +2,13 @@
 namespace App\Controller;
 
 use App\Entity\Blog;
+use App\Entity\CommentReport;
+use App\Entity\Commentaire;
 use App\Repository\BlogRatingRepository;
 use App\Repository\BlogRepository;
 use App\Repository\BlogViewsRepository;
+use App\Repository\CommentReactionRepository;
+use App\Repository\CommentReportRepository;
 use App\Repository\CommentaireRepository;
 use App\Repository\ActiviteRepository;
 use App\Repository\HebergementRepository;
@@ -207,20 +211,123 @@ class AdminController extends AbstractController
         BlogRecommendationService $blogRecommendationService
     ): Response {
         $search = trim((string) $request->query->get('q', ''));
-        $sort = (string) $request->query->get('sort', 'recent');
-        $statusFilter = (string) $request->query->get('status', 'all');
-        if (!in_array($statusFilter, ['all', 'draft', 'published', 'pending'], true)) {
-            $statusFilter = 'all';
-        }
-        if (!in_array($sort, ['recent', 'oldest', 'title', 'status', 'published'], true)) {
-            $sort = 'recent';
+        $sortFilter = (string) $request->query->get('sort', 'recent');
+        if (!in_array($sortFilter, ['recent', 'oldest', 'most_viewed', 'alpha'], true)) {
+            $sortFilter = 'recent';
         }
 
-        $blogs = $blogRepository->createAdminListingQueryBuilder($search, $sort, $statusFilter)
+        $selectedStatuses = $this->normalizeArrayQuery($request->query->all('statuses'), ['all', 'published', 'draft', 'pending']);
+        if ([] === $selectedStatuses) {
+            $selectedStatuses = ['all'];
+        }
+        if (in_array('all', $selectedStatuses, true) && count($selectedStatuses) > 1) {
+            $selectedStatuses = array_values(array_filter($selectedStatuses, static fn (string $status): bool => 'all' !== $status));
+        }
+
+        $selectedCategories = $this->normalizeArrayQuery($request->query->all('categories'));
+        $periodFilter = (string) $request->query->get('period', 'all');
+        if (!in_array($periodFilter, ['today', 'week', 'month', 'all'], true)) {
+            $periodFilter = 'all';
+        }
+
+        $sortMap = [
+            'recent' => 'recent',
+            'oldest' => 'oldest',
+            'most_viewed' => 'recent',
+            'alpha' => 'title',
+        ];
+
+        $blogs = $blogRepository->createAdminListingQueryBuilder($search, $sortMap[$sortFilter], 'all')
             ->getQuery()
             ->getResult();
         $allBlogs = $blogRepository->fetchAdminSummaryData();
         $blogMetrics = $blogRecommendationService->buildMetrics($blogs);
+
+        $availableCategoriesMap = [];
+        foreach ($blogs as $blog) {
+            $blogId = $blog->getId();
+            $category = trim((string) ($blogMetrics[$blogId]['category'] ?? ''));
+            if ('' !== $category) {
+                $availableCategoriesMap[$category] = true;
+            }
+        }
+        $availableCategories = array_keys($availableCategoriesMap);
+        sort($availableCategories);
+
+        if ([] !== $selectedCategories) {
+            $selectedCategories = array_values(array_filter(
+                $selectedCategories,
+                static fn (string $category): bool => '' !== trim($category)
+            ));
+        }
+
+        $blogs = array_values(array_filter($blogs, function (Blog $blog) use ($selectedStatuses, $selectedCategories, $periodFilter, $blogMetrics): bool {
+            $blogId = $blog->getId();
+            $isPublished = true === $blog->isStatus();
+            $isPending = true === $blog->isPublicationRequested() && !$isPublished;
+
+            if (!in_array('all', $selectedStatuses, true)) {
+                $statusMatches = false;
+                foreach ($selectedStatuses as $status) {
+                    if ('published' === $status && $isPublished) {
+                        $statusMatches = true;
+                    } elseif ('draft' === $status && !$isPublished && !$isPending) {
+                        $statusMatches = true;
+                    } elseif ('pending' === $status && $isPending) {
+                        $statusMatches = true;
+                    }
+                }
+                if (!$statusMatches) {
+                    return false;
+                }
+            }
+
+            if ([] !== $selectedCategories) {
+                $category = trim((string) ($blogMetrics[$blogId]['category'] ?? ''));
+                if (!in_array($category, $selectedCategories, true)) {
+                    return false;
+                }
+            }
+
+            if ('all' !== $periodFilter) {
+                $referenceDate = $blog->getDatePublication() ?? $blog->getDateCreation();
+                if (!$referenceDate instanceof \DateTimeInterface) {
+                    return false;
+                }
+
+                $now = new \DateTimeImmutable();
+                $reference = \DateTimeImmutable::createFromMutable(
+                    $referenceDate instanceof \DateTime ? $referenceDate : \DateTime::createFromInterface($referenceDate)
+                );
+
+                if ('today' === $periodFilter && $reference->format('Y-m-d') !== $now->format('Y-m-d')) {
+                    return false;
+                }
+                if ('week' === $periodFilter && $reference < $now->modify('-7 days')) {
+                    return false;
+                }
+                if ('month' === $periodFilter && $reference < $now->modify('-30 days')) {
+                    return false;
+                }
+            }
+
+            return true;
+        }));
+
+        usort($blogs, function (Blog $a, Blog $b) use ($sortFilter, $blogMetrics): int {
+            if ('oldest' === $sortFilter) {
+                return ($a->getDateCreation()?->getTimestamp() ?? 0) <=> ($b->getDateCreation()?->getTimestamp() ?? 0);
+            }
+            if ('alpha' === $sortFilter) {
+                return strcmp(mb_strtolower((string) $a->getTitre()), mb_strtolower((string) $b->getTitre()));
+            }
+            if ('most_viewed' === $sortFilter) {
+                $aViews = (int) ($blogMetrics[$a->getId()]['views'] ?? 0);
+                $bViews = (int) ($blogMetrics[$b->getId()]['views'] ?? 0);
+                return $bViews <=> $aViews;
+            }
+            return ($b->getDateCreation()?->getTimestamp() ?? 0) <=> ($a->getDateCreation()?->getTimestamp() ?? 0);
+        });
 
         $publishedCount = 0;
         $draftCount = 0;
@@ -262,8 +369,12 @@ class AdminController extends AbstractController
         return $this->render('admin/blogs.html.twig', [
             'blogs'            => $blogs,
             'search'           => $search,
-            'sort'             => $sort,
-            'status_filter'    => $statusFilter,
+            'sort'             => $sortFilter,
+            'status_filter'    => 'all',
+            'selected_statuses' => $selectedStatuses,
+            'selected_categories' => $selectedCategories,
+            'available_categories' => $availableCategories,
+            'period_filter' => $periodFilter,
             'blog_metrics'     => $blogMetrics,
             'stats'            => [
                 'total'          => count($allBlogs),
@@ -281,18 +392,99 @@ class AdminController extends AbstractController
     public function showBlog(
         Blog $blog,
         CommentaireRepository $commentaireRepository,
+        CommentReactionRepository $commentReactionRepository,
+        CommentReportRepository $commentReportRepository,
         BlogViewsRepository $blogViewsRepository
     ): Response {
-        $comments = $commentaireRepository->findBy(
-            ['blog' => $blog],
-            ['dateCreation' => 'DESC', 'id' => 'DESC']
-        );
+        $comments = method_exists($blog, 'getCommentaires')
+            ? $blog->getCommentaires()->toArray()
+            : $commentaireRepository->findBy(
+                ['blog' => $blog],
+                ['dateCreation' => 'DESC', 'id' => 'DESC']
+            );
+
+        usort($comments, static function (Commentaire $a, Commentaire $b): int {
+            $aDate = $a->getDateCreation()?->getTimestamp() ?? 0;
+            $bDate = $b->getDateCreation()?->getTimestamp() ?? 0;
+            if ($aDate === $bDate) {
+                return ($b->getId() ?? 0) <=> ($a->getId() ?? 0);
+            }
+            return $bDate <=> $aDate;
+        });
+
+        $commentIds = array_values(array_filter(array_map(
+            static fn (Commentaire $comment): int => (int) ($comment->getId() ?? 0),
+            $comments
+        )));
+
+        $pendingCommentIds = [];
+        $reactionCountsByComment = [];
+        if ([] !== $commentIds) {
+            $rows = $commentReportRepository->createQueryBuilder('cr')
+                ->select('IDENTITY(cr.commentaire) AS comment_id')
+                ->andWhere('cr.commentaire IN (:commentIds)')
+                ->andWhere('cr.status = :pending')
+                ->setParameter('commentIds', $commentIds)
+                ->setParameter('pending', CommentReport::STATUS_PENDING)
+                ->groupBy('cr.commentaire')
+                ->getQuery()
+                ->getArrayResult();
+
+            $pendingCommentIds = array_values(array_filter(array_map(
+                static fn (array $row): int => (int) ($row['comment_id'] ?? 0),
+                $rows
+            )));
+
+            foreach ($comments as $comment) {
+                $commentId = (int) ($comment->getId() ?? 0);
+                if ($commentId <= 0) {
+                    continue;
+                }
+                $reactionCountsByComment[$commentId] = $commentReactionRepository->aggregateCountsForComment($comment);
+            }
+        }
 
         return $this->render('admin/blog_show.html.twig', [
             'blog'        => $blog,
             'comments'    => $comments,
+            'pending_report_comment_ids' => $pendingCommentIds,
+            'comment_reaction_counts' => $reactionCountsByComment,
             'views_count' => $blogViewsRepository->count(['blog' => $blog]),
+            'comment_hide_token_prefix' => 'admin_hide_comment_',
+            'comment_delete_token_prefix' => 'admin_delete_comment_',
         ]);
+    }
+
+    #[Route('/admin/blogs/{blog}/comments/{comment}/delete', name: 'admin_blog_comment_delete', methods: ['POST'])]
+    public function deleteBlogComment(Request $request, Blog $blog, Commentaire $comment, EntityManagerInterface $entityManager): Response
+    {
+        if ($comment->getBlog()?->getId() !== $blog->getId()) {
+            return $this->redirectToRoute('admin_blog_show', ['id' => $blog->getId()]);
+        }
+
+        if ($this->isCsrfTokenValid('admin_delete_comment_' . $comment->getId(), (string) $request->request->get('_token'))) {
+            $entityManager->remove($comment);
+            $entityManager->flush();
+            $this->addFlash('success', 'Commentaire supprimé.');
+        }
+
+        return $this->redirectToRoute('admin_blog_show', ['id' => $blog->getId()]);
+    }
+
+    #[Route('/admin/blogs/{blog}/comments/{comment}/hide', name: 'admin_blog_comment_hide', methods: ['POST'])]
+    public function hideBlogComment(Request $request, Blog $blog, Commentaire $comment, EntityManagerInterface $entityManager): Response
+    {
+        if ($comment->getBlog()?->getId() !== $blog->getId()) {
+            return $this->redirectToRoute('admin_blog_show', ['id' => $blog->getId()]);
+        }
+
+        if ($this->isCsrfTokenValid('admin_hide_comment_' . $comment->getId(), (string) $request->request->get('_token'))) {
+            $comment->setContenu('[Commentaire masqué par l’administration]');
+            $entityManager->flush();
+            $this->addFlash('success', 'Commentaire masqué.');
+        }
+
+        return $this->redirectToRoute('admin_blog_show', ['id' => $blog->getId()]);
     }
 
     #[Route('/admin/blogs/{id}/delete', name: 'admin_blog_delete', methods: ['POST'])]
@@ -340,11 +532,39 @@ class AdminController extends AbstractController
             return $this->redirectToRoute('admin_blog_show', ['id' => $blog->getId()]);
         }
 
-        return $this->redirectToRoute('admin_blogs', array_filter([
+        $redirectParams = array_filter([
             'q'      => $request->request->get('q') ?: null,
             'sort'   => $request->request->get('sort') ?: null,
-            'status' => $request->request->get('status') ?: null,
-        ]));
+            'period' => $request->request->get('period') ?: null,
+        ]);
+
+        $statuses = $request->request->all('statuses');
+        if ([] !== $statuses) {
+            $redirectParams['statuses'] = $statuses;
+        }
+        $categories = $request->request->all('categories');
+        if ([] !== $categories) {
+            $redirectParams['categories'] = $categories;
+        }
+
+        return $this->redirectToRoute('admin_blogs', $redirectParams);
+    }
+
+    private function normalizeArrayQuery(array $values, array $allowed = []): array
+    {
+        $normalized = array_values(array_unique(array_filter(array_map(
+            static fn ($value): string => trim((string) $value),
+            $values
+        ), static fn (string $value): bool => '' !== $value)));
+
+        if ([] === $allowed) {
+            return $normalized;
+        }
+
+        return array_values(array_filter(
+            $normalized,
+            static fn (string $value): bool => in_array($value, $allowed, true)
+        ));
     }
 
     private function calculateCompleteness(Blog $blog): int

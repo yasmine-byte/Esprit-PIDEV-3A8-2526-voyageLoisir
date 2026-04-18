@@ -2,8 +2,13 @@
 
 namespace App\Controller;
 
+use App\Entity\CommentReport;
+use App\Entity\CommentReaction;
 use App\Entity\Commentaire;
+use App\Entity\Users;
 use App\Form\CommentaireType;
+use App\Repository\CommentReactionRepository;
+use App\Repository\CommentReportRepository;
 use App\Repository\CommentaireRepository;
 use App\Service\CommentModerationService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -110,6 +115,106 @@ final class CommentaireController extends AbstractController
         return $this->json([
             'likesCount' => $commentaire->getLikesCount() ?? 0,
             'alreadyLiked' => false,
+        ]);
+    }
+
+    #[Route('/{id}/report', name: 'app_commentaire_report', methods: ['POST'])]
+    public function report(
+        Request $request,
+        Commentaire $commentaire,
+        CommentReportRepository $commentReportRepository,
+        EntityManagerInterface $entityManager
+    ): JsonResponse {
+        $user = $this->getUser();
+        if (!$user instanceof Users) {
+            return $this->json(['message' => 'Vous devez etre connecte pour signaler un commentaire.'], Response::HTTP_FORBIDDEN);
+        }
+
+        if (!$this->isCsrfTokenValid('report_comment_' . $commentaire->getId(), (string) $request->request->get('_token'))) {
+            return $this->json(['message' => 'Jeton de requete invalide.'], Response::HTTP_FORBIDDEN);
+        }
+
+        $reason = mb_strtolower(trim((string) $request->request->get('reason', CommentReport::REASON_OTHER)));
+        if (!CommentReport::isValidReason($reason)) {
+            return $this->json(['message' => 'Raison de signalement invalide.'], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        $existing = $commentReportRepository->findOneByCommentAndUser($commentaire, $user);
+        if ($existing instanceof CommentReport) {
+            return $this->json([
+                'success' => true,
+                'alreadyReported' => true,
+                'message' => 'Vous avez deja signale ce commentaire.',
+            ]);
+        }
+
+        $report = (new CommentReport())
+            ->setCommentaire($commentaire)
+            ->setUser($user)
+            ->setReason($reason)
+            ->setStatus(CommentReport::STATUS_PENDING)
+            ->setCreatedAt(new \DateTime())
+            ->setUpdatedAt(null);
+
+        $entityManager->persist($report);
+        $entityManager->flush();
+
+        return $this->json([
+            'success' => true,
+            'alreadyReported' => false,
+            'message' => 'Commentaire signale avec succes.',
+        ]);
+    }
+
+    #[Route('/{id}/react', name: 'app_commentaire_react', methods: ['POST'])]
+    public function react(
+        Request $request,
+        Commentaire $commentaire,
+        CommentReactionRepository $commentReactionRepository,
+        EntityManagerInterface $entityManager
+    ): JsonResponse {
+        $user = $this->getUser();
+        if (!$user instanceof Users) {
+            return $this->json(['message' => 'Vous devez etre connecte pour reagir.'], Response::HTTP_FORBIDDEN);
+        }
+
+        if (!$this->isCsrfTokenValid('react_comment_' . $commentaire->getId(), (string) $request->request->get('_token'))) {
+            return $this->json(['message' => 'Jeton de requete invalide.'], Response::HTTP_FORBIDDEN);
+        }
+
+        $allowedTypes = ['like', 'love', 'haha', 'wow', 'sad', 'angry'];
+        $reactionType = mb_strtolower(trim((string) $request->request->get('reaction_type')));
+        if (!in_array($reactionType, $allowedTypes, true)) {
+            return $this->json(['message' => 'Reaction invalide.'], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        $existing = $commentReactionRepository->findOneByCommentAndUser($commentaire, $user);
+        $userReaction = $reactionType;
+
+        if ($existing instanceof CommentReaction) {
+            if ($existing->getReactionType() === $reactionType) {
+                $entityManager->remove($existing);
+                $userReaction = null;
+            } else {
+                $existing->setReactionType($reactionType);
+                $existing->setUpdatedAt(new \DateTime());
+            }
+        } else {
+            $reaction = (new CommentReaction())
+                ->setCommentaire($commentaire)
+                ->setUser($user)
+                ->setReactionType($reactionType)
+                ->setCreatedAt(new \DateTime())
+                ->setUpdatedAt(new \DateTime());
+            $entityManager->persist($reaction);
+        }
+
+        $entityManager->flush();
+
+        return $this->json([
+            'success' => true,
+            'counts' => $commentReactionRepository->aggregateCountsForComment($commentaire),
+            'userReaction' => $userReaction,
         ]);
     }
 }
