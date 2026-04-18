@@ -4,6 +4,7 @@ namespace App\Controller;
 use App\Entity\Reservation;
 use App\Repository\HebergementRepository;
 use App\Repository\DisponibiliteRepository;
+use App\Service\NotificationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -12,6 +13,8 @@ use Symfony\Component\Routing\Attribute\Route;
 
 class ReservationController extends AbstractController
 {
+    public function __construct(private NotificationService $notifService) {}
+
     #[Route('/reservation/{id}', name: 'app_reservation_new', methods: ['POST'])]
     public function new(
         int $id,
@@ -23,7 +26,7 @@ class ReservationController extends AbstractController
         $hebergement = $repo->find($id);
 
         $dateDebut = new \DateTime($request->request->get('dateDebut'));
-        $dateFin = new \DateTime($request->request->get('dateFin'));
+        $dateFin   = new \DateTime($request->request->get('dateFin'));
 
         if ($dateFin <= $dateDebut) {
             $this->addFlash('error', 'La date de départ doit être après la date d\'arrivée.');
@@ -32,7 +35,7 @@ class ReservationController extends AbstractController
 
         $disponibilites = $disponibiliteRepo->findBy([
             'hebergement' => $hebergement,
-            'disponible' => true,
+            'disponible'  => true,
         ]);
 
         $estDisponible = false;
@@ -65,7 +68,10 @@ class ReservationController extends AbstractController
         }
 
         $nbNuits = $dateDebut->diff($dateFin)->days;
-        $total = $nbNuits * $hebergement->getPrix();
+
+        // ✅ Utiliser le prix de la chambre sélectionnée si disponible
+        $prixParNuit = (float) ($request->request->get('prixParNuit') ?: $hebergement->getPrix());
+        $total       = $nbNuits * $prixParNuit;
 
         $reservation = new Reservation();
         $reservation->setHebergement($hebergement);
@@ -75,14 +81,23 @@ class ReservationController extends AbstractController
         $reservation->setDateDebut($dateDebut);
         $reservation->setDateFin($dateFin);
         $reservation->setNbNuits($nbNuits);
-        $reservation->setTotal((string)$total);
+        $reservation->setTotal((string) $total);
         $reservation->setStatut('en_attente');
         $reservation->setCreatedAt(new \DateTime());
 
         $em->persist($reservation);
         $em->flush();
 
-        // Rediriger vers la page récapitulatif avec bouton payer
+        // Notification FCM si token présent
+        $fcmToken = $request->request->get('fcm_token');
+        if ($fcmToken) {
+            $this->notifService->notifyReservationConfirmee(
+                $fcmToken,
+                $reservation->getClientNom(),
+                $reservation->getHebergement()->getAdresse() ?? 'votre hébergement'
+            );
+        }
+
         return $this->redirectToRoute('app_reservation_recap', ['id' => $reservation->getId()]);
     }
 

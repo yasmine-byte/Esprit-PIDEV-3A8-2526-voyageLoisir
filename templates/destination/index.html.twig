@@ -7,21 +7,14 @@
 .dest-table { width:100%; border-collapse:separate; border-spacing:0; }
 .dest-table thead tr { background:#12122a; }
 .dest-table thead th {
-    padding:12px 16px;
-    font-size:11px;
-    font-weight:700;
-    letter-spacing:.08em;
-    text-transform:uppercase;
-    color:#6b7280;
-    border-bottom:1px solid #1e1e3a;
-    white-space:nowrap;
+    padding:12px 16px; font-size:11px; font-weight:700; letter-spacing:.08em;
+    text-transform:uppercase; color:#6b7280; border-bottom:1px solid #1e1e3a; white-space:nowrap;
 }
 .dest-table thead th a { color:inherit; text-decoration:none; }
 .dest-table thead th a:hover { color:#e0e0e0; }
 .dest-table tbody tr { transition:background .15s; border-bottom:1px solid #1a1a30; }
 .dest-table tbody tr:hover { background:#14142a; }
 .dest-table tbody td { padding:13px 16px; vertical-align:middle; }
-
 .dbadge-id   { background:#1e1e2a; color:#818cf8; border-radius:6px; padding:3px 9px; font-size:12px; font-weight:700; }
 .dbadge-nom  { font-size:13px; font-weight:600; color:#e2e8f0; }
 .dbadge-pays { background:#1e1e2a; color:#94a3b8; border:1px solid #2a2a3a; border-radius:6px; padding:3px 9px; font-size:12px; }
@@ -32,7 +25,6 @@
 .dbadge-actif   { background:#0d2b1a; color:#4ade80; border:1px solid #1a3d28; border-radius:20px; padding:3px 10px; font-size:11px; font-weight:700; }
 .dbadge-inactif { background:#2b0d0d; color:#f87171; border:1px solid #3d1a1a; border-radius:20px; padding:3px 10px; font-size:11px; font-weight:700; }
 .dbadge-voyage  { background:#1e1e2a; color:#a78bfa; border-radius:6px; padding:3px 9px; font-size:11px; font-weight:600; }
-
 .dact { display:flex; gap:6px; align-items:center; flex-wrap:nowrap; }
 .dbtn {
     display:inline-flex; align-items:center; gap:4px;
@@ -60,9 +52,7 @@
 
 {# ===== FILTRES ===== #}
 <div class="card" style="margin-bottom:20px">
-    <div class="card-header">
-        <h3 class="card-title">Filtres & Recherche</h3>
-    </div>
+    <div class="card-header"><h3 class="card-title">Filtres & Recherche</h3></div>
     <form method="GET" action="{{ path('app_destination_index') }}"
           style="display:flex;flex-wrap:wrap;gap:12px;padding:16px;align-items:flex-end">
         <div style="flex:1;min-width:180px">
@@ -122,10 +112,7 @@
             </span>
         </h3>
         <div style="display:flex;gap:8px">
-            <button onclick="openStatsPopup()"
-                style="padding:8px 16px;border-radius:6px;border:none;background:#6c63ff;color:#fff;font-size:13px;font-weight:600;cursor:pointer">
-                📊 Statistiques
-            </button>
+            <button onclick="openStatsPopup()" style="padding:8px 16px;border-radius:6px;border:none;background:#6c63ff;color:#fff;font-size:13px;font-weight:600;cursor:pointer">📊 Statistiques</button>
             <a href="{{ path('app_destination_new') }}" class="action-btn primary">+ Ajouter</a>
         </div>
     </div>
@@ -152,19 +139,11 @@
                 <td><span class="dbadge-id">#{{ destination.id }}</span></td>
                 <td><span class="dbadge-nom">{{ destination.nom }}</span></td>
                 <td><span class="dbadge-pays">{{ destination.pays }}</span></td>
+                <td>{% set s = destination.meilleureSaison %}<span class="dbadge-saison-{{ s }}">{{ s ?? '—' }}</span></td>
+                <td><span style="font-size:13px;font-weight:600;color:#e2e8f0">{{ destination.nbVisites }}</span></td>
                 <td>
-                    {% set s = destination.meilleureSaison %}
-                    <span class="dbadge-saison-{{ s }}">{{ s ?? '—' }}</span>
-                </td>
-                <td>
-                    <span style="font-size:13px;font-weight:600;color:#e2e8f0">{{ destination.nbVisites }}</span>
-                </td>
-                <td>
-                    {% if destination.statut %}
-                        <span class="dbadge-actif">Actif</span>
-                    {% else %}
-                        <span class="dbadge-inactif">Inactif</span>
-                    {% endif %}
+                    {% if destination.statut %}<span class="dbadge-actif">Actif</span>
+                    {% else %}<span class="dbadge-inactif">Inactif</span>{% endif %}
                 </td>
                 <td>
                     {% if destination.voyages|length > 0 %}
@@ -184,9 +163,7 @@
                 </td>
             </tr>
             {% else %}
-            <tr>
-                <td colspan="8" style="text-align:center;color:#4b5563;padding:40px;font-size:14px">Aucune destination trouvée</td>
-            </tr>
+            <tr><td colspan="8" style="text-align:center;color:#4b5563;padding:40px;font-size:14px">Aucune destination trouvée</td></tr>
             {% endfor %}
         </tbody>
     </table>
@@ -208,9 +185,7 @@
             </div>
         </div>
         <div id="dest-modal-no-voyages-box" style="display:none;margin-bottom:20px">
-            <div style="background:#1a2a1a;border:1px solid #2a5a2a;border-radius:10px;padding:10px 16px;font-size:12px;color:#81c784">
-                ✅ Aucun voyage associé à cette destination.
-            </div>
+            <div style="background:#1a2a1a;border:1px solid #2a5a2a;border-radius:10px;padding:10px 16px;font-size:12px;color:#81c784">✅ Aucun voyage associé.</div>
         </div>
         <div style="display:flex;gap:12px">
             <button onclick="closeDestinationDeleteModal()" style="flex:1;padding:11px;border-radius:9px;border:1px solid #444;background:none;color:#aaa;font-size:14px;cursor:pointer;font-weight:500">Annuler</button>
@@ -232,17 +207,18 @@
             <div id="stats-loading" style="text-align:center;padding:40px;color:#888;font-size:15px">Chargement des statistiques...</div>
             <div id="stats-loaded" style="display:none">
 
-                {# 7 cartes résumé #}
+                {# Cartes résumé #}
                 <div id="stats-cards" style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px"></div>
 
-                {# Ligne 1 : Top visites + Top likes #}
+                {# Ligne 1 : Top visites + Top likes courbe #}
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px">
                     <div style="background:#12122a;border-radius:12px;padding:20px;border:1px solid #2a2a4a">
                         <h5 style="margin:0 0 16px;color:#fff;font-size:14px;font-weight:600;border-left:3px solid #3b82f6;padding-left:10px">👁 Top 5 — Plus visitées</h5>
                         <canvas id="chartVisites" height="220"></canvas>
                     </div>
                     <div style="background:#12122a;border-radius:12px;padding:20px;border:1px solid #2a2a4a">
-                        <h5 style="margin:0 0 16px;color:#fff;font-size:14px;font-weight:600;border-left:3px solid #e11d48;padding-left:10px">❤️ Top 5 — Plus likées</h5>
+                        <h5 style="margin:0 0 4px;color:#fff;font-size:14px;font-weight:600;border-left:3px solid #e11d48;padding-left:10px">❤️ Top 5 — Plus likées</h5>
+                        <p style="margin:0 0 14px 13px;font-size:11px;color:#555;letter-spacing:0.5px">Courbe d'évolution des likes</p>
                         <canvas id="chartLikes" height="220"></canvas>
                     </div>
                 </div>
@@ -259,7 +235,15 @@
                     </div>
                 </div>
 
-                {# Ligne 3 : Par pays + Statut #}
+                {# Ligne 3 : Recherches vocales par pays (pleine largeur) #}
+                <div style="background:#12122a;border-radius:12px;padding:20px;border:1px solid #2a2a4a;margin-bottom:20px">
+                    <h5 style="margin:0 0 16px;color:#fff;font-size:14px;font-weight:600;border-left:3px solid #f59e0b;padding-left:10px">🌍 Recherches vocales par pays</h5>
+                    <div id="chartRecherchesPaysContainer">
+                        <canvas id="chartRecherchesPays" height="80"></canvas>
+                    </div>
+                </div>
+
+                {# Ligne 4 : Par pays + Statut #}
                 <div style="display:grid;grid-template-columns:2fr 1fr;gap:20px;margin-bottom:20px">
                     <div style="background:#12122a;border-radius:12px;padding:20px;border:1px solid #2a2a4a">
                         <h5 style="margin:0 0 16px;color:#fff;font-size:14px;font-weight:600;border-left:3px solid #f97316;padding-left:10px">Destinations par pays</h5>
@@ -271,15 +255,15 @@
                     </div>
                 </div>
 
-                {# Ligne 4 : Réservations #}
+                {# Ligne 5 : Top réservations + 💳 Paiements #}
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px">
                     <div style="background:#12122a;border-radius:12px;padding:20px;border:1px solid #2a2a4a">
                         <h5 style="margin:0 0 16px;color:#fff;font-size:14px;font-weight:600;border-left:3px solid #10b981;padding-left:10px">📅 Top 5 — Plus réservées</h5>
                         <canvas id="chartReservations" height="220"></canvas>
                     </div>
                     <div style="background:#12122a;border-radius:12px;padding:20px;border:1px solid #2a2a4a">
-                        <h5 style="margin:0 0 16px;color:#fff;font-size:14px;font-weight:600;border-left:3px solid #10b981;padding-left:10px">📅 Réservations par saison</h5>
-                        <canvas id="chartReservationsSaison" height="220"></canvas>
+                        <h5 style="margin:0 0 16px;color:#fff;font-size:14px;font-weight:600;border-left:3px solid #f59e0b;padding-left:10px">💳 Paiements confirmés vs Non payés</h5>
+                        <canvas id="chartPaiements" height="220"></canvas>
                     </div>
                 </div>
 
@@ -332,7 +316,6 @@ function closeDestinationDeleteModal() {
 document.getElementById('dest-modal-confirm').addEventListener('click', function() { if (_destForm) _destForm.submit(); });
 document.getElementById('dest-delete-modal').addEventListener('click', function(e) { if (e.target === this) closeDestinationDeleteModal(); });
 
-// ===== STATS POPUP =====
 var statsCharts = [];
 
 function openStatsPopup() {
@@ -359,7 +342,7 @@ function renderStats(data) {
     document.getElementById('stats-loading').style.display = 'none';
     document.getElementById('stats-loaded').style.display  = 'block';
 
-    // ✅ 7 cartes résumé
+    // Cartes résumé
     var cards = [
         { label: 'Total destinations',      value: data.total,                color: '#f97316' },
         { label: 'Actives',                 value: data.actifs,               color: '#16a34a' },
@@ -378,7 +361,7 @@ function renderStats(data) {
 
     Chart.defaults.color = '#888';
 
-    // ✅ Top 5 visites — barre horizontale bleue
+    // Top 5 visites — barre horizontale bleue
     statsCharts.push(new Chart(document.getElementById('chartVisites'), {
         type: 'bar',
         data: {
@@ -390,37 +373,57 @@ function renderStats(data) {
             scales: { x: { grid: { color: '#2a2a4a' }, ticks: { color: '#888' } }, y: { grid: { display: false }, ticks: { color: '#ccc' } } } }
     }));
 
-    // ✅ Top 5 likes — barre horizontale rouge
-    statsCharts.push(new Chart(document.getElementById('chartLikes'), {
-        type: 'bar',
+    // Top 5 likes — COURBE avec dégradé
+    var ctxLikes = document.getElementById('chartLikes').getContext('2d');
+    var gradientLikes = ctxLikes.createLinearGradient(0, 0, 0, 280);
+    gradientLikes.addColorStop(0, 'rgba(225, 29, 72, 0.35)');
+    gradientLikes.addColorStop(1, 'rgba(225, 29, 72, 0.0)');
+    var likesPairs = data.topLikes.map(function(d){ return { nom: d.nom, val: d.nbLikes }; });
+    likesPairs.sort(function(a, b){ return a.val - b.val; });
+    statsCharts.push(new Chart(ctxLikes, {
+        type: 'line',
         data: {
-            labels: data.topLikes.map(function(d){ return d.nom; }),
-            datasets: [{ label: '❤️ Likes', data: data.topLikes.map(function(d){ return d.nbLikes; }),
-                backgroundColor: '#e11d48', borderRadius: 6, borderSkipped: false }]
+            labels: likesPairs.map(function(p){ return p.nom; }),
+            datasets: [{
+                label: '❤️ Likes', data: likesPairs.map(function(p){ return p.val; }),
+                borderColor: '#e11d48', borderWidth: 2.5, backgroundColor: gradientLikes,
+                fill: true, tension: 0.45,
+                pointBackgroundColor: '#e11d48', pointBorderColor: '#1a1a2e', pointBorderWidth: 2,
+                pointRadius: 5, pointHoverRadius: 8,
+                pointHoverBackgroundColor: '#fff', pointHoverBorderColor: '#e11d48', pointHoverBorderWidth: 2,
+            }]
         },
-        options: { indexAxis: 'y', responsive: true, plugins: { legend: { display: false } },
-            scales: { x: { grid: { color: '#2a2a4a' }, ticks: { color: '#888' } }, y: { grid: { display: false }, ticks: { color: '#ccc' } } } }
+        options: {
+            responsive: true, interaction: { mode: 'index', intersect: false },
+            plugins: { legend: { display: false }, tooltip: {
+                backgroundColor: '#1e1e2e', borderColor: '#e11d48', borderWidth: 1,
+                titleColor: '#fff', bodyColor: '#e11d48', padding: 10,
+                callbacks: { label: function(ctx) { return ' ❤️ ' + ctx.parsed.y + ' likes'; } }
+            }},
+            scales: {
+                x: { grid: { color: '#1e1e3a' }, ticks: { color: '#ccc', font: { size: 11 } } },
+                y: { beginAtZero: true, grid: { color: '#1e1e3a' }, ticks: { color: '#888', stepSize: 1 } }
+            }
+        }
     }));
 
-    // ✅ Visites & Likes par saison — barres groupées
+    // Visites & Likes par saison — barres groupées
     statsCharts.push(new Chart(document.getElementById('chartSaisonDetail'), {
         type: 'bar',
         data: {
             labels: Object.keys(data.visitesSaison),
             datasets: [
-                { label: '👁 Visites', data: Object.values(data.visitesSaison),
-                    backgroundColor: '#3b82f6', borderRadius: 6, borderSkipped: false },
-                { label: '❤️ Likes', data: Object.values(data.likesSaison),
-                    backgroundColor: '#e11d48', borderRadius: 6, borderSkipped: false }
+                { label: '👁 Visites', data: Object.values(data.visitesSaison), backgroundColor: '#3b82f6', borderRadius: 6, borderSkipped: false },
+                { label: '❤️ Likes',  data: Object.values(data.likesSaison),   backgroundColor: '#e11d48', borderRadius: 6, borderSkipped: false }
             ]
         },
         options: { responsive: true,
             plugins: { legend: { display: true, position: 'top', labels: { color: '#888', padding: 12 } } },
             scales: { y: { beginAtZero: true, ticks: { color: '#888' }, grid: { color: '#2a2a4a' } },
-                x: { grid: { display: false }, ticks: { color: '#ccc' } } } }
+                      x: { grid: { display: false }, ticks: { color: '#ccc' } } } }
     }));
 
-    // ✅ Recherches vocales par saison — barre violette
+    // Recherches vocales par saison — barre violette
     statsCharts.push(new Chart(document.getElementById('chartRecherchesSaison'), {
         type: 'bar',
         data: {
@@ -430,10 +433,51 @@ function renderStats(data) {
         },
         options: { responsive: true, plugins: { legend: { display: false } },
             scales: { y: { beginAtZero: true, ticks: { stepSize: 1, color: '#888' }, grid: { color: '#2a2a4a' } },
-                x: { grid: { display: false }, ticks: { color: '#ccc' } } } }
+                      x: { grid: { display: false }, ticks: { color: '#ccc' } } } }
     }));
 
-    // ✅ Par pays
+    // Recherches vocales par pays
+    var recherchesPays = data.recherchesPays || {};
+    var paysKeys = Object.keys(recherchesPays);
+    if (paysKeys.length > 0) {
+        var paysColors = ['#f59e0b','#6c63ff','#10b981','#3b82f6','#e11d48','#fb923c','#7dd3fc','#86efac'];
+        statsCharts.push(new Chart(document.getElementById('chartRecherchesPays'), {
+            type: 'bar',
+            data: {
+                labels: paysKeys,
+                datasets: [{
+                    label: '🌍 Recherches par pays',
+                    data: Object.values(recherchesPays),
+                    backgroundColor: paysKeys.map(function(_, i){ return paysColors[i % paysColors.length]; }),
+                    borderRadius: 8, borderSkipped: false
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: '#1e1e2e', borderColor: '#f59e0b', borderWidth: 1,
+                        titleColor: '#fff', bodyColor: '#f59e0b', padding: 10,
+                        callbacks: { label: function(ctx) { return ' 🌍 ' + ctx.parsed.y + ' recherche(s)'; } }
+                    }
+                },
+                scales: {
+                    y: { beginAtZero: true, ticks: { stepSize: 1, color: '#888' }, grid: { color: '#2a2a4a' } },
+                    x: { grid: { display: false }, ticks: { color: '#ccc', font: { size: 12 } } }
+                }
+            }
+        }));
+    } else {
+        document.getElementById('chartRecherchesPaysContainer').innerHTML =
+            '<div style="text-align:center;padding:30px;color:#4b5563;font-size:13px">'
+            + '<div style="font-size:24px;margin-bottom:8px">🎙</div>'
+            + 'Aucune recherche par pays enregistrée.<br>'
+            + '<span style="font-size:11px;color:#374151">Utilisez la recherche vocale en mentionnant un pays (ex: "espagne", "maroc")</span>'
+            + '</div>';
+    }
+
+    // Destinations par pays
     statsCharts.push(new Chart(document.getElementById('chartPays'), {
         type: 'bar',
         data: {
@@ -443,23 +487,21 @@ function renderStats(data) {
         },
         options: { responsive: true, plugins: { legend: { display: false } },
             scales: { y: { beginAtZero: true, ticks: { stepSize: 1, color: '#888' }, grid: { color: '#2a2a4a' } },
-                x: { grid: { display: false }, ticks: { color: '#ccc' } } } }
+                      x: { grid: { display: false }, ticks: { color: '#ccc' } } } }
     }));
 
-    // ✅ Statut — pie
+    // Statut — pie
     statsCharts.push(new Chart(document.getElementById('chartStatut'), {
         type: 'pie',
         data: {
             labels: ['Actives', 'Inactives'],
             datasets: [{ data: [data.actifs, data.inactifs],
-                backgroundColor: ['#16a34a','#e11d48'],
-                borderColor: '#1a1a2e', borderWidth: 3 }]
+                backgroundColor: ['#16a34a','#e11d48'], borderColor: '#1a1a2e', borderWidth: 3 }]
         },
-        options: { responsive: true,
-            plugins: { legend: { position: 'bottom', labels: { color: '#888', padding: 12 } } } }
+        options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { color: '#888', padding: 12 } } } }
     }));
 
-    // ✅ Top 5 réservations — barre horizontale verte
+    // Top 5 réservations — barre horizontale verte
     statsCharts.push(new Chart(document.getElementById('chartReservations'), {
         type: 'bar',
         data: {
@@ -472,20 +514,38 @@ function renderStats(data) {
                       y: { grid: { display: false }, ticks: { color: '#ccc' } } } }
     }));
 
-    // ✅ Réservations par saison — barre verte verticale
-    statsCharts.push(new Chart(document.getElementById('chartReservationsSaison'), {
-        type: 'bar',
+    // ✅ Paiements confirmés vs Non payés — doughnut
+    statsCharts.push(new Chart(document.getElementById('chartPaiements'), {
+        type: 'doughnut',
         data: {
-            labels: Object.keys(data.reservationsParSaison),
-            datasets: [{ label: '📅 Réservations', data: Object.values(data.reservationsParSaison),
-                backgroundColor: '#10b981', borderRadius: 6, borderSkipped: false }]
+            labels: ['✅ Payés', '⏳ Non payés'],
+            datasets: [{
+                data: [data.totalPaies ?? 0, data.totalNonPaies ?? 0],
+                backgroundColor: ['#16a34a', '#f87171'],
+                borderColor: '#1a1a2e',
+                borderWidth: 3
+            }]
         },
-        options: { responsive: true, plugins: { legend: { display: false } },
-            scales: { y: { beginAtZero: true, ticks: { stepSize: 1, color: '#888' }, grid: { color: '#2a2a4a' } },
-                      x: { grid: { display: false }, ticks: { color: '#ccc' } } } }
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { position: 'bottom', labels: { color: '#888', padding: 14, font: { size: 12 } } },
+                tooltip: {
+                    backgroundColor: '#1e1e2e', borderWidth: 1,
+                    titleColor: '#fff', bodyColor: '#ccc', padding: 10,
+                    callbacks: {
+                        label: function(ctx) {
+                            var total = (data.totalPaies ?? 0) + (data.totalNonPaies ?? 0);
+                            var pct = total > 0 ? Math.round(ctx.parsed / total * 100) : 0;
+                            return ' ' + ctx.parsed + ' (' + pct + '%)';
+                        }
+                    }
+                }
+            }
+        }
     }));
 
-    // ✅ Tableau classement — visites, likes ET réservations
+    // Tableau classement
     var maxV = data.topVisites.length > 0 ? data.topVisites[0].nbVisites : 1;
     document.getElementById('stats-table-body').innerHTML = data.topVisites.map(function(d, i) {
         var pct = maxV > 0 ? Math.round(d.nbVisites / maxV * 100) : 0;

@@ -38,7 +38,6 @@ body {
   overflow: hidden;
 }
 
-/* Photo de fond */
 .vl-closing-bg {
   position: absolute;
   inset: 0;
@@ -53,7 +52,6 @@ body {
   transform: scale(1);
 }
 
-/* Overlay multi-couches pour élégance */
 .vl-closing-overlay {
   position: absolute;
   inset: 0;
@@ -62,7 +60,6 @@ body {
     linear-gradient(135deg, rgba(200,149,108,0.15) 0%, transparent 60%);
 }
 
-/* Filigrane */
 .vl-closing-watermark {
   position: absolute;
   top: 50%;
@@ -523,7 +520,7 @@ body {
 </style>
 
 {# ============================================================
-   HERO
+   1. HERO
    ============================================================ #}
 <section style="position:relative;width:100%;height:100vh;min-height:680px;overflow:hidden;display:flex;align-items:center;justify-content:center">
 
@@ -629,33 +626,7 @@ body {
 </section>
 
 {# ============================================================
-   ESPACE + BANDE ÉLÉGANTE avec photo de fond
-   ============================================================ #}
-<div style="height:80px;background:var(--cream)"></div>
-
-<section class="vl-closing">
-  <div class="vl-closing-bg"></div>
-  <div class="vl-closing-overlay"></div>
-  <div class="vl-closing-watermark">VOYAGE</div>
-
-  <div class="vl-closing-content">
-    <div class="vl-closing-label">Prêt pour l'aventure</div>
-    <h2 class="vl-closing-title">
-      Votre prochain voyage<br>
-      commence <em>ici</em>
-    </h2>
-    <p class="vl-closing-text">
-      Chaque destination est une histoire qui n'attend que vous. Laissez-vous inspirer, planifiez votre itinéraire, et partez explorer le monde avec VoyageLoisir.
-    </p>
-    <a href="#destinations" class="vl-closing-cta">
-      Explorer toutes les destinations
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m7 17 10-10M7 7h10v10"/></svg>
-    </a>
-  </div>
-</section>
-
-{# ============================================================
-   RECHERCHE VOCALE
+   2. RECHERCHE VOCALE
    ============================================================ #}
 <section class="vl-voice-section">
   <div class="vl-voice-card">
@@ -736,9 +707,145 @@ body {
   };
 })();
 </script>
+{# ============================================================
+   BLOC TELEGRAM — à coller après </section> de la recherche vocale
+   et avant <div id="destinations">
+   ============================================================ #}
+
+<section style="max-width:1320px;margin:0 auto 80px;padding:0 80px">
+  <div style="background:white;border:1px solid var(--border);border-radius:24px;padding:48px 64px;display:grid;grid-template-columns:1fr auto;gap:64px;align-items:center">
+
+    <div>
+      {# Titre #}
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+          <path d="M21.5 2L2 9.5l7 2.5 2.5 7L21.5 2z" fill="#c8956c" opacity="0.2"/>
+          <path d="M21.5 2L2 9.5l7 2.5 2.5 7L21.5 2z" stroke="#c8956c" stroke-width="1.5" stroke-linejoin="round"/>
+          <line x1="9" y1="12" x2="15" y2="6" stroke="#c8956c" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        <span style="font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:var(--text)">
+          Notifications Telegram
+        </span>
+      </div>
+
+      <p style="font-size:14px;font-weight:300;color:var(--muted);line-height:1.7;margin-bottom:24px">
+        Recevez des notifications instantanées sur Telegram lors de nouvelles destinations, modifications ou annulations de réservation.
+      </p>
+
+      {# Etapes #}
+      <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:28px">
+
+        <div style="display:flex;align-items:flex-start;gap:14px">
+          <div style="width:26px;height:26px;border-radius:50%;background:var(--accent-light);border:1px solid var(--accent-border);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:var(--accent);flex-shrink:0">1</div>
+          <div style="font-size:13px;color:var(--muted);line-height:1.6;padding-top:3px">
+            Installez <strong style="color:var(--text)">Telegram</strong> sur votre téléphone et cherchez
+            <a href="https://t.me/VoyageLoisirBot" target="_blank"
+               style="color:var(--accent);font-weight:600;text-decoration:none">@VoyageLoisirBot</a>
+          </div>
+        </div>
+
+        <div style="display:flex;align-items:flex-start;gap:14px">
+          <div style="width:26px;height:26px;border-radius:50%;background:var(--accent-light);border:1px solid var(--accent-border);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:var(--accent);flex-shrink:0">2</div>
+          <div style="font-size:13px;color:var(--muted);line-height:1.6;padding-top:3px">
+            Tapez <strong style="color:var(--text);font-family:monospace">/start</strong> — le bot vous envoie votre <strong style="color:var(--text)">Telegram ID</strong>
+          </div>
+        </div>
+
+        <div style="display:flex;align-items:flex-start;gap:14px">
+          <div style="width:26px;height:26px;border-radius:50%;background:var(--accent-light);border:1px solid var(--accent-border);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:var(--accent);flex-shrink:0">3</div>
+          <div style="font-size:13px;color:var(--muted);line-height:1.6;padding-top:3px">
+            Collez votre ID ci-contre et cliquez <strong style="color:var(--text)">Sauvegarder</strong>
+          </div>
+        </div>
+
+      </div>
+
+      {# Statut actuel #}
+      {% if app.user and app.user.telegramChatId %}
+        <div style="display:inline-flex;align-items:center;gap:8px;padding:8px 16px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:20px">
+          <span style="width:8px;height:8px;border-radius:50%;background:#16a34a;display:inline-block"></span>
+          <span style="font-size:12px;font-weight:600;color:#16a34a">Notifications activées</span>
+        </div>
+      {% else %}
+        <div style="display:inline-flex;align-items:center;gap:8px;padding:8px 16px;background:#fef9f0;border:1px solid var(--accent-border);border-radius:20px">
+          <span style="width:8px;height:8px;border-radius:50%;background:var(--accent);display:inline-block"></span>
+          <span style="font-size:12px;font-weight:600;color:var(--accent-dark)">Non configuré</span>
+        </div>
+      {% endif %}
+    </div>
+
+    {# Formulaire #}
+    <div style="min-width:280px">
+      {% if app.user %}
+        <form method="POST" action="{{ path('app_telegram_save') }}">
+          <input type="hidden" name="_token" value="{{ csrf_token('telegram_save') }}">
+
+          <label style="display:block;font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:10px">
+            Votre Telegram ID
+          </label>
+
+          <input
+            type="text"
+            name="telegram_chat_id"
+            value="{{ app.user.telegramChatId ?? '' }}"
+            placeholder="Ex: 987654321"
+            style="width:100%;padding:14px 18px;border-radius:14px;border:1px solid var(--border);background:var(--cream);color:var(--text);font-size:14px;font-family:'Outfit',sans-serif;margin-bottom:12px;outline:none;transition:border 0.2s"
+            onfocus="this.style.borderColor='var(--accent)'"
+            onblur="this.style.borderColor='var(--border)'"
+          >
+
+          <button type="submit"
+            style="width:100%;padding:14px;border-radius:14px;border:none;background:var(--accent);color:white;font-size:13px;font-weight:600;font-family:'Outfit',sans-serif;cursor:pointer;letter-spacing:0.5px;transition:background 0.2s"
+            onmouseover="this.style.background='var(--accent-dark)'"
+            onmouseout="this.style.background='var(--accent)'">
+            Sauvegarder
+          </button>
+
+          {% if app.user.telegramChatId %}
+          <button type="button" onclick="clearTelegram()"
+            style="width:100%;padding:10px;margin-top:8px;border-radius:14px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:12px;font-weight:500;font-family:'Outfit',sans-serif;cursor:pointer;transition:all 0.2s"
+            onmouseover="this.style.borderColor='#e07070';this.style.color='#e07070'"
+            onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">
+            Désactiver les notifications
+          </button>
+          {% endif %}
+
+        </form>
+
+        <script>
+        function clearTelegram() {
+          if (confirm('Désactiver les notifications Telegram ?')) {
+            var form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '{{ path("app_telegram_save") }}';
+            var token = document.createElement('input');
+            token.type = 'hidden'; token.name = '_token';
+            token.value = '{{ csrf_token("telegram_save") }}';
+            var field = document.createElement('input');
+            field.type = 'hidden'; field.name = 'telegram_chat_id'; field.value = '';
+            form.appendChild(token); form.appendChild(field);
+            document.body.appendChild(form); form.submit();
+          }
+        }
+        </script>
+
+      {% else %}
+        <div style="text-align:center;padding:32px 20px;border:1px dashed var(--border);border-radius:14px">
+          <p style="font-size:14px;color:var(--muted);margin-bottom:16px">Connectez-vous pour activer les notifications</p>
+          <a href="{{ path('front_login') }}"
+             style="display:inline-block;padding:12px 28px;background:var(--accent);color:white;border-radius:40px;font-size:12px;font-weight:600;text-decoration:none;text-transform:uppercase;letter-spacing:1px">
+            Se connecter
+          </a>
+        </div>
+      {% endif %}
+    </div>
+
+  </div>
+</section>
+
 
 {# ============================================================
-   DESTINATIONS
+   3. DESTINATIONS GRID
    ============================================================ #}
 <div id="destinations">
 
@@ -809,6 +916,11 @@ body {
           </a>
           <div class="vl-card-img-overlay"></div>
           <div class="vl-card-tag">{{ destination.meilleureSaison ?? '—' }}</div>
+          {% if destination.meilleureSaison == 'Hiver' %}
+        <div style="position:absolute;top:16px;right:16px;background:linear-gradient(135deg,#1e3a5f,#2563eb);color:white;font-size:16px;font-weight:900;letter-spacing:1px;padding:10px 18px;border-radius:30px;box-shadow:0 6px 20px rgba(37,99,235,0.5);border:2px solid rgba(255,255,255,0.3)">
+        ❄️ -20%
+        </div>
+        {% endif %}
           <div class="vl-card-rating">
             <div class="vl-card-stars">
               {% for i in 1..ep %}
@@ -834,7 +946,7 @@ body {
             </span>
             <span class="vl-card-meta-item">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-              {{ destination.nbLikes ?? 0 }} j'aime
+             <span class="meta-like-count-{{ destination.id }}">{{ destination.nbLikes ?? 0 }}</span> j'aime
             </span>
           </div>
 
@@ -872,33 +984,55 @@ body {
 <script>
 {% for destination in destinations %}
 (function(){
-  var id={{ destination.id }};
-  fetch('/destination/like-status/'+id)
-    .then(function(r){return r.json();})
-    .then(function(data){
-      var icon=document.querySelector('.like-icon-'+id);
-      var count=document.querySelector('.like-count-'+id);
-      var btns=document.querySelectorAll('[onclick*="toggleLikeCard('+id+'"]');
-      if(icon)icon.textContent=data.liked?'♥':'♡';
-      if(count)count.textContent=data.total;
-      if(data.liked)btns.forEach(function(b){b.classList.add('liked');});
+  var id = {{ destination.id }};
+
+  // Vérifie le statut au chargement et met à jour immédiatement
+  fetch('/destination/like-status/' + id)
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      var icon = document.querySelector('.like-icon-' + id);
+      var count = document.querySelector('.like-count-' + id);
+      var btns = document.querySelectorAll('button[onclick*="toggleLikeCard(' + id + '"]');
+      if (icon) icon.textContent = data.liked ? '♥' : '♡';
+      if (count) count.textContent = data.total;
+      if (data.liked) btns.forEach(function(b) { b.classList.add('liked'); });
+      else btns.forEach(function(b) { b.classList.remove('liked'); });
     });
 })();
 {% endfor %}
 
-function toggleLikeCard(id,btn){
-  fetch('/destination/like/'+id,{method:'POST',headers:{'X-Requested-With':'XMLHttpRequest'}})
-  .then(function(r){return r.json();})
-  .then(function(data){
-    var icon=document.querySelector('.like-icon-'+id);
-    var count=document.querySelector('.like-count-'+id);
-    if(icon)icon.textContent=data.liked?'♥':'♡';
-    if(count)count.textContent=data.total;
-    if(data.liked)btn.classList.add('liked');else btn.classList.remove('liked');
+function toggleLikeCard(id, btn) {
+  var icon = document.querySelector('.like-icon-' + id);
+  var count = document.querySelector('.like-count-' + id);
+  var metaCount = document.querySelector('.meta-like-count-' + id); // ✅ nouveau
+  var isLiked = btn.classList.contains('liked');
+
+  if (isLiked) {
+    btn.classList.remove('liked');
+    if (icon) icon.textContent = '♡';
+    if (count) count.textContent = Math.max(0, parseInt(count.textContent) - 1);
+    if (metaCount) metaCount.textContent = Math.max(0, parseInt(metaCount.textContent) - 1); // ✅
+  } else {
+    btn.classList.add('liked');
+    if (icon) icon.textContent = '♥';
+    if (count) count.textContent = parseInt(count.textContent) + 1;
+    if (metaCount) metaCount.textContent = parseInt(metaCount.textContent) + 1; // ✅
+  }
+
+  fetch('/destination/like/' + id, {
+    method: 'POST',
+    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    if (icon) icon.textContent = data.liked ? '♥' : '♡';
+    if (count) count.textContent = data.total;
+    if (metaCount) metaCount.textContent = data.total; // ✅
+    if (data.liked) btn.classList.add('liked');
+    else btn.classList.remove('liked');
   });
 }
 </script>
-
 <script>
 document.querySelectorAll('.vl-filter-btn').forEach(function(btn){
   btn.addEventListener('click',function(){
@@ -912,5 +1046,29 @@ document.querySelectorAll('.vl-filter-btn').forEach(function(btn){
   });
 });
 </script>
+
+{# ============================================================
+   4. BANDE PHOTO — tout en bas ✅
+   ============================================================ #}
+<section class="vl-closing">
+  <div class="vl-closing-bg"></div>
+  <div class="vl-closing-overlay"></div>
+  <div class="vl-closing-watermark">VOYAGE</div>
+
+  <div class="vl-closing-content">
+    <div class="vl-closing-label">Prêt pour l'aventure</div>
+    <h2 class="vl-closing-title">
+      Votre prochain voyage<br>
+      commence <em>ici</em>
+    </h2>
+    <p class="vl-closing-text">
+      Chaque destination est une histoire qui n'attend que vous. Laissez-vous inspirer, planifiez votre itinéraire, et partez explorer le monde avec VoyageLoisir.
+    </p>
+    <a href="#destinations" class="vl-closing-cta">
+      Explorer toutes les destinations
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m7 17 10-10M7 7h10v10"/></svg>
+    </a>
+  </div>
+</section>
 
 {% endblock %}

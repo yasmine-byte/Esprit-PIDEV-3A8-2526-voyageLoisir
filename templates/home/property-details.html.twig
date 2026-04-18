@@ -85,20 +85,34 @@
             <p>Prix : <strong style="color:#f75959;">{{ hebergement.prix }} TND / nuit</strong></p>
           </div>
 
+          {# ===== CHAMBRES CLIQUABLES ===== #}
           {% if hebergement.no|length > 0 %}
           <div style="margin-top:30px;">
-            <h4>Chambres disponibles</h4>
+            <h4 style="margin-bottom:6px;">Chambres disponibles</h4>
+            <p style="color:#888; font-size:14px; margin-bottom:16px;">👆 Cliquez sur une chambre pour la sélectionner</p>
             <div class="row" style="margin-top:15px;">
               {% for chambre in hebergement.no %}
               <div class="col-lg-4 col-md-6" style="margin-bottom:15px;">
-                <div style="background:#f9f9f9; border-radius:8px; padding:15px; border:1px solid #eee;">
-                  <h6>Chambre {{ chambre.numero }}</h6>
-                  <p style="margin:0;">{{ chambre.typeChambre }}</p>
-                  <p style="margin:0; color:#f75959; font-weight:600;">{{ chambre.prixNuit }} TND/nuit</p>
-                  <p style="margin:0; font-size:13px; color:#888;">{{ chambre.capacite }} personnes</p>
+                <div onclick="selectChambre({{ chambre.id }}, '{{ chambre.typeChambre }}', {{ chambre.prixNuit }}, {{ chambre.capacite }}, 'Chambre {{ chambre.numero }}')"
+                     id="chambre-{{ chambre.id }}"
+                     style="background:#f9f9f9; border-radius:12px; padding:18px; border:2px solid #eee; cursor:pointer; transition:all 0.2s; position:relative;">
+
+                  {# Badge sélectionné #}
+                  <div id="badge-{{ chambre.id }}" style="display:none; position:absolute; top:10px; right:10px; background:#16a34a; color:#fff; border-radius:20px; padding:3px 10px; font-size:11px; font-weight:700;">
+                    ✅ Sélectionnée
+                  </div>
+
+                  <h6 style="margin-bottom:8px; color:#1e293b;">Chambre {{ chambre.numero }}</h6>
+                  <p style="margin:0; font-size:13px; color:#64748b;">{{ chambre.typeChambre }}</p>
+                  <p style="margin:6px 0; color:#f75959; font-weight:700; font-size:16px;">{{ chambre.prixNuit }} TND/nuit</p>
+                  <p style="margin:0; font-size:12px; color:#888;">👥 {{ chambre.capacite }} personnes</p>
                   {% if chambre.equipements %}
-                  <p style="margin:4px 0 0; font-size:12px; color:#aaa;">{{ chambre.equipements }}</p>
+                  <p style="margin:6px 0 0; font-size:11px; color:#aaa;">🛎 {{ chambre.equipements }}</p>
                   {% endif %}
+
+                  <div style="margin-top:10px; padding:8px; background:#f97316; color:#fff; border-radius:6px; text-align:center; font-size:13px; font-weight:600;">
+                    Sélectionner cette chambre
+                  </div>
                 </div>
               </div>
               {% endfor %}
@@ -145,7 +159,24 @@
 
           <div style="background:#f9f9f9; border-radius:12px; padding:25px; margin-top:20px; border:1px solid #eee;">
             <h4 style="margin-bottom:20px; color:#f75959;">Réserver maintenant</h4>
+
+            {# Chambre sélectionnée #}
+            <div id="chambreSelectionnee" style="display:none; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:8px; padding:12px; margin-bottom:16px;">
+              <div style="font-size:12px; font-weight:700; color:#16a34a; margin-bottom:4px;">✅ Chambre sélectionnée :</div>
+              <div id="chambreInfo" style="font-size:13px; color:#374151; font-weight:600;"></div>
+              <div id="prixInfo" style="font-size:16px; color:#f75959; font-weight:800; margin-top:4px;"></div>
+            </div>
+
+            {# Alerte si pas de chambre sélectionnée #}
+            <div id="chambreAlert" style="display:none; background:#fff7ed; border:1px solid #fed7aa; border-radius:8px; padding:10px; margin-bottom:16px; font-size:13px; color:#9a3412;">
+              ⚠️ Veuillez sélectionner une chambre ci-dessus.
+            </div>
+
             <form method="post" action="{{ path('app_reservation_new', {'id': hebergement.id}) }}" id="reservationForm">
+
+              {# Champs cachés chambre #}
+              <input type="hidden" name="chambreId" id="selectedChambreId" value="">
+              <input type="hidden" name="prixParNuit" id="selectedPrix" value="{{ hebergement.prix }}">
 
               <div style="margin-bottom:15px;">
                 <label style="display:block; font-weight:600; margin-bottom:5px;">Nom complet *</label>
@@ -187,6 +218,12 @@
                        style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px;">
               </div>
 
+              {# Calcul prix total dynamique #}
+              <div id="prixTotal" style="display:none; background:#fff3f0; border-radius:8px; padding:12px; margin-bottom:16px; border:1px solid #fecaca;">
+                <div style="font-size:12px; color:#888; margin-bottom:2px;">Prix estimé :</div>
+                <div id="prixTotalVal" style="font-size:20px; font-weight:800; color:#f75959;"></div>
+              </div>
+
               <div id="dateError" style="color:#f75959; font-size:13px; margin-bottom:10px; display:none;">
                   ⚠️ La date de départ doit être après la date d'arrivée.
               </div>
@@ -203,15 +240,69 @@
   </div>
 
   <script>
+  let selectedChambreId = null;
+  let selectedPrixNuit  = {{ hebergement.prix }};
+
+  function selectChambre(id, type, prix, capacite, numero) {
+    // Désélectionner toutes les chambres
+    document.querySelectorAll('[id^="chambre-"]').forEach(function(el) {
+      el.style.border = '2px solid #eee';
+      el.style.background = '#f9f9f9';
+    });
+    document.querySelectorAll('[id^="badge-"]').forEach(function(el) {
+      el.style.display = 'none';
+    });
+
+    // Sélectionner la chambre cliquée
+    var card = document.getElementById('chambre-' + id);
+    card.style.border = '2px solid #16a34a';
+    card.style.background = '#f0fdf4';
+    document.getElementById('badge-' + id).style.display = 'block';
+
+    // Mettre à jour les champs cachés
+    document.getElementById('selectedChambreId').value = id;
+    document.getElementById('selectedPrix').value = prix;
+    selectedChambreId = id;
+    selectedPrixNuit  = prix;
+
+    // Afficher la chambre sélectionnée dans le formulaire
+    document.getElementById('chambreSelectionnee').style.display = 'block';
+    document.getElementById('chambreAlert').style.display = 'none';
+    document.getElementById('chambreInfo').innerText = numero + ' — ' + type + ' — ' + capacite + ' personnes';
+    document.getElementById('prixInfo').innerText = prix + ' TND / nuit';
+
+    // Recalculer le prix total
+    calculerPrix();
+
+    // Scroll vers le formulaire
+    document.getElementById('reservationForm').scrollIntoView({behavior: 'smooth', block: 'center'});
+  }
+
+  function calculerPrix() {
+    var dateDebut = document.getElementById('dateDebut').value;
+    var dateFin   = document.getElementById('dateFin').value;
+    if (dateDebut && dateFin && dateFin > dateDebut && selectedPrixNuit) {
+      var d1 = new Date(dateDebut);
+      var d2 = new Date(dateFin);
+      var nuits = Math.round((d2 - d1) / 86400000);
+      if (nuits > 0) {
+        var total = nuits * selectedPrixNuit;
+        document.getElementById('prixTotal').style.display = 'block';
+        document.getElementById('prixTotalVal').innerText = nuits + ' nuit(s) × ' + selectedPrixNuit + ' TND = ' + total.toFixed(2) + ' TND';
+      }
+    }
+  }
+
   document.getElementById('dateFin').addEventListener('change', function() {
       var dateDebut = document.getElementById('dateDebut').value;
-      var dateFin = this.value;
+      var dateFin   = this.value;
       if (dateDebut && dateFin && dateFin <= dateDebut) {
           document.getElementById('dateError').style.display = 'block';
           document.getElementById('submitBtn').disabled = true;
       } else {
           document.getElementById('dateError').style.display = 'none';
           document.getElementById('submitBtn').disabled = false;
+          calculerPrix();
       }
   });
 
@@ -226,6 +317,17 @@
           document.getElementById('dateError').style.display = 'none';
           document.getElementById('submitBtn').disabled = false;
       }
+      calculerPrix();
+  });
+
+  // Vérifier qu'une chambre est sélectionnée avant de soumettre
+  document.getElementById('reservationForm').addEventListener('submit', function(e) {
+    if (!selectedChambreId) {
+      e.preventDefault();
+      document.getElementById('chambreAlert').style.display = 'block';
+      window.scrollTo({top: 0, behavior: 'smooth'});
+      return false;
+    }
   });
 
   {% if hebergement.latitude and hebergement.longitude %}

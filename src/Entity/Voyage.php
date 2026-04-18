@@ -64,10 +64,15 @@ class Voyage
     #[ORM\JoinTable(name: "voyage_reservations")]
     private Collection $reservedByUsers;
 
+    #[ORM\ManyToMany(targetEntity: Hebergement::class, inversedBy: 'voyages')]
+    #[ORM\JoinTable(name: "voyage_hebergement")]
+    private Collection $hebergements;
+
     public function __construct()
     {
         $this->transports      = new ArrayCollection();
         $this->reservedByUsers = new ArrayCollection();
+        $this->hebergements    = new ArrayCollection();
     }
 
     // ----------------------------------------------------------------
@@ -240,11 +245,20 @@ class Voyage
      * Vérifie si un user précis a réservé ce voyage.
      * Utiliser dans Twig : voyage.isReservedByUser(app.user)
      */
-    public function isReservedByUser(Users $user): bool
-    {
-        return $this->reservedByUsers->contains($user);
+   public function isReservedByUser($user): bool
+{
+    if (!$user) return false;
+    foreach ($this->reservedByUsers as $u) {
+        if ($u->getId() === $user->getId()) return true;
     }
+    return false;
+}
 
+public function isPaidByUser($user): bool
+{
+    // On vérifie via une requête directe — géré dans le controller
+    return false; // placeholder
+}
     /**
      * Compatibilité : indique si au moins un user a réservé ce voyage.
      * Utile pour l'affichage admin (colonne "Réservé par").
@@ -254,8 +268,34 @@ class Voyage
         return $this->reservedByUsers->first() ?: null;
     }
     #[ORM\Column(type: "boolean", options: ["default" => false])]
-private bool $paid = false;
+    private bool $paid = false;
 
-public function isPaid(): bool { return $this->paid; }
-public function setPaid(bool $paid): static { $this->paid = $paid; return $this; }
+    public function isPaid(): bool { return $this->paid; }
+    public function setPaid(bool $paid): static { $this->paid = $paid; return $this; }
+
+    // ----------------------------------------------------------------
+    // Hébergements (ManyToMany)
+    // ----------------------------------------------------------------
+
+    public function getHebergements(): Collection
+    {
+        return $this->hebergements;
+    }
+
+    public function addHebergement(Hebergement $hebergement): static
+    {
+        if (!$this->hebergements->contains($hebergement)) {
+            $this->hebergements->add($hebergement);
+            $hebergement->addVoyage($this);
+        }
+        return $this;
+    }
+
+    public function removeHebergement(Hebergement $hebergement): static
+    {
+        if ($this->hebergements->removeElement($hebergement)) {
+            $hebergement->removeVoyage($this);
+        }
+        return $this;
+    }
 }

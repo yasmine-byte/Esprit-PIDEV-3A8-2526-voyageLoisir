@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-
     <title>{% block title %}Vianova{% endblock %}</title>
-
     {% block stylesheets %}
         <link href="{{ asset('vendor_front/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
         <link rel="stylesheet" href="{{ asset('assets_front/css/css/fontawesome.css') }}">
@@ -17,14 +15,9 @@
     {% endblock %}
 </head>
 <body>
-
-
     {% include 'home/partials/header.html.twig' %}
-
     {% block body %}{% endblock %}
-
     {% include 'home/partials/footer.html.twig' %}
-
     {% block javascripts %}
         <script src="{{ asset('vendor_front/jquery/jquery.min.js') }}"></script>
         <script src="{{ asset('vendor_front/bootstrap/js/bootstrap.min.js') }}"></script>
@@ -48,5 +41,44 @@
             });
         </script>
     {% endblock %}
+
+    {# ✅ Firebase FCM #}
+    <script type="module">
+        import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getMessaging, getToken } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging.js";
+        const firebaseConfig = {
+            apiKey: "AIzaSyBjdiADDYJ-ED0fLWQDwch68lbKlW0excE",
+            authDomain: "voyage-app-90eb2.firebaseapp.com",
+            projectId: "voyage-app-90eb2",
+            storageBucket: "voyage-app-90eb2.firebasestorage.app",
+            messagingSenderId: "280920414423",
+            appId: "1:280920414423:web:18c223c1f9e256d637f892"
+        };
+        const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
+        const messaging = getMessaging(app);
+        Notification.requestPermission().then(permission => {
+            if (permission === 'granted') {
+                getToken(messaging, {
+                    vapidKey: 'BHpJUmtacJ-xDRRImB6l7a1sntB0ylSLGsxfM6VlSrktZuemTcojNLcx6j7COTe7TIfd5m-JjjRjw6LjIDMZ1Ww'
+                }).then(token => {
+                    if (token) {
+                        console.log('FCM Token:', token);
+                        document.cookie = "fcm_token=" + token + "; path=/; max-age=86400";
+                        document.querySelectorAll('form').forEach(form => {
+                            let input = form.querySelector('input[name="fcm_token"]');
+                            if (!input) {
+                                input = document.createElement('input');
+                                input.type = 'hidden';
+                                input.name = 'fcm_token';
+                                input.value = token;
+                                form.appendChild(input);
+                            }
+                        });
+                    }
+                });
+            }
+        });
+    </script>
+
 </body>
 </html>

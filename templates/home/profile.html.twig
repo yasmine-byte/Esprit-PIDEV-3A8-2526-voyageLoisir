@@ -1,228 +1,588 @@
 {% extends "base_front.html.twig" %}
 {% block title %}Mon Profil - ViaNoVa{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+<style>
+.profile-section { padding: 60px 0; background: #f8f9fa; min-height: 80vh; }
+.profile-card {
+    background: #fff;
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+    overflow: hidden;
+    max-width: 900px;
+    margin: 0 auto;
+}
+.profile-header {
+    background: linear-gradient(135deg, #d4845a, #e8a87c);
+    padding: 40px 30px;
+    text-align: center;
+}
+.profile-avatar {
+    width: 100px; height: 100px; border-radius: 50%;
+    border: 4px solid #fff; margin: 0 auto 16px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 36px; font-weight: 700; color: #d4845a;
+    background: #fff; overflow: hidden;
+}
+.profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.profile-name { color: #fff; font-size: 24px; font-weight: 700; margin-bottom: 4px; }
+.profile-email { color: rgba(255,255,255,0.85); font-size: 14px; margin-bottom: 12px; }
+.profile-badge {
+    display: inline-block; padding: 4px 14px; border-radius: 20px;
+    font-size: 12px; font-weight: 600;
+    background: rgba(255,255,255,0.2); color: #fff;
+    border: 1px solid rgba(255,255,255,0.3);
+}
+.profile-body { padding: 30px; }
+.profile-tabs { display: flex; gap: 8px; margin-bottom: 30px; border-bottom: 2px solid #f0f0f0; flex-wrap: wrap; }
+.profile-tab {
+    padding: 10px 20px; border: none; background: none;
+    font-size: 14px; font-weight: 600; color: #888; cursor: pointer;
+    border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all 0.2s;
+}
+.profile-tab.active { color: #d4845a; border-bottom-color: #d4845a; }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+.info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.info-item { padding: 16px; background: #f8f9fa; border-radius: 12px; }
+.info-label { font-size: 11px; color: #999; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; font-weight: 600; }
+.info-value { font-size: 15px; color: #333; font-weight: 600; }
+.form-group-front { margin-bottom: 20px; }
+.form-group-front label { display: block; font-size: 13px; font-weight: 600; color: #555; margin-bottom: 8px; }
+.form-input-front {
+    width: 100%; padding: 12px 16px; border: 1.5px solid #e0e0e0;
+    border-radius: 10px; font-size: 14px; color: #333;
+    transition: border-color 0.2s; box-sizing: border-box;
+}
+.form-input-front:focus { outline: none; border-color: #d4845a; }
+.form-input-front.error { border-color: #ef4444; }
+.error-msg { color: #ef4444; font-size: 12px; margin-top: 5px; display: block; }
+.btn-orange {
+    padding: 12px 28px; background: linear-gradient(135deg, #e8a87c, #d4845a);
+    color: #fff; border: none; border-radius: 10px; font-size: 14px;
+    font-weight: 600; cursor: pointer; transition: opacity 0.2s;
+}
+.btn-orange:hover { opacity: 0.9; }
+.btn-danger {
+    padding: 12px 28px; background: #ef4444; color: #fff; border: none;
+    border-radius: 10px; font-size: 14px; font-weight: 600;
+    cursor: pointer; text-decoration: none; display: inline-block;
+}
+.alert-front { padding: 12px 16px; border-radius: 10px; margin-bottom: 20px; font-size: 14px; }
+.alert-success-front { background: rgba(52,211,153,0.1); border: 1px solid rgba(52,211,153,0.3); color: #059669; }
+.alert-danger-front { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); color: #ef4444; }
+
+/* ── Reservation cards ── */
+.resa-card {
+    border-radius: 20px; overflow: hidden; margin-bottom: 20px;
+    box-shadow: 0 4px 20px rgba(0,0,0,.06);
+}
+.resa-card-body { padding: 20px 24px; }
+.resa-route {
+    background: #f8fafc; border-radius: 14px; padding: 14px 18px;
+    margin-bottom: 16px; border: 1px solid #f0f4f8;
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+}
+.resa-route-label { font-size: 11px; color: #94a3b8; font-weight: 700; text-transform: uppercase; letter-spacing: .8px; margin-bottom: 4px; }
+.resa-route-city { font-size: 16px; font-weight: 800; color: #1e293b; }
+.resa-route-date-depart { font-size: 11px; color: #f97316; font-weight: 600; margin-top: 3px; }
+.resa-route-date-arrivee { font-size: 11px; color: #635bff; font-weight: 600; margin-top: 3px; }
+.resa-price { font-size: 24px; font-weight: 900; color: #f97316; letter-spacing: -1px; }
+.resa-footer { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+.resa-actions { display: flex; flex-direction: column; gap: 8px; min-width: 180px; }
+.btn-pay {
+    width: 100%; padding: 10px 16px; border-radius: 10px; border: none;
+    background: linear-gradient(135deg, #635bff, #4f46e5); color: #fff;
+    font-size: 13px; font-weight: 700; cursor: pointer;
+    box-shadow: 0 4px 14px rgba(99,91,255,0.35);
+}
+.btn-cancel {
+    width: 100%; padding: 8px 16px; border-radius: 10px;
+    border: 1.5px solid #e2e8f0; background: #fff; color: #94a3b8;
+    font-size: 12px; font-weight: 600; cursor: pointer;
+}
+.badge-paid    { padding: 10px 16px; background: #E1F5EE; color: #085041; border-radius: 10px; font-size: 13px; font-weight: 700; text-align: center; border: 1px solid #bbf7d0; }
+.badge-inactive { padding: 10px 16px; background: #ffebee; color: #E24B4A; border-radius: 10px; font-size: 13px; font-weight: 700; text-align: center; border: 1px solid #fecaca; }
+
+@media (max-width: 768px) {
+    .info-grid { grid-template-columns: 1fr; }
+    .profile-body { padding: 20px; }
+    .resa-route { flex-direction: column; gap: 16px; }
+}
+</style>
+{% endblock %}
+
 {% block body %}
 
 <div class="page-heading header-text">
-  <div class="container">
-    <div class="row">
-      <div class="col-lg-12">
-        <span class="breadcrumb"><a href="{{ path("app_home") }}">Accueil</a> / Mon Profil</span>
-        <h3>Mon Profil</h3>
-        <p style="font-size:12px;color:#ccc">Roles : {{ app.user.roles|join(", ") }}</p>
-      </div>
-    </div>
-  </div>
-</div>
-
-{# ===== PROFIL ===== #}
-<div class="section">
-  <div class="container">
-    <div class="row justify-content-center">
-      <div class="col-lg-6">
-        <div style="background:#fff;border-radius:16px;padding:30px;border:1px solid #eee;text-align:center">
-          <div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#e8a87c,#d4845a);color:#fff;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:700;margin:0 auto 20px">
-            {{ user.prenom|first|upper }}{{ user.nom|first|upper }}
-          </div>
-          <h4 style="margin-bottom:4px">{{ user.prenom }} {{ user.nom }}</h4>
-          <p style="color:#888;font-size:14px;margin-bottom:24px">{{ user.email }}</p>
-          <table style="width:100%;text-align:left;font-size:14px">
-            <tr style="border-bottom:1px solid #eee">
-              <td style="padding:10px 0;color:#888;width:40%">Nom</td>
-              <td style="padding:10px 0;font-weight:600">{{ user.nom }}</td>
-            </tr>
-            <tr style="border-bottom:1px solid #eee">
-              <td style="padding:10px 0;color:#888">Prenom</td>
-              <td style="padding:10px 0;font-weight:600">{{ user.prenom }}</td>
-            </tr>
-            <tr style="border-bottom:1px solid #eee">
-              <td style="padding:10px 0;color:#888">Email</td>
-              <td style="padding:10px 0;font-weight:600">{{ user.email }}</td>
-            </tr>
-            {% if user.telephone %}
-            <tr style="border-bottom:1px solid #eee">
-              <td style="padding:10px 0;color:#888">Telephone</td>
-              <td style="padding:10px 0;font-weight:600">{{ user.telephone }}</td>
-            </tr>
-            {% endif %}
-            <tr>
-              <td style="padding:10px 0;color:#888">Statut</td>
-              <td style="padding:10px 0">
-                <span style="background:{% if user.isActive %}#E1F5EE{% else %}#ffebee{% endif %};color:{% if user.isActive %}#085041{% else %}#E24B4A{% endif %};padding:3px 10px;border-radius:10px;font-size:12px;font-weight:600">
-                  {{ user.isActive ? "Actif" : "Inactif" }}
-                </span>
-              </td>
-            </tr>
-          </table>
-          <div style="margin-top:24px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
-            {% if "ROLE_ADMIN" in app.user.roles %}
-            <a href="{{ path('app_destination_index') }}" style="display:inline-block;padding:10px 24px;background:#f97316;color:#fff;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px">
-              Dashboard Admin
-            </a>
-            {% endif %}
-            <a href="{{ path('front_logout') }}" style="display:inline-block;padding:10px 24px;background:#E24B4A;color:#fff;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px">
-              Deconnexion
-            </a>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-{# ===== RESERVATIONS ===== #}
-<div class="section" style="padding-top:0;padding-bottom:60px">
-  <div class="container">
-    <div class="row justify-content-center">
-      <div class="col-lg-7">
-
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px">
-          <h5 style="margin:0;font-size:20px;font-weight:800;color:#1e293b">✈ Mes Réservations</h5>
-          {% if reservations is defined %}
-            <span style="background:#f1f5f9;color:#64748b;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700">
-              {{ reservations|length }} voyage{{ reservations|length > 1 ? 's' : '' }}
-            </span>
-          {% endif %}
-        </div>
-
-        {% if reservations is defined and reservations|length > 0 %}
-          {% for voyage in reservations %}
-
-          {# Déterminer l'état #}
-          {% set dest_inactive = voyage.destination and not voyage.destination.statut %}
-          {% set is_paid = voyage.paid %}
-
-          <div style="background:#fff;border-radius:20px;overflow:hidden;border:1.5px solid {% if dest_inactive %}#fecaca{% elseif is_paid %}#bbf7d0{% else %}#e2e8f0{% endif %};margin-bottom:20px;box-shadow:0 4px 20px rgba(0,0,0,.06)">
-
-            {# Barre de couleur en haut #}
-            <div style="height:5px;background:{% if dest_inactive %}linear-gradient(90deg,#ef4444,#f87171){% elseif is_paid %}linear-gradient(90deg,#16a34a,#4ade80){% else %}linear-gradient(90deg,#635bff,#818cf8){% endif %}"></div>
-
-            <div style="padding:20px 24px">
-
-              {# Badge statut destination inactive #}
-              {% if dest_inactive %}
-                <div style="display:inline-flex;align-items:center;gap:6px;background:#ffebee;color:#E24B4A;padding:5px 12px;border-radius:20px;font-size:12px;font-weight:700;margin-bottom:14px;border:1px solid #fecaca">
-                  🚫 Destination inactive pour le moment
-                </div>
-              {% endif %}
-
-              {# Badge payé #}
-              {% if is_paid %}
-                <div style="display:inline-flex;align-items:center;gap:6px;background:#E1F5EE;color:#085041;padding:5px 12px;border-radius:20px;font-size:12px;font-weight:700;margin-bottom:14px;border:1px solid #bbf7d0">
-                  ✅ Paiement confirmé
-                </div>
-              {% endif %}
-
-              {# Info destination #}
-              {% if voyage.destination %}
-                <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
-                  <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#fff7ed,#ffedd5);border:1px solid #fed7aa;display:flex;align-items:center;justify-content:center;font-size:18px">
-                    📍
-                  </div>
-                  <div>
-                    <div style="font-size:15px;font-weight:800;color:#1e293b">{{ voyage.destination.nom }}</div>
-                    <div style="font-size:12px;color:#94a3b8;font-weight:600">{{ voyage.destination.pays }}</div>
-                  </div>
-                </div>
-              {% endif %}
-
-              {# Trajet #}
-              <div style="background:#f8fafc;border-radius:14px;padding:14px 18px;margin-bottom:16px;border:1px solid #f0f4f8">
-                <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
-                  <div style="text-align:left">
-                    <div style="font-size:11px;color:#94a3b8;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px">Départ</div>
-                    <div style="font-size:16px;font-weight:800;color:#1e293b">{{ voyage.pointDepart ?? "—" }}</div>
-                    <div style="font-size:11px;color:#f97316;font-weight:600;margin-top:3px">
-                      {{ voyage.dateDepart ? voyage.dateDepart|date("d/m/Y") : "—" }}
-                    </div>
-                  </div>
-                  <div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex-shrink:0">
-                    <div style="display:flex;align-items:center;gap:4px">
-                      <div style="width:6px;height:6px;border-radius:50%;background:#f97316"></div>
-                      <div style="width:40px;height:2px;background:linear-gradient(90deg,#f97316,#635bff)"></div>
-                      <span style="font-size:18px">✈</span>
-                      <div style="width:40px;height:2px;background:linear-gradient(90deg,#635bff,#f97316)"></div>
-                      <div style="width:6px;height:6px;border-radius:50%;background:#635bff"></div>
-                    </div>
-                    {% if voyage.dateDepart and voyage.dateArrivee %}
-                      {% set duree = ((voyage.dateArrivee|date('U') - voyage.dateDepart|date('U')) / 86400)|round %}
-                      <span style="font-size:10px;color:#94a3b8;font-weight:700">{{ duree }}j</span>
-                    {% endif %}
-                  </div>
-                  <div style="text-align:right">
-                    <div style="font-size:11px;color:#94a3b8;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px">Arrivée</div>
-                    <div style="font-size:16px;font-weight:800;color:#1e293b">{{ voyage.pointArrivee ?? "—" }}</div>
-                    <div style="font-size:11px;color:#635bff;font-weight:600;margin-top:3px">
-                      {{ voyage.dateArrivee ? voyage.dateArrivee|date("d/m/Y") : "—" }}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {# Prix + actions #}
-              <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
-                <div>
-                  <div style="font-size:11px;color:#94a3b8;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:2px">Prix total</div>
-                  <div style="font-size:24px;font-weight:900;color:#f97316;letter-spacing:-1px">
-                    {{ voyage.prix ? voyage.prix ~ " €" : "—" }}
-                  </div>
-                </div>
-
-                <div style="display:flex;flex-direction:column;gap:8px;min-width:180px">
-
-                  {# Bouton payer #}
-                  {% if is_paid %}
-                    <div style="padding:10px 16px;background:#E1F5EE;color:#085041;border-radius:10px;font-size:13px;font-weight:700;text-align:center;border:1px solid #bbf7d0">
-                      ✅ Payé
-                    </div>
-                  {% elseif dest_inactive %}
-                    <div style="padding:10px 16px;background:#ffebee;color:#E24B4A;border-radius:10px;font-size:13px;font-weight:700;text-align:center;border:1px solid #fecaca">
-                      🚫 Paiement indisponible
-                    </div>
-                  {% else %}
-                    <form action="{{ path('app_payment_checkout', {id: voyage.id}) }}" method="POST" style="margin:0">
-                      <input type="hidden" name="_token" value="{{ csrf_token('payment' ~ voyage.id) }}">
-                      <button type="submit"
-                              style="width:100%;padding:10px 16px;border-radius:10px;border:none;background:linear-gradient(135deg,#635bff,#4f46e5);color:#fff;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(99,91,255,0.35);transition:transform .2s"
-                              onmouseover="this.style.transform='translateY(-2px)'"
-                              onmouseout="this.style.transform=''">
-                        💳 Payer maintenant
-                      </button>
-                    </form>
-                  {% endif %}
-
-                  {# Bouton annuler — seulement si pas payé #}
-                  {% if not is_paid %}
-                    <form action="{{ path('app_voyage_cancel', {id: voyage.id}) }}" method="POST" style="margin:0">
-                      <input type="hidden" name="_token" value="{{ csrf_token('cancel' ~ voyage.id) }}">
-                      <button type="submit"
-                              style="width:100%;padding:8px 16px;border-radius:10px;border:1.5px solid #e2e8f0;background:#fff;color:#94a3b8;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s"
-                              onmouseover="this.style.borderColor='#E24B4A';this.style.color='#E24B4A'"
-                              onmouseout="this.style.borderColor='#e2e8f0';this.style.color='#94a3b8'">
-                        ✕ Annuler la réservation
-                      </button>
-                    </form>
-                  {% endif %}
-
-                </div>
-              </div>
-
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <span class="breadcrumb"><a href="{{ path('app_home') }}">Accueil</a> / Mon Profil</span>
+                <h3>Mon Profil</h3>
+                <p style="font-size:12px;color:#ccc">Roles : {{ app.user.roles|join(", ") }}</p>
             </div>
-          </div>
-
-          {% endfor %}
-        {% else %}
-          <div style="text-align:center;padding:60px 20px;background:#fff;border-radius:20px;border:1.5px dashed #e2e8f0">
-            <div style="font-size:48px;margin-bottom:16px">✈</div>
-            <h6 style="color:#94a3b8;font-size:15px;font-weight:600;margin:0">Aucune réservation pour le moment.</h6>
-            <a href="{{ path('app_destinations') }}" style="display:inline-block;margin-top:16px;padding:10px 24px;background:#f97316;color:#fff;border-radius:10px;text-decoration:none;font-weight:700;font-size:14px">
-              Explorer les destinations
-            </a>
-          </div>
-        {% endif %}
-
-      </div>
+        </div>
     </div>
-  </div>
 </div>
+
+<div class="profile-section">
+    <div class="container">
+        <div class="profile-card">
+
+            {# ── En-tête ── #}
+            <div class="profile-header">
+                <div class="profile-avatar">
+                    {% if user.avatarName %}
+                        <img src="/uploads/avatars/{{ user.avatarName }}" alt="Avatar">
+                    {% else %}
+                        {{ user.prenom|first|upper }}{{ user.nom|first|upper }}
+                    {% endif %}
+                </div>
+                <div class="profile-name">{{ user.prenom }} {{ user.nom }}</div>
+                <div class="profile-email">{{ user.email }}</div>
+                <div>
+                    <span class="profile-badge">{{ user.isActive ? '● Actif' : '○ Inactif' }}</span>
+                    {% for role in user.rolesCollection %}
+                        <span class="profile-badge" style="margin-left:6px;">{{ role.name }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+
+            {# ── Corps ── #}
+            <div class="profile-body">
+
+                {# Messages flash #}
+                {% for message in app.flashes('success') %}
+                    <div class="alert-front alert-success-front">✔ {{ message }}</div>
+                {% endfor %}
+                {% for message in app.flashes('error') %}
+                    <div class="alert-front alert-danger-front">✗ {{ message }}</div>
+                {% endfor %}
+                {% if globalError is defined and globalError %}
+                    <div class="alert-front alert-danger-front">{{ globalError }}</div>
+                {% endif %}
+
+                {# ── Onglets ── #}
+                <div class="profile-tabs">
+                    <button class="profile-tab active" onclick="showTab('info', event)">📋 Informations</button>
+                    <button class="profile-tab" onclick="showTab('edit', event)">✏️ Modifier</button>
+                    <button class="profile-tab" onclick="showTab('password', event)">🔐 Mot de passe</button>
+                    <button class="profile-tab" onclick="showTab('voyages', event)">
+                        ✈️ Réservations
+                        {% if reservations is defined and reservations|length > 0 %}
+                            <span style="background:#f1f5f9;color:#64748b;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700;margin-left:4px;">{{ reservations|length }}</span>
+                        {% endif %}
+                    </button>
+                    <button class="profile-tab" onclick="showTab('hebergements', event)">
+                        🏨 Hébergements
+                        {% if reservationsHebergement is defined and reservationsHebergement|length > 0 %}
+                            <span style="background:#f1f5f9;color:#64748b;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700;margin-left:4px;">{{ reservationsHebergement|length }}</span>
+                        {% endif %}
+                    </button>
+                </div>
+
+                {# ── Onglet Informations ── #}
+                <div id="tab-info" class="tab-content active">
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <div class="info-label">Nom</div>
+                            <div class="info-value">{{ user.nom }}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Prénom</div>
+                            <div class="info-value">{{ user.prenom }}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Adresse email</div>
+                            <div class="info-value">{{ user.email }}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Téléphone</div>
+                            <div class="info-value">{{ user.telephone ?: '—' }}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Membre depuis</div>
+                            <div class="info-value">{{ user.createdAt ? user.createdAt|date('d/m/Y') : '—' }}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Statut</div>
+                            <div class="info-value">
+                                <span style="color:{{ user.isActive ? '#059669' : '#ef4444' }}; font-weight:700;">
+                                    {{ user.isActive ? '● Actif' : '○ Inactif' }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="margin-top:24px; display:flex; gap:12px; flex-wrap:wrap;">
+                        {% if is_granted('ROLE_ADMIN') %}
+                            <a href="{{ path('app_destination_index') }}" class="btn-orange">⚙️ Dashboard Admin</a>
+                        {% endif %}
+                        <a href="{{ path('front_logout') }}" class="btn-danger">Déconnexion</a>
+                    </div>
+                </div>
+
+                {# ── Onglet Modifier ── #}
+                <div id="tab-edit" class="tab-content">
+                    <form method="POST" action="{{ path('front_profile_edit') }}" enctype="multipart/form-data" novalidate>
+                        <input type="hidden" name="tab" value="edit">
+
+                        <div class="info-grid">
+                            <div class="form-group-front">
+                                <label>Nom *</label>
+                                <input type="text" name="nom"
+                                       class="form-input-front {% if fieldErrors is defined and fieldErrors.nom is defined %}error{% endif %}"
+                                       value="{{ user.nom }}" maxlength="50">
+                                {% if fieldErrors is defined and fieldErrors.nom is defined %}
+                                    <span class="error-msg">{{ fieldErrors.nom }}</span>
+                                {% endif %}
+                            </div>
+                            <div class="form-group-front">
+                                <label>Prénom *</label>
+                                <input type="text" name="prenom"
+                                       class="form-input-front {% if fieldErrors is defined and fieldErrors.prenom is defined %}error{% endif %}"
+                                       value="{{ user.prenom }}" maxlength="50">
+                                {% if fieldErrors is defined and fieldErrors.prenom is defined %}
+                                    <span class="error-msg">{{ fieldErrors.prenom }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="form-group-front">
+                            <label>Adresse email *</label>
+                            <input type="text" name="email"
+                                   class="form-input-front {% if fieldErrors is defined and fieldErrors.email is defined %}error{% endif %}"
+                                   value="{{ user.email }}" maxlength="100">
+                            {% if fieldErrors is defined and fieldErrors.email is defined %}
+                                <span class="error-msg">{{ fieldErrors.email }}</span>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-group-front">
+                            <label>Numéro de téléphone</label>
+                            <input type="text" name="telephone"
+                                   class="form-input-front {% if fieldErrors is defined and fieldErrors.telephone is defined %}error{% endif %}"
+                                   value="{{ user.telephone }}" maxlength="8" placeholder="8 chiffres">
+                            {% if fieldErrors is defined and fieldErrors.telephone is defined %}
+                                <span class="error-msg">{{ fieldErrors.telephone }}</span>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-group-front">
+                            <label>Photo de profil</label>
+                            {% if user.avatarName %}
+                                <div style="margin-bottom:10px;">
+                                    <img src="/uploads/avatars/{{ user.avatarName }}"
+                                         style="width:60px; height:60px; border-radius:50%; object-fit:cover; border:2px solid #d4845a;">
+                                </div>
+                            {% endif %}
+                            <input type="file" name="avatarFile" accept="image/*" class="form-input-front" style="padding:8px;">
+                            <span style="font-size:12px; color:#999;">JPG, PNG — max 2MB</span>
+                        </div>
+
+                        <div class="form-group-front">
+                            <label>Mot de passe actuel * <small style="color:#999;">(requis pour modifier)</small></label>
+                            <input type="password" name="current_password"
+                                   class="form-input-front {% if fieldErrors is defined and fieldErrors.current_password is defined %}error{% endif %}"
+                                   placeholder="Entrez votre mot de passe actuel">
+                            {% if fieldErrors is defined and fieldErrors.current_password is defined %}
+                                <span class="error-msg">{{ fieldErrors.current_password }}</span>
+                            {% endif %}
+                        </div>
+
+                        <button type="submit" class="btn-orange">Enregistrer les modifications</button>
+                    </form>
+                </div>
+
+                {# ── Onglet Mot de passe ── #}
+                <div id="tab-password" class="tab-content">
+                    <form method="POST" action="{{ path('front_profile_edit') }}" novalidate>
+                        <input type="hidden" name="tab" value="password">
+
+                        <div class="form-group-front">
+                            <label>Mot de passe actuel *</label>
+                            <input type="password" name="current_password"
+                                   class="form-input-front {% if fieldErrors is defined and fieldErrors.current_password is defined %}error{% endif %}"
+                                   placeholder="Votre mot de passe actuel">
+                            {% if fieldErrors is defined and fieldErrors.current_password is defined %}
+                                <span class="error-msg">{{ fieldErrors.current_password }}</span>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-group-front">
+                            <label>Nouveau mot de passe *</label>
+                            <input type="password" name="new_password"
+                                   class="form-input-front {% if fieldErrors is defined and fieldErrors.new_password is defined %}error{% endif %}"
+                                   placeholder="Min. 6 car. : Aa1@...">
+                            {% if fieldErrors is defined and fieldErrors.new_password is defined %}
+                                <span class="error-msg">{{ fieldErrors.new_password }}</span>
+                            {% endif %}
+                            <small style="color:#999; font-size:12px;">Majuscule, minuscule, chiffre et caractère spécial requis</small>
+                        </div>
+
+                        <div class="form-group-front">
+                            <label>Confirmer le nouveau mot de passe *</label>
+                            <input type="password" name="confirm_password"
+                                   class="form-input-front {% if fieldErrors is defined and fieldErrors.confirm_password is defined %}error{% endif %}"
+                                   placeholder="Confirmez votre nouveau mot de passe">
+                            {% if fieldErrors is defined and fieldErrors.confirm_password is defined %}
+                                <span class="error-msg">{{ fieldErrors.confirm_password }}</span>
+                            {% endif %}
+                        </div>
+
+                        <button type="submit" class="btn-orange">Changer le mot de passe</button>
+                    </form>
+                </div>
+
+                {# ── Onglet Réservations Voyage ── #}
+                <div id="tab-voyages" class="tab-content">
+                    {% if reservations is defined and reservations|length > 0 %}
+                        {% for voyage in reservations %}
+                        {% set dest_inactive = voyage.destination and not voyage.destination.statut %}
+                        {% set is_paid = voyage.paid %}
+                        <div class="resa-card" style="border: 1.5px solid {% if dest_inactive %}#fecaca{% elseif is_paid %}#bbf7d0{% else %}#e2e8f0{% endif %}">
+                            <div style="height:5px;background:{% if dest_inactive %}linear-gradient(90deg,#ef4444,#f87171){% elseif is_paid %}linear-gradient(90deg,#16a34a,#4ade80){% else %}linear-gradient(90deg,#635bff,#818cf8){% endif %}"></div>
+                            <div class="resa-card-body">
+                                {% if dest_inactive %}
+                                    <div style="display:inline-flex;align-items:center;gap:6px;background:#ffebee;color:#E24B4A;padding:5px 12px;border-radius:20px;font-size:12px;font-weight:700;margin-bottom:14px;border:1px solid #fecaca">
+                                        🚫 Destination inactive pour le moment
+                                    </div>
+                                {% endif %}
+                                {% if is_paid %}
+                                    <div style="display:inline-flex;align-items:center;gap:6px;background:#E1F5EE;color:#085041;padding:5px 12px;border-radius:20px;font-size:12px;font-weight:700;margin-bottom:14px;border:1px solid #bbf7d0">
+                                        ✅ Paiement confirmé
+                                    </div>
+                                {% endif %}
+                                {% if voyage.destination %}
+                                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
+                                        <div style="width:36px;height:36px;border-radius:10px;background:#fff7ed;border:1px solid #fed7aa;display:flex;align-items:center;justify-content:center;font-size:18px">📍</div>
+                                        <div>
+                                            <div style="font-size:15px;font-weight:800;color:#1e293b">{{ voyage.destination.nom }}</div>
+                                            <div style="font-size:12px;color:#94a3b8;font-weight:600">{{ voyage.destination.pays }}</div>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                                <div class="resa-route">
+                                    <div>
+                                        <div class="resa-route-label">Départ</div>
+                                        <div class="resa-route-city">{{ voyage.pointDepart ?? "—" }}</div>
+                                        <div class="resa-route-date-depart">{{ voyage.dateDepart ? voyage.dateDepart|date("d/m/Y") : "—" }}</div>
+                                    </div>
+                                    <div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex-shrink:0">
+                                        <div style="display:flex;align-items:center;gap:4px">
+                                            <div style="width:6px;height:6px;border-radius:50%;background:#f97316"></div>
+                                            <div style="width:40px;height:2px;background:linear-gradient(90deg,#f97316,#635bff)"></div>
+                                            <span style="font-size:18px">✈</span>
+                                            <div style="width:40px;height:2px;background:linear-gradient(90deg,#635bff,#f97316)"></div>
+                                            <div style="width:6px;height:6px;border-radius:50%;background:#635bff"></div>
+                                        </div>
+                                        {% if voyage.dateDepart and voyage.dateArrivee %}
+                                            {% set duree = ((voyage.dateArrivee|date('U') - voyage.dateDepart|date('U')) / 86400)|round %}
+                                            <span style="font-size:10px;color:#94a3b8;font-weight:700">{{ duree }}j</span>
+                                        {% endif %}
+                                    </div>
+                                    <div style="text-align:right">
+                                        <div class="resa-route-label">Arrivée</div>
+                                        <div class="resa-route-city">{{ voyage.pointArrivee ?? "—" }}</div>
+                                        <div class="resa-route-date-arrivee">{{ voyage.dateArrivee ? voyage.dateArrivee|date("d/m/Y") : "—" }}</div>
+                                    </div>
+                                </div>
+                                <div class="resa-footer">
+                                    {# ── Prix avec réduction hiver (logique fusionnée) ── #}
+                                    <div>
+                                        <div style="font-size:11px;color:#94a3b8;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:2px">Prix total</div>
+                                        {% set dest = voyage.destination %}
+                                        {% set prix_original = voyage.prix %}
+                                        {% if dest and dest.meilleureSaison == 'Hiver' and prix_original %}
+                                            {% set prix_final = (prix_original * 0.80)|round(2) %}
+                                            <div style="font-size:14px;color:#aaa;text-decoration:line-through;line-height:1">
+                                                {{ prix_original }} €
+                                            </div>
+                                            <div class="resa-price">{{ prix_final }} €</div>
+                                            <span style="display:inline-block;margin-top:4px;background:#dbeafe;color:#1d4ed8;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700">❄️ -20% Offre Hiver</span>
+                                        {% else %}
+                                            <div class="resa-price">{{ prix_original ? prix_original ~ " €" : "—" }}</div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="resa-actions">
+                                        {% if is_paid %}
+                                            <div class="badge-paid">✅ Payé</div>
+                                        {% elseif dest_inactive %}
+                                            <div class="badge-inactive">🚫 Paiement indisponible</div>
+                                        {% else %}
+                                            <form action="{{ path('app_payment_checkout', {id: voyage.id}) }}" method="POST" style="margin:0">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('payment' ~ voyage.id) }}">
+                                                <button type="submit" class="btn-pay">💳 Payer maintenant</button>
+                                            </form>
+                                        {% endif %}
+                                        {% if not is_paid %}
+                                            <form action="{{ path('app_voyage_cancel', {id: voyage.id}) }}" method="POST" style="margin:0">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('cancel' ~ voyage.id) }}">
+                                                <button type="submit" class="btn-cancel">✕ Annuler la réservation</button>
+                                            </form>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div style="text-align:center;padding:60px 20px;background:#fff;border-radius:20px;border:1.5px dashed #e2e8f0">
+                            <div style="font-size:48px;margin-bottom:16px">✈</div>
+                            <h6 style="color:#94a3b8;font-size:15px;font-weight:600;margin:0">Aucune réservation pour le moment.</h6>
+                            <a href="{{ path('app_destinations') }}" style="display:inline-block;margin-top:16px;padding:10px 24px;background:#f97316;color:#fff;border-radius:10px;text-decoration:none;font-weight:700;font-size:14px">
+                                Explorer les destinations
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+
+                {# ── Onglet Réservations Hébergement ── #}
+                <div id="tab-hebergements" class="tab-content">
+                    {% if reservationsHebergement is defined and reservationsHebergement|length > 0 %}
+                        {% for resa in reservationsHebergement %}
+                        {% set is_confirmed = resa.statut == 'confirmee' %}
+                        {% set is_waiting   = resa.statut == 'en_attente' %}
+                        <div class="resa-card" style="border: 1.5px solid {% if is_confirmed %}#bbf7d0{% elseif is_waiting %}#fde68a{% else %}#fecaca{% endif %}">
+                            <div style="height:5px;background:{% if is_confirmed %}linear-gradient(90deg,#16a34a,#4ade80){% elseif is_waiting %}linear-gradient(90deg,#f59e0b,#fcd34d){% else %}linear-gradient(90deg,#ef4444,#f87171){% endif %}"></div>
+                            <div class="resa-card-body">
+                                <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px">
+                                    <div style="display:flex;align-items:center;gap:12px">
+                                        <div style="width:42px;height:42px;border-radius:12px;background:#fff7ed;border:1px solid #fed7aa;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">🏠</div>
+                                        <div>
+                                            <div style="font-size:15px;font-weight:800;color:#1e293b">{{ resa.hebergement ? resa.hebergement.description : 'Hébergement' }}</div>
+                                            <div style="font-size:12px;color:#94a3b8;margin-top:2px">Réservé par : {{ resa.clientNom ?? user.prenom ~ ' ' ~ user.nom }}</div>
+                                        </div>
+                                    </div>
+                                    <span style="padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;white-space:nowrap;{% if is_confirmed %}background:#dcfce7;color:#16a34a;border:1px solid #bbf7d0;{% elseif is_waiting %}background:#fef9c3;color:#b45309;border:1px solid #fde68a;{% else %}background:#fee2e2;color:#dc2626;border:1px solid #fecaca;{% endif %}">
+                                        {% if is_confirmed %}✅ Confirmée{% elseif is_waiting %}⏳ En attente{% else %}❌ Annulée{% endif %}
+                                    </span>
+                                </div>
+                                <div class="resa-route">
+                                    <div>
+                                        <div class="resa-route-label">Arrivée</div>
+                                        <div class="resa-route-city">{{ resa.dateDebut ? resa.dateDebut|date('d/m/Y') : '—' }}</div>
+                                    </div>
+                                    <div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex-shrink:0">
+                                        <div style="display:flex;align-items:center;gap:4px">
+                                            <div style="width:6px;height:6px;border-radius:50%;background:#f97316"></div>
+                                            <div style="width:35px;height:2px;background:linear-gradient(90deg,#f97316,#635bff)"></div>
+                                            <span style="font-size:16px">🌙</span>
+                                            <div style="width:35px;height:2px;background:linear-gradient(90deg,#635bff,#f97316)"></div>
+                                            <div style="width:6px;height:6px;border-radius:50%;background:#635bff"></div>
+                                        </div>
+                                        <span style="font-size:10px;color:#94a3b8;font-weight:700">{{ resa.nbNuits ?? '—' }} nuit{{ (resa.nbNuits ?? 0) > 1 ? 's' : '' }}</span>
+                                    </div>
+                                    <div style="text-align:right">
+                                        <div class="resa-route-label">Départ</div>
+                                        <div class="resa-route-city">{{ resa.dateFin ? resa.dateFin|date('d/m/Y') : '—' }}</div>
+                                    </div>
+                                </div>
+                                <div class="resa-footer">
+                                    <div>
+                                        <div style="font-size:11px;color:#94a3b8;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:2px">Prix total</div>
+                                        <div class="resa-price">{{ resa.total ?? '0' }} €</div>
+                                    </div>
+                                    <div class="resa-actions">
+                                        {% if is_confirmed %}
+                                            <div class="badge-paid">✅ Payée &amp; Confirmée</div>
+                                        {% elseif is_waiting %}
+                                            <form action="{{ path('app_stripe_checkout', {'id': resa.id}) }}" method="POST" style="margin:0">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('payment_heb' ~ resa.id) }}">
+                                                <button type="submit" class="btn-pay">💳 Payer maintenant</button>
+                                            </form>
+                                            <form action="{{ path('app_reservation_hebergement_cancel', {'id': resa.id}) }}" method="POST" style="margin:0">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('cancel_heb' ~ resa.id) }}">
+                                                <button type="submit" onclick="return confirm('Confirmer l\'annulation ?')" class="btn-cancel">
+                                                    ✕ Annuler la réservation
+                                                </button>
+                                            </form>
+                                        {% else %}
+                                            <div class="badge-inactive">❌ Annulée</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div style="text-align:center;padding:60px 20px;background:#fff;border-radius:20px;border:1.5px dashed #e2e8f0">
+                            <div style="font-size:48px;margin-bottom:16px">🏨</div>
+                            <h6 style="color:#94a3b8;font-size:15px;font-weight:600;margin:0">Aucune réservation d'hébergement pour le moment.</h6>
+                            <a href="{{ path('app_properties') }}" style="display:inline-block;margin-top:16px;padding:10px 24px;background:#f97316;color:#fff;border-radius:10px;text-decoration:none;font-weight:700;font-size:14px">
+                                Découvrir les hébergements
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+
+            </div>{# fin .profile-body #}
+        </div>{# fin .profile-card #}
+    </div>
+</div>
+
+{# ── Script onglets ── #}
+<script>
+function showTab(name, event) {
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.profile-tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+    if (event) event.currentTarget.classList.add('active');
+}
+
+{% if fieldErrors is defined and fieldErrors|length > 0 %}
+document.addEventListener('DOMContentLoaded', function() {
+    {% set tab = app.request.request.get('tab') %}
+    {% if tab == 'password' %}
+        var tabs = document.querySelectorAll('.profile-tab');
+        if (tabs[2]) tabs[2].click();
+    {% else %}
+        var tabs = document.querySelectorAll('.profile-tab');
+        if (tabs[1]) tabs[1].click();
+    {% endif %}
+});
+{% endif %}
+</script>
+
+{# ── Script FCM ── #}
+<script type="module">
+  import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getMessaging, getToken } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBjdiADDYJ-ED0fLWQDwch68lbKlW0excE",
+    authDomain: "voyage-app-90eb2.firebaseapp.com",
+    projectId: "voyage-app-90eb2",
+    storageBucket: "voyage-app-90eb2.firebasestorage.app",
+    messagingSenderId: "280920414423",
+    appId: "1:280920414423:web:18c223c1f9e256d637f892"
+  };
+
+  const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
+  const messaging = getMessaging(app);
+
+  window.addEventListener('load', async () => {
+    try {
+      const permission = await Notification.requestPermission();
+      if (permission !== 'granted') return;
+      const token = await getToken(messaging, { vapidKey: "BHpJUmtacJ-xDRRImB6l7a1sntB0ylSLGsxfM6VlSrktZuemTcojNLcx6j7COTe7TIfd5m-JjjRjw6LjIDMZ1Ww" });
+      if (!token) return;
+      localStorage.setItem('fcm_token', token);
+      document.querySelectorAll('form[action*="checkout"]').forEach(form => {
+        if (!form.querySelector('input[name="fcm_token"]')) {
+          const input = document.createElement('input');
+          input.type = 'hidden';
+          input.name = 'fcm_token';
+          input.value = token;
+          form.appendChild(input);
+        }
+      });
+      console.log('[FCM] Token injecté dans les formulaires ✅');
+    } catch (e) {
+      console.warn('[FCM] Erreur token :', e.message);
+    }
+  });
+</script>
 
 {% endblock %}
