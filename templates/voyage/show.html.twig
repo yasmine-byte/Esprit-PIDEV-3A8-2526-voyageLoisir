@@ -46,7 +46,18 @@
                         </div>
                         <div>
                             <div style="font-weight:600;font-size:14px;color:#e2e8f0">{{ u.prenom }} {{ u.nom }}</div>
-                            <div style="font-size:12px;color:#6b7280">{{ u.email }}</div>
+<div style="font-size:12px;color:#6b7280">{{ u.email }}</div>
+<div style="margin-top:4px">
+    {% if u.id in paidUserIds %}
+        <span style="background:#14532d;color:#4ade80;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;border:1px solid #16a34a">
+            ✅ Payé
+        </span>
+    {% else %}
+        <span style="background:#3d1f1f;color:#f87171;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;border:1px solid #ef4444">
+            ⏳ Non payé
+        </span>
+    {% endif %}
+</div>
                         </div>
                     </div>
                     <button type="button"

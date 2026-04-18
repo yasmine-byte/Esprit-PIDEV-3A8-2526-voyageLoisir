@@ -5,6 +5,9 @@ namespace App\Controller;
 use App\Entity\Destination;
 use App\Form\DestinationType;
 use App\Repository\DestinationRepository;
+use App\Repository\UsersRepository;
+use App\Repository\VoyageRepository;
+use App\Service\TelegramService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -14,6 +17,37 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/destination')]
 final class DestinationController extends AbstractController
 {
+    // ============================================================
+    // HELPERS — stockage recherches vocales dans fichier JSON
+    // ============================================================
+
+    private function getStatsFile(): string
+    {
+        return $this->getParameter('kernel.project_dir') . '/var/recherche_vocale.json';
+    }
+
+    private function lireStats(): array
+    {
+        $file = $this->getStatsFile();
+        if (!file_exists($file)) {
+            return [
+                'total'   => 0,
+                'saisons' => ['Printemps' => 0, 'Ete' => 0, 'Automne' => 0, 'Hiver' => 0],
+                'pays'    => [],
+            ];
+        }
+        $data = json_decode(file_get_contents($file), true) ?? [];
+        if (!isset($data['pays'])) $data['pays'] = [];
+        return $data;
+    }
+
+    private function sauvegarderStats(array $stats): void
+    {
+        file_put_contents($this->getStatsFile(), json_encode($stats, JSON_PRETTY_PRINT));
+    }
+
+    // ============================================================
+
     #[Route(name: 'app_destination_index', methods: ['GET'])]
     public function index(Request $request, DestinationRepository $destinationRepository): Response
     {
@@ -36,8 +70,12 @@ final class DestinationController extends AbstractController
     }
 
     #[Route('/new', name: 'app_destination_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager): Response
-    {
+    public function new(
+        Request $request,
+        EntityManagerInterface $entityManager,
+        UsersRepository $usersRepository,
+        TelegramService $telegram
+    ): Response {
         $destination = new Destination();
         $form = $this->createForm(DestinationType::class, $destination);
         $form->handleRequest($request);
@@ -75,34 +113,26 @@ final class DestinationController extends AbstractController
         }
 
         if ($form->isSubmitted() && $form->isValid()) {
-        $entityManager->persist($destination);
-        $entityManager->flush();
-
-        // ✅ Notification WhatsApp CallMeBot
-        $phone  = $_ENV['CALLMEBOT_PHONE'];
-        $apiKey = $_ENV['CALLMEBOT_APIKEY'];
-        $msg    = "🌍 *VoyageLoisir — Nouvelle destination !*\n\n"
-                . "📍 *{$destination->getNom()}* — {$destination->getPays()}\n"
-                . "🌤 Meilleure saison : " . ($destination->getMeilleureSaison() ?? 'N/A') . "\n\n"
-                . "Connectez-vous pour voir les détails.";
-        $url = sprintf(
-            'https://api.callmebot.com/whatsapp.php?phone=%s&text=%s&apikey=%s',
-            urlencode($phone), urlencode($msg), urlencode($apiKey)
-        );
-        $ch = curl_init();
-        curl_setopt_array($ch, [CURLOPT_URL => $url, CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 10, CURLOPT_SSL_VERIFYPEER => false]);
-        curl_exec($ch); curl_close($ch);
-
-        return $this->redirectToRoute('app_destination_index', [], Response::HTTP_SEE_OTHER);
-    }
-
-            return $this->render('destination/new.html.twig', [
-                'destination' => $destination,
-                'form'        => $form->createView(),
-            ]);
+            $entityManager->persist($destination);
+            $entityManager->flush();
+            $telegram->notifyNewDestination(
+                $usersRepository->findAll(),
+                $destination->getNom(),
+                $destination->getPays(),
+                $destination->getMeilleureSaison() ?? 'N/A'
+            );
+            return $this->redirectToRoute('app_destination_index', [], Response::HTTP_SEE_OTHER);
         }
 
-    // ✅ TOUTES LES ROUTES FIXES AVANT /{id}
+        return $this->render('destination/new.html.twig', [
+            'destination' => $destination,
+            'form'        => $form->createView(),
+        ]);
+    }
+
+    // ============================================================
+    // ROUTES FIXES — TOUTES AVANT /{id}
+    // ============================================================
 
     #[Route('/voice-search', name: 'app_destination_voice_search', methods: ['GET'])]
     public function voiceSearch(): Response
@@ -115,32 +145,40 @@ final class DestinationController extends AbstractController
     {
         $query = $request->toArray()['query'] ?? '';
 
-        // ✅ Compter les recherches vocales en session
-        $session = $request->getSession();
-        $session->start();
-        $session->set('total_recherches_vocales',
-            ($session->get('total_recherches_vocales', 0)) + 1
-        );
+        $stats = $this->lireStats();
+        $stats['total'] = ($stats['total'] ?? 0) + 1;
 
-        // ✅ Compter par saison recherchée
         $saisonsMots = [
             'Printemps' => ['printemps', 'spring', 'mars', 'avril', 'mai'],
             'Ete'       => ['été', 'ete', 'summer', 'juin', 'juillet', 'août', 'aout'],
             'Automne'   => ['automne', 'autumn', 'fall', 'septembre', 'octobre', 'novembre'],
-            'Hiver'     => ['hiver', 'winter', 'décembre', 'décembre', 'janvier', 'février'],
+            'Hiver'     => ['hiver', 'winter', 'décembre', 'janvier', 'février'],
         ];
         $queryLower = mb_strtolower($query);
         foreach ($saisonsMots as $saison => $mots) {
             foreach ($mots as $mot) {
                 if (str_contains($queryLower, $mot)) {
-                    $key = 'recherche_saison_' . $saison;
-                    $session->set($key, ($session->get($key, 0)) + 1);
+                    $stats['saisons'][$saison] = ($stats['saisons'][$saison] ?? 0) + 1;
                     break;
                 }
             }
         }
 
         $destinations = $destinationRepository->findAll();
+        $paysConnus = [];
+        foreach ($destinations as $d) {
+            if ($d->getPays()) {
+                $paysConnus[mb_strtolower($d->getPays())] = $d->getPays();
+            }
+        }
+        foreach ($paysConnus as $paysLower => $paysOriginal) {
+            if (str_contains($queryLower, $paysLower)) {
+                $stats['pays'][$paysOriginal] = ($stats['pays'][$paysOriginal] ?? 0) + 1;
+            }
+        }
+
+        $this->sauvegarderStats($stats);
+
         $liste = array_map(function($d) {
             return $d->getId() . ':' . $d->getNom() . ' (' . $d->getPays() . ', ' . ($d->getMeilleureSaison() ?? 'N/A') . ')';
         }, $destinations);
@@ -185,7 +223,7 @@ Return ONLY this JSON, no text before or after, no markdown:
 }
 
 RULE 5 — STRING FIELDS ONLY:
-Every field (nom, pays, message, infos, conseil, description) must be a simple string, never an object or nested structure.
+Every field must be a simple string, never an object or nested structure.
 The id in 'disponibles' must be the exact numeric id from the catalogue.
 If all results are from the catalogue, set hors_catalogue.existe = false.";
 
@@ -238,11 +276,10 @@ If all results are from the catalogue, set hors_catalogue.existe = false.";
     }
 
     #[Route('/stats', name: 'app_destination_stats', methods: ['GET'])]
-    public function stats(DestinationRepository $destinationRepository, Request $request): Response
+    public function stats(DestinationRepository $destinationRepository, Request $request, EntityManagerInterface $entityManager): Response
     {
         $destinations = $destinationRepository->findAll();
 
-        // Par pays
         $parPays = [];
         foreach ($destinations as $d) {
             $pays = $d->getPays() ?? 'Inconnu';
@@ -250,14 +287,12 @@ If all results are from the catalogue, set hors_catalogue.existe = false.";
         }
         arsort($parPays);
 
-        // Par saison — nombre de destinations
         $parSaison = ['Printemps' => 0, 'Ete' => 0, 'Automne' => 0, 'Hiver' => 0];
         foreach ($destinations as $d) {
             $s = $d->getMeilleureSaison() ?? '';
             if (isset($parSaison[$s])) $parSaison[$s]++;
         }
 
-        // ✅ Visites par saison
         $visitesSaison = ['Printemps' => 0, 'Ete' => 0, 'Automne' => 0, 'Hiver' => 0];
         foreach ($destinations as $d) {
             $s = $d->getMeilleureSaison() ?? '';
@@ -266,7 +301,6 @@ If all results are from the catalogue, set hors_catalogue.existe = false.";
             }
         }
 
-        // ✅ Likes par saison
         $likesSaison = ['Printemps' => 0, 'Ete' => 0, 'Automne' => 0, 'Hiver' => 0];
         foreach ($destinations as $d) {
             $s = $d->getMeilleureSaison() ?? '';
@@ -275,28 +309,18 @@ If all results are from the catalogue, set hors_catalogue.existe = false.";
             }
         }
 
-        // Top 5 par visites
         $topVisites = $destinations;
-        usort($topVisites, function($a, $b) {
-            return $b->getNbVisites() - $a->getNbVisites();
-        });
+        usort($topVisites, function($a, $b) { return $b->getNbVisites() - $a->getNbVisites(); });
         $topVisites = array_slice($topVisites, 0, 5);
 
-        // Top 5 par likes
         $topLikes = $destinations;
-        usort($topLikes, function($a, $b) {
-            return ($b->getNbLikes() ?? 0) - ($a->getNbLikes() ?? 0);
-        });
+        usort($topLikes, function($a, $b) { return ($b->getNbLikes() ?? 0) - ($a->getNbLikes() ?? 0); });
         $topLikes = array_slice($topLikes, 0, 5);
 
-        // Actifs / Inactifs
         $actifs = 0;
-        foreach ($destinations as $d) {
-            if ($d->isStatut()) $actifs++;
-        }
+        foreach ($destinations as $d) { if ($d->isStatut()) $actifs++; }
         $inactifs = count($destinations) - $actifs;
 
-        // Totaux visites & likes
         $totalVisites = 0;
         $totalLikes   = 0;
         foreach ($destinations as $d) {
@@ -304,18 +328,17 @@ If all results are from the catalogue, set hors_catalogue.existe = false.";
             $totalLikes   += $d->getNbLikes()   ?? 0;
         }
 
-        // ✅ Recherches vocales et par saison depuis session
-        $session = $request->getSession();
-        $session->start();
-        $totalRechercheVocale = $session->get('total_recherches_vocales', 0);
-        $recherchesSaison = [
-            'Printemps' => $session->get('recherche_saison_Printemps', 0),
-            'Ete'       => $session->get('recherche_saison_Ete', 0),
-            'Automne'   => $session->get('recherche_saison_Automne', 0),
-            'Hiver'     => $session->get('recherche_saison_Hiver', 0),
+        $statsVocale          = $this->lireStats();
+        $totalRechercheVocale = $statsVocale['total'] ?? 0;
+        $recherchesSaison     = [
+            'Printemps' => $statsVocale['saisons']['Printemps'] ?? 0,
+            'Ete'       => $statsVocale['saisons']['Ete']       ?? 0,
+            'Automne'   => $statsVocale['saisons']['Automne']   ?? 0,
+            'Hiver'     => $statsVocale['saisons']['Hiver']     ?? 0,
         ];
+        $recherchesPays = $statsVocale['pays'] ?? [];
+        arsort($recherchesPays);
 
-        // ✅ Réservations (via voyages → collection users)
         $totalReservations     = 0;
         $reservationsParSaison = ['Printemps' => 0, 'Ete' => 0, 'Automne' => 0, 'Hiver' => 0];
         $topReservations       = [];
@@ -326,12 +349,8 @@ If all results are from the catalogue, set hors_catalogue.existe = false.";
                 $nbRes += $voyage->getReservedByUsers()->count();
             }
             $totalReservations += $nbRes;
-
             $s = $d->getMeilleureSaison() ?? '';
-            if (isset($reservationsParSaison[$s])) {
-                $reservationsParSaison[$s] += $nbRes;
-            }
-
+            if (isset($reservationsParSaison[$s])) $reservationsParSaison[$s] += $nbRes;
             $topReservations[] = [
                 'nom'    => $d->getNom(),
                 'pays'   => $d->getPays(),
@@ -344,13 +363,10 @@ If all results are from the catalogue, set hors_catalogue.existe = false.";
         usort($topReservations, fn($a, $b) => $b['nbRes'] - $a['nbRes']);
         $topReservations = array_slice($topReservations, 0, 5);
 
-        // ✅ Top visites data (avec nbRes inclus pour le tableau classement)
         $topVisitesData = [];
         foreach ($topVisites as $d) {
             $nbResD = 0;
-            foreach ($d->getVoyages() as $v) {
-                $nbResD += $v->getReservedByUsers()->count();
-            }
+            foreach ($d->getVoyages() as $v) { $nbResD += $v->getReservedByUsers()->count(); }
             $topVisitesData[] = [
                 'nom'       => $d->getNom(),
                 'pays'      => $d->getPays(),
@@ -362,7 +378,6 @@ If all results are from the catalogue, set hors_catalogue.existe = false.";
             ];
         }
 
-        // Top likes data
         $topLikesData = [];
         foreach ($topLikes as $d) {
             $topLikesData[] = [
@@ -372,6 +387,11 @@ If all results are from the catalogue, set hors_catalogue.existe = false.";
             ];
         }
 
+        // ✅ Paiements confirmés vs non payés
+        $conn          = $entityManager->getConnection();
+        $totalPaies    = (int) $conn->fetchOne('SELECT COUNT(*) FROM voyage_reservations WHERE paid = 1');
+        $totalNonPaies = (int) $conn->fetchOne('SELECT COUNT(*) FROM voyage_reservations WHERE paid = 0');
+
         return $this->json([
             'total'                  => count($destinations),
             'actifs'                 => $actifs,
@@ -380,11 +400,14 @@ If all results are from the catalogue, set hors_catalogue.existe = false.";
             'totalLikes'             => $totalLikes,
             'totalRechercheVocale'   => $totalRechercheVocale,
             'totalReservations'      => $totalReservations,
+            'totalPaies'             => $totalPaies,
+            'totalNonPaies'          => $totalNonPaies,
             'parPays'                => $parPays,
             'parSaison'              => $parSaison,
             'visitesSaison'          => $visitesSaison,
             'likesSaison'            => $likesSaison,
             'recherchesSaison'       => $recherchesSaison,
+            'recherchesPays'         => $recherchesPays,
             'reservationsParSaison'  => $reservationsParSaison,
             'topVisites'             => $topVisitesData,
             'topLikes'               => $topLikesData,
@@ -392,7 +415,6 @@ If all results are from the catalogue, set hors_catalogue.existe = false.";
         ]);
     }
 
-    // ✅ ROUTES LIKE AVANT /{id}
     #[Route('/like/{id}', name: 'app_destination_like', methods: ['POST'])]
     public function like(Destination $destination, Request $request, EntityManagerInterface $em): Response
     {
@@ -412,11 +434,7 @@ If all results are from the catalogue, set hors_catalogue.existe = false.";
         }
 
         $em->flush();
-
-        return $this->json([
-            'liked' => $liked,
-            'total' => $destination->getNbLikes() ?? 0,
-        ]);
+        return $this->json(['liked' => $liked, 'total' => $destination->getNbLikes() ?? 0]);
     }
 
     #[Route('/like-status/{id}', name: 'app_destination_like_status', methods: ['GET'])]
@@ -425,25 +443,48 @@ If all results are from the catalogue, set hors_catalogue.existe = false.";
         $session = $request->getSession();
         $session->start();
         $liked = $session->get('liked_dest_' . $destination->getId(), false);
-
-        return $this->json([
-            'liked' => $liked,
-            'total' => $destination->getNbLikes() ?? 0,
-        ]);
+        return $this->json(['liked' => $liked, 'total' => $destination->getNbLikes() ?? 0]);
     }
 
-    // ✅ ROUTES AVEC /{id} EN DERNIER
+    #[Route('/telegram/save', name: 'app_telegram_save', methods: ['POST'])]
+    public function telegramSave(Request $request, EntityManagerInterface $entityManager): Response
+    {
+        $user = $this->getUser();
+        if (!$user) {
+            return $this->redirectToRoute('app_login');
+        }
+        if (!$this->isCsrfTokenValid('telegram_save', $request->request->get('_token'))) {
+            $this->addFlash('error', 'Token invalide.');
+            return $this->redirectToRoute('app_destinations');
+        }
+        $chatId = trim($request->request->get('telegram_chat_id', ''));
+        if ($user instanceof \App\Entity\Users) {
+            $user->setTelegramChatId($chatId ?: null);
+            $entityManager->flush();
+            $this->addFlash('success', $chatId ? 'Notifications Telegram activées !' : 'Notifications Telegram désactivées.');
+        }
+        return $this->redirectToRoute('app_destinations');
+    }
+
+    // ============================================================
+    // ROUTES AVEC /{id}
+    // ============================================================
+
     #[Route('/{id}', name: 'app_destination_show', methods: ['GET'])]
     public function show(Destination $destination): Response
     {
-        return $this->render('destination/show.html.twig', [
-            'destination' => $destination,
-        ]);
+        return $this->render('destination/show.html.twig', ['destination' => $destination]);
     }
 
     #[Route('/{id}/edit', name: 'app_destination_edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, Destination $destination, EntityManagerInterface $entityManager): Response
-    {
+    public function edit(
+        Request $request,
+        Destination $destination,
+        EntityManagerInterface $entityManager,
+        VoyageRepository $voyageRepository,
+        TelegramService $telegram
+    ): Response {
+        $statutAvant = $destination->isStatut();
         $form = $this->createForm(DestinationType::class, $destination);
         $form->handleRequest($request);
 
@@ -480,6 +521,18 @@ If all results are from the catalogue, set hors_catalogue.existe = false.";
         }
 
         if ($form->isSubmitted() && $form->isValid()) {
+            if ($statutAvant === true && $destination->isStatut() === false) {
+                $voyages = $voyageRepository->findBy(['destination' => $destination]);
+                $usersANotifier = [];
+                foreach ($voyages as $voyage) {
+                    foreach ($voyage->getReservedByUsers() as $user) {
+                        $usersANotifier[$user->getId()] = $user;
+                    }
+                }
+                if (!empty($usersANotifier)) {
+                    $telegram->notifyDestinationInactive(array_values($usersANotifier), $destination->getNom());
+                }
+            }
             $entityManager->flush();
             return $this->redirectToRoute('app_destination_index', [], Response::HTTP_SEE_OTHER);
         }
@@ -488,16 +541,6 @@ If all results are from the catalogue, set hors_catalogue.existe = false.";
             'destination' => $destination,
             'form'        => $form,
         ]);
-    }
-
-    #[Route('/{id}', name: 'app_destination_delete', methods: ['POST'])]
-    public function delete(Request $request, Destination $destination, EntityManagerInterface $entityManager): Response
-    {
-        if ($this->isCsrfTokenValid('delete' . $destination->getId(), $request->getPayload()->getString('_token'))) {
-            $entityManager->remove($destination);
-            $entityManager->flush();
-        }
-        return $this->redirectToRoute('app_destination_index', [], Response::HTTP_SEE_OTHER);
     }
 
     #[Route('/{id}/itineraire', name: 'app_destination_itineraire', methods: ['POST'])]
@@ -544,12 +587,18 @@ Réponds UNIQUEMENT avec le JSON, sans texte avant ou après.";
         $video = null;
         if (!empty($data['items'][0])) {
             $item  = $data['items'][0];
-            $video = [
-                'id'     => $item['id']['videoId'],
-                'titre'  => $item['snippet']['title'],
-                'chaine' => $item['snippet']['channelTitle'],
-            ];
+            $video = ['id' => $item['id']['videoId'], 'titre' => $item['snippet']['title'], 'chaine' => $item['snippet']['channelTitle']];
         }
         return $this->json($video);
+    }
+
+    #[Route('/{id}', name: 'app_destination_delete', methods: ['POST'])]
+    public function delete(Request $request, Destination $destination, EntityManagerInterface $entityManager): Response
+    {
+        if ($this->isCsrfTokenValid('delete' . $destination->getId(), $request->getPayload()->getString('_token'))) {
+            $entityManager->remove($destination);
+            $entityManager->flush();
+        }
+        return $this->redirectToRoute('app_destination_index', [], Response::HTTP_SEE_OTHER);
     }
 }

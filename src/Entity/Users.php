@@ -144,4 +144,9 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface, Equata
         }
         return $this->email === $user->getEmail();
     }
+    #[ORM\Column(length: 100, nullable: true)]
+private ?string $telegramChatId = null;
+
+public function getTelegramChatId(): ?string { return $this->telegramChatId; }
+public function setTelegramChatId(?string $v): static { $this->telegramChatId = $v; return $this; }
 }

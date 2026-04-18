@@ -52,7 +52,6 @@ class FrontSecurityController extends AbstractController
         $password        = $request->request->get('password', '');
         $confirmPassword = $request->request->get('confirm_password', '');
 
-        // ── Validations ──
         if (empty($nom) || empty($prenom) || empty($email) || empty($password)) {
             $this->addFlash('register_error', 'Tous les champs obligatoires doivent être remplis.');
             return $this->redirectToRoute('admin_login');
@@ -83,7 +82,6 @@ class FrontSecurityController extends AbstractController
             return $this->redirectToRoute('admin_login');
         }
 
-        // ── Créer l'utilisateur avec ROLE_USER par défaut ──
         $user = new Users();
         $user->setNom($nom);
         $user->setPrenom($prenom);
@@ -94,7 +92,6 @@ class FrontSecurityController extends AbstractController
         $user->setUpdatedAt(new \DateTime());
         $user->setPasswordHash($hasher->hashPassword($user, $password));
 
-        // Assigner ROLE_USER uniquement
         $roleUser = $roleRepository->findOneBy(['name' => 'ROLE_USER']);
         if ($roleUser) {
             $user->addRole($roleUser);
@@ -108,15 +105,31 @@ class FrontSecurityController extends AbstractController
     }
 
     #[Route('/profile', name: 'front_profile')]
-    public function profile(VoyageRepository $voyageRepository): Response
+    public function profile(VoyageRepository $voyageRepository, EntityManagerInterface $entityManager): Response
     {
         $user = $this->getUser();
         if (!$user) {
             return $this->redirectToRoute('app_home');
         }
-$reservations = $voyageRepository->findByReservedUser($user);        return $this->render('home/profile.html.twig', [
+
+        $reservations = $voyageRepository->findByReservedUser($user);
+
+        // ✅ Récupérer le statut paid PAR USER pour chaque voyage
+        $paidVoyages = [];
+        if ($user instanceof Users) {
+            $rows = $entityManager->getConnection()->fetchAllAssociative(
+                'SELECT voyage_id FROM voyage_reservations WHERE users_id = :uid AND paid = 1',
+                ['uid' => $user->getId()]
+            );
+            foreach ($rows as $row) {
+                $paidVoyages[$row['voyage_id']] = true;
+            }
+        }
+
+        return $this->render('home/profile.html.twig', [
             'user'         => $user,
             'reservations' => $reservations,
+            'paidVoyages'  => $paidVoyages,
         ]);
     }
 }

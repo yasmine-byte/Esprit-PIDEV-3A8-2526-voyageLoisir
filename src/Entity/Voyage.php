@@ -240,11 +240,20 @@ class Voyage
      * Vérifie si un user précis a réservé ce voyage.
      * Utiliser dans Twig : voyage.isReservedByUser(app.user)
      */
-    public function isReservedByUser(Users $user): bool
-    {
-        return $this->reservedByUsers->contains($user);
+   public function isReservedByUser($user): bool
+{
+    if (!$user) return false;
+    foreach ($this->reservedByUsers as $u) {
+        if ($u->getId() === $user->getId()) return true;
     }
+    return false;
+}
 
+public function isPaidByUser($user): bool
+{
+    // On vérifie via une requête directe — géré dans le controller
+    return false; // placeholder
+}
     /**
      * Compatibilité : indique si au moins un user a réservé ce voyage.
      * Utile pour l'affichage admin (colonne "Réservé par").

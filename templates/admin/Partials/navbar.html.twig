@@ -17,13 +17,37 @@
         </div>
 
         <!-- Notifications -->
-        <button class="notification-btn">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-                <path d="M13.73 21a2 2 0 01-3.46 0"/>
-            </svg>
-            <span class="notification-badge">3</span>
-        </button>
+        <div class="notif-wrapper" id="notifWrapper" style="position:relative">
+            <button class="notification-btn" onclick="toggleNotifDropdown()" style="position:relative;background:none;border:none;cursor:pointer;padding:8px;border-radius:10px;display:flex;align-items:center;justify-content:center;transition:background 0.2s" onmouseover="this.style.background='rgba(255,255,255,0.08)'" onmouseout="this.style.background='none'">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                    <path d="M13.73 21a2 2 0 01-3.46 0"/>
+                </svg>
+                <span id="notif-badge" style="display:none;position:absolute;top:2px;right:2px;min-width:18px;height:18px;border-radius:9px;background:#dc2626;color:white;font-size:10px;font-weight:700;align-items:center;justify-content:center;padding:0 4px;border:2px solid #0d0e12">0</span>
+            </button>
+
+            <!-- Dropdown -->
+            <div id="notif-dropdown" style="display:none;position:absolute;top:calc(100% + 10px);right:0;width:380px;background:#1a1b22;border:1px solid #2a2a3a;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,0.5);z-index:9999;overflow:hidden">
+
+                <div style="padding:14px 18px;border-bottom:1px solid #2a2a3a;display:flex;align-items:center;justify-content:space-between">
+                    <div style="display:flex;align-items:center;gap:8px">
+                        <span id="notif-dot" style="width:8px;height:8px;border-radius:50%;background:#4b5563;display:inline-block"></span>
+                        <span style="font-size:14px;font-weight:600;color:#e2e8f0">Notifications</span>
+                    </div>
+                    <span id="notif-label" style="font-size:11px;font-weight:600;padding:2px 10px;border-radius:20px;color:#9ca3af;background:rgba(156,163,175,0.1);border:1px solid rgba(156,163,175,0.2)">Chargement...</span>
+                </div>
+
+                <div id="notif-list" style="max-height:340px;overflow-y:auto;padding:6px 0">
+                    <div style="text-align:center;padding:36px 20px;color:#4b5563;font-size:13px">
+                        <div>⏳ Chargement des alertes...</div>
+                    </div>
+                </div>
+
+                <div style="padding:12px 18px;border-top:1px solid #2a2a3a;text-align:center">
+                    <a href="{{ path('app_voyage_index') }}" style="font-size:12px;color:#818cf8;font-weight:600;text-decoration:none;text-transform:uppercase;letter-spacing:0.5px">Gérer tous les voyages →</a>
+                </div>
+            </div>
+        </div>
 
         <!-- User -->
         {% if app.user %}
@@ -32,16 +56,8 @@
                     {{ app.user.nom is defined ? app.user.nom|first : app.user.email|first|upper }}
                 </div>
                 <div class="user-info">
-                    <span class="user-name">
-                        {{ app.user.nom is defined and app.user.nom ? app.user.nom : app.user.email }}
-                    </span>
-                    <span class="user-role">
-    {% if is_granted('ROLE_ADMIN') %}
-        Administrateur
-    {% else %}
-        Utilisateur
-    {% endif %}
-</span>
+                    <span class="user-name">{{ app.user.nom is defined and app.user.nom ? app.user.nom : app.user.email }}</span>
+                    <span class="user-role">{% if is_granted('ROLE_ADMIN') %}Administrateur{% else %}Utilisateur{% endif %}</span>
                 </div>
             </a>
         {% else %}
@@ -49,16 +65,123 @@
                 <div class="user-avatar">VN</div>
                 <div class="user-info">
                     <span class="user-name">Admin Vianova</span>
-                    <span class="user-role">
-    {% if is_granted('ROLE_ADMIN') %}
-        Administrateur
-    {% else %}
-        Utilisateur
-    {% endif %}
-</span>
+                    <span class="user-role">{% if is_granted('ROLE_ADMIN') %}Administrateur{% else %}Utilisateur{% endif %}</span>
                 </div>
             </div>
         {% endif %}
 
     </div>
 </div>
+
+<script>
+var notifCharged = false;
+
+function chargerNotifications() {
+    fetch('{{ path("app_voyage_expires_json") }}')
+        .then(function(r) {
+            if (!r.ok) throw new Error('HTTP ' + r.status);
+            return r.json();
+        })
+        .then(function(data) {
+            var voyages = data.voyages || [];
+            var badge   = document.getElementById('notif-badge');
+            var list    = document.getElementById('notif-list');
+            var label   = document.getElementById('notif-label');
+            var dot     = document.getElementById('notif-dot');
+
+            if (voyages.length > 0) {
+                // Badge rouge
+                badge.style.display = 'flex';
+                badge.textContent = voyages.length;
+
+                // Label alerte
+                label.textContent = voyages.length + ' alerte' + (voyages.length > 1 ? 's' : '');
+                label.style.color = '#f87171';
+                label.style.background = 'rgba(248,113,113,0.1)';
+                label.style.borderColor = 'rgba(248,113,113,0.25)';
+
+                // Dot animé rouge
+                dot.style.background = '#dc2626';
+                dot.style.animation = 'notifPulse 1.5s infinite';
+
+                // Liste
+                var html = '';
+                voyages.forEach(function(v) {
+                    html += '<div style="padding:12px 18px;border-bottom:1px solid #1e1e2a;display:flex;align-items:flex-start;gap:12px;transition:background 0.15s" onmouseover="this.style.background=\'#14142a\'" onmouseout="this.style.background=\'transparent\'">'
+                          + '<div style="width:36px;height:36px;border-radius:10px;background:rgba(220,38,38,0.15);border:1px solid rgba(220,38,38,0.3);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:15px">⚠️</div>'
+                          + '<div style="flex:1;min-width:0">'
+                          + '<div style="font-size:13px;font-weight:600;color:#e2e8f0">Voyage #' + v.id + ' — ' + (v.destination || 'N/A') + '</div>'
+                          + '<div style="font-size:12px;color:#9ca3af;margin:2px 0">' + v.pointDepart + ' → ' + v.pointArrivee + '</div>'
+                          + '<div style="font-size:11px;color:#f87171;font-weight:500">📅 Départ prévu le ' + v.dateDepart + '</div>'
+                          + '</div>'
+                          + '<div style="display:flex;flex-direction:column;gap:5px;flex-shrink:0">'
+                          + '<a href="/voyage/' + v.id + '/edit" style="font-size:10px;font-weight:600;color:#93c5fd;background:rgba(37,99,235,0.15);border:1px solid rgba(37,99,235,0.3);padding:4px 10px;border-radius:6px;text-decoration:none;text-align:center;white-space:nowrap">✏️ Modifier</a>'
+                          + '<form method="POST" action="/voyage/' + v.id + '" onsubmit="return confirm(\'Supprimer le voyage #' + v.id + ' ?\');" style="margin:0">'
+                          + '<input type="hidden" name="_token" value="{{ csrf_token("delete") }}">'
+                          + '<button type="submit" style="font-size:10px;font-weight:600;color:#f87171;background:rgba(220,38,38,0.15);border:1px solid rgba(220,38,38,0.3);padding:4px 10px;border-radius:6px;cursor:pointer;font-family:inherit;width:100%;white-space:nowrap">🗑 Supprimer</button>'
+                          + '</form>'
+                          + '</div>'
+                          + '</div>';
+                });
+                list.innerHTML = html;
+
+            } else {
+                badge.style.display = 'none';
+                label.textContent = 'Aucune alerte';
+                label.style.color = '#4ade80';
+                label.style.background = 'rgba(74,222,128,0.1)';
+                label.style.borderColor = 'rgba(74,222,128,0.2)';
+                dot.style.background = '#4ade80';
+                dot.style.animation = 'none';
+                list.innerHTML = '<div style="text-align:center;padding:36px 20px">'
+                    + '<div style="font-size:28px;margin-bottom:10px">✅</div>'
+                    + '<div style="font-size:13px;color:#4ade80;font-weight:600">Aucun voyage expiré</div>'
+                    + '<div style="font-size:12px;color:#4b5563;margin-top:4px">Tous les voyages sont à jour</div>'
+                    + '</div>';
+            }
+            notifCharged = true;
+        })
+        .catch(function(err) {
+            console.error('Notif error:', err);
+            document.getElementById('notif-list').innerHTML = '<div style="text-align:center;padding:24px;color:#f87171;font-size:13px">❌ Erreur : ' + err.message + '</div>';
+            document.getElementById('notif-label').textContent = 'Erreur';
+        });
+}
+
+function toggleNotifDropdown() {
+    var dd = document.getElementById('notif-dropdown');
+    var isOpen = dd.style.display !== 'none';
+    if (isOpen) {
+        dd.style.display = 'none';
+    } else {
+        dd.style.display = 'block';
+        chargerNotifications();
+    }
+}
+
+// Fermer en cliquant ailleurs
+document.addEventListener('click', function(e) {
+    if (!e.target.closest('#notifWrapper')) {
+        var dd = document.getElementById('notif-dropdown');
+        if (dd) dd.style.display = 'none';
+    }
+});
+
+// Badge au chargement
+document.addEventListener('DOMContentLoaded', function() {
+    fetch('{{ path("app_voyage_expires_json") }}')
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            var n = (data.voyages || []).length;
+            var badge = document.getElementById('notif-badge');
+            if (n > 0) { badge.style.display = 'flex'; badge.textContent = n; }
+        }).catch(function(){});
+});
+</script>
+
+<style>
+@keyframes notifPulse {
+    0%, 100% { opacity:1; transform:scale(1); }
+    50%       { opacity:0.4; transform:scale(1.4); }
+}
+</style>
