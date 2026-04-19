@@ -44,6 +44,9 @@ class Reservation
     #[ORM\Column(nullable: true)]
     private ?\DateTime $createdAt = null;
 
+    #[ORM\Column(length: 1024, nullable: true)]
+    private ?string $fcmToken = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -167,4 +170,16 @@ public function setCreatedAt(?\DateTime $createdAt): static
     $this->createdAt = $createdAt;
     return $this;
 }
+
+    public function getFcmToken(): ?string
+    {
+        return $this->fcmToken;
+    }
+
+    public function setFcmToken(?string $fcmToken): static
+    {
+        $this->fcmToken = $fcmToken;
+
+        return $this;
+    }
 }

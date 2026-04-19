@@ -2,9 +2,8 @@
 namespace App\Controller;
 
 use App\Entity\Reservation;
-use App\Repository\HebergementRepository;
 use App\Repository\DisponibiliteRepository;
-use App\Service\NotificationService;
+use App\Repository\HebergementRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -13,8 +12,6 @@ use Symfony\Component\Routing\Attribute\Route;
 
 class ReservationController extends AbstractController
 {
-    public function __construct(private NotificationService $notifService) {}
-
     #[Route('/reservation/{id}', name: 'app_reservation_new', methods: ['POST'])]
     public function new(
         int $id,
@@ -29,13 +26,13 @@ class ReservationController extends AbstractController
         $dateFin   = new \DateTime($request->request->get('dateFin'));
 
         if ($dateFin <= $dateDebut) {
-            $this->addFlash('error', 'La date de départ doit être après la date d\'arrivée.');
+            $this->addFlash('error', 'La date de dÃ©part doit Ãªtre aprÃ¨s la date d\'arrivÃ©e.');
             return $this->redirectToRoute('app_property_details', ['id' => $id]);
         }
 
         $disponibilites = $disponibiliteRepo->findBy([
             'hebergement' => $hebergement,
-            'disponible'  => true,
+            'disponible' => true,
         ]);
 
         $estDisponible = false;
@@ -47,7 +44,7 @@ class ReservationController extends AbstractController
         }
 
         if (!$estDisponible) {
-            $this->addFlash('error', 'Cet hébergement n\'est pas disponible pour les dates choisies.');
+            $this->addFlash('error', 'Cet hÃ©bergement n\'est pas disponible pour les dates choisies.');
             return $this->redirectToRoute('app_property_details', ['id' => $id]);
         }
 
@@ -63,15 +60,15 @@ class ReservationController extends AbstractController
             ->getResult();
 
         if (count($reservationsExistantes) > 0) {
-            $this->addFlash('error', 'Cet hébergement est déjà réservé pour ces dates.');
+            $this->addFlash('error', 'Cet hÃ©bergement est dÃ©jÃ  rÃ©servÃ© pour ces dates.');
             return $this->redirectToRoute('app_property_details', ['id' => $id]);
         }
 
         $nbNuits = $dateDebut->diff($dateFin)->days;
 
-        // ✅ Utiliser le prix de la chambre sélectionnée si disponible
+        // âœ… Utiliser le prix de la chambre sÃ©lectionnÃ©e si disponible
         $prixParNuit = (float) ($request->request->get('prixParNuit') ?: $hebergement->getPrix());
-        $total       = $nbNuits * $prixParNuit;
+        $total = $nbNuits * $prixParNuit;
 
         $reservation = new Reservation();
         $reservation->setHebergement($hebergement);
@@ -84,19 +81,10 @@ class ReservationController extends AbstractController
         $reservation->setTotal((string) $total);
         $reservation->setStatut('en_attente');
         $reservation->setCreatedAt(new \DateTime());
+        $reservation->setFcmToken($request->request->get('fcm_token') ?: null);
 
         $em->persist($reservation);
         $em->flush();
-
-        // Notification FCM si token présent
-        $fcmToken = $request->request->get('fcm_token');
-        if ($fcmToken) {
-            $this->notifService->notifyReservationConfirmee(
-                $fcmToken,
-                $reservation->getClientNom(),
-                $reservation->getHebergement()->getAdresse() ?? 'votre hébergement'
-            );
-        }
 
         return $this->redirectToRoute('app_reservation_recap', ['id' => $reservation->getId()]);
     }
@@ -107,7 +95,7 @@ class ReservationController extends AbstractController
         $reservation = $em->getRepository(Reservation::class)->find($id);
 
         if (!$reservation) {
-            throw $this->createNotFoundException('Réservation non trouvée.');
+            throw $this->createNotFoundException('RÃ©servation non trouvÃ©e.');
         }
 
         return $this->render('reservation/recap.html.twig', [

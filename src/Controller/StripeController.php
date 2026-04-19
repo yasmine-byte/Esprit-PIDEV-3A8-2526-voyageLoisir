@@ -33,8 +33,12 @@ class StripeController extends AbstractController
         }
 
         // ✅ Stocker le token FCM en session si fourni
-        $fcmToken = $request->request->get('fcm_token') ?? $request->getSession()->get('fcm_token');
+        $fcmToken = $request->request->get('fcm_token')
+            ?? $request->getSession()->get('fcm_token')
+            ?? $reservation->getFcmToken();
         if ($fcmToken) {
+            $reservation->setFcmToken($fcmToken);
+            $em->flush();
             $request->getSession()->set('fcm_token_' . $id, $fcmToken);
         }
 
@@ -81,7 +85,7 @@ class StripeController extends AbstractController
         $em->flush();
 
         // ✅ Envoyer notification FCM si token disponible en session
-        $fcmToken = $request->getSession()->get('fcm_token_' . $id);
+        $fcmToken = $request->getSession()->get('fcm_token_' . $id) ?? $reservation->getFcmToken();
         if ($fcmToken) {
             $this->notificationService->notifyReservationConfirmee(
                 $fcmToken,

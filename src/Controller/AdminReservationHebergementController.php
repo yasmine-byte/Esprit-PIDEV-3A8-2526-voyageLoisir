@@ -2,6 +2,7 @@
 namespace App\Controller;
 
 use App\Repository\ReservationRepository;
+use App\Service\NotificationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -11,6 +12,10 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/admin/reservation/hebergement')]
 class AdminReservationHebergementController extends AbstractController
 {
+    public function __construct(
+        private NotificationService $notificationService,
+    ) {}
+
     #[Route('/', name: 'admin_reservation_hebergement_index', methods: ['GET'])]
     public function index(Request $request, ReservationRepository $reservationRepository): Response
     {
@@ -44,11 +49,35 @@ class AdminReservationHebergementController extends AbstractController
     {
         $reservation = $reservationRepository->find($id);
         if ($reservation) {
+            $ancienStatut = $reservation->getStatut();
             $newStatut = $request->request->get('statut');
-            if (in_array($newStatut, ['en_attente', 'confirmee', 'annulee'])) {
+
+            if (in_array($newStatut, ['en_attente', 'confirmee', 'annulee'], true)) {
                 $reservation->setStatut($newStatut);
                 $em->flush();
-                $this->addFlash('success', 'Statut mis à jour avec succès !');
+
+                if ($newStatut !== $ancienStatut && $reservation->getFcmToken()) {
+                    $clientNom = $reservation->getClientNom() ?: 'Client';
+                    $hebergementAdresse = $reservation->getHebergement()?->getAdresse() ?? 'votre hÃ©bergement';
+
+                    if ($newStatut === 'confirmee') {
+                        $this->notificationService->notifyReservationConfirmee(
+                            $reservation->getFcmToken(),
+                            $clientNom,
+                            $hebergementAdresse
+                        );
+                    }
+
+                    if ($newStatut === 'annulee') {
+                        $this->notificationService->notifyReservationAnnulee(
+                            $reservation->getFcmToken(),
+                            $clientNom,
+                            $hebergementAdresse
+                        );
+                    }
+                }
+
+                $this->addFlash('success', 'Statut mis Ã  jour avec succÃ¨s !');
             }
         }
         return $this->redirectToRoute('admin_reservation_hebergement_index');
@@ -58,10 +87,10 @@ class AdminReservationHebergementController extends AbstractController
     public function delete(int $id, Request $request, ReservationRepository $reservationRepository, EntityManagerInterface $em): Response
     {
         $reservation = $reservationRepository->find($id);
-        if ($reservation && $this->isCsrfTokenValid('delete'.$id, $request->request->get('_token'))) {
+        if ($reservation && $this->isCsrfTokenValid('delete' . $id, $request->request->get('_token'))) {
             $em->remove($reservation);
             $em->flush();
-            $this->addFlash('success', 'Réservation supprimée avec succès !');
+            $this->addFlash('success', 'RÃ©servation supprimÃ©e avec succÃ¨s !');
         }
         return $this->redirectToRoute('admin_reservation_hebergement_index');
     }

@@ -33,6 +33,12 @@ class NotificationService
 
     public function sendPush(string $fcmToken, string $title, string $body, array $data = []): bool
     {
+        $fcmToken = trim($fcmToken);
+        if ($fcmToken === '') {
+            $this->logger->warning('[FCM] Token vide, notification ignoree.');
+            return false;
+        }
+
         try {
             $messaging = $this->getMessaging();
 
@@ -42,11 +48,10 @@ class NotificationService
 
             $messaging->send($message);
 
-            $this->logger->info('[FCM] Notification envoyée avec succès : ' . $title);
+            $this->logger->info(sprintf('[FCM][%s] Notification envoyee : %s', $this->fcmProjectId, $title));
             return true;
-
-        } catch (\Exception $e) {
-            $this->logger->error('[FCM] Exception : ' . $e->getMessage());
+        } catch (\Throwable $e) {
+            $this->logger->error(sprintf('[FCM][%s] Exception : %s', $this->fcmProjectId, $e->getMessage()));
             return false;
         }
     }
@@ -55,8 +60,8 @@ class NotificationService
     {
         return $this->sendPush(
             $fcmToken,
-            '✅ Réservation confirmée !',
-            "Bonjour {$clientNom}, votre séjour à {$hebergementAdresse} est confirmé.",
+            'Reservation confirmee',
+            "Bonjour {$clientNom}, votre sejour a {$hebergementAdresse} est confirme.",
             ['type' => 'reservation_confirmee', 'url' => '/profile']
         );
     }
@@ -65,8 +70,8 @@ class NotificationService
     {
         return $this->sendPush(
             $fcmToken,
-            '❌ Réservation annulée',
-            "Bonjour {$clientNom}, votre réservation à {$hebergementAdresse} a été annulée.",
+            'Reservation annulee',
+            "Bonjour {$clientNom}, votre reservation a {$hebergementAdresse} a ete annulee.",
             ['type' => 'reservation_annulee', 'url' => '/profile']
         );
     }
@@ -75,8 +80,8 @@ class NotificationService
     {
         return $this->sendPush(
             $fcmToken,
-            '💳 Paiement reçu',
-            "Bonjour {$clientNom}, votre paiement de {$montant} DT a été reçu.",
+            'Paiement recu',
+            "Bonjour {$clientNom}, votre paiement de {$montant} DT a ete recu.",
             ['type' => 'paiement', 'url' => '/profile']
         );
     }
@@ -85,8 +90,8 @@ class NotificationService
     {
         return $this->sendPush(
             $fcmToken,
-            '🏨 Recommandation pour vous',
-            "Bonjour {$clientNom}, découvrez {$hebergementAdresse} à partir de {$prix} DT/nuit.",
+            'Recommandation pour vous',
+            "Bonjour {$clientNom}, decouvrez {$hebergementAdresse} a partir de {$prix} DT/nuit.",
             ['type' => 'recommandation', 'url' => '/hebergement']
         );
     }
