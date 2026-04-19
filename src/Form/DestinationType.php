@@ -3,8 +3,6 @@
 namespace App\Form;
 
 use App\Entity\Destination;
-use App\Entity\Voyage;
-use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
@@ -22,12 +20,12 @@ class DestinationType extends AbstractType
         $builder
             ->add("nom", TextType::class, [
                 "label"      => "Nom",
-                "required"   => true,
+                "required"   => false,
                 "empty_data" => "",
             ])
             ->add("pays", TextType::class, [
                 "label"      => "Pays",
-                "required"   => true,
+                "required"   => false,
                 "empty_data" => "",
             ])
             ->add("description", TextareaType::class, [
@@ -57,30 +55,24 @@ class DestinationType extends AbstractType
             ->add("latitude", NumberType::class, [
                 "label"      => "Latitude",
                 "scale"      => 6,
-                "required"   => true,
+                "required"   => false,
                 "empty_data" => null,
             ])
             ->add("longitude", NumberType::class, [
                 "label"      => "Longitude",
                 "scale"      => 6,
-                "required"   => true,
+                "required"   => false,
                 "empty_data" => null,
             ])
             ->add("nb_visites", IntegerType::class, [
                 "label"      => "Nb Visites",
-                "required"   => true,
+                "required"   => false,
                 "empty_data" => null,
             ])
             ->add("video_path", FileType::class, [
                 "label"    => "Video",
                 "mapped"   => false,
                 "required" => false,
-            ])
-            ->add("voyage", EntityType::class, [
-                "class"        => Voyage::class,
-                "choice_label" => "id",
-                "placeholder"  => "-- Choisir un voyage --",
-                "required"     => true,
             ]);
     }
 

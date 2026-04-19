@@ -1,59 +1,82 @@
 {% extends 'admin/base_admin.html.twig' %}
 {% block title %}Gestion Hébergements{% endblock %}
 {% block admin_content %}
+<div class="main-content">
 
-    <div class="page-header">
-        <h1>Gestion des Hébergements</h1>
-        <p>{{ hebergements|length }} hébergement(s) trouvé(s)</p>
-    </div>
-
-    <div style="display:flex; gap:12px; margin-bottom:20px; align-items:center;">
-        <a href="{{ path('app_hebergement_new') }}" style="background:var(--accent-gradient); color:#1c1c1e; padding:10px 20px; border-radius:8px; text-decoration:none; font-weight:600; white-space:nowrap;">
+    <div style="display:flex; gap:10px; margin-bottom:16px;">
+        <a href="{{ path('app_hebergement_new') }}" style="background:var(--accent-primary); color:#fff; padding:10px 20px; border-radius:8px; text-decoration:none; font-weight:600; display:flex; align-items:center; gap:8px;">
             + Nouvel Hébergement
         </a>
-        <form method="get" action="{{ path('app_hebergement_index') }}" style="display:flex; gap:8px; flex:1;">
-            <input type="text" name="q" value="{{ q }}" placeholder="Rechercher par description..."
-                   class="form-input" style="flex:1; padding:10px 14px;">
-            <button type="submit" class="btn primary" style="padding:10px 20px;">🔍 Rechercher</button>
-            {% if q %}
-            <a href="{{ path('app_hebergement_index') }}" class="btn" style="padding:10px 16px;">✕</a>
-            {% endif %}
-        </form>
+        <a href="{{ path('app_chambre_new') }}" style="background:#22c55e; color:#fff; padding:10px 20px; border-radius:8px; text-decoration:none; font-weight:600; display:flex; align-items:center; gap:8px;">
+            + Chambre
+        </a>
+        <a href="{{ path('app_type_new') }}" style="background:#6c63ff; color:#fff; padding:10px 20px; border-radius:8px; text-decoration:none; font-weight:600; display:flex; align-items:center; gap:8px;">
+            + Type
+        </a>
     </div>
 
-    <div class="card">
-        <table class="market-table">
+    <div style="margin-bottom:24px;">
+        <h2 style="color:var(--text-primary); margin:0;">Gestion des Hébergements</h2>
+        <p style="color:var(--text-secondary); margin:4px 0 0;">{{ hebergements|length }} hébergement(s) trouvé(s)</p>
+    </div>
+
+    <div style="background:var(--bg-card); border-radius:12px; overflow:hidden; border:1px solid var(--border-color);">
+        <table style="width:100%; border-collapse:collapse;">
             <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Description</th>
-                    <th>Prix</th>
-                    <th>Type</th>
-                    <th>Chambres</th>
-                    <th>Actions</th>
+                <tr style="background:var(--bg-secondary); border-bottom:1px solid var(--border-color);">
+                    <th style="padding:14px 20px; text-align:left; color:var(--text-secondary); font-size:13px; font-weight:600;">#</th>
+                    <th style="padding:14px 20px; text-align:left; color:var(--text-secondary); font-size:13px; font-weight:600;">Image</th>
+                    <th style="padding:14px 20px; text-align:left; color:var(--text-secondary); font-size:13px; font-weight:600;">Description</th>
+                    <th style="padding:14px 20px; text-align:left; color:var(--text-secondary); font-size:13px; font-weight:600;">Prix</th>
+                    <th style="padding:14px 20px; text-align:left; color:var(--text-secondary); font-size:13px; font-weight:600;">Type</th>
+                    <th style="padding:14px 20px; text-align:left; color:var(--text-secondary); font-size:13px; font-weight:600;">Chambres</th>
+                    <th style="padding:14px 20px; text-align:center; color:var(--text-secondary); font-size:13px; font-weight:600;">Actions</th>
                 </tr>
             </thead>
             <tbody>
             {% for hebergement in hebergements %}
-                <tr>
-                    <td>{{ hebergement.id }}</td>
-                    <td style="max-width:250px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ hebergement.description }}</td>
-                    <td class="price-cell">{{ hebergement.prix }} TND</td>
-                    <td><span style="background:var(--bg-secondary); color:var(--accent-copper); padding:4px 12px; border-radius:20px; font-size:12px; font-weight:600;">{{ hebergement.type ? hebergement.type.nom : 'N/A' }}</span></td>
-                    <td>{{ hebergement.no|length }}</td>
-                    <td>
-                        <div style="display:flex; gap:8px;">
-                            <a href="{{ path('app_hebergement_show', {'id': hebergement.id}) }}" style="background:#3b82f620; color:#3b82f6; padding:5px 12px; border-radius:6px; text-decoration:none; font-size:13px; font-weight:500;">Voir</a>
-                            <a href="{{ path('app_hebergement_edit', {'id': hebergement.id}) }}" style="background:#f59e0b20; color:#f59e0b; padding:5px 12px; border-radius:6px; text-decoration:none; font-size:13px; font-weight:500;">Modifier</a>
+                <tr style="border-bottom:1px solid var(--border-color);">
+                    <td style="padding:14px 20px; color:var(--text-secondary);">{{ hebergement.id }}</td>
+                    <td style="padding:10px 20px;">
+                        {% if hebergement.imagePath %}
+                            <img src="{{ asset('uploads/hebergements/' ~ hebergement.imagePath) }}"
+                                 style="width:70px; height:50px; object-fit:cover; border-radius:6px; border:1px solid var(--border-color);">
+                        {% else %}
+                            <div style="width:70px; height:50px; background:var(--bg-secondary); border-radius:6px; display:flex; align-items:center; justify-content:center; color:var(--text-secondary); font-size:11px;">
+                                No img
+                            </div>
+                        {% endif %}
+                    </td>
+                    <td style="padding:14px 20px; color:var(--text-primary); max-width:200px;">
+                        <div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ hebergement.description|slice(0,40) }}{% if hebergement.description|length > 40 %}...{% endif %}</div>
+                    </td>
+                    <td style="padding:14px 20px;">
+                        <span style="color:#22c55e; font-weight:600;">{{ hebergement.prix }} TND</span>
+                    </td>
+                    <td style="padding:14px 20px;">
+                        <span style="background:var(--bg-secondary); color:var(--accent-primary); padding:4px 12px; border-radius:20px; font-size:12px; font-weight:600;">
+                            {{ hebergement.type ? hebergement.type.nom : 'N/A' }}
+                        </span>
+                    </td>
+                    <td style="padding:14px 20px; color:var(--text-primary);">{{ hebergement.no|length }}</td>
+                    <td style="padding:14px 20px; text-align:center;">
+                        <div style="display:flex; gap:8px; justify-content:center; flex-wrap:wrap;">
+                            <a href="{{ path('app_hebergement_show', {'id': hebergement.id}) }}" style="background:#3b82f620; color:#3b82f6; padding:6px 12px; border-radius:6px; text-decoration:none; font-size:13px; font-weight:500;">Voir</a>
+                            <a href="{{ path('app_hebergement_edit', {'id': hebergement.id}) }}" style="background:#f59e0b20; color:#f59e0b; padding:6px 12px; border-radius:6px; text-decoration:none; font-size:13px; font-weight:500;">Modifier</a>
+                            <a href="{{ path('app_chambre_new', {'hebergement': hebergement.id}) }}" style="background:#22c55e20; color:#22c55e; padding:6px 12px; border-radius:6px; text-decoration:none; font-size:13px; font-weight:500;">+ Chambre</a>
                             {{ include('hebergement/_delete_form.html.twig') }}
                         </div>
                     </td>
                 </tr>
             {% else %}
-                <tr><td colspan="6" style="text-align:center; padding:40px; color:var(--text-secondary);">Aucun hébergement trouvé</td></tr>
+                <tr>
+                    <td colspan="7" style="padding:40px; text-align:center; color:var(--text-secondary);">
+                        Aucun hébergement trouvé
+                    </td>
+                </tr>
             {% endfor %}
             </tbody>
         </table>
     </div>
-    <footer class="copyright">Copyright &copy; 2026 Voyage</footer>
+</div>
 {% endblock %}

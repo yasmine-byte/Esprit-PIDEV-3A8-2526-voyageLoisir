@@ -1,0 +1,105 @@
+{% extends 'base_front.html.twig' %}
+{% block title %}Récapitulatif de votre réservation{% endblock %}
+
+{% block body %}
+<div id="js-preloader" class="js-preloader">
+    <div class="preloader-inner">
+        <span class="dot"></span>
+        <div class="dots"><span></span><span></span><span></span></div>
+    </div>
+</div>
+
+<div class="page-heading header-text" style="background:#f75959; min-height:200px; display:flex; align-items:center;">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <span class="breadcrumb"><a href="{{ path('app_home') }}" style="color:#fff;">Home</a> / Récapitulatif</span>
+                <h3 style="color:#fff;">Récapitulatif de votre réservation</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="section" style="padding:60px 0;">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-7">
+                <div style="background:#fff; border-radius:16px; padding:40px; box-shadow:0 4px 24px rgba(0,0,0,0.08); border:1px solid #eee;">
+
+                    <div style="text-align:center; margin-bottom:30px;">
+                        <div style="width:70px; height:70px; background:#fff3f3; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 16px;">
+                            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#f75959" stroke-width="2">
+                                <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+                                <polyline points="9 22 9 12 15 12 15 22"/>
+                            </svg>
+                        </div>
+                        <h4 style="color:#1c1c1e; margin:0;">Votre réservation est en attente de paiement</h4>
+                        <p style="color:#888; margin-top:8px; font-size:14px;">Réservation #{{ reservation.id }}</p>
+                    </div>
+
+                    <div style="background:#f9f9f9; border-radius:10px; padding:20px; margin-bottom:24px;">
+                        <h5 style="margin-bottom:16px; color:#1c1c1e;">Détails de la réservation</h5>
+                        <table style="width:100%; font-size:14px;">
+                            <tr style="border-bottom:1px solid #eee;">
+                                <td style="padding:10px 0; color:#888;">Hébergement</td>
+                                <td style="padding:10px 0; font-weight:600; text-align:right;">
+                                    {{ reservation.hebergement ? reservation.hebergement.description : '-' }}
+                                </td>
+                            </tr>
+                            <tr style="border-bottom:1px solid #eee;">
+                                <td style="padding:10px 0; color:#888;">Client</td>
+                                <td style="padding:10px 0; font-weight:600; text-align:right;">{{ reservation.clientNom }}</td>
+                            </tr>
+                            <tr style="border-bottom:1px solid #eee;">
+                                <td style="padding:10px 0; color:#888;">Email</td>
+                                <td style="padding:10px 0; font-weight:600; text-align:right;">{{ reservation.clientEmail }}</td>
+                            </tr>
+                            <tr style="border-bottom:1px solid #eee;">
+                                <td style="padding:10px 0; color:#888;">Date d'arrivée</td>
+                                <td style="padding:10px 0; font-weight:600; text-align:right;">{{ reservation.dateDebut|date('d/m/Y') }}</td>
+                            </tr>
+                            <tr style="border-bottom:1px solid #eee;">
+                                <td style="padding:10px 0; color:#888;">Date de départ</td>
+                                <td style="padding:10px 0; font-weight:600; text-align:right;">{{ reservation.dateFin|date('d/m/Y') }}</td>
+                            </tr>
+                            <tr style="border-bottom:1px solid #eee;">
+                                <td style="padding:10px 0; color:#888;">Nombre de nuits</td>
+                                <td style="padding:10px 0; font-weight:600; text-align:right;">{{ reservation.nbNuits }} nuit(s)</td>
+                            </tr>
+                            <tr>
+                                <td style="padding:10px 0; color:#888; font-weight:700;">Total à payer</td>
+                                <td style="padding:10px 0; font-weight:700; text-align:right; color:#f75959; font-size:20px;">
+                                    {{ reservation.total }} TND
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div style="background:#fff8e1; border-radius:10px; padding:16px; margin-bottom:24px; border-left:4px solid #f59e0b;">
+                        <p style="margin:0; font-size:13px; color:#92400e;">
+                            ⚠️ Votre réservation sera confirmée uniquement après le paiement. Un email de confirmation vous sera envoyé.
+                        </p>
+                    </div>
+
+                    <form method="post" action="{{ path('app_stripe_checkout', {'id': reservation.id}) }}">
+                        <button type="submit"
+                                style="width:100%; background:#f75959; color:#fff; padding:16px; border:none; border-radius:10px; font-size:16px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:10px;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
+                                <line x1="1" y1="10" x2="23" y2="10"/>
+                            </svg>
+                            Payer {{ reservation.total }} TND avec Stripe
+                        </button>
+                    </form>
+
+                    <div style="text-align:center; margin-top:16px;">
+                        <a href="{{ path('app_properties') }}" style="color:#888; font-size:13px; text-decoration:none;">
+                            ← Retour aux hébergements
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

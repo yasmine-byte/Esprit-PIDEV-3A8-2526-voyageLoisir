@@ -1,0 +1,180 @@
+{% extends 'base_front.html.twig' %}
+
+{% block title %}Mon Espace{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        :root { --espace-orange:#E8602D; }
+        .espace-page { padding: 150px 0 80px; background: #f6f6f6; }
+        .espace-shell { width:min(1180px, calc(100% - 30px)); margin:0 auto; display:grid; gap:22px; }
+        .espace-card { background:#fff; border-radius:16px; box-shadow:0 8px 30px rgba(0,0,0,.07); padding:20px; }
+        .espace-head h1 { margin:0 0 4px; font-size:2rem; font-weight:700; color:#111827; }
+        .espace-head p { margin:0; color:#6b7280; }
+        .espace-section-title { margin:0 0 14px; font-size:1.35rem; color:#111827; font-weight:700; }
+        .espace-stats { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; }
+        .espace-stat { background:#fff7f2; border-radius:12px; padding:14px; border:1px solid #fde5dc; }
+        .espace-stat small { display:block; color:#6b7280; margin-bottom:4px; }
+        .espace-stat strong { font-size:1.5rem; color:#111827; }
+        .espace-level { color:#fff; background:var(--espace-orange); border-radius:999px; padding:6px 10px; font-size:12px; font-weight:700; }
+
+        .espace-article-list { display:grid; gap:12px; }
+        .espace-article-item {
+            display:grid; grid-template-columns:90px 1fr auto; gap:12px;
+            align-items:center; border:1px solid #eceff3; border-radius:12px; padding:10px;
+        }
+        .espace-article-item img { width:90px; height:70px; border-radius:10px; object-fit:cover; }
+        .espace-article-meta h3 { margin:0 0 5px; font-size:1rem; color:#111827; }
+        .espace-article-meta p { margin:0; color:#6b7280; font-size:13px; }
+        .espace-article-status { display:inline-flex; padding:4px 8px; border-radius:999px; font-size:11px; font-weight:700; margin-left:6px; }
+        .status-publie { background:#dcfce7; color:#166534; }
+        .status-attente { background:#dbeafe; color:#1d4ed8; }
+        .status-brouillon { background:#ffedd5; color:#9a3412; }
+        .espace-view-btn {
+            display:inline-flex; align-items:center; justify-content:center;
+            border-radius:10px; background:var(--espace-orange); color:#fff; padding:9px 12px; text-decoration:none; font-size:13px; font-weight:700;
+        }
+        .espace-empty { color:#6b7280; font-size:14px; margin:0; }
+        .espace-create-btn {
+            display:inline-flex; margin-top:10px; border:0; border-radius:999px; background:var(--espace-orange);
+            color:#fff; font-weight:700; padding:10px 14px; text-decoration:none;
+        }
+
+        .espace-favorite-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; }
+        .espace-favorite-card { background:#fff; border-radius:12px; border:1px solid #eceff3; overflow:hidden; }
+        .espace-favorite-card img { width:100%; height:170px; object-fit:cover; }
+        .espace-favorite-body { padding:10px; }
+        .espace-favorite-body h4 { margin:0 0 8px; font-size:1rem; color:#111827; }
+        .espace-favorite-actions { display:flex; justify-content:space-between; align-items:center; gap:8px; }
+        .espace-remove-btn {
+            border:1px solid #fecaca; background:#fff5f5; color:#dc2626; border-radius:10px;
+            padding:7px 10px; font-size:12px; font-weight:700;
+        }
+        .espace-open-btn { color:#374151; font-size:12px; font-weight:600; text-decoration:none; }
+
+        @media (max-width: 991px) {
+            .espace-stats { grid-template-columns:1fr 1fr; }
+            .espace-favorite-grid { grid-template-columns:1fr 1fr; }
+            .espace-article-item { grid-template-columns:80px 1fr; }
+        }
+        @media (max-width: 640px) {
+            .espace-stats, .espace-favorite-grid { grid-template-columns:1fr; }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<main class="espace-page">
+    <div class="espace-shell">
+        <section class="espace-card espace-head">
+            <h1>Mon Espace</h1>
+            <p>Bienvenue {{ user_display_name ?: app.user.userIdentifier }}. Gérez vos contenus et votre vision board.</p>
+        </section>
+
+        <section class="espace-card">
+            <h2 class="espace-section-title">Mes statistiques personnelles</h2>
+            <div class="espace-stats">
+                <article class="espace-stat"><small>Articles publiés</small><strong>{{ stats.published_count }}</strong></article>
+                <article class="espace-stat"><small>Vues reçues</small><strong>{{ stats.views_count }}</strong></article>
+                <article class="espace-stat"><small>Réactions reçues</small><strong>{{ stats.reactions_count }}</strong></article>
+                <article class="espace-stat"><small>Niveau</small><span class="espace-level">{{ stats.level }}</span></article>
+            </div>
+        </section>
+
+        <section class="espace-card">
+            <h2 class="espace-section-title">Mes articles partagés</h2>
+            {% if my_blogs is empty %}
+                <p class="espace-empty">Vous n'avez pas encore partagé d'article. Commencez maintenant !</p>
+                <a href="{{ path('app_blog_index') }}" class="espace-create-btn">Partager un nouvel article</a>
+            {% else %}
+                <div class="espace-article-list">
+                    {% for blog in my_blogs %}
+                        {% set views = views_by_blog[blog.id]|default(0) %}
+                        {% set reactions = reactions_by_blog[blog.id]|default(0) %}
+                        {% set statusClass = blog.status ? 'status-publie' : (blog.publicationRequested ? 'status-attente' : 'status-brouillon') %}
+                        {% set statusText = blog.status ? 'Publié' : (blog.publicationRequested ? 'En attente' : 'Brouillon') %}
+                        <article class="espace-article-item">
+                            <img src="{{ blog.imageCouverture ?: ('https://picsum.photos/seed/my-blog-' ~ blog.id ~ '/400/300') }}" alt="{{ blog.titre }}">
+                            <div class="espace-article-meta">
+                                <h3>{{ blog.titre }} <span class="espace-article-status {{ statusClass }}">{{ statusText }}</span></h3>
+                                <p>{{ blog.dateCreation ? blog.dateCreation|date('d/m/Y') : '-' }} · {{ views }} vues · {{ reactions }} réactions</p>
+                            </div>
+                            <a href="{{ path('app_blog_show', {'id': blog.id}) }}" class="espace-view-btn">Voir</a>
+                        </article>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </section>
+
+        <section class="espace-card" id="vision-board">
+            <h2 class="espace-section-title">Ma Vision Board</h2>
+            {% if favorite_blogs is empty %}
+                <p class="espace-empty">Votre vision board est vide. Explorez les articles et sauvegardez vos coups de cœur !</p>
+            {% else %}
+                <div class="espace-favorite-grid" id="favoriteGrid">
+                    {% for blog in favorite_blogs %}
+                        <article class="espace-favorite-card" data-favorite-card data-blog-id="{{ blog.id }}">
+                            <img src="{{ blog.imageCouverture ?: ('https://picsum.photos/seed/favorite-' ~ blog.id ~ '/700/500') }}" alt="{{ blog.titre }}">
+                            <div class="espace-favorite-body">
+                                <h4>{{ blog.titre }}</h4>
+                                <div class="espace-favorite-actions">
+                                    <a href="{{ path('app_blog_show', {'id': blog.id}) }}" class="espace-open-btn">Ouvrir</a>
+                                    <button
+                                        type="button"
+                                        class="espace-remove-btn"
+                                        data-favorite-toggle
+                                        data-url="{{ path('app_mon_espace_favorite_toggle', {'id': blog.id}) }}"
+                                        data-token="{{ csrf_token('favorite_blog_' ~ blog.id) }}"
+                                    >
+                                        Retirer
+                                    </button>
+                                </div>
+                            </div>
+                        </article>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </section>
+    </div>
+</main>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        (function () {
+            const favoriteGrid = document.getElementById('favoriteGrid');
+            if (!favoriteGrid) {
+                return;
+            }
+
+            favoriteGrid.addEventListener('click', async function (event) {
+                const button = event.target.closest('[data-favorite-toggle]');
+                if (!button) {
+                    return;
+                }
+
+                const formData = new FormData();
+                formData.append('_token', button.dataset.token || '');
+
+                const response = await fetch(button.dataset.url || '', {
+                    method: 'POST',
+                    body: formData,
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+                const payload = await response.json();
+                if (!response.ok) {
+                    return;
+                }
+
+                if (!payload.saved) {
+                    const card = button.closest('[data-favorite-card]');
+                    if (card) {
+                        card.remove();
+                    }
+                }
+            });
+        })();
+    </script>
+{% endblock %}
+

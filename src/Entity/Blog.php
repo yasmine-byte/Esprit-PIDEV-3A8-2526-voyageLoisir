@@ -30,6 +30,9 @@ class Blog
     private ?bool $status = null;
 
     #[ORM\Column(nullable: true)]
+    private ?bool $publicationRequested = null;
+
+    #[ORM\Column(nullable: true)]
     private ?\DateTime $dateCreation = null;
 
     #[ORM\Column(nullable: true)]
@@ -106,6 +109,11 @@ class Blog
         return $this;
     }
 
+    public function getStatus(): ?bool
+    {
+        return $this->status;
+    }
+
     public function isStatus(): ?bool
     {
         return $this->status;
@@ -114,6 +122,23 @@ class Blog
     public function setStatus(?bool $status): static
     {
         $this->status = $status;
+
+        return $this;
+    }
+
+    public function isPublicationRequested(): ?bool
+    {
+        return $this->publicationRequested;
+    }
+
+    public function getPublicationRequested(): ?bool
+    {
+        return $this->publicationRequested;
+    }
+
+    public function setPublicationRequested(?bool $publicationRequested): static
+    {
+        $this->publicationRequested = $publicationRequested;
 
         return $this;
     }

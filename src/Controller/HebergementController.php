@@ -3,7 +3,11 @@ namespace App\Controller;
 
 use App\Entity\Hebergement;
 use App\Form\HebergementType;
+use App\Repository\ChambreRepository;
+use App\Repository\DisponibiliteRepository;
 use App\Repository\HebergementRepository;
+use App\Repository\ReservationRepository;
+use Doctrine\DBAL\Exception\ForeignKeyConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -94,11 +98,35 @@ final class HebergementController extends AbstractController
     }
 
     #[Route('/{id}', name: 'app_hebergement_delete', methods: ['POST'])]
-    public function delete(Request $request, Hebergement $hebergement, EntityManagerInterface $entityManager): Response
+    public function delete(
+        Request $request,
+        Hebergement $hebergement,
+        EntityManagerInterface $entityManager,
+        DisponibiliteRepository $disponibiliteRepository,
+        ChambreRepository $chambreRepository,
+        ReservationRepository $reservationRepository
+    ): Response
     {
         if ($this->isCsrfTokenValid('delete'.$hebergement->getId(), $request->getPayload()->getString('_token'))) {
-            $entityManager->remove($hebergement);
-            $entityManager->flush();
+            try {
+                foreach ($disponibiliteRepository->findBy(['hebergement' => $hebergement]) as $disponibilite) {
+                    $entityManager->remove($disponibilite);
+                }
+
+                foreach ($chambreRepository->findBy(['hebergement' => $hebergement]) as $chambre) {
+                    $entityManager->remove($chambre);
+                }
+
+                foreach ($reservationRepository->findBy(['hebergement' => $hebergement]) as $reservation) {
+                    $reservation->setHebergement(null);
+                }
+
+                $entityManager->remove($hebergement);
+                $entityManager->flush();
+            } catch (ForeignKeyConstraintViolationException) {
+                $this->addFlash('error', 'Suppression impossible: cet hebergement est encore lie a d\'autres donnees.');
+                return $this->redirectToRoute('app_hebergement_index', [], Response::HTTP_SEE_OTHER);
+            }
             $this->addFlash('success', 'Hébergement supprimé avec succès !');
         }
         return $this->redirectToRoute('app_hebergement_index', [], Response::HTTP_SEE_OTHER);

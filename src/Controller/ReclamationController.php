@@ -7,6 +7,7 @@ use App\Form\ReclamationType;
 use App\Repository\ReclamationRepository;
 use App\Service\MailerService;
 use Doctrine\ORM\EntityManagerInterface;
+use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -14,6 +15,8 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
+use Dompdf\Dompdf;
+use Dompdf\Options;
 
 /**
  * Contrôleur front des Réclamations (client).
@@ -39,11 +42,43 @@ class ReclamationController extends AbstractController
     // ─────────────────────────────────────────────────────────────
 
     #[Route('/', name: 'reclamation_index', methods: ['GET'])]
-    public function index(ReclamationRepository $reclamationRepository): Response
-    {
+    public function index(
+        Request $request,
+        ReclamationRepository $reclamationRepository,
+        PaginatorInterface $paginator
+    ): Response {
         $userId = 1;
+        $statut   = $request->query->get('statut');
+        $priorite = $request->query->get('priorite');
+        $recherche = $request->query->get('recherche');
+
+        $qb = $reclamationRepository->createQueryBuilder('r')
+            ->where('r.userId = :userId')
+            ->setParameter('userId', $userId)
+            ->orderBy('r.dateCreation', 'DESC');
+
+        if ($statut) {
+            $qb->andWhere('r.statut = :statut')->setParameter('statut', $statut);
+        }
+        if ($priorite) {
+            $qb->andWhere('r.priorite = :priorite')->setParameter('priorite', $priorite);
+        }
+        if ($recherche) {
+            $qb->andWhere('r.titre LIKE :recherche OR r.contenu LIKE :recherche')
+               ->setParameter('recherche', '%' . $recherche . '%');
+        }
+
+        $reclamations = $paginator->paginate(
+            $qb->getQuery(),
+            $request->query->getInt('page', 1),
+            6
+        );
+
         return $this->render('reclamation/index.html.twig', [
-            'reclamations' => $reclamationRepository->findBy(['userId' => $userId]),
+            'reclamations'     => $reclamations,
+            'currentStatut'    => $statut,
+            'currentPriorite'  => $priorite,
+            'currentRecherche' => $recherche,
         ]);
     }
 
@@ -262,6 +297,36 @@ class ReclamationController extends AbstractController
             'reclamation' => $reclamation,
             'avis'        => $reclamation->getAvis(),
         ]);
+    }
+
+    #[Route('/{id}/pdf', name: 'reclamation_pdf', methods: ['GET'])]
+    public function exportPdf(Reclamation $reclamation): Response
+    {
+        $html = $this->renderView('reclamation/pdf.html.twig', [
+            'reclamation' => $reclamation,
+            'avis'        => $reclamation->getAvis(),
+        ]);
+
+        $options = new Options();
+        $options->set('defaultFont', 'DejaVu Sans');
+        $options->set('isHtml5ParserEnabled', true);
+        $options->set('isRemoteEnabled', false);
+
+        $dompdf = new Dompdf($options);
+        $dompdf->loadHtml($html, 'UTF-8');
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+
+        $filename = 'reclamation_' . $reclamation->getId() . '_' . date('Ymd') . '.pdf';
+
+        return new Response(
+            $dompdf->output(),
+            200,
+            [
+                'Content-Type'        => 'application/pdf',
+                'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            ]
+        );
     }
 
     // ─────────────────────────────────────────────────────────────

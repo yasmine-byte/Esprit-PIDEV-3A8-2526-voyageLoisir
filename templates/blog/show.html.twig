@@ -1,0 +1,2575 @@
+{% extends 'base_front.html.twig' %}
+
+{% block title %}{{ blog.titre }}{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        :root {
+            --blog-accent: #E8652A;
+            --blog-bg: #FAF8F5;
+            --blog-text: #1E1C1A;
+            --blog-muted: #7A746E;
+            --blog-border: rgba(30, 28, 26, 0.08);
+            --blog-shadow: 0 20px 45px rgba(44, 33, 24, 0.08);
+        }
+
+        body {
+            background: var(--blog-bg);
+            color: var(--blog-text);
+            font-family: "Poppins", sans-serif;
+        }
+
+        .blog-article-page {
+            padding: 150px 0 90px;
+            background:
+                radial-gradient(circle at top left, rgba(232, 101, 42, 0.08), transparent 24%),
+                radial-gradient(circle at right 20%, rgba(205, 190, 175, 0.18), transparent 20%),
+                var(--blog-bg);
+        }
+
+        .blog-article-shell {
+            width: min(1180px, calc(100% - 32px));
+            margin: 0 auto;
+        }
+
+        .blog-article-topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+
+        .blog-back-link,
+        .blog-edit-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 18px;
+            border: 1px solid var(--blog-border);
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.82);
+            color: var(--blog-text);
+            text-decoration: none;
+            font-size: 0.94rem;
+            font-weight: 600;
+        }
+
+        .blog-edit-link {
+            background: var(--blog-accent);
+            border-color: var(--blog-accent);
+            color: #fff;
+        }
+
+        .blog-topbar-actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .blog-hero-article {
+            display: grid;
+            grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+            gap: 28px;
+            align-items: stretch;
+            margin-bottom: 34px;
+        }
+
+        .blog-hero-copy,
+        .blog-hero-media {
+            background: rgba(255, 255, 255, 0.88);
+            border: 1px solid var(--blog-border);
+            border-radius: 28px;
+            box-shadow: var(--blog-shadow);
+            overflow: hidden;
+        }
+
+        .blog-hero-copy {
+            padding: 34px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .blog-article-badge {
+            display: inline-flex;
+            align-items: center;
+            width: fit-content;
+            margin-bottom: 18px;
+            padding: 9px 14px;
+            border-radius: 999px;
+            background: rgba(232, 101, 42, 0.12);
+            color: var(--blog-accent);
+            font-size: 0.84rem;
+            font-weight: 700;
+            text-transform: capitalize;
+        }
+
+        .blog-hero-copy h1 {
+            margin: 0 0 18px;
+            font-size: clamp(2.25rem, 4vw, 4.2rem);
+            line-height: 1.03;
+            letter-spacing: -0.04em;
+            font-weight: 700;
+        }
+
+        .blog-article-excerpt {
+            margin: 0 0 24px;
+            color: var(--blog-muted);
+            font-size: 1.04rem;
+            line-height: 1.85;
+        }
+
+        .blog-article-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px 18px;
+            color: var(--blog-muted);
+            font-size: 0.92rem;
+        }
+
+        .blog-article-meta span {
+            position: relative;
+        }
+
+        .blog-article-meta span + span::before {
+            content: "\2022";
+            margin-right: 18px;
+        }
+
+        .blog-hero-media img {
+            width: 100%;
+            height: 100%;
+            min-height: 400px;
+            object-fit: cover;
+            object-position: center;
+            display: block;
+        }
+
+        .blog-image-tools {
+            display: flex;
+            gap: 12px;
+            padding: 18px;
+            border-top: 1px solid var(--blog-border);
+            background: rgba(255, 255, 255, 0.95);
+            flex-wrap: wrap;
+        }
+
+        .blog-vision-btn,
+        .blog-pinterest-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 16px;
+            border-radius: 999px;
+            border: 1px solid rgba(30, 28, 26, 0.12);
+            background: #fff;
+            color: var(--blog-text);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .blog-vision-btn.is-saved {
+            background: var(--blog-accent);
+            border-color: var(--blog-accent);
+            color: #fff;
+        }
+
+        .blog-article-layout {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 280px;
+            gap: 28px;
+        }
+
+        .blog-social-strip {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 14px;
+            margin-bottom: 28px;
+        }
+
+        .blog-social-card {
+            padding: 18px 20px;
+            border-radius: 18px;
+            background: #fff7f2;
+            border: 1px solid var(--blog-border);
+        }
+
+        .blog-social-card small {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--blog-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        .blog-social-card strong {
+            font-size: 1.6rem;
+            color: var(--blog-text);
+        }
+
+        .blog-article-body,
+        .blog-article-sidebar {
+            background: rgba(255, 255, 255, 0.88);
+            border: 1px solid var(--blog-border);
+            border-radius: 24px;
+            box-shadow: var(--blog-shadow);
+        }
+
+        .blog-article-body {
+            padding: 40px;
+        }
+
+        .blog-article-body p,
+        .blog-article-body div {
+            margin: 0 0 20px;
+            color: #342f2b;
+            font-size: 1.02rem;
+            line-height: 1.95;
+        }
+
+        .blog-article-sidebar {
+            padding: 24px;
+            position: sticky;
+            top: 24px;
+            height: fit-content;
+        }
+
+        .blog-side-block + .blog-side-block {
+            margin-top: 22px;
+            padding-top: 22px;
+            border-top: 1px solid var(--blog-border);
+        }
+
+        .blog-side-label {
+            margin: 0 0 8px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--blog-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        .blog-side-value {
+            margin: 0;
+            color: var(--blog-text);
+            font-size: 1rem;
+            line-height: 1.7;
+            word-break: break-word;
+        }
+
+        .blog-side-value a {
+            color: var(--blog-accent);
+            text-decoration: none;
+        }
+
+        .blog-side-pill {
+            display: inline-flex;
+            padding: 8px 12px;
+            border-radius: 999px;
+            background: rgba(232, 101, 42, 0.12);
+            color: var(--blog-accent);
+            font-size: 0.84rem;
+            font-weight: 700;
+            text-transform: capitalize;
+        }
+
+        .blog-delete-area {
+            margin-top: 18px;
+        }
+
+        .blog-delete-area form button {
+            width: 100%;
+            padding: 12px 16px;
+            border: 0;
+            border-radius: 14px;
+            background: #1e1c1a;
+            color: #fff;
+            font-weight: 600;
+        }
+
+        .blog-interactions {
+            display: grid;
+            gap: 24px;
+            margin-top: 30px;
+        }
+
+        .blog-panel {
+            background: rgba(255, 255, 255, 0.92);
+            border: 1px solid var(--blog-border);
+            border-radius: 24px;
+            box-shadow: var(--blog-shadow);
+            padding: 28px;
+            scroll-margin-top: 140px;
+        }
+
+        .blog-panel h2 {
+            margin: 0 0 18px;
+            font-size: 1.6rem;
+            color: var(--blog-text);
+        }
+
+        .blog-panel p {
+            color: var(--blog-muted);
+        }
+
+        .blog-translate-tools {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin: 0 0 24px;
+        }
+
+        .blog-translate-tools select {
+            padding: 12px 14px;
+            border-radius: 12px;
+            border: 1px solid rgba(30, 28, 26, 0.12);
+            background: #fff;
+            color: var(--blog-text);
+        }
+
+        .blog-translate-btn,
+        .blog-translate-reset {
+            padding: 12px 18px;
+            border-radius: 999px;
+            border: 1px solid rgba(30, 28, 26, 0.12);
+            background: #fff;
+            color: var(--blog-text);
+            font-weight: 600;
+        }
+
+        .blog-translate-btn {
+            background: var(--blog-accent);
+            border-color: var(--blog-accent);
+            color: #fff;
+        }
+
+        .blog-rating-stars {
+            display: inline-flex;
+            flex-direction: row-reverse;
+            gap: 6px;
+            margin: 14px 0 18px;
+        }
+
+        .blog-rating-stars input {
+            display: none;
+        }
+
+        .blog-rating-stars label {
+            cursor: pointer;
+            font-size: 2rem;
+            color: #d6cec7;
+            transition: transform 0.2s ease, color 0.2s ease;
+        }
+
+        .blog-rating-stars label:hover,
+        .blog-rating-stars label:hover ~ label,
+        .blog-rating-stars input:checked ~ label {
+            color: var(--blog-accent);
+            transform: translateY(-1px);
+        }
+
+        .blog-form-stack {
+            display: grid;
+            gap: 14px;
+        }
+
+        .blog-form-stack input,
+        .blog-form-stack textarea {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1px solid rgba(30, 28, 26, 0.12);
+            border-radius: 14px;
+            background: #fff;
+            color: var(--blog-text);
+        }
+
+        .blog-form-stack textarea {
+            min-height: 140px;
+            resize: vertical;
+        }
+
+        .blog-submit-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: fit-content;
+            padding: 13px 22px;
+            border: 0;
+            border-radius: 999px;
+            background: var(--blog-accent);
+            color: #fff;
+            font-weight: 600;
+            box-shadow: 0 16px 28px rgba(232, 101, 42, 0.2);
+        }
+
+        .blog-comment-list {
+            display: grid;
+            gap: 18px;
+        }
+
+        .blog-comment-card {
+            padding: 20px;
+            border-radius: 18px;
+            background: #fff;
+            border: 1px solid var(--blog-border);
+        }
+
+        .blog-comment-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+
+        .blog-comment-head strong {
+            color: var(--blog-text);
+        }
+
+        .blog-comment-head span {
+            color: var(--blog-muted);
+            font-size: 0.9rem;
+        }
+
+        .blog-comment-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 14px;
+            flex-wrap: wrap;
+        }
+
+        .blog-like-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 14px;
+            border: 1px solid rgba(232, 101, 42, 0.18);
+            border-radius: 999px;
+            background: #fff7f2;
+            color: var(--blog-accent);
+            font-weight: 600;
+        }
+
+        .blog-like-btn.is-liked {
+            opacity: 0.7;
+        }
+
+        .blog-reaction-facebook {
+            position: relative;
+            display: inline-flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .blog-reaction-main-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border: 1px solid #d8dee8;
+            border-radius: 999px;
+            background: #f5f6f7;
+            color: #6b7280;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .blog-reaction-main-btn.is-active {
+            background: #eef2ff;
+            border-color: #dbe4ff;
+        }
+
+        .blog-reaction-main-btn.is-like { color: #1877f2; }
+        .blog-reaction-main-btn.is-love { color: #f33e58; }
+        .blog-reaction-main-btn.is-haha,
+        .blog-reaction-main-btn.is-wow,
+        .blog-reaction-main-btn.is-sad { color: #f7b125; }
+        .blog-reaction-main-btn.is-angry { color: #e9710f; }
+
+        .blog-reaction-main-emoji {
+            font-size: 1.1rem;
+            line-height: 1;
+        }
+
+        .blog-reaction-popup {
+            position: absolute;
+            left: 50%;
+            bottom: calc(100% + 10px);
+            transform: translateX(-50%) scale(0.8);
+            opacity: 0;
+            pointer-events: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: 50px;
+            background: #fff;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            z-index: 30;
+            transition: transform 0.2s ease, opacity 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .blog-reaction-facebook.is-open .blog-reaction-popup {
+            transform: translateX(-50%) scale(1);
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .blog-reaction-popup-btn {
+            border: 0;
+            background: transparent;
+            font-size: 28px;
+            line-height: 1;
+            padding: 6px;
+            border-radius: 999px;
+            cursor: pointer;
+            transition: transform 0.16s ease;
+        }
+
+        .blog-reaction-popup-btn:hover {
+            transform: scale(1.3);
+        }
+
+        .blog-reaction-counts {
+            display: inline-flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .blog-reaction-count-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            padding: 2px 7px;
+            border-radius: 999px;
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            color: #4b5563;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .blog-comment-translate-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 14px;
+            border: 1px solid rgba(30, 28, 26, 0.12);
+            border-radius: 999px;
+            background: #fff;
+            color: var(--blog-text);
+            font-weight: 600;
+        }
+
+        .blog-comment-translate-note {
+            width: 100%;
+            margin-top: 2px;
+            color: var(--blog-muted);
+            font-size: 0.88rem;
+        }
+
+        .blog-form-message {
+            display: none;
+            padding: 12px 14px;
+            border-radius: 14px;
+            background: #fff7ed;
+            color: #9a3412;
+            font-size: 0.92rem;
+            font-weight: 600;
+        }
+
+        .blog-form-message.is-visible {
+            display: block;
+        }
+
+        .blog-interaction-note {
+            margin-bottom: 18px;
+            padding: 12px 14px;
+            border-radius: 14px;
+            background: #fff7ed;
+            color: #9a3412;
+            font-size: 0.92rem;
+            font-weight: 600;
+        }
+
+        .blog-review-list {
+            display: grid;
+            gap: 14px;
+            margin-top: 18px;
+        }
+
+        .blog-review-card {
+            padding: 16px 18px;
+            border-radius: 16px;
+            background: #fff;
+            border: 1px solid var(--blog-border);
+        }
+
+        .blog-review-stars {
+            color: var(--blog-accent);
+            letter-spacing: 0.12em;
+            font-size: 0.95rem;
+        }
+
+        .blog-report-menu {
+            position: relative;
+        }
+
+        .blog-report-more-btn {
+            border: 1px solid rgba(30, 28, 26, 0.16);
+            border-radius: 10px;
+            padding: 4px 10px;
+            background: #fff;
+            color: #334155;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .blog-report-dropdown {
+            position: absolute;
+            right: 0;
+            top: calc(100% + 6px);
+            min-width: 130px;
+            padding: 8px;
+            border-radius: 10px;
+            background: #fff;
+            border: 1px solid var(--blog-border);
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.14);
+            display: none;
+            z-index: 20;
+        }
+
+        .blog-report-dropdown.is-open {
+            display: block;
+        }
+
+        .blog-report-action-btn {
+            width: 100%;
+            border: 1px solid #fecaca;
+            border-radius: 8px;
+            background: #fff5f5;
+            color: #b91c1c;
+            font-size: 0.83rem;
+            font-weight: 600;
+            padding: 8px 10px;
+            cursor: pointer;
+        }
+
+        .blog-report-action-btn.is-disabled {
+            border-color: #d1d5db;
+            color: #6b7280;
+            background: #f8fafc;
+            cursor: default;
+        }
+
+        .blog-report-modal {
+            position: fixed;
+            inset: 0;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 6000;
+            padding: 18px;
+        }
+
+        .blog-report-modal.is-open {
+            display: flex;
+        }
+
+        .blog-report-backdrop {
+            position: absolute;
+            inset: 0;
+            background: rgba(17, 24, 39, 0.5);
+        }
+
+        .blog-report-panel {
+            position: relative;
+            width: min(520px, 100%);
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 20px 48px rgba(0, 0, 0, 0.28);
+            padding: 22px;
+        }
+
+        .blog-report-panel h5 {
+            margin: 0 0 4px;
+            font-size: 1.22rem;
+        }
+
+        .blog-report-panel p {
+            margin: 0 0 14px;
+            font-size: 0.92rem;
+            color: #64748b;
+        }
+
+        .blog-report-reasons {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+
+        .blog-report-reason-btn {
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            padding: 10px 12px;
+            background: #fff;
+            text-align: left;
+            font-weight: 600;
+            color: #334155;
+            cursor: pointer;
+        }
+
+        .blog-report-reason-btn.is-selected {
+            border-color: #e8652a;
+            background: rgba(232, 101, 42, 0.1);
+            color: #9a3412;
+        }
+
+        .blog-report-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .blog-report-btn {
+            border: 1px solid rgba(30, 28, 26, 0.18);
+            border-radius: 10px;
+            padding: 9px 14px;
+            font-weight: 600;
+            background: #fff;
+            color: #334155;
+            cursor: pointer;
+        }
+
+        .blog-report-btn--confirm {
+            border-color: #e8652a;
+            background: #e8652a;
+            color: #fff;
+        }
+
+        .blog-report-btn--confirm:disabled {
+            opacity: 0.55;
+            cursor: not-allowed;
+        }
+
+        .blog-audio-player {
+            position: fixed;
+            left: 50%;
+            transform: translateX(-50%);
+            bottom: 16px;
+            width: min(1100px, calc(100vw - 24px));
+            z-index: 4000;
+            background: rgba(16, 23, 42, 0.95);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            border-radius: 14px;
+            box-shadow: 0 16px 40px rgba(2, 6, 23, 0.35);
+            color: #e2e8f0;
+            padding: 12px;
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .blog-audio-main {
+            min-width: 0;
+        }
+
+        .blog-audio-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.86rem;
+            color: #cbd5e1;
+            margin-bottom: 8px;
+        }
+
+        .blog-audio-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #94a3b8;
+        }
+
+        .blog-audio-dot.is-reading {
+            background: #22c55e;
+            animation: blogPulse 1.1s ease-in-out infinite;
+        }
+
+        .blog-audio-progress {
+            height: 7px;
+            border-radius: 999px;
+            background: rgba(148, 163, 184, 0.24);
+            overflow: hidden;
+        }
+
+        .blog-audio-progress > span {
+            display: block;
+            width: 0;
+            height: 100%;
+            background: linear-gradient(90deg, #22c55e, #38bdf8);
+        }
+
+        .blog-audio-stats {
+            margin-top: 6px;
+            font-size: 0.8rem;
+            color: #94a3b8;
+        }
+
+        .blog-audio-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        .blog-audio-btn,
+        .blog-audio-select {
+            border: 1px solid rgba(148, 163, 184, 0.35);
+            border-radius: 10px;
+            background: rgba(15, 23, 42, 0.85);
+            color: #e2e8f0;
+            padding: 8px 10px;
+            font-size: 0.86rem;
+            cursor: pointer;
+        }
+
+        .blog-audio-voices {
+            display: none;
+        }
+
+        .blog-audio-voices.is-open {
+            display: inline-flex;
+        }
+
+        @keyframes blogPulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.45; transform: scale(1.35); }
+        }
+
+        .blog-reading-progress {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: rgba(0, 0, 0, 0.08);
+            z-index: 6100;
+        }
+
+        .blog-reading-progress > span {
+            display: block;
+            height: 100%;
+            width: 0;
+            background: linear-gradient(90deg, #E8652A, #f7b125);
+            transition: width 0.1s linear;
+        }
+
+        .blog-floating-actions {
+            position: fixed;
+            top: 8px;
+            left: 50%;
+            transform: translate(-50%, -12px);
+            width: min(1100px, calc(100vw - 24px));
+            background: rgba(255, 255, 255, 0.97);
+            border: 1px solid var(--blog-border);
+            border-radius: 12px;
+            box-shadow: 0 12px 28px rgba(15, 23, 42, 0.12);
+            padding: 10px 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            z-index: 6050;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease, transform 0.2s ease;
+        }
+
+        .blog-floating-actions.is-visible {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translate(-50%, 0);
+        }
+
+        .blog-floating-title {
+            margin: 0;
+            font-size: 0.92rem;
+            font-weight: 700;
+            color: #0f172a;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .blog-floating-buttons {
+            display: inline-flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .blog-floating-btn {
+            border: 1px solid rgba(30, 28, 26, 0.15);
+            border-radius: 999px;
+            background: #fff;
+            color: #1f2937;
+            padding: 6px 10px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .blog-hero-immersive {
+            position: relative;
+            width: 100vw;
+            margin-left: calc(50% - 50vw);
+            height: 85vh;
+            min-height: 520px;
+            border-radius: 0;
+            overflow: hidden;
+            margin-bottom: 28px;
+        }
+
+        .blog-hero-immersive img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+            display: block;
+        }
+
+        .blog-hero-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to bottom, transparent 30%, rgba(0, 0, 0, 0.85) 100%);
+            display: flex;
+            align-items: flex-end;
+            padding: clamp(18px, 3vw, 38px);
+        }
+
+        .blog-hero-overlay-inner {
+            color: #fff;
+            max-width: 980px;
+        }
+
+        .blog-hero-overlay h1 {
+            margin: 12px 0 14px;
+            font-size: clamp(2rem, 4.7vw, 52px);
+            font-weight: 700;
+            line-height: 1.08;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .blog-author-line {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            font-size: 0.95rem;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .blog-author-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            background: rgba(232, 101, 42, 0.92);
+            color: #fff;
+        }
+
+        .blog-hero-scroll {
+            position: absolute;
+            left: 50%;
+            bottom: 16px;
+            transform: translateX(-50%);
+            border: 0;
+            background: transparent;
+            color: #fff;
+            font-size: 28px;
+            cursor: pointer;
+            animation: blogBounce 1.4s infinite;
+        }
+
+        @keyframes blogBounce {
+            0%, 100% { transform: translateX(-50%) translateY(0); }
+            50% { transform: translateX(-50%) translateY(6px); }
+        }
+
+        .blog-article-layout {
+            grid-template-columns: minmax(0, 65fr) minmax(0, 35fr);
+            gap: 34px;
+            align-items: start;
+        }
+
+        .blog-article-body {
+            max-width: 680px;
+            width: 100%;
+            justify-self: center;
+            background: transparent;
+            border: 0;
+            box-shadow: none;
+            padding: 0;
+        }
+
+        .blog-article-body p {
+            margin-bottom: 1.8rem;
+            color: #1a1a1a;
+            font-size: 19px;
+            line-height: 1.9;
+            font-family: Georgia, "Times New Roman", serif;
+        }
+
+        #blogArticleContent p:first-child {
+            font-size: 22px;
+            color: #111827;
+        }
+
+        #blogArticleContent h2 {
+            margin-top: 2.5rem;
+            margin-bottom: 1rem;
+            font-size: 28px;
+            line-height: 1.25;
+            font-weight: 700;
+            color: #111827;
+        }
+
+        #blogArticleContent blockquote {
+            margin: 1.6rem 0;
+            border-left: 4px solid var(--blog-accent);
+            background: #fff8f5;
+            padding: 14px 18px;
+            font-style: italic;
+            font-size: 21px;
+            color: #7c2d12;
+        }
+
+        #blogArticleContent img {
+            width: 100%;
+            border-radius: 12px;
+            margin: 1.3rem 0 0.5rem;
+        }
+
+        .blog-sidebar-trigger {
+            height: 1px;
+            margin-top: 300px;
+        }
+
+        .blog-article-sidebar {
+            top: 80px;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+
+        .blog-article-sidebar.is-collapsed {
+            transform: translateX(110%);
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .blog-sidebar-toggle {
+            position: fixed;
+            right: 14px;
+            top: 120px;
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            border: 0;
+            background: #1f2937;
+            color: #fff;
+            font-size: 20px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.28);
+            z-index: 6060;
+        }
+
+        .blog-sidebar-toggle.is-visible {
+            display: inline-flex;
+        }
+
+        .blog-sidebar-tools {
+            display: grid;
+            gap: 10px;
+            margin-top: 16px;
+        }
+
+        .blog-separator {
+            margin: 38px 0 24px;
+            position: relative;
+            text-align: center;
+            color: #7a746e;
+            font-weight: 600;
+        }
+
+        .blog-separator::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: rgba(15, 23, 42, 0.12);
+            z-index: 1;
+        }
+
+        .blog-separator span {
+            position: relative;
+            z-index: 2;
+            background: var(--blog-bg);
+            padding: 0 14px;
+        }
+
+        .blog-panel {
+            background: #fff;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+        }
+
+        .blog-form-stack {
+            background: #fff8f5;
+            border-radius: 16px;
+            padding: 24px;
+        }
+
+        .blog-comment-card {
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+        }
+
+        .blog-comment-author {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .blog-comment-avatar {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: #fde8df;
+            color: #9a3412;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+        }
+
+        .blog-reco-section {
+            margin-top: 36px;
+            padding: 24px;
+            border-radius: 18px;
+            background: #f8f8f8;
+        }
+
+        .blog-reco-title {
+            margin: 0 0 16px;
+            font-size: 1.6rem;
+        }
+
+        .blog-reco-list {
+            display: grid;
+            gap: 12px;
+        }
+
+        .blog-reco-card {
+            display: grid;
+            grid-template-columns: 200px 1fr;
+            gap: 14px;
+            background: #fff;
+            border-radius: 12px;
+            border: 1px solid var(--blog-border);
+            overflow: hidden;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .blog-reco-card img {
+            width: 200px;
+            height: 130px;
+            object-fit: cover;
+        }
+
+        .blog-reco-body {
+            padding: 12px 12px 12px 0;
+        }
+
+        @media (max-width: 991px) {
+            .blog-floating-actions { display: none; }
+            .blog-hero-immersive { height: 68vh; min-height: 420px; }
+            .blog-article-layout { grid-template-columns: 1fr; }
+            .blog-article-body { max-width: 100%; }
+            .blog-article-sidebar {
+                position: static;
+                transform: none !important;
+                opacity: 1 !important;
+                pointer-events: auto !important;
+            }
+            .blog-sidebar-toggle { display: none !important; }
+        }
+
+        @media (max-width: 767px) {
+            .blog-article-page { padding-top: 120px; }
+            .blog-article-shell { width: min(100% - 16px, 1180px); }
+            .blog-hero-overlay h1 { font-size: 34px; }
+            .blog-author-line { gap: 8px; font-size: 0.86rem; }
+            .blog-reco-card { grid-template-columns: 1fr; }
+            .blog-reco-card img { width: 100%; height: 190px; }
+            .blog-reco-body { padding: 12px; }
+            #blogArticleContent p { font-size: 18px; }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    {% set coverImage = blog.imageCouverture ?: ('https://picsum.photos/seed/blog-' ~ blog.id ~ '/1200/900') %}
+    {% set absoluteBlogUrl = absolute_url(path('app_blog_show', {'id': blog.id})) %}
+    {% set pinterestUrl = 'https://www.pinterest.com/pin/create/button/?url=' ~ absoluteBlogUrl|url_encode ~ '&media=' ~ absolute_url(coverImage)|url_encode ~ '&description=' ~ blog.titre|url_encode %}
+    {% set readTime = ((blog.contenu|default('')|length / 700)|round(0, 'ceil')) %}
+    {% set statusLabel = blog.status ? 'publie' : 'brouillon' %}
+    {% set reactionPalette = {'like': '👍', 'love': '❤️', 'haha': '😄', 'wow': '😮', 'sad': '😢', 'angry': '😡'} %}
+    {% set reactionLabels = {'like': "J'aime", 'love': 'Love', 'haha': 'Haha', 'wow': 'Wow', 'sad': 'Sad', 'angry': 'Angry'} %}
+    {% set blogAuthorName = (blog.authorId|default('')|trim) %}
+    {% set canManageArticleMeta = is_granted('ROLE_ADMIN') or (app.user and (
+        (blog.author is defined and app.user == blog.author) or
+        (current_user_name and blogAuthorName and current_user_name == blogAuthorName) or
+        ((app.user.userIdentifier|default('')) and blogAuthorName and app.user.userIdentifier == blogAuthorName)
+    )) %}
+    {% if blog.publicationRequested and not blog.status %}
+        {% set statusLabel = 'en attente' %}
+    {% endif %}
+
+    <main class="blog-article-page">
+        <div class="blog-reading-progress"><span id="blogReadingProgressBar"></span></div>
+        <div class="blog-floating-actions" id="blogFloatingActions">
+            <p class="blog-floating-title">{{ blog.titre }}</p>
+            <div class="blog-floating-buttons">
+                <button type="button" class="blog-floating-btn" data-action="vision">❤️ Vision board</button>
+                <button type="button" class="blog-floating-btn" data-action="audio">🔊 Lecture audio</button>
+                <button type="button" class="blog-floating-btn" data-action="translate">🌍 Traduire</button>
+                <button type="button" class="blog-floating-btn" data-action="share">📤 Partager</button>
+            </div>
+        </div>
+
+        <div class="blog-article-shell">
+            <div class="blog-article-topbar">
+                <a class="blog-back-link" href="{{ path('app_blog_index') }}">&larr; Retour aux blogs</a>
+                <div class="blog-topbar-actions">
+                    <a class="blog-back-link" href="{{ path('app_blog_vision_board') }}">Vision board ({{ vision_board_count }})</a>
+                    {% if blog.status and is_granted('ROLE_ADMIN') %}
+                        <a class="blog-edit-link" href="{{ path('app_blog_edit', {'id': blog.id}) }}">Modifier l article</a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <section class="blog-hero-immersive" id="blogHeroSection">
+                <img src="{{ coverImage }}" alt="{{ blog.titre }}">
+                <div class="blog-hero-overlay">
+                    <div class="blog-hero-overlay-inner">
+                        {% set currentMetrics = recommendation_metrics[blog.id]|default({}) %}
+                        {% set currentCategory = currentMetrics.category|default('Nouveautes') %}
+                        <span class="blog-article-badge">{{ currentCategory }}</span>
+                        <h1>{{ blog.titre }}</h1>
+                        <div class="blog-author-line">
+                            {% set authorName = blog.authorId ?: ((app.user and app.user.prenom is defined and app.user.nom is defined) ? ((app.user.prenom ~ ' ' ~ app.user.nom)|trim) : (app.user ? app.user.userIdentifier : 'Auteur inconnu')) %}
+                            <span class="blog-author-avatar">{{ authorName|slice(0, 2)|upper }}</span>
+                            <span>{{ authorName }}</span>
+                            <span>{{ blog.datePublication ? blog.datePublication|date('d/m/Y') : (blog.dateCreation ? blog.dateCreation|date('d/m/Y') : 'Redige recemment') }}</span>
+                            <span>{{ readTime > 0 ? readTime : 1 }} min de lecture</span>
+                            <span>{{ views_count }} vues</span>
+                        </div>
+                        {% if app.user %}
+                            <div class="blog-image-tools" style="margin-top:14px; padding:0; border:0; background:transparent;">
+                                <button
+                                    type="button"
+                                    class="blog-vision-btn{% if is_in_vision_board %} is-saved{% endif %}"
+                                    id="visionBoardToggle"
+                                    data-url="{{ path('app_blog_toggle_vision_board', {'id': blog.id}) }}"
+                                    data-token="{{ csrf_token('vision_board_' ~ blog.id) }}"
+                                >
+                                    {% if is_in_vision_board %}Enregistre dans la vision board{% else %}Ajouter a la vision board{% endif %}
+                                </button>
+                                <a class="blog-pinterest-link" href="{{ pinterestUrl }}" target="_blank" rel="noopener noreferrer">Enregistrer sur Pinterest</a>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                <button type="button" class="blog-hero-scroll" id="blogScrollDown" aria-label="Descendre">↓</button>
+            </section>
+
+            <div class="blog-sidebar-trigger" id="blogSidebarTrigger" aria-hidden="true"></div>
+            <section class="blog-article-layout" id="blogArticleLayout">
+                <article class="blog-article-body">
+                    <div class="blog-translate-tools">
+                        <select id="blogTranslationLanguage">
+                            <option value="fr">Francais</option>
+                            <option value="en">Anglais</option>
+                            <option value="es">Espagnol</option>
+                            <option value="de">Allemand</option>
+                            <option value="it">Italien</option>
+                            <option value="ar">Arabe</option>
+                        </select>
+                        <button type="button" class="blog-translate-btn" id="blogTranslateButton">Traduire l article</button>
+                        <button type="button" class="blog-translate-reset" id="blogTranslateReset">Texte original</button>
+                    </div>
+                    <div class="blog-form-message" id="blogTranslateMessage"></div>
+
+                    <div
+                        id="blogArticleContent"
+                        data-original-title="{{ blog.titre|e('html_attr') }}"
+                        data-original-excerpt="{{ (blog.extrait ?: '')|e('html_attr') }}"
+                        data-original-content="{{ blog.contenu|e('html_attr') }}"
+                    >
+                    {% for paragraph in blog.contenu|split('\n') %}
+                        {% if paragraph|trim is not empty %}
+                            <p>{{ paragraph|trim }}</p>
+                        {% endif %}
+                    {% endfor %}
+                    </div>
+
+                    <div class="blog-interactions">
+                        <div class="blog-separator"><span>Avis de la communaute</span></div>
+                        <section class="blog-panel" id="blog-review-section">
+                            <h2>Vos avis</h2>
+                            <p>Publiez un avis avec votre commentaire et votre note.</p>
+
+                            {% if can_interact and current_user_name %}
+                                <div class="blog-interaction-note">Connecte en tant que {{ current_user_name }}. Votre avis sera publie sous ce nom.</div>
+                            {% endif %}
+
+                            {% if can_interact %}
+                                <form method="post" class="blog-form-stack" id="blogEngageForm" action="{{ path('app_blog_engage', {'id': blog.id}) }}" style="margin-bottom: 22px;">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('blog_engage_' ~ blog.id) }}">
+                                    {% if current_user_name %}
+                                        <input type="text" name="userName" value="{{ current_user_name }}" readonly>
+                                    {% else %}
+                                        <input type="text" name="userName" placeholder="Votre nom" required>
+                                    {% endif %}
+
+                                    <div class="blog-rating-stars">
+                                        {% for value in 5..1 %}
+                                            <input type="radio" id="rating-{{ value }}" name="rating" value="{{ value }}" {% if value == 5 %}checked{% endif %}>
+                                            <label for="rating-{{ value }}">★</label>
+                                        {% endfor %}
+                                    </div>
+
+                                    <textarea name="contenu" placeholder="Ecrivez votre commentaire ici..." required></textarea>
+                                    <div class="blog-form-message" id="blogEngageMessage"></div>
+                                    <button type="submit" class="blog-submit-btn">Publier mon avis</button>
+                                </form>
+                            {% else %}
+                                <div class="blog-interaction-note">Connectez-vous pour commenter et reagir.</div>
+                            {% endif %}
+
+                            {% if comments is not empty %}
+                                <div class="blog-comment-list" id="blogCommentList">
+                                    {% for comment in comments %}
+                                        {% set commentRating = ratings_by_user[comment.nomuser] ?? null %}
+                                        {% set isReported = comment.id in (reported_comment_ids|default([])) %}
+                                        <article class="blog-comment-card">
+                                            <div class="blog-comment-head">
+                                                <div class="blog-comment-author">
+                                                    <span class="blog-comment-avatar">{{ comment.nomuser|default('U')|slice(0, 2)|upper }}</span>
+                                                    <strong>{{ comment.nomuser }}</strong>
+                                                </div>
+                                                <span>{{ comment.dateCreation ? comment.dateCreation|date('Y-m-d H:i') : '' }}</span>
+                                            </div>
+                                            {% if commentRating %}
+                                                <div class="blog-review-stars">
+                                                    {% for i in 1..5 %}
+                                                        {{ i <= commentRating.rating ? '★' : '☆' }}
+                                                    {% endfor %}
+                                                </div>
+                                            {% endif %}
+                                            <p data-comment-content>{{ comment.contenu }}</p>
+                                            <div class="blog-comment-actions">
+                                                {% if can_interact %}
+                                                    <button
+                                                        type="button"
+                                                        class="blog-like-btn"
+                                                        data-like-comment
+                                                        data-like-url="{{ path('app_commentaire_like', {'id': comment.id}) }}"
+                                                        data-like-token="{{ csrf_token('like_comment_' ~ comment.id) }}"
+                                                    >
+                                                        <span>♡</span>
+                                                        <span data-like-count>{{ comment.likesCount ?: 0 }}</span>
+                                                    </button>
+                                                    {% set reactionCounts = reaction_counts_by_comment[comment.id]|default({}) %}
+                                                    {% set userReaction = user_reactions_by_comment[comment.id]|default('') %}
+                                                    {% set activeReactionEmoji = reactionPalette[userReaction]|default('👍') %}
+                                                    {% set activeReactionLabel = reactionLabels[userReaction]|default("J'aime") %}
+                                                    <div
+                                                        class="blog-reaction-facebook"
+                                                        data-reaction-widget
+                                                        data-react-url="{{ path('app_commentaire_react', {'id': comment.id}) }}"
+                                                        data-react-token="{{ csrf_token('react_comment_' ~ comment.id) }}"
+                                                    >
+                                                        <button
+                                                            type="button"
+                                                            class="blog-reaction-main-btn{% if userReaction %} is-active is-{{ userReaction }}{% endif %}"
+                                                            data-reaction-main
+                                                            data-active-reaction="{{ userReaction }}"
+                                                        >
+                                                            <span class="blog-reaction-main-emoji">{{ activeReactionEmoji }}</span>
+                                                            <span class="blog-reaction-main-label">{{ activeReactionLabel }}</span>
+                                                        </button>
+                                                        <div class="blog-reaction-popup" data-reaction-popup>
+                                                            {% for reactionType, reactionEmoji in reactionPalette %}
+                                                                <button
+                                                                    type="button"
+                                                                    class="blog-reaction-popup-btn"
+                                                                    data-reaction-option
+                                                                    data-reaction-type="{{ reactionType }}"
+                                                                    title="{{ reactionLabels[reactionType]|default(reactionType|capitalize) }}"
+                                                                    aria-label="{{ reactionLabels[reactionType]|default(reactionType|capitalize) }}"
+                                                                >{{ reactionEmoji }}</button>
+                                                            {% endfor %}
+                                                        </div>
+                                                        <div class="blog-reaction-counts" data-reaction-counts>
+                                                            {% for reactionType, reactionEmoji in reactionPalette %}
+                                                                {% set count = reactionCounts[reactionType]|default(0) %}
+                                                                {% if count > 0 %}
+                                                                    <span
+                                                                        class="blog-reaction-count-pill"
+                                                                        data-reaction-count-pill
+                                                                        data-reaction-type="{{ reactionType }}"
+                                                                        title="{{ count }} personne{{ count > 1 ? 's' : '' }}"
+                                                                    >
+                                                                        {{ reactionEmoji }} <span data-reaction-count>{{ count }}</span>
+                                                                    </span>
+                                                                {% endif %}
+                                                            {% endfor %}
+                                                        </div>
+                                                    </div>
+                                                {% endif %}
+                                                <button
+                                                    type="button"
+                                                    class="blog-comment-translate-btn"
+                                                    data-translate-comment
+                                                    data-original-content="{{ comment.contenu|e('html_attr') }}"
+                                                    data-translated="false"
+                                                >
+                                                    Traduire
+                                                </button>
+                                                {% if can_interact %}
+                                                    <div class="blog-report-menu" data-report-menu>
+                                                        <button
+                                                            type="button"
+                                                            class="blog-report-more-btn"
+                                                            data-report-toggle
+                                                            aria-label="Actions de signalement"
+                                                        >
+                                                            ...
+                                                        </button>
+                                                        <div class="blog-report-dropdown" data-report-dropdown>
+                                                            <button
+                                                                type="button"
+                                                                class="blog-report-action-btn{% if isReported %} is-disabled{% endif %}"
+                                                                data-report-trigger
+                                                                data-comment-id="{{ comment.id }}"
+                                                                data-report-url="{{ path('app_commentaire_report', {'id': comment.id}) }}"
+                                                                data-report-token="{{ csrf_token('report_comment_' ~ comment.id) }}"
+                                                                {% if isReported %}disabled{% endif %}
+                                                            >
+                                                                {% if isReported %}Deja signale{% else %}Signaler{% endif %}
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                {% endif %}
+                                                <span class="blog-comment-translate-note" data-comment-translate-note></span>
+                                            </div>
+                                        </article>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <div id="blogCommentList" class="blog-comment-list">
+                                    <p>Aucun commentaire pour le moment. Soyez le premier a reagir.</p>
+                                </div>
+                            {% endif %}
+                        </section>
+                    </div>
+                </article>
+
+                {% if canManageArticleMeta %}
+                    <aside class="blog-article-sidebar" id="blogArticleSidebar">
+                        <div class="blog-side-block">
+                            <p class="blog-side-label">Note moyenne</p>
+                            <p class="blog-side-value"><strong data-average-rating>{{ average_rating|number_format(1, '.', ' ') }}/5</strong></p>
+                        </div>
+
+                        <div class="blog-side-block">
+                            <p class="blog-side-label">Vues</p>
+                            <p class="blog-side-value"><strong>{{ views_count }}</strong></p>
+                        </div>
+
+                        <div class="blog-side-block">
+                            <p class="blog-side-label">Commentaires</p>
+                            <p class="blog-side-value"><strong>{{ comments|length }}</strong></p>
+                        </div>
+
+                        <div class="blog-side-block">
+                            <p class="blog-side-label">Actions</p>
+                            <div class="blog-image-tools" style="padding:0; border:0; background:transparent;">
+                                {% if app.user %}
+                                    <button
+                                        type="button"
+                                        class="blog-vision-btn{% if is_in_vision_board %} is-saved{% endif %}"
+                                        data-proxy-click="#visionBoardToggle"
+                                    >
+                                        {% if is_in_vision_board %}Enregistre{% else %}Vision board{% endif %}
+                                    </button>
+                                    <a class="blog-pinterest-link" href="{{ pinterestUrl }}" target="_blank" rel="noopener noreferrer">Pinterest</a>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="blog-side-block">
+                            <p class="blog-side-label">Lecture audio</p>
+                            <div class="blog-sidebar-tools">
+                                <button type="button" class="blog-translate-reset" data-proxy-click="#blogAudioPlay">Play</button>
+                                <button type="button" class="blog-translate-reset" data-proxy-click="#blogAudioPause">Pause</button>
+                                <button type="button" class="blog-translate-reset" data-proxy-click="#blogAudioStop">Stop</button>
+                            </div>
+                        </div>
+
+                        <div class="blog-side-block">
+                            <p class="blog-side-label">Traduction</p>
+                            <div class="blog-sidebar-tools">
+                                <button type="button" class="blog-translate-btn" data-proxy-click="#blogTranslateButton">Traduire</button>
+                                <button type="button" class="blog-translate-reset" data-proxy-click="#blogTranslateReset">Original</button>
+                            </div>
+                        </div>
+
+                        <div class="blog-side-block">
+                            <p class="blog-side-label">Statut</p>
+                            <span class="blog-side-pill">{{ statusLabel }}</span>
+                        </div>
+
+                        <div class="blog-side-block">
+                            <p class="blog-side-label">Acces</p>
+                            <p class="blog-side-value">{{ viewer_role == 'ROLE_ADMIN' ? 'Moderation administrateur activee' : 'Interactions utilisateurs actives' }}</p>
+                        </div>
+
+                        {% if is_granted('ROLE_ADMIN') %}
+                            <div class="blog-delete-area">
+                                {{ include('blog/_delete_form.html.twig') }}
+                            </div>
+                        {% endif %}
+                    </aside>
+                    <button type="button" class="blog-sidebar-toggle" id="blogSidebarToggle" aria-label="Afficher la sidebar">ℹ️</button>
+                {% endif %}
+            </section>
+            <section class="blog-reco-section">
+                <h2 class="blog-reco-title">Continuez votre voyage...</h2>
+                <div class="blog-reco-list">
+                    {% for reco in recommended_blogs|default([]) %}
+                        {% set recoImage = reco.imageCouverture ?: ('https://picsum.photos/seed/reco-' ~ reco.id ~ '/640/420') %}
+                        {% set recoMetrics = recommendation_metrics[reco.id]|default({}) %}
+                        {% set recoCategory = recoMetrics.category|default('Nouveautes') %}
+                        {% set recoReadTime = ((reco.contenu|default('')|length / 700)|round(0, 'ceil')) %}
+                        <a class="blog-reco-card" href="{{ path('app_blog_show', {'id': reco.id}) }}">
+                            <img src="{{ recoImage }}" alt="{{ reco.titre }}">
+                            <div class="blog-reco-body">
+                                <span class="blog-article-badge">{{ recoCategory }}</span>
+                                <h3>{{ reco.titre }}</h3>
+                                <p>{{ recoReadTime > 0 ? recoReadTime : 1 }} min de lecture</p>
+                            </div>
+                        </a>
+                    {% else %}
+                        <p class="blog-side-value">Aucune autre recommandation pour le moment.</p>
+                    {% endfor %}
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <div id="blogReportModal" class="blog-report-modal" aria-hidden="true">
+        <div class="blog-report-backdrop" data-report-close></div>
+        <div class="blog-report-panel" role="dialog" aria-modal="true" aria-labelledby="blogReportTitle">
+            <h5 id="blogReportTitle">Signaler ce commentaire</h5>
+            <p>Choisissez la raison du signalement</p>
+            <div class="blog-report-reasons">
+                <button type="button" class="blog-report-reason-btn" data-report-reason="spam">Spam</button>
+                <button type="button" class="blog-report-reason-btn" data-report-reason="inappropriate">Inappropriate</button>
+                <button type="button" class="blog-report-reason-btn" data-report-reason="harassment">Harcelement</button>
+                <button type="button" class="blog-report-reason-btn" data-report-reason="misinformation">Fausse information</button>
+                <button type="button" class="blog-report-reason-btn" data-report-reason="other">Autre</button>
+            </div>
+            <div class="blog-report-actions">
+                <button type="button" class="blog-report-btn" data-report-close>Annuler</button>
+                <button type="button" class="blog-report-btn blog-report-btn--confirm" id="blogReportConfirm" disabled>Confirmer le signalement</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="blogAudioPlayer" class="blog-audio-player">
+        <div class="blog-audio-main">
+            <div class="blog-audio-status">
+                <span id="blogAudioDot" class="blog-audio-dot"></span>
+                <span id="blogAudioStatusText">Pret a lire l article</span>
+            </div>
+            <div class="blog-audio-progress"><span id="blogAudioProgressBar"></span></div>
+            <div id="blogAudioProgressText" class="blog-audio-stats">0 / 0 mots lus</div>
+        </div>
+        <div class="blog-audio-controls">
+            <button type="button" class="blog-audio-btn" id="blogAudioPlay">Play</button>
+            <button type="button" class="blog-audio-btn" id="blogAudioPause">Pause</button>
+            <button type="button" class="blog-audio-btn" id="blogAudioStop">Stop</button>
+            <select id="blogAudioRate" class="blog-audio-select">
+                <option value="0.85">0.85x</option>
+                <option value="1" selected>1x</option>
+                <option value="1.15">1.15x</option>
+                <option value="1.3">1.3x</option>
+                <option value="1.5">1.5x</option>
+            </select>
+            <button type="button" class="blog-audio-btn" id="blogVoiceToggle">Voix</button>
+            <select id="blogAudioVoice" class="blog-audio-select blog-audio-voices"></select>
+        </div>
+    </div>
+
+    {{ include('home/partials/chatbot_widget.html.twig', { chatbot_article_content: blog.contenu|default('') }) }}
+
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        (function () {
+            const engageForm = document.getElementById('blogEngageForm');
+            const messageBox = document.getElementById('blogEngageMessage');
+            const commentList = document.getElementById('blogCommentList');
+            const averageRatingNode = document.querySelector('[data-average-rating]');
+            const translateButton = document.getElementById('blogTranslateButton');
+            const resetButton = document.getElementById('blogTranslateReset');
+            const translateMessage = document.getElementById('blogTranslateMessage');
+            const languageSelect = document.getElementById('blogTranslationLanguage');
+            const articleContent = document.getElementById('blogArticleContent');
+            const articleTitle = document.querySelector('.blog-hero-overlay h1');
+            const articleExcerpt = document.querySelector('.blog-article-excerpt');
+            const visionBoardToggle = document.getElementById('visionBoardToggle');
+            const reportModal = document.getElementById('blogReportModal');
+            const reportConfirm = document.getElementById('blogReportConfirm');
+            const scrollDownButton = document.getElementById('blogScrollDown');
+            const heroSection = document.getElementById('blogHeroSection');
+            const readingProgressNode = document.getElementById('blogReadingProgressBar');
+            const floatingActions = document.getElementById('blogFloatingActions');
+            const sidebarNode = document.getElementById('blogArticleSidebar');
+            const sidebarToggle = document.getElementById('blogSidebarToggle');
+            const sidebarTrigger = document.getElementById('blogSidebarTrigger');
+            let currentTranslationLanguage = null;
+            let selectedReportReason = '';
+            let activeReportButton = null;
+            const reactionMeta = {
+                like: { emoji: '👍', label: "J'aime", className: 'is-like' },
+                love: { emoji: '❤️', label: 'Love', className: 'is-love' },
+                haha: { emoji: '😄', label: 'Haha', className: 'is-haha' },
+                wow: { emoji: '😮', label: 'Wow', className: 'is-wow' },
+                sad: { emoji: '😢', label: 'Sad', className: 'is-sad' },
+                angry: { emoji: '😡', label: 'Angry', className: 'is-angry' }
+            };
+            const reactionTypes = Object.keys(reactionMeta);
+            const reactionOpenTimers = new WeakMap();
+
+            const renderStars = function (rating) {
+                let stars = '';
+                for (let i = 1; i <= 5; i += 1) {
+                    stars += i <= rating ? '★' : '☆';
+                }
+                return stars;
+            };
+
+            const showMessage = function (message) {
+                if (!messageBox) {
+                    return;
+                }
+                messageBox.textContent = message;
+                messageBox.classList.add('is-visible');
+            };
+
+            const showTranslateMessage = function (message) {
+                if (!translateMessage) {
+                    return;
+                }
+                translateMessage.textContent = message;
+                translateMessage.classList.add('is-visible');
+            };
+
+            const renderParagraphs = function (content) {
+                if (!articleContent) {
+                    return;
+                }
+
+                articleContent.innerHTML = '';
+                content.split('\n').forEach(function (paragraph) {
+                    if (!paragraph.trim()) {
+                        return;
+                    }
+
+                    const p = document.createElement('p');
+                    p.textContent = paragraph.trim();
+                    articleContent.appendChild(p);
+                });
+            };
+
+            const closeReportDropdowns = function () {
+                document.querySelectorAll('[data-report-dropdown].is-open').forEach(function (dropdown) {
+                    dropdown.classList.remove('is-open');
+                });
+            };
+
+            const resetReportModal = function () {
+                selectedReportReason = '';
+                activeReportButton = null;
+                if (reportConfirm) {
+                    reportConfirm.disabled = true;
+                }
+                if (!reportModal) {
+                    return;
+                }
+                reportModal.querySelectorAll('[data-report-reason]').forEach(function (reasonButton) {
+                    reasonButton.classList.remove('is-selected');
+                });
+            };
+
+            const openReportModal = function (triggerButton) {
+                if (!reportModal || !triggerButton) {
+                    return;
+                }
+                resetReportModal();
+                activeReportButton = triggerButton;
+                reportModal.classList.add('is-open');
+                reportModal.setAttribute('aria-hidden', 'false');
+            };
+
+            const closeReportModal = function () {
+                if (!reportModal) {
+                    return;
+                }
+                reportModal.classList.remove('is-open');
+                reportModal.setAttribute('aria-hidden', 'true');
+                resetReportModal();
+            };
+
+            const clearReactionTimers = function (widget) {
+                const timer = reactionOpenTimers.get(widget);
+                if (!timer) {
+                    return;
+                }
+                clearTimeout(timer.open);
+                clearTimeout(timer.close);
+            };
+
+            const setReactionPopupState = function (widget, shouldOpen) {
+                if (!widget) {
+                    return;
+                }
+                widget.classList.toggle('is-open', !!shouldOpen);
+            };
+
+            const scheduleReactionPopup = function (widget, shouldOpen, delay) {
+                if (!widget) {
+                    return;
+                }
+                let timer = reactionOpenTimers.get(widget);
+                if (!timer) {
+                    timer = { open: null, close: null };
+                }
+                clearTimeout(timer.open);
+                clearTimeout(timer.close);
+                if (shouldOpen) {
+                    timer.open = setTimeout(function () {
+                        setReactionPopupState(widget, true);
+                    }, delay);
+                } else {
+                    timer.close = setTimeout(function () {
+                        setReactionPopupState(widget, false);
+                    }, delay);
+                }
+                reactionOpenTimers.set(widget, timer);
+            };
+
+            const applyReactionState = function (widget, payload) {
+                if (!widget || !payload) {
+                    return;
+                }
+                const userReaction = String(payload.userReaction || '');
+                const mainButton = widget.querySelector('[data-reaction-main]');
+                const emojiNode = mainButton ? mainButton.querySelector('.blog-reaction-main-emoji') : null;
+                const labelNode = mainButton ? mainButton.querySelector('.blog-reaction-main-label') : null;
+                const countsRoot = widget.querySelector('[data-reaction-counts]');
+
+                if (mainButton) {
+                    mainButton.dataset.activeReaction = userReaction;
+                    mainButton.classList.remove('is-active', 'is-like', 'is-love', 'is-haha', 'is-wow', 'is-sad', 'is-angry');
+                    if (userReaction && reactionMeta[userReaction]) {
+                        mainButton.classList.add('is-active', reactionMeta[userReaction].className);
+                    }
+                }
+                if (emojiNode) {
+                    emojiNode.textContent = userReaction && reactionMeta[userReaction] ? reactionMeta[userReaction].emoji : '👍';
+                }
+                if (labelNode) {
+                    labelNode.textContent = userReaction && reactionMeta[userReaction] ? reactionMeta[userReaction].label : "J'aime";
+                }
+
+                if (countsRoot) {
+                    countsRoot.innerHTML = '';
+                    reactionTypes.forEach(function (type) {
+                        const count = Number((payload.counts || {})[type] || 0);
+                        if (count <= 0) {
+                            return;
+                        }
+                        const pill = document.createElement('span');
+                        pill.className = 'blog-reaction-count-pill';
+                        pill.dataset.reactionCountPill = '1';
+                        pill.dataset.reactionType = type;
+                        pill.title = `${count} personne${count > 1 ? 's' : ''}`;
+                        pill.innerHTML = `${reactionMeta[type].emoji} <span data-reaction-count>${count}</span>`;
+                        countsRoot.appendChild(pill);
+                    });
+                }
+            };
+
+            const submitReaction = async function (widget, reactionType) {
+                if (!widget || !reactionType) {
+                    return;
+                }
+                const formData = new FormData();
+                formData.append('_token', widget.dataset.reactToken || '');
+                formData.append('reaction_type', reactionType);
+
+                const response = await fetch(widget.dataset.reactUrl, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+
+                const payload = await response.json();
+                if (!response.ok || !payload.success) {
+                    showMessage(payload.message || 'Impossible d enregistrer votre reaction.');
+                    return;
+                }
+
+                applyReactionState(widget, payload);
+                setReactionPopupState(widget, false);
+            };
+
+            const setupReactionWidget = function (widget) {
+                if (!widget || widget.dataset.reactionBound === '1') {
+                    return;
+                }
+                widget.dataset.reactionBound = '1';
+                widget.addEventListener('mouseenter', function () {
+                    scheduleReactionPopup(widget, true, 300);
+                });
+                widget.addEventListener('mouseleave', function () {
+                    scheduleReactionPopup(widget, false, 120);
+                });
+                widget.addEventListener('touchstart', function () {
+                    scheduleReactionPopup(widget, true, 0);
+                }, { passive: true });
+            };
+
+            const bindReactionWidgets = function (root) {
+                const scope = root || document;
+                scope.querySelectorAll('[data-reaction-widget]').forEach(function (widget) {
+                    setupReactionWidget(widget);
+                });
+            };
+
+            bindReactionWidgets(document);
+
+            const updateReadingProgress = function () {
+                if (!readingProgressNode || !articleContent) {
+                    return;
+                }
+                const rect = articleContent.getBoundingClientRect();
+                const articleTop = window.scrollY + rect.top;
+                const articleHeight = articleContent.offsetHeight || 1;
+                const viewportHeight = window.innerHeight || 1;
+                const progress = ((window.scrollY - articleTop + viewportHeight * 0.25) / articleHeight) * 100;
+                readingProgressNode.style.width = Math.max(0, Math.min(100, progress)) + '%';
+            };
+
+            window.addEventListener('scroll', updateReadingProgress, { passive: true });
+            window.addEventListener('resize', updateReadingProgress);
+            updateReadingProgress();
+
+            if (scrollDownButton && articleContent) {
+                scrollDownButton.addEventListener('click', function () {
+                    articleContent.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                });
+            }
+
+            if (heroSection && floatingActions && window.IntersectionObserver) {
+                const heroObserver = new IntersectionObserver(function (entries) {
+                    const entry = entries[0];
+                    floatingActions.classList.toggle('is-visible', !entry.isIntersecting);
+                }, { threshold: 0.15 });
+                heroObserver.observe(heroSection);
+            }
+
+            if (sidebarNode && sidebarToggle && sidebarTrigger && window.IntersectionObserver) {
+                const sidebarObserver = new IntersectionObserver(function (entries) {
+                    const entry = entries[0];
+                    const shouldCollapse = !entry.isIntersecting && entry.boundingClientRect.top < 0;
+                    sidebarNode.classList.toggle('is-collapsed', shouldCollapse);
+                    sidebarToggle.classList.toggle('is-visible', shouldCollapse);
+                }, { threshold: 0 });
+                sidebarObserver.observe(sidebarTrigger);
+
+                sidebarToggle.addEventListener('click', function () {
+                    sidebarNode.classList.remove('is-collapsed');
+                    sidebarToggle.classList.remove('is-visible');
+                });
+            }
+
+            if (floatingActions) {
+                floatingActions.addEventListener('click', function (event) {
+                    const actionButton = event.target.closest('[data-action]');
+                    if (!actionButton) {
+                        return;
+                    }
+                    const action = actionButton.dataset.action;
+                    if (action === 'vision' && visionBoardToggle) {
+                        visionBoardToggle.click();
+                    } else if (action === 'audio') {
+                        document.getElementById('blogAudioPlay')?.click();
+                    } else if (action === 'translate' && translateButton) {
+                        translateButton.click();
+                    } else if (action === 'share') {
+                        const shareData = { title: '{{ blog.titre|e('js') }}', url: window.location.href };
+                        if (navigator.share) {
+                            navigator.share(shareData).catch(function () {});
+                        } else if (navigator.clipboard) {
+                            navigator.clipboard.writeText(window.location.href).catch(function () {});
+                        }
+                    }
+                });
+            }
+
+            document.querySelectorAll('[data-proxy-click]').forEach(function (proxyButton) {
+                proxyButton.addEventListener('click', function () {
+                    const selector = proxyButton.getAttribute('data-proxy-click');
+                    if (!selector) {
+                        return;
+                    }
+                    const target = document.querySelector(selector);
+                    if (target instanceof HTMLElement) {
+                        target.click();
+                    }
+                });
+            });
+
+            if (engageForm && commentList) {
+                engageForm.addEventListener('submit', async function (event) {
+                    event.preventDefault();
+
+                    const formData = new FormData(engageForm);
+                    const response = await fetch(engageForm.action, {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    });
+
+                    const payload = await response.json();
+                    if (!response.ok) {
+                        showMessage(payload.message || 'Impossible d enregistrer votre avis pour le moment.');
+                        return;
+                    }
+
+                    showMessage(payload.message || 'Votre avis a ete publie.');
+
+                    if (payload.moderation && payload.moderation.containsBlockedWords) {
+                        showMessage((payload.message || 'Votre avis a ete publie.') + ' Mots filtres : ' + payload.moderation.matchedTerms.join(', '));
+                    }
+
+                    const emptyState = commentList.querySelector('p');
+                    if (emptyState && emptyState.parentElement === commentList) {
+                        emptyState.remove();
+                    }
+
+                    const card = document.createElement('article');
+                    card.className = 'blog-comment-card';
+                    const escapedContent = String(payload.comment.content || '')
+                        .replace(/&/g, '&amp;')
+                        .replace(/"/g, '&quot;')
+                        .replace(/'/g, '&#39;');
+                    card.innerHTML = `
+                        <div class="blog-comment-head">
+                            <div class="blog-comment-author">
+                                <span class="blog-comment-avatar">${String(payload.comment.author || 'U').slice(0, 2).toUpperCase()}</span>
+                                <strong>${payload.comment.author}</strong>
+                            </div>
+                            <span>${payload.comment.createdAt}</span>
+                        </div>
+                        <div class="blog-review-stars">${renderStars(payload.comment.rating)}</div>
+                        <p data-comment-content>${payload.comment.content}</p>
+                        <div class="blog-comment-actions">
+                            <button
+                                type="button"
+                                class="blog-like-btn"
+                                data-like-comment
+                                data-like-url="${payload.comment.likeUrl}"
+                                data-like-token="${payload.comment.likeToken}"
+                            >
+                                <span>♡</span>
+                                <span data-like-count>${payload.comment.likesCount}</span>
+                            </button>
+                            <div
+                                class="blog-reaction-facebook"
+                                data-reaction-widget
+                                data-react-url="${payload.comment.reactUrl}"
+                                data-react-token="${payload.comment.reactToken}"
+                            >
+                                <button type="button" class="blog-reaction-main-btn" data-reaction-main data-active-reaction="">
+                                    <span class="blog-reaction-main-emoji">👍</span>
+                                    <span class="blog-reaction-main-label">J'aime</span>
+                                </button>
+                                <div class="blog-reaction-popup" data-reaction-popup>
+                                    <button type="button" class="blog-reaction-popup-btn" data-reaction-option data-reaction-type="like" title="J'aime">👍</button>
+                                    <button type="button" class="blog-reaction-popup-btn" data-reaction-option data-reaction-type="love" title="Love">❤️</button>
+                                    <button type="button" class="blog-reaction-popup-btn" data-reaction-option data-reaction-type="haha" title="Haha">😄</button>
+                                    <button type="button" class="blog-reaction-popup-btn" data-reaction-option data-reaction-type="wow" title="Wow">😮</button>
+                                    <button type="button" class="blog-reaction-popup-btn" data-reaction-option data-reaction-type="sad" title="Sad">😢</button>
+                                    <button type="button" class="blog-reaction-popup-btn" data-reaction-option data-reaction-type="angry" title="Angry">😡</button>
+                                </div>
+                                <div class="blog-reaction-counts" data-reaction-counts></div>
+                            </div>
+                            <button
+                                type="button"
+                                class="blog-comment-translate-btn"
+                                data-translate-comment
+                                data-original-content="${escapedContent}"
+                                data-translated="false"
+                            >
+                                Traduire
+                            </button>
+                            <div class="blog-report-menu" data-report-menu>
+                                <button type="button" class="blog-report-more-btn" data-report-toggle aria-label="Actions de signalement">...</button>
+                                <div class="blog-report-dropdown" data-report-dropdown>
+                                    <button
+                                        type="button"
+                                        class="blog-report-action-btn"
+                                        data-report-trigger
+                                        data-comment-id="${payload.comment.id}"
+                                        data-report-url="${payload.comment.reportUrl}"
+                                        data-report-token="${payload.comment.reportToken}"
+                                    >
+                                        Signaler
+                                    </button>
+                                </div>
+                            </div>
+                            <span class="blog-comment-translate-note" data-comment-translate-note></span>
+                        </div>
+                    `;
+
+                    commentList.prepend(card);
+                    bindReactionWidgets(card);
+                    const newReactionWidget = card.querySelector('[data-reaction-widget]');
+                    if (newReactionWidget) {
+                        applyReactionState(newReactionWidget, {
+                            userReaction: '',
+                            counts: payload.comment.reactionCounts || {}
+                        });
+                    }
+                    engageForm.reset();
+                    const defaultStar = engageForm.querySelector('input[name="rating"][value="5"]');
+                    if (defaultStar) {
+                        defaultStar.checked = true;
+                    }
+
+                    if (averageRatingNode && payload.stats) {
+                        averageRatingNode.textContent = `${payload.stats.averageRating}/5`;
+                    }
+                });
+            }
+
+            if (translateButton && languageSelect && articleContent && articleTitle) {
+                translateButton.addEventListener('click', async function () {
+                    showTranslateMessage('Traduction de l article en cours...');
+
+                    const response = await fetch('{{ path('api_blog_translate_article', {'id': blog.id}) }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: JSON.stringify({
+                            target_language: languageSelect.value
+                        })
+                    });
+
+                    const payload = await response.json();
+                    if (!response.ok || !payload.success) {
+                        showTranslateMessage(payload.message || 'La traduction est indisponible pour le moment.');
+                        return;
+                    }
+
+                    articleTitle.textContent = payload.translated.title;
+                    if (articleExcerpt) {
+                        articleExcerpt.textContent = payload.translated.excerpt || '';
+                    }
+                    renderParagraphs(payload.translated.content || '');
+                    currentTranslationLanguage = payload.target_language;
+                    showTranslateMessage('Article traduit en ' + payload.target_language + '.');
+                });
+            }
+
+            if (resetButton && articleContent && articleTitle) {
+                resetButton.addEventListener('click', function () {
+                    articleTitle.textContent = articleContent.dataset.originalTitle || articleTitle.textContent;
+                    if (articleExcerpt) {
+                        articleExcerpt.textContent = articleContent.dataset.originalExcerpt || '';
+                    }
+                    renderParagraphs(articleContent.dataset.originalContent || '');
+                    currentTranslationLanguage = null;
+                    showTranslateMessage('Article original restaure.');
+                });
+            }
+
+            if (visionBoardToggle) {
+                visionBoardToggle.addEventListener('click', async function () {
+                    const formData = new FormData();
+                    formData.append('_token', visionBoardToggle.dataset.token);
+
+                    const response = await fetch(visionBoardToggle.dataset.url, {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    });
+
+                    const payload = await response.json();
+                    if (!response.ok) {
+                        showTranslateMessage(payload.message || 'Impossible de mettre a jour votre vision board.');
+                        return;
+                    }
+
+                    visionBoardToggle.classList.toggle('is-saved', !!payload.saved);
+                    visionBoardToggle.textContent = payload.saved ? 'Enregistre dans la vision board' : 'Ajouter a la vision board';
+                    showTranslateMessage(payload.message || 'Vision board mise a jour.');
+                });
+            }
+
+            if (reportModal) {
+                reportModal.querySelectorAll('[data-report-close]').forEach(function (closeNode) {
+                    closeNode.addEventListener('click', function () {
+                        closeReportModal();
+                    });
+                });
+
+                reportModal.querySelectorAll('[data-report-reason]').forEach(function (reasonButton) {
+                    reasonButton.addEventListener('click', function () {
+                        selectedReportReason = reasonButton.dataset.reportReason || '';
+                        reportModal.querySelectorAll('[data-report-reason]').forEach(function (buttonNode) {
+                            buttonNode.classList.toggle('is-selected', buttonNode === reasonButton);
+                        });
+                        if (reportConfirm) {
+                            reportConfirm.disabled = !selectedReportReason;
+                        }
+                    });
+                });
+            }
+
+            document.addEventListener('keydown', function (event) {
+                if (event.key === 'Escape' && reportModal && reportModal.classList.contains('is-open')) {
+                    closeReportModal();
+                }
+            });
+
+            if (reportConfirm) {
+                reportConfirm.addEventListener('click', async function () {
+                    if (!activeReportButton || !selectedReportReason) {
+                        return;
+                    }
+
+                    reportConfirm.disabled = true;
+                    const formData = new FormData();
+                    formData.append('_token', activeReportButton.dataset.reportToken || '');
+                    formData.append('reason', selectedReportReason);
+
+                    const response = await fetch(activeReportButton.dataset.reportUrl, {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    });
+
+                    const payload = await response.json();
+                    if (!response.ok || !payload.success) {
+                        reportConfirm.disabled = false;
+                        showMessage(payload.message || 'Impossible de signaler ce commentaire.');
+                        return;
+                    }
+
+                    activeReportButton.disabled = true;
+                    activeReportButton.classList.add('is-disabled');
+                    activeReportButton.textContent = 'Deja signale';
+                    closeReportModal();
+                    showMessage(payload.message || 'Commentaire signale.');
+                });
+            }
+
+            document.addEventListener('click', async function (event) {
+                const toggleButton = event.target.closest('[data-report-toggle]');
+                if (toggleButton) {
+                    const menu = toggleButton.closest('[data-report-menu]');
+                    const dropdown = menu ? menu.querySelector('[data-report-dropdown]') : null;
+                    const shouldOpen = dropdown && !dropdown.classList.contains('is-open');
+                    closeReportDropdowns();
+                    if (dropdown && shouldOpen) {
+                        dropdown.classList.add('is-open');
+                    }
+                    return;
+                }
+
+                const reportButton = event.target.closest('[data-report-trigger]');
+                if (reportButton) {
+                    closeReportDropdowns();
+                    if (!reportButton.disabled) {
+                        openReportModal(reportButton);
+                    }
+                    return;
+                }
+
+                closeReportDropdowns();
+                document.querySelectorAll('[data-reaction-widget].is-open').forEach(function (widget) {
+                    if (!widget.contains(event.target)) {
+                        setReactionPopupState(widget, false);
+                    }
+                });
+
+                const reactionOptionButton = event.target.closest('[data-reaction-option]');
+                if (reactionOptionButton) {
+                    const reactionWidget = reactionOptionButton.closest('[data-reaction-widget]');
+                    if (!reactionWidget) {
+                        return;
+                    }
+                    await submitReaction(reactionWidget, reactionOptionButton.dataset.reactionType || '');
+                    return;
+                }
+
+                const reactionMainButton = event.target.closest('[data-reaction-main]');
+                if (reactionMainButton) {
+                    const reactionWidget = reactionMainButton.closest('[data-reaction-widget]');
+                    if (!reactionWidget) {
+                        return;
+                    }
+                    const activeReaction = reactionMainButton.dataset.activeReaction || '';
+                    if (activeReaction) {
+                        await submitReaction(reactionWidget, activeReaction);
+                    } else {
+                        clearReactionTimers(reactionWidget);
+                        setReactionPopupState(reactionWidget, true);
+                    }
+                    return;
+                }
+
+                const button = event.target.closest('[data-like-comment]');
+                if (!button || button.classList.contains('is-liked')) {
+                    return;
+                }
+
+                const formData = new FormData();
+                formData.append('_token', button.dataset.likeToken);
+
+                const response = await fetch(button.dataset.likeUrl, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+
+                const payload = await response.json();
+                if (!response.ok) {
+                    return;
+                }
+
+                const countNode = button.querySelector('[data-like-count]');
+                if (countNode) {
+                    countNode.textContent = payload.likesCount;
+                }
+
+                button.classList.add('is-liked');
+                button.querySelector('span').textContent = '♥';
+            });
+
+            document.addEventListener('click', async function (event) {
+                const button = event.target.closest('[data-translate-comment]');
+                if (!button) {
+                    return;
+                }
+
+                const card = button.closest('.blog-comment-card');
+                const contentNode = card ? card.querySelector('[data-comment-content]') : null;
+                const noteNode = card ? card.querySelector('[data-comment-translate-note]') : null;
+                const targetLanguage = currentTranslationLanguage || (languageSelect ? languageSelect.value : 'fr');
+
+                if (!contentNode) {
+                    return;
+                }
+
+                if (button.dataset.translated === 'true') {
+                    contentNode.textContent = button.dataset.originalContent || contentNode.textContent;
+                    button.dataset.translated = 'false';
+                    button.textContent = 'Traduire';
+                    if (noteNode) {
+                        noteNode.textContent = 'Commentaire original restaure.';
+                    }
+                    return;
+                }
+
+                button.disabled = true;
+                if (noteNode) {
+                    noteNode.textContent = 'Traduction en cours vers ' + targetLanguage + '...';
+                }
+
+                const response = await fetch('{{ path('api_blog_translate') }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify({
+                        text: button.dataset.originalContent || contentNode.textContent,
+                        target_language: targetLanguage
+                    })
+                });
+
+                const payload = await response.json();
+                button.disabled = false;
+
+                if (!response.ok || !payload.success) {
+                    if (noteNode) {
+                        noteNode.textContent = payload.message || 'Impossible de traduire ce commentaire pour le moment.';
+                    }
+                    return;
+                }
+
+                contentNode.textContent = payload.translated_text || contentNode.textContent;
+                button.dataset.translated = 'true';
+                    button.textContent = 'Original';
+                if (noteNode) {
+                    noteNode.textContent = 'Commentaire traduit vers ' + targetLanguage + '.';
+                }
+            });
+        })();
+
+        (function () {
+            const synth = window.speechSynthesis;
+            const articleContentNode = document.getElementById('blogArticleContent');
+            const playButton = document.getElementById('blogAudioPlay');
+            const pauseButton = document.getElementById('blogAudioPause');
+            const stopButton = document.getElementById('blogAudioStop');
+            const rateSelect = document.getElementById('blogAudioRate');
+            const voiceToggle = document.getElementById('blogVoiceToggle');
+            const voiceSelect = document.getElementById('blogAudioVoice');
+            const statusNode = document.getElementById('blogAudioStatusText');
+            const dotNode = document.getElementById('blogAudioDot');
+            const progressBar = document.getElementById('blogAudioProgressBar');
+            const progressText = document.getElementById('blogAudioProgressText');
+
+            if (!playButton || !pauseButton || !stopButton || !rateSelect || !voiceSelect || !statusNode || !dotNode || !progressBar || !progressText) {
+                return;
+            }
+
+            let utterance = null;
+            let articleText = '';
+            let totalWords = 0;
+            let readWords = 0;
+
+            const setStatus = function (text, reading) {
+                statusNode.textContent = text;
+                dotNode.classList.toggle('is-reading', !!reading);
+            };
+
+            const updateProgress = function () {
+                const safeTotal = totalWords || 1;
+                const ratio = Math.max(0, Math.min(100, (readWords / safeTotal) * 100));
+                progressBar.style.width = ratio + '%';
+                progressText.textContent = `${Math.min(readWords, totalWords)} / ${totalWords} mots lus`;
+            };
+
+            const loadVoices = function () {
+                if (!synth) {
+                    return;
+                }
+
+                const voices = synth.getVoices().filter((voice) => voice.lang && voice.lang.toLowerCase().startsWith('fr'));
+                const selected = voiceSelect.value;
+                voiceSelect.innerHTML = '';
+                voices.forEach((voice, index) => {
+                    const option = document.createElement('option');
+                    option.value = voice.name;
+                    option.textContent = `${voice.name}${voice.default ? ' (par defaut)' : ''}`;
+                    if (selected && selected === voice.name) {
+                        option.selected = true;
+                    } else if (!selected && index === 0) {
+                        option.selected = true;
+                    }
+                    voiceSelect.appendChild(option);
+                });
+            };
+
+            const computeText = function () {
+                const source = articleContentNode ? articleContentNode.innerText : '';
+                articleText = (source || '').replace(/\s+/g, ' ').trim();
+                totalWords = articleText ? articleText.split(/\s+/).length : 0;
+                readWords = 0;
+                updateProgress();
+            };
+
+            const stopReading = function () {
+                if (!synth) {
+                    return;
+                }
+                synth.cancel();
+                utterance = null;
+                readWords = 0;
+                updateProgress();
+                setStatus('Lecture arretee', false);
+            };
+
+            const startReading = function () {
+                if (!synth) {
+                    setStatus('Lecture audio non supportee sur ce navigateur.', false);
+                    return;
+                }
+
+                if (!articleText) {
+                    computeText();
+                }
+                if (!articleText) {
+                    setStatus('Aucun contenu lisible pour cet article.', false);
+                    return;
+                }
+
+                if (synth.paused) {
+                    synth.resume();
+                    setStatus('En cours de lecture...', true);
+                    return;
+                }
+
+                synth.cancel();
+                utterance = new SpeechSynthesisUtterance(articleText);
+                utterance.rate = Number(rateSelect.value || 1);
+                utterance.lang = 'fr-FR';
+
+                const selectedVoice = synth.getVoices().find((voice) => voice.name === voiceSelect.value);
+                if (selectedVoice) {
+                    utterance.voice = selectedVoice;
+                    utterance.lang = selectedVoice.lang;
+                }
+
+                utterance.onstart = function () {
+                    setStatus('En cours de lecture...', true);
+                };
+
+                utterance.onboundary = function (event) {
+                    if (event.name !== 'word') {
+                        return;
+                    }
+                    const partial = articleText.slice(0, event.charIndex || 0);
+                    readWords = partial.trim() ? partial.trim().split(/\s+/).length : 0;
+                    updateProgress();
+                };
+
+                utterance.onend = function () {
+                    readWords = totalWords;
+                    updateProgress();
+                    setStatus('Lecture terminee', false);
+                };
+
+                utterance.onerror = function () {
+                    setStatus('Erreur pendant la lecture audio.', false);
+                };
+
+                synth.speak(utterance);
+            };
+
+            playButton.addEventListener('click', startReading);
+
+            pauseButton.addEventListener('click', function () {
+                if (!synth || !synth.speaking) {
+                    return;
+                }
+                synth.pause();
+                setStatus('Lecture en pause', false);
+            });
+
+            stopButton.addEventListener('click', stopReading);
+
+            rateSelect.addEventListener('change', function () {
+                if (utterance) {
+                    stopReading();
+                }
+            });
+
+            if (voiceToggle) {
+                voiceToggle.addEventListener('click', function () {
+                    voiceSelect.classList.toggle('is-open');
+                });
+            }
+
+            voiceSelect.addEventListener('change', function () {
+                if (utterance) {
+                    stopReading();
+                }
+            });
+
+            if (synth) {
+                loadVoices();
+                if (typeof synth.onvoiceschanged !== 'undefined') {
+                    synth.onvoiceschanged = loadVoices;
+                }
+            }
+
+            if (articleContentNode) {
+                const observer = new MutationObserver(function () {
+                    computeText();
+                    if (synth && (synth.speaking || synth.paused)) {
+                        stopReading();
+                        setStatus('Contenu mis a jour. Relancez la lecture.', false);
+                    }
+                });
+                observer.observe(articleContentNode, { childList: true, subtree: true, characterData: true });
+            }
+
+            window.addEventListener('beforeunload', function () {
+                if (synth) {
+                    synth.cancel();
+                }
+            });
+
+            computeText();
+            setStatus('Pret a lire l article', false);
+        })();
+    </script>
+{% endblock %}

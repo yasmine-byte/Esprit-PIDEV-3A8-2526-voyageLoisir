@@ -133,6 +133,37 @@
 
     </div>{# fin pdfZone #}
 
+    {# Stats Réclamations #}
+    <div style="margin-top:28px;">
+        <div style="font-size:1.1rem; font-weight:700; margin-bottom:4px;">📋 Statistiques des Réclamations</div>
+        <div style="font-size:0.82rem; opacity:0.4; margin-bottom:18px;">Vue globale des réclamations clients</div>
+
+        <div class="kpi-row">
+            <div class="kpi-card">
+                <div class="kpi-icon" style="background:rgba(243,85,37,0.15);">📋</div>
+                <div><div class="kpi-val" style="color:#f35525;">{{ recStats.total|default(0) }}</div><div class="kpi-lbl">Total réclamations</div></div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-icon" style="background:rgba(255,193,7,0.15);">⏳</div>
+                <div><div class="kpi-val c-yw">{{ recStats.en_attente|default(0) }}</div><div class="kpi-lbl">En attente</div></div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-icon" style="background:rgba(40,167,69,0.15);">✅</div>
+                <div><div class="kpi-val c-gr">{{ recStats.traitees|default(0) }}</div><div class="kpi-lbl">Traitées</div></div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-icon" style="background:rgba(220,53,69,0.15);">🚨</div>
+                <div><div class="kpi-val" style="color:#dc3545;">{{ recStats.urgente|default(0) }}</div><div class="kpi-lbl">Urgentes</div></div>
+            </div>
+        </div>
+
+        <div class="chart-card" style="margin-top:10px;">
+            <div class="ct-title">Évolution des réclamations sur 7 jours</div>
+            <div class="ct-subtitle">Réclamations soumises par jour</div>
+            <div class="ct-wrap"><canvas id="chartRecLine"></canvas></div>
+        </div>
+    </div>
+
 </div>
 
 <script>
@@ -142,123 +173,262 @@ document.addEventListener('DOMContentLoaded', function() {
     const gridColor = isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.07)';
     Chart.defaults.font.size = 12;
 
-    new Chart(document.getElementById('chartDonut'), {
-        type: 'doughnut',
-        data: {
-            labels: ['En attente','Validé','Rejeté'],
-            datasets: [{
-                data: [{{ stats.en_attente|default(0) }},{{ stats.valides|default(0) }},{{ stats.rejetes|default(0) }}],
-                backgroundColor: ['#ffc107','#28a745','#dc3545'],
-                borderWidth: 0, hoverOffset: 5
-            }]
-        },
-        options: {
-            responsive: true, maintainAspectRatio: false, cutout: '65%',
-            plugins: { legend: { display: false } }
-        }
-    });
-
-    new Chart(document.getElementById('chartLine'), {
-        type: 'line',
-        data: {
-            labels: {{ avisParJour.labels|default([])|json_encode|raw }},
-            datasets: [{
-                label: 'Avis soumis',
-                data: {{ avisParJour.data|default([])|json_encode|raw }},
-                borderColor: '#4a9eff', backgroundColor: 'rgba(74,158,255,0.1)',
-                borderWidth: 2.5, fill: true, tension: 0.4,
-                pointBackgroundColor: '#4a9eff', pointRadius: 5, pointHoverRadius: 8
-            }]
-        },
-        options: {
-            responsive: true, maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
-            scales: {
-                x: { ticks:{color:textColor}, grid:{color:gridColor} },
-                y: { beginAtZero:true, ticks:{color:textColor,stepSize:1}, grid:{color:gridColor} }
+    // Donut avis statuts
+    const ctxDonut = document.getElementById('chartDonut');
+    if (ctxDonut) {
+        new Chart(ctxDonut, {
+            type: 'doughnut',
+            data: {
+                labels: ['En attente','Validé','Rejeté'],
+                datasets: [{
+                    data: [{{ stats.en_attente|default(0) }}, {{ stats.valides|default(0) }}, {{ stats.rejetes|default(0) }}],
+                    backgroundColor: ['#ffc107','#28a745','#dc3545'],
+                    borderWidth: 0, hoverOffset: 5
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false, cutout: '65%',
+                plugins: { legend: { display: false } }
             }
-        }
-    });
+        });
+    }
 
-    new Chart(document.getElementById('chartBar'), {
-        type: 'bar',
-        data: {
-            labels: ['1 ★','2 ★','3 ★','4 ★','5 ★'],
-            datasets: [{
-                label: "Nombre d'avis",
-                data: {{ etoilesDistrib|default([])|json_encode|raw }},
-                backgroundColor: ['#dc3545','#fd7e14','#ffc107','#20c997','#28a745'],
-                borderRadius: 8, borderSkipped: false
-            }]
-        },
-        options: {
-            responsive: true, maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
-            scales: {
-                x: { ticks:{color:textColor}, grid:{display:false} },
-                y: { beginAtZero:true, ticks:{color:textColor,stepSize:1}, grid:{color:gridColor} }
+    // Line avis par jour
+    const ctxLine = document.getElementById('chartLine');
+    if (ctxLine) {
+        new Chart(ctxLine, {
+            type: 'line',
+            data: {
+                labels: {{ avisParJour.labels|default([])|json_encode|raw }},
+                datasets: [{
+                    label: 'Avis soumis',
+                    data: {{ avisParJour.data|default([])|json_encode|raw }},
+                    borderColor: '#4a9eff', backgroundColor: 'rgba(74,158,255,0.1)',
+                    borderWidth: 2.5, fill: true, tension: 0.4,
+                    pointBackgroundColor: '#4a9eff', pointRadius: 5, pointHoverRadius: 8
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { ticks:{color:textColor}, grid:{color:gridColor} },
+                    y: { beginAtZero:true, ticks:{color:textColor,stepSize:1}, grid:{color:gridColor} }
+                }
             }
-        }
-    });
+        });
+    }
+
+    // Bar étoiles
+    const ctxBar = document.getElementById('chartBar');
+    if (ctxBar) {
+        new Chart(ctxBar, {
+            type: 'bar',
+            data: {
+                labels: ['1 ★','2 ★','3 ★','4 ★','5 ★'],
+                datasets: [{
+                    label: "Nombre d'avis",
+                    data: {{ etoilesDistrib|default([0,0,0,0,0])|json_encode|raw }},
+                    backgroundColor: ['#dc3545','#fd7e14','#ffc107','#20c997','#28a745'],
+                    borderRadius: 8, borderSkipped: false
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { ticks:{color:textColor}, grid:{display:false} },
+                    y: { beginAtZero:true, ticks:{color:textColor,stepSize:1}, grid:{color:gridColor} }
+                }
+            }
+        });
+    }
+
+    // Line réclamations par jour
+    const ctxRecLine = document.getElementById('chartRecLine');
+    if (ctxRecLine) {
+        new Chart(ctxRecLine, {
+            type: 'line',
+            data: {
+                labels: {{ recParJour.labels|default([])|json_encode|raw }},
+                datasets: [{
+                    label: 'Réclamations',
+                    data: {{ recParJour.data|default([])|json_encode|raw }},
+                    borderColor: '#f35525', backgroundColor: 'rgba(243,85,37,0.1)',
+                    borderWidth: 2.5, fill: true, tension: 0.4,
+                    pointBackgroundColor: '#f35525', pointRadius: 5, pointHoverRadius: 8
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { ticks:{color:textColor}, grid:{color:gridColor} },
+                    y: { beginAtZero:true, ticks:{color:textColor,stepSize:1}, grid:{color:gridColor} }
+                }
+            }
+        });
+    }
 });
 
 async function exportPDF() {
     const btn  = document.getElementById('btnExportPdf');
     const icon = document.getElementById('pdfIcon');
     const spin = document.getElementById('pdfSpinner');
-
     btn.classList.add('loading');
     icon.style.display = 'none';
     spin.style.display = 'inline';
     btn.disabled = true;
 
     try {
-        const zone    = document.getElementById('pdfZone');
-        const canvas  = await html2canvas(zone, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
-        const imgData = canvas.toDataURL('image/png');
-
         const { jsPDF } = window.jspdf;
         const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+        const pageW = pdf.internal.pageSize.getWidth();
+        const pageH = pdf.internal.pageSize.getHeight();
 
-        const pageW  = pdf.internal.pageSize.getWidth();
-        const pageH  = pdf.internal.pageSize.getHeight();
-        const imgW   = pageW - 20;
-        const imgH   = (canvas.height * imgW) / canvas.width;
+        // ── EN-TÊTE orange ──────────────────────────────────────
+        pdf.setFillColor(243, 85, 37);
+        pdf.rect(0, 0, pageW, 32, 'F');
+        pdf.setFillColor(244, 140, 6);
+        pdf.rect(0, 32, pageW, 4, 'F');
+        pdf.setFillColor(255, 209, 102);
+        pdf.rect(0, 36, pageW, 2, 'F');
 
-        // En-tête PDF
-        pdf.setFontSize(16);
-        pdf.setTextColor(40, 40, 40);
-        pdf.text('Statistiques des Avis - Villa Agency', 10, 14);
-        pdf.setFontSize(9);
-        pdf.setTextColor(150, 150, 150);
-        pdf.text('Généré le ' + new Date().toLocaleDateString('fr-FR') + ' à ' + new Date().toLocaleTimeString('fr-FR'), 10, 20);
-
-        // Ligne séparatrice
-        pdf.setDrawColor(243, 85, 37);
-        pdf.setLineWidth(0.5);
-        pdf.line(10, 23, pageW - 10, 23);
-
-        // Image des graphiques
-        let y = 27;
-        if (imgH + y > pageH) {
-            // Si trop grand, réduire
-            const ratio = (pageH - y - 10) / imgH;
-            pdf.addImage(imgData, 'PNG', 10, y, imgW * ratio, imgH * ratio);
-        } else {
-            pdf.addImage(imgData, 'PNG', 10, y, imgW, imgH);
-        }
-
-        // Pied de page
+        pdf.setFontSize(20);
+        pdf.setTextColor(255, 255, 255);
+        pdf.setFont('helvetica', 'bold');
+        pdf.text('VIANOVA', 10, 14);
+        pdf.setFontSize(11);
+        pdf.setFont('helvetica', 'normal');
+        pdf.text('Rapport Statistiques — Avis & Réclamations', 10, 22);
         pdf.setFontSize(8);
-        pdf.setTextColor(180, 180, 180);
-        pdf.text('Villa Agency — Rapport automatique', 10, pageH - 8);
-        pdf.text('Page 1/1', pageW - 25, pageH - 8);
+        pdf.setTextColor(255, 220, 200);
+        pdf.text('Généré le ' + new Date().toLocaleDateString('fr-FR') + ' à ' + new Date().toLocaleTimeString('fr-FR'), 10, 29);
 
-        pdf.save('statistiques-avis-' + new Date().toISOString().slice(0,10) + '.pdf');
+        let y = 46;
+
+        // ── SECTION AVIS ─────────────────────────────────────────
+        pdf.setFillColor(26, 26, 46);
+        pdf.rect(0, y-4, pageW, 10, 'F');
+        pdf.setFontSize(11);
+        pdf.setFont('helvetica', 'bold');
+        pdf.setTextColor(74, 158, 255);
+        pdf.text('STATISTIQUES DES AVIS', 10, y+3);
+        y += 12;
+
+        // KPI avis
+        const avisKpis = [
+            { label: 'Total Avis', val: '{{ stats.total|default(0) }}', color: [74,158,255] },
+            { label: 'Note Moy.', val: '{{ stats.moy_etoiles|default(0)|number_format(1) }}/5', color: [255,193,7] },
+            { label: 'Validés', val: '{{ stats.valides|default(0) }}', color: [40,167,69] },
+            { label: 'En attente', val: '{{ stats.en_attente|default(0) }}', color: [111,66,193] },
+        ];
+
+        const kpiW = (pageW - 20 - 9) / 4;
+        avisKpis.forEach((k, i) => {
+            const x = 10 + i * (kpiW + 3);
+            pdf.setFillColor(245, 245, 250);
+            pdf.roundedRect(x, y, kpiW, 18, 3, 3, 'F');
+            pdf.setFillColor(...k.color);
+            pdf.roundedRect(x, y, 3, 18, 1, 1, 'F');
+            pdf.setFontSize(14);
+            pdf.setFont('helvetica', 'bold');
+            pdf.setTextColor(...k.color);
+            pdf.text(String(k.val), x + 6, y + 11);
+            pdf.setFontSize(7);
+            pdf.setFont('helvetica', 'normal');
+            pdf.setTextColor(120, 120, 120);
+            pdf.text(k.label, x + 6, y + 16);
+        });
+        y += 24;
+
+        // Capture graphiques avis
+        const zoneAvis = document.getElementById('pdfZone');
+        const canvasAvis = await html2canvas(zoneAvis, { scale: 1.5, useCORS: true, backgroundColor: '#ffffff' });
+        const imgAvis = canvasAvis.toDataURL('image/png');
+        const imgW = pageW - 20;
+        const imgH = (canvasAvis.height * imgW) / canvasAvis.width;
+        const maxH = 90;
+        const finalH = Math.min(imgH, maxH);
+        pdf.addImage(imgAvis, 'PNG', 10, y, imgW, finalH);
+        y += finalH + 10;
+
+        // ── SECTION RÉCLAMATIONS ─────────────────────────────────
+        if (y + 60 > pageH) { pdf.addPage(); y = 20; }
+
+        pdf.setFillColor(26, 26, 46);
+        pdf.rect(0, y-4, pageW, 10, 'F');
+        pdf.setFontSize(11);
+        pdf.setFont('helvetica', 'bold');
+        pdf.setTextColor(243, 85, 37);
+        pdf.text('STATISTIQUES DES RÉCLAMATIONS', 10, y+3);
+        y += 12;
+
+        // KPI réclamations
+        const recKpis = [
+            { label: 'Total', val: '{{ recStats.total|default(0) }}', color: [243,85,37] },
+            { label: 'En attente', val: '{{ recStats.en_attente|default(0) }}', color: [255,193,7] },
+            { label: 'Traitées', val: '{{ recStats.traitees|default(0) }}', color: [40,167,69] },
+            { label: 'Urgentes', val: '{{ recStats.urgente|default(0) }}', color: [220,53,69] },
+        ];
+
+        recKpis.forEach((k, i) => {
+            const x = 10 + i * (kpiW + 3);
+            pdf.setFillColor(245, 245, 250);
+            pdf.roundedRect(x, y, kpiW, 18, 3, 3, 'F');
+            pdf.setFillColor(...k.color);
+            pdf.roundedRect(x, y, 3, 18, 1, 1, 'F');
+            pdf.setFontSize(14);
+            pdf.setFont('helvetica', 'bold');
+            pdf.setTextColor(...k.color);
+            pdf.text(String(k.val), x + 6, y + 11);
+            pdf.setFontSize(7);
+            pdf.setFont('helvetica', 'normal');
+            pdf.setTextColor(120, 120, 120);
+            pdf.text(k.label, x + 6, y + 16);
+        });
+        y += 24;
+
+        // Répartition priorités réclamations
+        const prioLabels = ['Haute', 'Urgente', 'Moyenne', 'Basse'];
+        const prioVals   = [{{ recStats.haute|default(0) }}, {{ recStats.urgente|default(0) }}, {{ recStats.en_attente|default(0) }}, 0];
+        const prioColors = [[255,193,7],[220,53,69],[74,158,255],[40,167,69]];
+        const barMaxVal  = Math.max(...prioVals, 1);
+        const barMaxW    = pageW - 60;
+
+        pdf.setFontSize(9);
+        pdf.setFont('helvetica', 'bold');
+        pdf.setTextColor(80, 80, 80);
+        pdf.text('Répartition par priorité :', 10, y);
+        y += 6;
+
+        prioLabels.forEach((label, i) => {
+            const val = prioVals[i];
+            const barW = (val / barMaxVal) * barMaxW;
+            pdf.setFillColor(...prioColors[i]);
+            pdf.roundedRect(50, y, Math.max(barW, 2), 6, 1, 1, 'F');
+            pdf.setFontSize(8);
+            pdf.setTextColor(80, 80, 80);
+            pdf.text(label, 10, y + 5);
+            pdf.setTextColor(...prioColors[i]);
+            pdf.text(String(val), 50 + Math.max(barW, 2) + 2, y + 5);
+            y += 9;
+        });
+        y += 5;
+
+        // ── PIED DE PAGE ─────────────────────────────────────────
+        pdf.setFillColor(243, 85, 37);
+        pdf.rect(0, pageH - 12, pageW, 12, 'F');
+        pdf.setFontSize(8);
+        pdf.setTextColor(255, 255, 255);
+        pdf.text('VIANOVA — Rapport automatique', 10, pageH - 4);
+        pdf.text('Page 1/1', pageW - 25, pageH - 4);
+
+        pdf.save('rapport-vianova-' + new Date().toISOString().slice(0,10) + '.pdf');
 
     } catch (err) {
-        console.error('Erreur export PDF:', err);
-        alert('Erreur lors de la génération du PDF. Réessayez.');
+        console.error('Erreur PDF:', err);
+        alert('Erreur lors de la génération du PDF.');
     } finally {
         btn.classList.remove('loading');
         icon.style.display = 'inline';

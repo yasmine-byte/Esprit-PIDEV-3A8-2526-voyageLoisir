@@ -12,6 +12,10 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Email;
+use Symfony\Component\Mailer\Transport;
+use Symfony\Component\Mailer\Mailer;
 
 #[Route('/chatbot')]
 class ChatbotController extends AbstractController
@@ -20,31 +24,46 @@ class ChatbotController extends AbstractController
     private const API_MODEL = 'llama-3.1-8b-instant';
     private const SYSTEM_PROMPT =
         'Tu es l\'assistant virtuel de Vianova, une plateforme de voyage et loisirs. '
-        . 'Tu peux créer automatiquement des réclamations ET des avis. '
+        . 'Tu aides les clients à créer des réclamations ET des avis. '
 
-        . 'POUR UNE RÉCLAMATION (problème, plainte, insatisfaction) : '
-        . '1) Collecte ce qui s\'est passé. NE REDEMANDE PAS ce que le client a déjà dit. '
-        . '2) Détermine la priorité : Urgente (danger/accident), Haute (problème important), Moyenne (gêne), Basse (suggestion). '
-        . '3) Génère un titre court et professionnel (max 8 mots). '
-        . '4) Pour le contenu, utilise EXACTEMENT les mots du client tels qu\'il les a écrits, sans reformuler ni répondre. Copie simplement ce qu\'il a dit. '
+        . 'RÈGLES IMPORTANTES : '
+        . '- Une RÉCLAMATION = un problème, une plainte, quelque chose qui s\'est mal passé. '
+        . '- Un AVIS = une opinion, une note, un retour d\'expérience (positif OU négatif avec étoiles). '
+        . '- Si le client mentionne des étoiles ou une note, c\'est TOUJOURS un AVIS. '
+        . '- Si le client dit "je veux laisser un avis" ou "je donne X étoiles", c\'est TOUJOURS un AVIS. '
+        . '- Si le client dit "je veux faire une réclamation" ou décrit un problème sans note, c\'est une RÉCLAMATION. '
+
+        . 'POUR UNE RÉCLAMATION : '
+        . '1) Vérifie si une réclamation similaire existe déjà en demandant. '
+        . '2) Détermine la priorité : Urgente, Haute, Moyenne, Basse. '
+        . '3) Génère un titre court professionnel (max 8 mots). '
+        . '4) REFORMULE en description formelle et professionnelle de 2-4 phrases. '
         . '5) Réponds UNIQUEMENT avec ce JSON : '
-        . '{"action":"create_reclamation","titre":"[titre court]","contenu":"[mots exacts du client]","priorite":"[Basse|Moyenne|Haute|Urgente]"} '
+        . '{"action":"create_reclamation","titre":"...","contenu":"...","priorite":"..."} '
 
-        . 'POUR UN AVIS (satisfaction, compliment, retour positif) : '
-        . '1) Collecte le commentaire et la note sur 5. '
-        . '2) Pour le contenu, utilise EXACTEMENT les mots du client tels qu\'il les a écrits, sans reformuler ni répondre. '
+        . 'POUR UN AVIS : '
+        . '1) Collecte la note sur 5 et le commentaire. '
+        . '2) REFORMULE en avis élégant et professionnel de 2-3 phrases. '
         . '3) Réponds UNIQUEMENT avec ce JSON : '
-        . '{"action":"create_avis","contenu":"[mots exacts du client]","nbEtoiles":[1-5],"type":"Qualité du voyage"} '
+        . '{"action":"create_avis","contenu":"...","nbEtoiles":X,"type":"Qualité du voyage"} '
 
-        . 'Pour les salutations, réponds normalement en français. '
-        . 'Pour les sujets non liés à Vianova, réponds : "Je suis désolé, je suis l\'assistant de Vianova et je ne peux répondre qu\'aux questions liées à nos services." '
-        . 'Tu réponds TOUJOURS en français.';
+        . 'IMPORTANT : '
+        . '- Réponds TOUJOURS directement avec le JSON sans explication. '
+        . '- Ne jamais créer une réclamation si le client veut laisser un avis. '
+        . '- Pour les salutations, réponds normalement. '
+        . '- Tu réponds TOUJOURS en français.';
 
     public function __construct(
         private readonly HttpClientInterface $httpClient,
         #[Autowire('%env(GROQ_API_KEY)%')]
         private readonly string $apiKey
     ) {}
+
+    #[Route('/widget', name: 'chatbot_widget', methods: ['GET'])]
+    public function widget(): JsonResponse
+    {
+        return $this->json(['status' => 'ok', 'message' => 'Chatbot is ready']);
+    }
 
     #[Route('/ask', name: 'chatbot_ask', methods: ['POST'])]
     public function ask(Request $request): JsonResponse
@@ -114,7 +133,8 @@ class ChatbotController extends AbstractController
     public function submitReclamation(
         Request $request,
         EntityManagerInterface $entityManager,
-        TypeAvisRepository $typeAvisRepository
+        TypeAvisRepository $typeAvisRepository,
+        MailerInterface $mailer
     ): JsonResponse {
         $titre    = trim((string) $request->request->get('titre', ''));
         $contenu  = trim((string) $request->request->get('contenu', ''));
@@ -148,6 +168,27 @@ class ChatbotController extends AbstractController
         $entityManager->persist($reclamation);
         $entityManager->flush();
 
+        // Envoi email de notification
+        try {
+            $email = (new Email())
+                ->from('rayenhafian72@gmail.com')
+                ->to('rayenhafian72@gmail.com')
+                ->subject('Nouvelle réclamation #' . $reclamation->getId() . ' via Chatbot')
+                ->html('
+                    <h2 style="color:#f35525;">Nouvelle Réclamation créée via Chatbot</h2>
+                    <p><strong>ID :</strong> #' . $reclamation->getId() . '</p>
+                    <p><strong>Titre :</strong> ' . $reclamation->getTitre() . '</p>
+                    <p><strong>Priorité :</strong> ' . $reclamation->getPriorite() . '</p>
+                    <p><strong>Contenu :</strong> ' . $reclamation->getContenu() . '</p>
+                    <p><strong>Date :</strong> ' . $reclamation->getDateCreation()->format('d/m/Y H:i') . '</p>
+                ');
+            $transport = Transport::fromDsn($_ENV['MAILER_DSN_RAYEN']);
+            $customMailer = new Mailer($transport);
+            $customMailer->send($email);
+        } catch (\Exception $e) {
+            // Email non bloquant
+        }
+
         return $this->json([
             'success' => true,
             'message' => 'Réclamation créée avec succès !',
@@ -159,7 +200,8 @@ class ChatbotController extends AbstractController
     public function submitAvis(
         Request $request,
         EntityManagerInterface $entityManager,
-        TypeAvisRepository $typeAvisRepository
+        TypeAvisRepository $typeAvisRepository,
+        MailerInterface $mailer
     ): JsonResponse {
         $contenu   = trim((string) $request->request->get('contenu', ''));
         $nbEtoiles = (int) $request->request->get('nbEtoiles', 3);
@@ -194,6 +236,26 @@ class ChatbotController extends AbstractController
 
         $entityManager->persist($avis);
         $entityManager->flush();
+
+        // Envoi email de notification
+        try {
+            $emailMsg = (new Email())
+                ->from('rayenhafian72@gmail.com')
+                ->to('rayenhafian72@gmail.com')
+                ->subject('Nouvel avis #' . $avis->getId() . ' via Chatbot')
+                ->html('
+                    <h2 style="color:#f35525;">Nouvel Avis créé via Chatbot</h2>
+                    <p><strong>ID :</strong> #' . $avis->getId() . '</p>
+                    <p><strong>Note :</strong> ' . $avis->getNbEtoiles() . '/5 ★</p>
+                    <p><strong>Contenu :</strong> ' . $avis->getContenu() . '</p>
+                    <p><strong>Date :</strong> ' . $avis->getDateAvis()->format('d/m/Y H:i') . '</p>
+                ');
+            $transport = Transport::fromDsn($_ENV['MAILER_DSN_RAYEN']);
+            $customMailer = new Mailer($transport);
+            $customMailer->send($emailMsg);
+        } catch (\Exception $e) {
+            // Email non bloquant
+        }
 
         return $this->json([
             'success' => true,

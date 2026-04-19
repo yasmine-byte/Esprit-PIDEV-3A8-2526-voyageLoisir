@@ -16,6 +16,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
+use Knp\Component\Pager\PaginatorInterface;
 use Dompdf\Dompdf;
 use Dompdf\Options;
 
@@ -47,11 +48,26 @@ class AvisController extends AbstractController
     // ─────────────────────────────────────────────────────────────
 
     #[Route('/', name: 'avis_index', methods: ['GET'])]
-    public function index(AvisRepository $avisRepository): Response
-    {
-        $userId = 1; // À remplacer par $this->getUser()->getId() une fois l'auth activée
+    public function index(
+        Request $request,
+        AvisRepository $avisRepository,
+        PaginatorInterface $paginator
+    ): Response {
+        $userId = 1;
+
+        $qb = $avisRepository->createQueryBuilder('a')
+            ->where('a.userId = :userId')
+            ->setParameter('userId', $userId)
+            ->orderBy('a.dateAvis', 'DESC');
+
+        $avis = $paginator->paginate(
+            $qb->getQuery(),
+            $request->query->getInt('page', 1),
+            6
+        );
+
         return $this->render('avis/index.html.twig', [
-            'avis' => $avisRepository->findBy(['userId' => $userId]),
+            'avis' => $avis,
         ]);
     }
 
@@ -103,6 +119,7 @@ class AvisController extends AbstractController
             'contenu'  => $a->getContenu(),
             'statut'   => $a->getStatut(),
             'nbEtoiles'=> $a->getNbEtoiles(),
+            'sentiment'=> $a->getSentimentLabel(),
             'type'     => $a->getType() ? $a->getType()->getNom() : '—',
             'dateAvis' => $a->getDateAvis() ? $a->getDateAvis()->format('d/m/Y') : '—',
             'reponse'  => $a->getReponse(),
@@ -149,6 +166,11 @@ class AvisController extends AbstractController
             // ── Analyse de sentiment IA ────────────────────────────
             $sentiment = $this->analyzeSentiment($avis->getContenu());
             $label     = strtolower($sentiment['label'] ?? 'neutral');
+            $score     = $sentiment['score'] ?? 0.5;
+
+            // Sauvegarde en base de données
+            $avis->setSentimentLabel($label);
+            $avis->setSentimentScore($score);
 
             // Incohérence : ton négatif mais note ≥ 3
             if ($label === 'negative' && $avis->getNbEtoiles() >= 3) {

@@ -1,6 +1,6 @@
 {% extends 'admin/base_admin.html.twig' %}
 
-{% block title %}Ajouter Utilisateur{% endblock %}
+{% block title %}Ajouter un utilisateur{% endblock %}
 
 {% block admin_content %}
 <div class="page-header">
@@ -11,78 +11,116 @@
 <div class="card">
     <div class="card-header">
         <h3>Informations de l'utilisateur</h3>
+        <a href="{{ path('admin_users_list') }}" class="btn btn-secondary">
+            ← Retour à la liste
+        </a>
     </div>
     <div class="card-body">
-        {% if app.session.flashbag.has('success') %}
+
+        {# Message de succès inline #}
+        {% if successMsg is defined and successMsg %}
             <div class="alert alert-success">
-                {% for message in app.session.flashbag.get('success') %}
-                    {{ message }}
-                {% endfor %}
+                <strong>✔ Succès —</strong> {{ successMsg }}
+                <a href="{{ path('admin_users_list') }}" class="alert-link">Voir la liste des utilisateurs</a>
             </div>
         {% endif %}
 
-        {% if app.session.flashbag.has('error') %}
+        {# Bloc d'erreur global #}
+        {% if globalError is defined and globalError %}
             <div class="alert alert-danger">
-                {% for message in app.session.flashbag.get('error') %}
-                    {{ message }}
-                {% endfor %}
+                <strong>{{ globalError }}</strong>
             </div>
         {% endif %}
 
         <form method="POST" action="{{ path('add_user') }}" class="user-form" id="addUserForm" novalidate>
+
             <div class="form-row">
+                {# Nom #}
                 <div class="form-group">
                     <label for="nom">Nom *</label>
-                    <input type="text" id="nom" name="nom" required class="form-control"
-                           placeholder="Ex: Dupont" pattern="[A-Za-zÀ-ÿ\s]{2,50}"
-                           title="Uniquement des lettres, 2-50 caractères" maxlength="50">
-                    <span class="error-message"></span>
+                    <input type="text" id="nom" name="nom"
+                           class="form-control {% if fieldErrors is defined and fieldErrors.nom is defined %}input-error{% endif %}"
+                           value="{{ formData.nom ?? '' }}"
+                           placeholder="Ex : Dupont"
+                           maxlength="50">
+                    {% if fieldErrors is defined and fieldErrors.nom is defined %}
+                        <span class="field-error-msg">{{ fieldErrors.nom }}</span>
+                    {% endif %}
                 </div>
+
+                {# Prénom #}
                 <div class="form-group">
                     <label for="prenom">Prénom *</label>
-                    <input type="text" id="prenom" name="prenom" required class="form-control"
-                           placeholder="Ex: Jean" pattern="[A-Za-zÀ-ÿ\s]{2,50}"
-                           title="Uniquement des lettres, 2-50 caractères" maxlength="50">
-                    <span class="error-message"></span>
+                    <input type="text" id="prenom" name="prenom"
+                           class="form-control {% if fieldErrors is defined and fieldErrors.prenom is defined %}input-error{% endif %}"
+                           value="{{ formData.prenom ?? '' }}"
+                           placeholder="Ex : Jean"
+                           maxlength="50">
+                    {% if fieldErrors is defined and fieldErrors.prenom is defined %}
+                        <span class="field-error-msg">{{ fieldErrors.prenom }}</span>
+                    {% endif %}
                 </div>
+
             </div>
 
+            {# Email #}
             <div class="form-group">
-                <label for="email">Email *</label>
-                <input type="email" id="email" name="email" required class="form-control"
-                       placeholder="jean.dupont@email.com" maxlength="100"
-                       title="Format email valide requis">
-                <span class="error-message"></span>
+                <label for="email">Adresse email *</label>
+                <input type="text" id="email" name="email"
+                       class="form-control {% if fieldErrors is defined and fieldErrors.email is defined %}input-error{% endif %}"
+                       value="{{ formData.email ?? '' }}"
+                       placeholder="jean.dupont@email.com"
+                       maxlength="100">
+                {% if fieldErrors is defined and fieldErrors.email is defined %}
+                    <span class="field-error-msg">{{ fieldErrors.email }}</span>
+                {% endif %}
             </div>
 
+            {# Téléphone #}
             <div class="form-group">
-                <label for="telephone">Téléphone</label>
-                <input type="tel" id="telephone" name="telephone" class="form-control"
-                       placeholder="Ex: 12345678" pattern="[0-9]{8}"
-                       title="Exactement 8 chiffres" maxlength="8">
-                <span class="error-message"></span>
+                <label for="telephone">Numéro de téléphone *</label>
+                <input type="text" id="telephone" name="telephone"
+                       class="form-control {% if fieldErrors is defined and fieldErrors.telephone is defined %}input-error{% endif %}"
+                       value="{{ formData.telephone ?? '' }}"
+                       placeholder="Ex : 12345678"
+                       maxlength="8">
+                {% if fieldErrors is defined and fieldErrors.telephone is defined %}
+                    <span class="field-error-msg">{{ fieldErrors.telephone }}</span>
+                {% endif %}
             </div>
 
             <div class="form-row">
+                {# Mot de passe #}
                 <div class="form-group">
                     <label for="password">Mot de passe *</label>
-                    <input type="password" id="password" name="password" required class="form-control"
-                           placeholder="Min 8 caractères" minlength="8" maxlength="128"
-                           pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}"
-                           title="8 caractères minimum: majuscule, minuscule, chiffre, caractère spécial">
-                    <span class="error-message"></span>
+                    <input type="password" id="password" name="password"
+                           class="form-control {% if fieldErrors is defined and fieldErrors.password is defined %}input-error{% endif %}"
+                           placeholder="Min. 6 car. : Aa1@..."
+                           maxlength="128">
+                    <small class="form-help">Majuscule, minuscule, chiffre et caractère spécial requis</small>
+                    {% if fieldErrors is defined and fieldErrors.password is defined %}
+                        <span class="field-error-msg">{{ fieldErrors.password }}</span>
+                    {% endif %}
                 </div>
+
+                {# Confirmation mot de passe #}
                 <div class="form-group">
-                    <label for="confirm_password">Confirmer mot de passe *</label>
-                    <input type="password" id="confirm_password" name="confirm_password" required class="form-control"
-                           placeholder="Confirmez le mot de passe" minlength="8" maxlength="128">
-                    <span class="error-message"></span>
+                    <label for="confirm_password">Confirmer le mot de passe *</label>
+                    <input type="password" id="confirm_password" name="confirm_password"
+                           class="form-control {% if fieldErrors is defined and fieldErrors.confirm_password is defined %}input-error{% endif %}"
+                           placeholder="Confirmez le mot de passe"
+                           maxlength="128">
+                    {% if fieldErrors is defined and fieldErrors.confirm_password is defined %}
+                        <span class="field-error-msg">{{ fieldErrors.confirm_password }}</span>
+                    {% endif %}
                 </div>
+
             </div>
 
+            {# Rôles #}
             <div class="form-group">
-                <label>Rôles</label>
-                <div class="checkbox-group" id="rolesContainer">
+                <label>Rôles *</label>
+                <div class="checkbox-group">
                     {% for role in roles %}
                         <label class="checkbox-label">
                             <input type="checkbox" name="roles[]" value="{{ role.id }}"
@@ -92,9 +130,12 @@
                         </label>
                     {% endfor %}
                 </div>
-                <span class="error-message" id="rolesError"></span>
+                {% if fieldErrors is defined and fieldErrors.roles is defined %}
+                    <span class="field-error-msg">{{ fieldErrors.roles }}</span>
+                {% endif %}
             </div>
 
+            {# Statut du compte #}
             <div class="form-group">
                 <label class="checkbox-label">
                     <input type="checkbox" name="is_active" class="checkbox-input" id="isActive" checked>
@@ -103,279 +144,33 @@
             </div>
 
             <div class="form-actions">
-                <a href="{{ path('admin_users_list') }}" class="btn btn-secondary">
-                    Annuler
-                </a>
-                <button type="submit" class="btn btn-primary" id="submitBtn">
-                    ➕ Créer l'utilisateur
-                        <polyline points="17 21 17 13 7 13 7 21"/>
-                        <polyline points="7 3 7 8 15 8"/>
-                    </svg>
-                    Créer l'utilisateur
-                </button>
+                <a href="{{ path('admin_users_list') }}" class="btn btn-secondary">Annuler</a>
+                <button type="submit" class="btn btn-primary">➕ Créer l'utilisateur</button>
             </div>
+
         </form>
     </div>
 </div>
 
 <style>
-.user-form {
-    max-width: 800px;
-}
-
-.form-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-    margin-bottom: 20px;
-}
-
-.form-group {
-    margin-bottom: 20px;
-}
-
-.form-group label {
-    display: block;
-    margin-bottom: 8px;
-    font-weight: 600;
-    color: var(--text-primary);
-}
-
-.form-control {
-    width: 100%;
-    padding: 12px 16px;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    background: var(--bg-card);
-    color: var(--text-primary);
-    font-size: 15px;
-    transition: all 0.2s ease;
-}
-
-.form-control:focus {
-    outline: none;
-    border-color: var(--accent-copper);
-    box-shadow: 0 0 0 3px rgba(255, 159, 67, 0.1);
-}
-
-.form-help {
-    display: block;
-    margin-top: 4px;
-    font-size: 13px;
-    color: var(--text-muted);
-}
-
-.checkbox-group {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 12px;
-}
-
-.checkbox-label {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    cursor: pointer;
-    color: var(--text-primary);
-}
-
-.checkbox-input {
-    width: 18px;
-    height: 18px;
-    accent-color: var(--accent-copper);
-}
-
-.checkbox-text {
-    font-size: 14px;
-}
-
-.form-actions {
-    display: flex;
-    gap: 12px;
-    justify-content: flex-end;
-    margin-top: 30px;
-    padding-top: 20px;
-    border-top: 1px solid var(--border);
-}
-
-.alert {
-    padding: 16px;
-    border-radius: 8px;
-    margin-bottom: 20px;
-}
-
-.alert-success {
-    background: rgba(52, 211, 153, 0.1);
-    border: 1px solid rgba(52, 211, 153, 0.3);
-    color: var(--gain);
-}
-
-.alert-danger {
-    background: rgba(239, 68, 68, 0.1);
-    border: 1px solid rgba(239, 68, 68, 0.3);
-    color: var(--loss);
-}
-
-@media (max-width: 768px) {
-    .form-row {
-        grid-template-columns: 1fr;
-    }
-
-    .form-actions {
-        flex-direction: column;
-    }
-
-    .btn {
-        width: 100%;
-        justify-content: center;
-    }
-}
-.error-message { display: none; color: #ef4444; font-size: 12px; margin-top: 4px; }
+.user-form { max-width: 800px; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+.form-group { margin-bottom: 20px; }
+.form-group label { display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-primary); }
+.form-control { width: 100%; padding: 12px 16px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-card); color: var(--text-primary); font-size: 15px; transition: all 0.2s ease; box-sizing: border-box; }
+.form-control:focus { outline: none; border-color: var(--accent-copper); box-shadow: 0 0 0 3px rgba(255,159,67,0.1); }
+.input-error { border-color: #ef4444 !important; box-shadow: 0 0 0 3px rgba(239,68,68,0.1); }
+.field-error-msg { display: block; color: #ef4444; font-size: 12px; margin-top: 5px; }
+.form-help { display: block; font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+.checkbox-group { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+.checkbox-label { display: flex; align-items: center; gap: 8px; cursor: pointer; color: var(--text-primary); }
+.checkbox-input { width: 18px; height: 18px; accent-color: var(--accent-copper); }
+.checkbox-text { font-size: 14px; }
+.form-actions { display: flex; gap: 12px; justify-content: flex-end; margin-top: 30px; padding-top: 20px; border-top: 1px solid var(--border); }
+.alert { padding: 16px; border-radius: 8px; margin-bottom: 20px; font-size: 14px; }
+.alert-success { background: rgba(52,211,153,0.1); border: 1px solid rgba(52,211,153,0.3); color: var(--gain); display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.alert-link { color: var(--gain); text-decoration: underline; margin-left: 8px; }
+.alert-danger { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); color: var(--loss); }
+@media (max-width: 768px) { .form-row { grid-template-columns: 1fr; } .form-actions { flex-direction: column; } .btn { width: 100%; justify-content: center; } }
 </style>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const form = document.getElementById('addUserForm');
-    const submitBtn = document.getElementById('submitBtn');
-
-    // Messages d'erreur personnalisés
-    const errorMessages = {
-        nom: 'Le nom doit contenir uniquement des lettres (2-50 caractères)',
-        prenom: 'Le prénom doit contenir uniquement des lettres (2-50 caractères)',
-        email: 'Veuillez entrer une adresse email valide',
-        telephone: 'Le téléphone doit contenir exactement 8 chiffres',
-        password: 'Le mot de passe doit contenir 8 caractères minimum avec majuscule, minuscule, chiffre et caractère spécial',
-        confirm_password: 'Les mots de passe ne correspondent pas',
-        roles: 'Veuillez sélectionner au moins un rôle'
-    };
-
-    // Validation en temps réel
-    const validateField = (field) => {
-        const errorElement = field.parentElement.querySelector('.error-message');
-        let isValid = true;
-        let errorMessage = '';
-
-        if (field.hasAttribute('required') && !field.value.trim()) {
-            errorMessage = 'Ce champ est obligatoire';
-            isValid = false;
-        } else if (field.pattern && field.value) {
-            const regex = new RegExp(field.pattern);
-            if (!regex.test(field.value)) {
-                errorMessage = field.title || 'Format invalide';
-                isValid = false;
-            }
-        }
-
-        // Validation spécifique pour certains champs
-        if (field.id === 'email' && field.value) {
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(field.value)) {
-                errorMessage = errorMessages.email;
-                isValid = false;
-            }
-        }
-
-        if (field.id === 'confirm_password') {
-            const password = document.getElementById('password');
-            if (password.value !== field.value) {
-                errorMessage = errorMessages.confirm_password;
-                isValid = false;
-            }
-        }
-
-        // Affichage de l'erreur
-        if (errorElement) {
-            errorElement.textContent = errorMessage;
-            errorElement.style.display = isValid ? 'none' : 'block';
-            field.style.borderColor = isValid ? '' : '#ef4444';
-        }
-
-        return isValid;
-    };
-
-    // Validation des rôles
-    const validateRoles = () => {
-        const checkboxes = document.querySelectorAll('input[name="roles[]"]:checked');
-        const errorElement = document.getElementById('rolesError');
-        const isValid = checkboxes.length > 0;
-
-        if (errorElement) {
-            errorElement.textContent = isValid ? '' : errorMessages.roles;
-            errorElement.style.display = isValid ? 'none' : 'block';
-        }
-
-        return isValid;
-    };
-
-    // Écouteurs d'événements
-    form.querySelectorAll('input').forEach(field => {
-        field.addEventListener('blur', () => validateField(field));
-        field.addEventListener('input', () => {
-            if (field.parentElement.querySelector('.error-message').style.display === 'block') {
-                validateField(field);
-            }
-        });
-    });
-
-    // Validation des rôles
-    form.querySelectorAll('input[name="roles[]"]').forEach(checkbox => {
-        checkbox.addEventListener('change', validateRoles);
-    });
-
-    // Validation à la soumission
-    form.addEventListener('submit', function(e) {
-        e.preventDefault();
-
-        let isFormValid = true;
-
-        // Validation de tous les champs
-        form.querySelectorAll('input[required]').forEach(field => {
-            if (!validateField(field)) {
-                isFormValid = false;
-            }
-        });
-
-        // Validation des rôles
-        if (!validateRoles()) {
-            isFormValid = false;
-        }
-
-        if (isFormValid) {
-            // Désactiver le bouton pour éviter les doubles soumissions
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '⏳ Création en cours...';
-
-            // Soumettre le formulaire
-            form.submit();
-        } else {
-            // Faire défiler vers le premier champ invalide
-            const firstInvalid = form.querySelector('.error-message[style*="block"]');
-            if (firstInvalid) {
-                firstInvalid.parentElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
-        }
-    });
-
-    // Validation du mot de passe en temps réel
-    const password = document.getElementById('password');
-    const confirmPassword = document.getElementById('confirm_password');
-
-    password.addEventListener('input', () => {
-        if (confirmPassword.value) {
-            validateField(confirmPassword);
-        }
-    });
-
-    // Nettoyage du formulaire
-    form.addEventListener('reset', function() {
-        form.querySelectorAll('.error-message').forEach(error => {
-            error.style.display = 'none';
-            error.textContent = '';
-        });
-        form.querySelectorAll('input').forEach(field => {
-            field.style.borderColor = '';
-        });
-    });
-});
-</script>
 {% endblock %}

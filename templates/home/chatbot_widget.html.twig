@@ -1,0 +1,186 @@
+{# ===== CHATBOT WIDGET ===== #}
+<style>
+#chatbot-btn {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: #f75959;
+    color: #fff;
+    border: none;
+    font-size: 26px;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(247,89,89,0.5);
+    z-index: 9999;
+    transition: transform 0.2s;
+}
+#chatbot-btn:hover { transform: scale(1.1); }
+
+#chatbot-box {
+    position: fixed;
+    bottom: 100px;
+    right: 30px;
+    width: 340px;
+    height: 460px;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.18);
+    z-index: 9998;
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+#chatbot-header {
+    background: #f75959;
+    color: #fff;
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-weight: 600;
+    font-size: 15px;
+}
+
+#chatbot-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background: #f9f9f9;
+}
+
+.chat-msg {
+    max-width: 80%;
+    padding: 10px 14px;
+    border-radius: 12px;
+    font-size: 13px;
+    line-height: 1.5;
+}
+.chat-msg.user {
+    background: #f75959;
+    color: #fff;
+    align-self: flex-end;
+    border-bottom-right-radius: 4px;
+}
+.chat-msg.bot {
+    background: #fff;
+    color: #333;
+    align-self: flex-start;
+    border-bottom-left-radius: 4px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+}
+.chat-msg.typing {
+    background: #fff;
+    color: #aaa;
+    align-self: flex-start;
+    font-style: italic;
+}
+
+#chatbot-input-area {
+    padding: 12px;
+    background: #fff;
+    border-top: 1px solid #eee;
+    display: flex;
+    gap: 8px;
+}
+
+#chatbot-input {
+    flex: 1;
+    padding: 10px 14px;
+    border: 1px solid #ddd;
+    border-radius: 20px;
+    font-size: 13px;
+    outline: none;
+}
+#chatbot-input:focus { border-color: #f75959; }
+
+#chatbot-send {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: #f75959;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+</style>
+
+<button id="chatbot-btn" onclick="toggleChatbot()" title="Assistant IA">💬</button>
+
+<div id="chatbot-box">
+    <div id="chatbot-header">
+        <div style="display:flex; align-items:center; gap:8px;">
+            <span>🤖</span>
+            <span>Assistant Vianova</span>
+        </div>
+        <button onclick="toggleChatbot()" style="background:none; border:none; color:#fff; font-size:18px; cursor:pointer;">✕</button>
+    </div>
+    <div id="chatbot-messages">
+        <div class="chat-msg bot">
+            Bonjour ! Je suis votre assistant pour cet hébergement. Comment puis-je vous aider ? 😊
+        </div>
+    </div>
+    <div id="chatbot-input-area">
+        <input type="text" id="chatbot-input" placeholder="Posez votre question..." 
+               onkeypress="if(event.key==='Enter') sendMessage()">
+        <button id="chatbot-send" onclick="sendMessage()">➤</button>
+    </div>
+</div>
+
+<script>
+var hebergementId = {{ hebergement.id }};
+var chatbotOpen = false;
+
+function toggleChatbot() {
+    chatbotOpen = !chatbotOpen;
+    document.getElementById('chatbot-box').style.display = chatbotOpen ? 'flex' : 'none';
+    if (chatbotOpen) {
+        document.getElementById('chatbot-input').focus();
+    }
+}
+
+function sendMessage() {
+    var input = document.getElementById('chatbot-input');
+    var message = input.value.trim();
+    if (!message) return;
+
+    addMessage(message, 'user');
+    input.value = '';
+
+    var typingEl = addMessage('En train d\'écrire...', 'typing');
+
+    fetch('/api/chatbot/' + hebergementId, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: message })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        typingEl.remove();
+        addMessage(data.response || 'Désolé, une erreur est survenue.', 'bot');
+    })
+    .catch(function() {
+        typingEl.remove();
+        addMessage('Désolé, je ne suis pas disponible pour le moment.', 'bot');
+    });
+}
+
+function addMessage(text, type) {
+    var messages = document.getElementById('chatbot-messages');
+    var div = document.createElement('div');
+    div.className = 'chat-msg ' + type;
+    div.textContent = text;
+    messages.appendChild(div);
+    messages.scrollTop = messages.scrollHeight;
+    return div;
+}
+</script>

@@ -1,0 +1,1070 @@
+{% extends 'base_front.html.twig' %}
+
+{% block title %}Carnet de voyage{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        :root {
+            --mag-orange: #f97316;
+            --mag-blue: #3b82f6;
+            --mag-violet: #8b5cf6;
+            --mag-green: #22c55e;
+            --mag-text: #111827;
+            --mag-muted: #6b7280;
+            --mag-bg: #f5f5f5;
+        }
+
+        body { background: var(--mag-bg); color: var(--mag-text); }
+        .mag-page { padding: 150px 0 90px; }
+        .mag-shell { width: min(1220px, calc(100% - 30px)); margin: 0 auto; }
+        .mag-cover { border-radius: 12px; object-fit: cover; object-position: center; display: block; width: 100%; }
+        .mag-link { color: inherit; text-decoration: none; }
+        .mag-link:hover { color: inherit; }
+
+        .mag-hero {
+            border-radius: 20px;
+            overflow: hidden;
+            background: #0f172a;
+            box-shadow: 0 20px 50px rgba(0,0,0,.2);
+            margin-bottom: 24px;
+        }
+        .mag-hero-slide {
+            position: relative;
+            height: 550px;
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            align-items: flex-end;
+        }
+        .mag-hero-slide::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, rgba(0,0,0,.18), rgba(0,0,0,.45));
+        }
+        .mag-hero-content {
+            position: relative;
+            z-index: 1;
+            color: #fff;
+            max-width: 760px;
+            padding: 32px;
+        }
+        .mag-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 6px 12px;
+            color: #fff;
+            margin-bottom: 12px;
+            background: var(--mag-orange);
+        }
+        .mag-badge--voyage, .mag-badge--plus-vus { background: var(--mag-blue); }
+        .mag-badge--culture, .mag-badge--mieux-notes { background: var(--mag-violet); }
+        .mag-badge--nature, .mag-badge--tendance { background: var(--mag-green); }
+        .mag-badge--nouveautes, .mag-badge--coups-de-coeur { background: var(--mag-orange); }
+
+        .mag-hero-title {
+            font-size: clamp(2rem, 4.3vw, 3rem);
+            line-height: 1.08;
+            font-weight: 700;
+            margin: 0 0 12px;
+            color: #fff;
+        }
+        .mag-clamp-2, .mag-clamp-3 {
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-box-orient: vertical;
+        }
+        .mag-clamp-2 { -webkit-line-clamp: 2; }
+        .mag-clamp-3 { -webkit-line-clamp: 3; }
+        .mag-hero-excerpt {
+            margin: 0 0 18px;
+            font-size: 1rem;
+            line-height: 1.65;
+            color: rgba(255,255,255,.92);
+        }
+        .mag-hero-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #fff;
+            color: #111827;
+            border-radius: 999px;
+            font-size: 14px;
+            font-weight: 700;
+            padding: 11px 18px;
+            text-decoration: none;
+        }
+        .mag-hero .swiper-button-next,
+        .mag-hero .swiper-button-prev {
+            width: 38px;
+            height: 38px;
+            border-radius: 999px;
+            background: rgba(0,0,0,.28);
+            color: #fff;
+        }
+        .mag-hero .swiper-button-next::after,
+        .mag-hero .swiper-button-prev::after { font-size: 13px; font-weight: 700; }
+        .mag-hero .swiper-pagination-bullet { background: rgba(255,255,255,.65); }
+        .mag-hero .swiper-pagination-bullet-active { background: #fff; }
+
+        .mag-filter-bar {
+            position: sticky;
+            top: 88px;
+            z-index: 30;
+            background: #fff;
+            border-radius: 14px;
+            box-shadow: 0 8px 30px rgba(0,0,0,.08);
+            padding: 14px 16px;
+            margin-bottom: 22px;
+        }
+        .mag-filter-grid { display: grid; grid-template-columns: 1fr auto auto; gap: 12px; align-items: center; }
+        .mag-search {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 8px 12px;
+        }
+        .mag-search input {
+            border: 0;
+            background: transparent;
+            width: 100%;
+            color: #111827;
+            outline: none;
+        }
+        .mag-filters { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+        .mag-pill {
+            border: 0;
+            border-radius: 999px;
+            padding: 8px 12px;
+            font-size: 12px;
+            font-weight: 600;
+            background: #f3f4f6;
+            color: #374151;
+            cursor: pointer;
+        }
+        .mag-pill.is-active { background: var(--mag-orange); color: #fff; }
+        .mag-sort {
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            background: #fff;
+            padding: 8px 12px;
+            color: #111827;
+            font-size: 13px;
+        }
+        .mag-count { color: #6b7280; font-size: 13px; font-weight: 600; white-space: nowrap; }
+
+        .mag-spotlight {
+            background: #f8f8f8;
+            border-radius: 16px;
+            padding: 18px;
+            margin-bottom: 22px;
+        }
+        .mag-spotlight h2 {
+            margin: 0 0 14px;
+            font-size: 1.5rem;
+            color: #111827;
+            font-weight: 700;
+        }
+        .mag-spotlight-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+        .mag-spotlight-item {
+            display: grid;
+            grid-template-columns: 120px 1fr;
+            gap: 10px;
+            background: #fff;
+            border-radius: 12px;
+            padding: 10px;
+        }
+        .mag-spotlight-item img { width: 120px; height: 90px; border-radius: 10px; object-fit: cover; }
+        .mag-spotlight-item h3 { margin: 0 0 6px; font-size: .95rem; line-height: 1.3; color: #111827; }
+        .mag-spotlight-meta { font-size: 12px; color: #6b7280; }
+
+        .mag-section-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .mag-section-head h2 { margin: 0; font-size: 1.9rem; font-weight: 700; color: #111827; }
+
+        .mag-card {
+            background: #fff;
+            border: 0;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 8px 30px rgba(0,0,0,.06);
+            transition: box-shadow .3s ease, transform .3s ease;
+        }
+        .mag-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0,0,0,.12);
+        }
+        .mag-card-image { overflow: hidden; border-radius: 12px; }
+        .mag-card-image img { transition: transform .3s ease; }
+        .mag-card:hover .mag-card-image img { transform: scale(1.03); }
+        .mag-card-body { padding: 14px 16px 16px; }
+        .mag-title {
+            margin: 0 0 8px;
+            color: #111827;
+            font-weight: 700;
+            line-height: 1.25;
+        }
+        .mag-title--xl { font-size: clamp(1.35rem, 2.5vw, 1.75rem); }
+        .mag-title--lg { font-size: 1.2rem; }
+        .mag-title--md { font-size: 1.25rem; }
+        .mag-excerpt {
+            margin: 0;
+            color: #4b5563;
+            font-size: 14px;
+            line-height: 1.65;
+        }
+        .mag-meta {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            color: #6b7280;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+        .mag-dot::before { content: "\2022"; margin-right: 8px; color: #9ca3af; }
+        .mag-author-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 999px;
+            background: #111827;
+            color: #fff;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .mag-stats {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 12px;
+            color: #6b7280;
+            font-size: 13px;
+        }
+        .mag-rating { color: #f59e0b; font-weight: 700; }
+        .mag-views { display: inline-flex; align-items: center; gap: 6px; }
+        .mag-card-top {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+        .mag-favorite-btn {
+            width: 34px;
+            height: 34px;
+            border-radius: 999px;
+            border: 1px solid #fbcfe8;
+            background: #fff;
+            color: #e11d48;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 15px;
+            line-height: 1;
+            cursor: pointer;
+        }
+        .mag-favorite-btn.is-saved {
+            background: #ffe4e6;
+            border-color: #fda4af;
+        }
+
+        .mag-row-a {
+            display: grid;
+            grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        .mag-row-a-right { display: grid; gap: 16px; }
+        .mag-row-b {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        .mag-a-feature img { height: 380px; }
+        .mag-a-small img { height: 175px; }
+        .mag-b-card img { height: 220px; }
+        .mag-a-small .mag-card-body { padding-top: 12px; }
+        .mag-b-card .mag-card-body { padding-top: 12px; }
+
+        #blogComposeModal .modal-dialog {
+            max-width: 680px;
+        }
+        #blogComposeModal .modal-content {
+            border: 0;
+            border-radius: 16px;
+            overflow: hidden;
+            background: #fffaf7;
+            box-shadow: 0 24px 60px rgba(0,0,0,.26);
+        }
+        .modal-backdrop.show {
+            background: rgba(0, 0, 0, 0.6);
+            opacity: 1;
+        }
+        .share-modal-header {
+            display: flex;
+            justify-content: space-between;
+            gap: 14px;
+            padding: 22px 24px 10px;
+        }
+        .share-modal-title {
+            margin: 0;
+            font-size: 1.45rem;
+            font-weight: 700;
+            color: #111827;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .share-modal-subtitle {
+            margin: 4px 0 0;
+            color: #6b7280;
+            font-size: 13px;
+        }
+        .share-modal-close {
+            width: 36px;
+            height: 36px;
+            border-radius: 999px;
+            border: 0;
+            background: rgba(232, 96, 45, .13);
+            color: #E8602D;
+            font-size: 20px;
+            line-height: 1;
+        }
+        .share-modal-body {
+            padding: 8px 24px 24px;
+            max-height: 72vh;
+            overflow-y: auto;
+        }
+        .share-field { margin-bottom: 14px; }
+        .share-label {
+            display: block;
+            color: #111827;
+            font-size: 13px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+        .share-input {
+            width: 100%;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            background: #fff;
+            color: #111827;
+            padding: 11px 13px;
+            font-size: 14px;
+            outline: none;
+        }
+        .share-input:focus {
+            border-color: #E8602D;
+            box-shadow: 0 0 0 3px rgba(232, 96, 45, .14);
+        }
+        .share-dropzone {
+            border: 1.5px dashed #d1d5db;
+            border-radius: 12px;
+            background: #fff;
+            min-height: 118px;
+            padding: 14px;
+            display: grid;
+            place-items: center;
+            text-align: center;
+            color: #6b7280;
+            cursor: pointer;
+        }
+        .share-dropzone i {
+            color: #E8602D;
+            font-size: 1.6rem;
+            margin-bottom: 4px;
+        }
+        .share-dropzone.is-dragover {
+            border-color: #E8602D;
+            background: #fff4ef;
+        }
+        .share-cover-preview {
+            display: none;
+            margin-top: 8px;
+            width: 100%;
+            height: 180px;
+            border-radius: 12px;
+            object-fit: cover;
+        }
+        .share-toolbar {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+        .share-tool-btn {
+            border: 1px solid #e5e7eb;
+            background: #fff;
+            border-radius: 8px;
+            padding: 6px 10px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #374151;
+        }
+        .share-content {
+            min-height: 200px;
+            resize: vertical;
+        }
+        .share-excerpt-row {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 10px;
+            align-items: start;
+        }
+        .share-ai-btn {
+            border: 0;
+            border-radius: 10px;
+            background: #E8602D;
+            color: #fff;
+            padding: 10px 12px;
+            font-size: 13px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+        .share-modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 6px;
+        }
+        .share-draft-btn {
+            border: 1px solid #d1d5db;
+            background: #fff;
+            color: #374151;
+            border-radius: 10px;
+            font-weight: 600;
+            padding: 10px 14px;
+        }
+        .share-publish-btn {
+            border: 0;
+            background: #E8602D;
+            color: #fff;
+            border-radius: 10px;
+            font-weight: 700;
+            padding: 10px 14px;
+        }
+
+        @media (max-width: 1199px) {
+            .mag-spotlight-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .mag-row-b { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        }
+        @media (max-width: 991px) {
+            .mag-page { padding-top: 130px; }
+            .mag-hero-slide { height: 460px; }
+            .mag-filter-grid { grid-template-columns: 1fr; }
+            .mag-row-a, .mag-row-b, .mag-spotlight-grid { grid-template-columns: 1fr; }
+            .mag-a-feature img, .mag-a-small img, .mag-b-card img { height: 260px; }
+            .share-excerpt-row { grid-template-columns: 1fr; }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+{% set isFrontUser = is_granted('ROLE_USER') %}
+<main class="mag-page">
+    <div class="mag-shell">
+        {% for label, messages in app.flashes %}
+            {% for message in messages %}
+                <div class="alert alert-{{ label == 'pending' ? 'warning' : 'success' }} mb-3">{{ message }}</div>
+            {% endfor %}
+        {% endfor %}
+
+        <section class="mag-hero">
+            <div class="swiper magazineHeroSwiper">
+                <div class="swiper-wrapper">
+                    {% for blog in top_viewed_blogs|default(hero_blogs|default([])) %}
+                        {% set metrics = blog_metrics[blog.id] ?? {} %}
+                        {% set categoryLabel = metrics.category|default('Nouveautes') %}
+                        {% set categoryKey = categoryLabel|lower|replace({' ': '-', 'é': 'e', 'è': 'e', 'ê': 'e'}) %}
+                        <div class="swiper-slide">
+                            <div class="mag-hero-slide" style="background-image:url('{{ metrics.cover_image|default(blog.imageCouverture)|default('https://picsum.photos/seed/hero-' ~ blog.id ~ '/1400/900') }}');">
+                                <div class="mag-hero-content">
+                                    <span class="mag-badge mag-badge--{{ categoryKey }}">{{ categoryLabel }}</span>
+                                    <h2 class="mag-hero-title mag-clamp-2">{{ blog.titre }}</h2>
+                                    <p class="mag-hero-excerpt mag-clamp-2">{{ blog.extrait ?: 'Découvrez ce récit et explorez les meilleurs conseils de voyage.' }}</p>
+                                    <a href="{{ path('app_blog_show', {'id': blog.id}) }}" class="mag-hero-btn">Lire l'article</a>
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="swiper-slide">
+                            <div class="mag-hero-slide" style="background-image:url('https://picsum.photos/seed/blog-hero-empty/1400/900');">
+                                <div class="mag-hero-content">
+                                    <span class="mag-badge">Nouveautés</span>
+                                    <h2 class="mag-hero-title">Aucun article publié pour le moment</h2>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+                <div class="swiper-pagination"></div>
+                <div class="swiper-button-prev"></div>
+                <div class="swiper-button-next"></div>
+            </div>
+        </section>
+
+        <section class="mag-filter-bar" id="blogFilterBar">
+            <div class="mag-filter-grid">
+                <label class="mag-search">
+                    <i class="fa fa-search text-muted"></i>
+                    <input id="blogSearchInput" type="search" placeholder="Rechercher un article..." value="{{ search_query|default('') }}">
+                </label>
+                <select id="blogSortSelect" class="mag-sort">
+                    <option value="recent" {{ sort_filter|default('recent') == 'recent' ? 'selected' : '' }}>Trier par : Plus récent</option>
+                    <option value="oldest" {{ sort_filter|default('recent') == 'oldest' ? 'selected' : '' }}>Trier par : Plus ancien</option>
+                    <option value="views" {{ sort_filter|default('recent') == 'views' ? 'selected' : '' }}>Trier par : Plus vu</option>
+                    <option value="rating" {{ sort_filter|default('recent') == 'rating' ? 'selected' : '' }}>Trier par : Mieux noté</option>
+                    <option value="alpha" {{ sort_filter|default('recent') == 'alpha' ? 'selected' : '' }}>Trier par : Alphabétique</option>
+                </select>
+                <span class="mag-count" id="blogResultCount">{{ filtered_blogs|length }} articles trouvés</span>
+            </div>
+            <div class="mag-filters" id="blogCategoryFilters">
+                {% for categoryKey, categoryLabel in {
+                    'all': 'Tous',
+                    'mieux-notes': 'Mieux notés',
+                    'plus-vus': 'Plus vus',
+                    'nouveautes': 'Nouveautés',
+                    'tendance': 'Tendance',
+                    'coups-de-coeur': 'Coups de cœur'
+                } %}
+                    <button type="button" class="mag-pill {{ active_category == categoryKey ? 'is-active' : '' }}" data-category="{{ categoryKey }}">{{ categoryLabel }}</button>
+                {% endfor %}
+                {% if isFrontUser %}
+                    <button type="button" class="mag-pill" data-bs-toggle="modal" data-bs-target="#blogComposeModal">Partager votre blog</button>
+                {% endif %}
+            </div>
+        </section>
+
+        <section class="mag-spotlight">
+            <div class="mag-section-head">
+                <h2>À la une cette semaine</h2>
+            </div>
+            <div class="mag-spotlight-grid">
+                {% for blog in featured_week_blogs|default([]) %}
+                    {% set metrics = blog_metrics[blog.id] ?? {} %}
+                    {% set categoryLabel = metrics.category|default('Nouveautes') %}
+                    {% set categoryKey = categoryLabel|lower|replace({' ': '-', 'é': 'e', 'è': 'e', 'ê': 'e'}) %}
+                    <article class="mag-spotlight-item">
+                        <a class="mag-link" href="{{ path('app_blog_show', {'id': blog.id}) }}">
+                            <img class="mag-cover" src="{{ metrics.cover_image|default(blog.imageCouverture)|default('https://picsum.photos/seed/spotlight-' ~ blog.id ~ '/600/400') }}" alt="{{ blog.titre }}">
+                        </a>
+                        <div>
+                            <a class="mag-link" href="{{ path('app_blog_show', {'id': blog.id}) }}">
+                                <span class="mag-badge mag-badge--{{ categoryKey }}">{{ categoryLabel }}</span>
+                                <h3 class="mag-clamp-2">{{ blog.titre }}</h3>
+                            </a>
+                            <div class="mag-spotlight-meta">
+                                {{ blog.datePublication ? blog.datePublication|date('d/m/Y') : (blog.dateCreation ? blog.dateCreation|date('d/m/Y') : '-') }}
+                                <span class="mag-dot"></span>
+                                {{ featured_week_reactions[blog.id]|default(0) }} réactions
+                            </div>
+                        </div>
+                    </article>
+                {% else %}
+                    <p class="text-muted mb-0">Aucun article à la une cette semaine.</p>
+                {% endfor %}
+            </div>
+        </section>
+
+        <section id="tous-les-blogs">
+            <div class="mag-section-head">
+                <h2>Tous les blogs</h2>
+                <a class="mag-hero-btn" id="visionBoardLink" href="{{ path('app_blog_vision_board') }}">Vision board (<span id="visionBoardCount">{{ vision_board_count|default(0) }}</span>)</a>
+            </div>
+
+            <div id="blogMagazineList">
+                {% for row in magazine_rows|default([]) %}
+                    {% if row.type == 'A' %}
+                        {% set featured = row.items[0] ?? null %}
+                        {% set rightItems = row.items|slice(1, 2) %}
+                        {% if featured %}
+                            {% set metrics = blog_metrics[featured.id] ?? {} %}
+                            {% set categoryLabel = metrics.category|default('Nouveautes') %}
+                            {% set categoryKey = categoryLabel|lower|replace({' ': '-', 'é': 'e', 'è': 'e', 'ê': 'e'}) %}
+                            {% set author = featured.authorId|default('Auteur') %}
+                            <div class="mag-row-a">
+                                <article class="mag-card mag-a-feature">
+                                    <a class="mag-link" href="{{ path('app_blog_show', {'id': featured.id}) }}">
+                                        <div class="mag-card-image"><img class="mag-cover" src="{{ metrics.cover_image|default(featured.imageCouverture)|default('https://picsum.photos/seed/featured-' ~ featured.id ~ '/1200/900') }}" alt="{{ featured.titre }}"></div>
+                                        <div class="mag-card-body">
+                                            <div class="mag-card-top">
+                                                <span class="mag-badge mag-badge--{{ categoryKey }}">{{ categoryLabel }}</span>
+                                                {% if isFrontUser %}
+                                                    <button
+                                                        type="button"
+                                                        class="mag-favorite-btn{% if featured.id in (favorite_blog_ids|default([])) %} is-saved{% endif %}"
+                                                        data-favorite-toggle
+                                                        data-url="{{ path('app_mon_espace_favorite_toggle', {'id': featured.id}) }}"
+                                                        data-token="{{ csrf_token('favorite_blog_' ~ featured.id) }}"
+                                                        aria-label="Ajouter aux favoris"
+                                                    >❤️</button>
+                                                {% endif %}
+                                            </div>
+                                            <h3 class="mag-title mag-title--xl mag-clamp-2">{{ featured.titre }}</h3>
+                                            <p class="mag-excerpt mag-clamp-3">{{ featured.extrait ?: 'Résumé indisponible pour le moment.' }}</p>
+                                            <div class="mag-meta">
+                                                <span class="mag-author-avatar">{{ author|slice(0, 2) }}</span>
+                                                <strong>{{ author }}</strong>
+                                                <span class="mag-dot">{{ featured.datePublication ? featured.datePublication|date('d/m/Y') : (featured.dateCreation ? featured.dateCreation|date('d/m/Y') : '-') }}</span>
+                                                <span class="mag-dot">{{ metrics.read_time|default(1) }} min lecture</span>
+                                            </div>
+                                            <div class="mag-stats">
+                                                <span class="mag-rating">★★★★☆ {{ (metrics.rating_average|default(0))|number_format(1, '.', ' ') }}</span>
+                                                <span class="mag-views"><i class="fa fa-eye"></i> {{ metrics.views|default(0) }}</span>
+                                            </div>
+                                        </div>
+                                    </a>
+                                </article>
+
+                                <div class="mag-row-a-right">
+                                    {% for side in rightItems %}
+                                        {% if side %}
+                                            {% set sideMetrics = blog_metrics[side.id] ?? {} %}
+                                            {% set sideCategoryLabel = sideMetrics.category|default('Nouveautes') %}
+                                            {% set sideCategoryKey = sideCategoryLabel|lower|replace({' ': '-', 'é': 'e', 'è': 'e', 'ê': 'e'}) %}
+                                            <article class="mag-card mag-a-small">
+                                                <a class="mag-link" href="{{ path('app_blog_show', {'id': side.id}) }}">
+                                                    <div class="mag-card-image"><img class="mag-cover" src="{{ sideMetrics.cover_image|default(side.imageCouverture)|default('https://picsum.photos/seed/side-' ~ side.id ~ '/900/600') }}" alt="{{ side.titre }}"></div>
+                                                    <div class="mag-card-body">
+                                                        <div class="mag-card-top">
+                                                            <span class="mag-badge mag-badge--{{ sideCategoryKey }}">{{ sideCategoryLabel }}</span>
+                                                            {% if isFrontUser %}
+                                                                <button
+                                                                    type="button"
+                                                                    class="mag-favorite-btn{% if side.id in (favorite_blog_ids|default([])) %} is-saved{% endif %}"
+                                                                    data-favorite-toggle
+                                                                    data-url="{{ path('app_mon_espace_favorite_toggle', {'id': side.id}) }}"
+                                                                    data-token="{{ csrf_token('favorite_blog_' ~ side.id) }}"
+                                                                    aria-label="Ajouter aux favoris"
+                                                                >❤️</button>
+                                                            {% endif %}
+                                                        </div>
+                                                        <h3 class="mag-title mag-title--lg mag-clamp-2">{{ side.titre }}</h3>
+                                                        <p class="mag-excerpt mag-clamp-2">{{ side.extrait ?: 'Résumé indisponible.' }}</p>
+                                                    </div>
+                                                </a>
+                                            </article>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="mag-row-b">
+                            {% for standard in row.items %}
+                                {% if standard %}
+                                    {% set stdMetrics = blog_metrics[standard.id] ?? {} %}
+                                    {% set stdCategoryLabel = stdMetrics.category|default('Nouveautes') %}
+                                    {% set stdCategoryKey = stdCategoryLabel|lower|replace({' ': '-', 'é': 'e', 'è': 'e', 'ê': 'e'}) %}
+                                    <article class="mag-card mag-b-card">
+                                        <a class="mag-link" href="{{ path('app_blog_show', {'id': standard.id}) }}">
+                                            <div class="mag-card-image"><img class="mag-cover" src="{{ stdMetrics.cover_image|default(standard.imageCouverture)|default('https://picsum.photos/seed/std-' ~ standard.id ~ '/900/650') }}" alt="{{ standard.titre }}"></div>
+                                            <div class="mag-card-body">
+                                                <div class="mag-card-top">
+                                                    <span class="mag-badge mag-badge--{{ stdCategoryKey }}">{{ stdCategoryLabel }}</span>
+                                                    {% if isFrontUser %}
+                                                        <button
+                                                            type="button"
+                                                            class="mag-favorite-btn{% if standard.id in (favorite_blog_ids|default([])) %} is-saved{% endif %}"
+                                                            data-favorite-toggle
+                                                            data-url="{{ path('app_mon_espace_favorite_toggle', {'id': standard.id}) }}"
+                                                            data-token="{{ csrf_token('favorite_blog_' ~ standard.id) }}"
+                                                            aria-label="Ajouter aux favoris"
+                                                        >❤️</button>
+                                                    {% endif %}
+                                                </div>
+                                                <h3 class="mag-title mag-title--md mag-clamp-2">{{ standard.titre }}</h3>
+                                                <p class="mag-excerpt mag-clamp-2">{{ standard.extrait ?: 'Résumé indisponible.' }}</p>
+                                                <div class="mag-stats">
+                                                    <span class="mag-rating">★★★★☆ {{ (stdMetrics.rating_average|default(0))|number_format(1, '.', ' ') }}</span>
+                                                    <span class="mag-views"><i class="fa fa-eye"></i> {{ stdMetrics.views|default(0) }}</span>
+                                                </div>
+                                            </div>
+                                        </a>
+                                    </article>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                {% else %}
+                    <article class="mag-card">
+                        <div class="mag-card-body">
+                            <h3 class="mag-title">Aucun article trouvé pour ce filtre</h3>
+                            <p class="mag-excerpt">Essayez un autre filtre ou modifiez votre recherche.</p>
+                        </div>
+                    </article>
+                {% endfor %}
+            </div>
+        </section>
+    </div>
+</main>
+
+<div class="modal fade" id="blogComposeModal" tabindex="-1" aria-labelledby="blogComposeTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="share-modal-header">
+                <div>
+                    <h3 id="blogComposeTitle" class="share-modal-title">✈️ Partagez votre récit de voyage</h3>
+                    <p class="share-modal-subtitle">Votre article sera relu et publié après validation</p>
+                </div>
+                <button type="button" class="share-modal-close" data-bs-dismiss="modal" aria-label="Close">&times;</button>
+            </div>
+
+            <div class="share-modal-body">
+                {{ form_start(blog_form, { attr: { id: 'shareBlogForm' } }) }}
+                    {{ form_errors(blog_form) }}
+
+                    <div class="share-field">
+                        <label class="share-label" for="{{ blog_form.titre.vars.id }}">Titre</label>
+                        {{ form_widget(blog_form.titre, {
+                            attr: {
+                                class: 'share-input',
+                                placeholder: 'Donnez un titre accrocheur à votre aventure...'
+                            }
+                        }) }}
+                        {{ form_errors(blog_form.titre) }}
+                    </div>
+
+                    <div class="share-field">
+                        <label class="share-label" for="{{ blog_form.blogCoverImage.vars.id }}">Image de couverture</label>
+                        <label class="share-dropzone" id="shareCoverDropzone" for="{{ blog_form.blogCoverImage.vars.id }}">
+                            <span>
+                                <i class="bi bi-cloud-upload"></i><br>
+                                Glissez votre photo ici ou cliquez pour parcourir
+                            </span>
+                        </label>
+                        {{ form_widget(blog_form.blogCoverImage, {
+                            attr: {
+                                class: 'd-none',
+                                accept: 'image/*'
+                            }
+                        }) }}
+                        <img id="shareCoverPreview" class="share-cover-preview" alt="Preview image couverture">
+                        {{ form_errors(blog_form.blogCoverImage) }}
+                    </div>
+
+                    <div class="share-field">
+                        <label class="share-label" for="{{ blog_form.contenu.vars.id }}">Contenu</label>
+                        <div class="share-toolbar">
+                            <button type="button" class="share-tool-btn" data-editor-action="bold">Gras</button>
+                            <button type="button" class="share-tool-btn" data-editor-action="italic">Italique</button>
+                            <button type="button" class="share-tool-btn" data-editor-action="list">Liste</button>
+                        </div>
+                        {{ form_widget(blog_form.contenu, {
+                            attr: {
+                                class: 'share-input share-content',
+                                placeholder: 'Racontez votre histoire...'
+                            }
+                        }) }}
+                        {{ form_errors(blog_form.contenu) }}
+                    </div>
+
+                    <div class="share-field">
+                        <label class="share-label" for="{{ blog_form.extrait.vars.id }}">Extrait</label>
+                        <div class="share-excerpt-row">
+                            {{ form_widget(blog_form.extrait, {
+                                attr: {
+                                    class: 'share-input',
+                                    rows: 3,
+                                    placeholder: 'Résumé court de votre article...'
+                                }
+                            }) }}
+                            <button type="button" class="share-ai-btn" id="generateExcerptButton">✨ Générer avec l'IA</button>
+                        </div>
+                        <small id="generateExcerptMessage" class="text-muted d-block mt-1"></small>
+                        {{ form_errors(blog_form.extrait) }}
+                    </div>
+
+                    <div class="share-field">
+                        <label class="share-label" for="blogCategorySelect">Catégorie</label>
+                        <select id="blogCategorySelect" class="share-input">
+                            <option value="Nouveautes">Nouveautés</option>
+                            <option value="Tendance">Tendance</option>
+                            <option value="Coups de coeur">Coups de cœur</option>
+                            <option value="Mieux notes">Mieux notés</option>
+                            <option value="Plus vus">Plus vus</option>
+                        </select>
+                    </div>
+
+                    <div class="share-modal-actions">
+                        {{ form_widget(blog_form.saveDraft, {
+                            attr: {
+                                class: 'share-draft-btn',
+                                value: 'Sauvegarder en brouillon'
+                            }
+                        }) }}
+                        {{ form_widget(blog_form.publish, {
+                            attr: {
+                                class: 'share-publish-btn',
+                                value: 'Publier mon blog'
+                            }
+                        }) }}
+                    </div>
+                {{ form_end(blog_form) }}
+            </div>
+        </div>
+    </div>
+</div>
+
+{{ include('home/partials/chatbot_widget.html.twig') }}
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    <script>
+        (function () {
+            const heroEl = document.querySelector('.magazineHeroSwiper');
+            if (heroEl && window.Swiper) {
+                const swiper = new Swiper(heroEl, {
+                    loop: true,
+                    speed: 600,
+                    slidesPerView: 1,
+                    autoplay: {
+                        delay: 4000,
+                        disableOnInteraction: false
+                    },
+                    pagination: {
+                        el: '.mag-hero .swiper-pagination',
+                        clickable: true
+                    },
+                    navigation: {
+                        nextEl: '.mag-hero .swiper-button-next',
+                        prevEl: '.mag-hero .swiper-button-prev'
+                    }
+                });
+
+                heroEl.addEventListener('mouseenter', function () { swiper.autoplay.stop(); });
+                heroEl.addEventListener('mouseleave', function () { swiper.autoplay.start(); });
+            }
+
+            const modal = document.getElementById('blogComposeModal');
+            if (modal && window.bootstrap) {
+                const modalInstance = new bootstrap.Modal(modal);
+                {% if show_blog_modal|default(false) %}
+                modalInstance.show();
+                {% endif %}
+            }
+
+            const titleInput = document.getElementById('{{ blog_form.titre.vars.id }}');
+            const contentInput = document.getElementById('{{ blog_form.contenu.vars.id }}');
+            const excerptInput = document.getElementById('{{ blog_form.extrait.vars.id }}');
+            const generateButton = document.getElementById('generateExcerptButton');
+            const generateMessage = document.getElementById('generateExcerptMessage');
+            if (titleInput && contentInput && excerptInput && generateButton) {
+                generateButton.addEventListener('click', async function () {
+                    generateButton.disabled = true;
+                    if (generateMessage) {
+                        generateMessage.textContent = 'Génération de l’extrait...';
+                    }
+
+                    const response = await fetch('{{ path('api_blog_generate_excerpt') }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: JSON.stringify({
+                            title: titleInput.value,
+                            content: contentInput.value,
+                            max_length: 180
+                        })
+                    });
+
+                    const payload = await response.json();
+                    generateButton.disabled = false;
+
+                    if (!response.ok || !payload.success) {
+                        if (generateMessage) {
+                            generateMessage.textContent = payload.message || 'Impossible de générer un extrait pour le moment.';
+                        }
+                        return;
+                    }
+
+                    excerptInput.value = payload.excerpt || '';
+                    if (generateMessage) {
+                        generateMessage.textContent = 'Extrait généré avec succès.';
+                    }
+                });
+            }
+
+            const coverInput = document.getElementById('{{ blog_form.blogCoverImage.vars.id }}');
+            const coverDropzone = document.getElementById('shareCoverDropzone');
+            const coverPreview = document.getElementById('shareCoverPreview');
+            const renderPreview = function (file) {
+                if (!file || !coverPreview) {
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = function (event) {
+                    coverPreview.src = event.target?.result || '';
+                    coverPreview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            };
+            if (coverInput) {
+                coverInput.addEventListener('change', function () {
+                    renderPreview(coverInput.files && coverInput.files[0] ? coverInput.files[0] : null);
+                });
+            }
+            if (coverDropzone && coverInput) {
+                ['dragenter', 'dragover'].forEach(function (evtName) {
+                    coverDropzone.addEventListener(evtName, function (event) {
+                        event.preventDefault();
+                        coverDropzone.classList.add('is-dragover');
+                    });
+                });
+                ['dragleave', 'drop'].forEach(function (evtName) {
+                    coverDropzone.addEventListener(evtName, function (event) {
+                        event.preventDefault();
+                        coverDropzone.classList.remove('is-dragover');
+                    });
+                });
+                coverDropzone.addEventListener('drop', function (event) {
+                    const files = event.dataTransfer?.files;
+                    if (!files || files.length === 0) {
+                        return;
+                    }
+                    const transfer = new DataTransfer();
+                    transfer.items.add(files[0]);
+                    coverInput.files = transfer.files;
+                    renderPreview(files[0]);
+                });
+            }
+
+            const editorTextarea = document.getElementById('{{ blog_form.contenu.vars.id }}');
+            document.querySelectorAll('[data-editor-action]').forEach(function (button) {
+                button.addEventListener('click', function () {
+                    if (!editorTextarea) {
+                        return;
+                    }
+                    const action = button.getAttribute('data-editor-action');
+                    const start = editorTextarea.selectionStart ?? editorTextarea.value.length;
+                    const end = editorTextarea.selectionEnd ?? editorTextarea.value.length;
+                    const selected = editorTextarea.value.substring(start, end);
+                    let insertion = selected;
+                    if (action === 'bold') {
+                        insertion = '**' + (selected || 'texte') + '**';
+                    } else if (action === 'italic') {
+                        insertion = '*' + (selected || 'texte') + '*';
+                    } else if (action === 'list') {
+                        insertion = '- ' + (selected || 'élément');
+                    }
+                    editorTextarea.setRangeText(insertion, start, end, 'end');
+                    editorTextarea.focus();
+                });
+            });
+
+            const visionBoardCountNode = document.getElementById('visionBoardCount');
+            document.addEventListener('click', async function (event) {
+                const favoriteButton = event.target.closest('[data-favorite-toggle]');
+                if (!favoriteButton) {
+                    return;
+                }
+
+                const formData = new FormData();
+                formData.append('_token', favoriteButton.dataset.token || '');
+
+                const response = await fetch(favoriteButton.dataset.url || '', {
+                    method: 'POST',
+                    body: formData,
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+                const payload = await response.json();
+                if (!response.ok) {
+                    return;
+                }
+
+                favoriteButton.classList.toggle('is-saved', !!payload.saved);
+                if (visionBoardCountNode && typeof payload.count !== 'undefined') {
+                    visionBoardCountNode.textContent = String(payload.count);
+                }
+            });
+
+            const listEl = document.getElementById('blogMagazineList');
+            const countEl = document.getElementById('blogResultCount');
+            const searchInput = document.getElementById('blogSearchInput');
+            const sortSelect = document.getElementById('blogSortSelect');
+            const categoryRoot = document.getElementById('blogCategoryFilters');
+            if (!listEl || !countEl || !searchInput || !sortSelect || !categoryRoot) {
+                return;
+            }
+
+            let activeCategory = categoryRoot.querySelector('.mag-pill.is-active')?.getAttribute('data-category') || 'all';
+            let debounceTimer = null;
+
+            const updateStateFromUrl = function () {
+                const params = new URLSearchParams(window.location.search);
+                const q = searchInput.value.trim();
+                if (q) { params.set('q', q); } else { params.delete('q'); }
+                if (activeCategory && activeCategory !== 'all') { params.set('categorie', activeCategory); } else { params.delete('categorie'); }
+                params.set('sort', sortSelect.value);
+                const query = params.toString();
+                history.replaceState({}, '', window.location.pathname + (query ? '?' + query : ''));
+            };
+
+            const refreshList = function () {
+                const params = new URLSearchParams();
+                params.set('sort', sortSelect.value);
+                if (searchInput.value.trim()) {
+                    params.set('q', searchInput.value.trim());
+                }
+                if (activeCategory !== 'all') {
+                    params.set('categorie', activeCategory);
+                }
+
+                fetch(window.location.pathname + '?' + params.toString(), {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                })
+                    .then(function (response) { return response.text(); })
+                    .then(function (html) {
+                        const doc = new DOMParser().parseFromString(html, 'text/html');
+                        const newList = doc.getElementById('blogMagazineList');
+                        const newCount = doc.getElementById('blogResultCount');
+                        if (!newList || !newCount) { return; }
+                        listEl.innerHTML = newList.innerHTML;
+                        countEl.textContent = newCount.textContent;
+                        updateStateFromUrl();
+                    });
+            };
+
+            searchInput.addEventListener('input', function () {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(refreshList, 320);
+            });
+
+            sortSelect.addEventListener('change', refreshList);
+
+            categoryRoot.addEventListener('click', function (event) {
+                const button = event.target.closest('[data-category]');
+                if (!button) { return; }
+                categoryRoot.querySelectorAll('[data-category]').forEach(function (pill) {
+                    pill.classList.remove('is-active');
+                });
+                button.classList.add('is-active');
+                activeCategory = button.getAttribute('data-category') || 'all';
+                refreshList();
+            });
+        })();
+    </script>
+{% endblock %}
+

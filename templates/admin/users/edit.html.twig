@@ -11,66 +11,82 @@
 <div class="card">
     <div class="card-header">
         <h3>Informations de l'utilisateur</h3>
-        <a href="{{ path('admin_users_list') }}" class="btn btn-secondary">
-            ← Retour à la liste
-        </a>
+        <a href="{{ path('admin_users_list') }}" class="btn btn-secondary">← Retour à la liste</a>
     </div>
     <div class="card-body">
+
         {% for message in app.flashes('success') %}
-            <div class="alert alert-success">{{ message }}</div>
+            <div class="alert alert-success">✔ {{ message }}</div>
         {% endfor %}
         {% for message in app.flashes('error') %}
-            <div class="alert alert-danger">{{ message }}</div>
+            <div class="alert alert-danger">✗ {{ message }}</div>
         {% endfor %}
 
-        <form method="POST" action="{{ path('admin_user_edit', {'id': user.id}) }}" class="user-form" id="editUserForm" novalidate>
+        {% if globalError is defined and globalError %}
+            <div class="alert alert-danger"><strong>{{ globalError }}</strong></div>
+        {% endif %}
+
+        <form method="POST" action="{{ path('admin_user_edit', {'id': user.id}) }}" class="user-form" novalidate>
+
             <div class="form-row">
                 <div class="form-group">
                     <label for="nom">Nom *</label>
-                    <input type="text" id="nom" name="nom" required class="form-control"
-                           value="{{ user.nom }}" pattern="[A-Za-zÀ-ÿ\s]{2,50}"
-                           title="Uniquement des lettres, 2-50 caractères" maxlength="50">
-                    <span class="error-message"></span>
+                    <input type="text" id="nom" name="nom"
+                           class="form-control {% if fieldErrors is defined and fieldErrors.nom is defined %}input-error{% endif %}"
+                           value="{{ user.nom }}" maxlength="50">
+                    {% if fieldErrors is defined and fieldErrors.nom is defined %}
+                        <span class="field-error-msg">{{ fieldErrors.nom }}</span>
+                    {% endif %}
                 </div>
                 <div class="form-group">
                     <label for="prenom">Prénom *</label>
-                    <input type="text" id="prenom" name="prenom" required class="form-control"
-                           value="{{ user.prenom }}" pattern="[A-Za-zÀ-ÿ\s]{2,50}"
-                           title="Uniquement des lettres, 2-50 caractères" maxlength="50">
-                    <span class="error-message"></span>
+                    <input type="text" id="prenom" name="prenom"
+                           class="form-control {% if fieldErrors is defined and fieldErrors.prenom is defined %}input-error{% endif %}"
+                           value="{{ user.prenom }}" maxlength="50">
+                    {% if fieldErrors is defined and fieldErrors.prenom is defined %}
+                        <span class="field-error-msg">{{ fieldErrors.prenom }}</span>
+                    {% endif %}
                 </div>
             </div>
 
             <div class="form-group">
                 <label for="email">Email *</label>
-                <input type="email" id="email" name="email" required class="form-control"
-                       value="{{ user.email }}" maxlength="100"
-                       title="Format email valide requis">
-                <span class="error-message"></span>
+                <input type="text" id="email" name="email"
+                       class="form-control {% if fieldErrors is defined and fieldErrors.email is defined %}input-error{% endif %}"
+                       value="{{ user.email }}" maxlength="100">
+                {% if fieldErrors is defined and fieldErrors.email is defined %}
+                    <span class="field-error-msg">{{ fieldErrors.email }}</span>
+                {% endif %}
             </div>
 
             <div class="form-group">
-                <label for="telephone">Téléphone</label>
-                <input type="tel" id="telephone" name="telephone" class="form-control"
-                       value="{{ user.telephone }}" pattern="[0-9]{8}"
-                       title="Exactement 8 chiffres" maxlength="8">
-                <span class="error-message"></span>
+                <label for="telephone">Téléphone *</label>
+                <input type="text" id="telephone" name="telephone"
+                       class="form-control {% if fieldErrors is defined and fieldErrors.telephone is defined %}input-error{% endif %}"
+                       value="{{ user.telephone }}" maxlength="8">
+                {% if fieldErrors is defined and fieldErrors.telephone is defined %}
+                    <span class="field-error-msg">{{ fieldErrors.telephone }}</span>
+                {% endif %}
             </div>
 
             <div class="form-group">
                 <label for="password">Nouveau mot de passe</label>
-                <input type="password" id="password" name="password" class="form-control"
+                <input type="password" id="password" name="password"
+                       class="form-control {% if fieldErrors is defined and fieldErrors.password is defined %}input-error{% endif %}"
                        placeholder="Laisser vide pour ne pas changer">
-                <small class="form-help">Minimum 8 caractères — laisser vide pour conserver l'actuel</small>
+                <small class="form-help">Min. 6 car. : Majuscule, minuscule, chiffre et caractère spécial — laisser vide pour conserver l'actuel</small>
+                {% if fieldErrors is defined and fieldErrors.password is defined %}
+                    <span class="field-error-msg">{{ fieldErrors.password }}</span>
+                {% endif %}
             </div>
 
             <div class="form-group">
                 <label>Rôles</label>
-                <div class="checkbox-group" id="rolesContainer">
+                <div class="checkbox-group">
                     {% for role in roles %}
                         <label class="checkbox-label">
                             <input type="checkbox" name="roles[]" value="{{ role.id }}"
-                                   class="checkbox-input" id="role_{{ role.id }}"
+                                   class="checkbox-input"
                                    {% for userRole in user.rolesCollection %}
                                        {% if userRole.id == role.id %}checked{% endif %}
                                    {% endfor %}>
@@ -78,7 +94,6 @@
                         </label>
                     {% endfor %}
                 </div>
-                <span class="error-message" id="rolesError"></span>
             </div>
 
             <div class="form-group">
@@ -90,25 +105,23 @@
             </div>
 
             <div class="form-actions">
-                <a href="{{ path('admin_users_list') }}" class="btn btn-secondary">
-                    Annuler
-                </a>
-                <button type="submit" class="btn btn-primary" id="submitBtn">
-                    Enregistrer les modifications
-                </button>
+                <a href="{{ path('admin_users_list') }}" class="btn btn-secondary">Annuler</a>
+                <button type="submit" class="btn btn-primary">Enregistrer les modifications</button>
             </div>
         </form>
     </div>
-</div>
+</div>*
 
 <style>
 .user-form { max-width: 800px; }
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
 .form-group { margin-bottom: 20px; }
 .form-group label { display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-primary); }
-.form-control { width: 100%; padding: 12px 16px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-card); color: var(--text-primary); font-size: 15px; }
+.form-control { width: 100%; padding: 12px 16px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-card); color: var(--text-primary); font-size: 15px; box-sizing: border-box; }
 .form-control:focus { outline: none; border-color: var(--accent-copper); }
-.form-help { display: block; margin-top: 4px; font-size: 13px; color: var(--text-muted); }
+.input-error { border-color: #ef4444 !important; box-shadow: 0 0 0 3px rgba(239,68,68,0.1); }
+.field-error-msg { display: block; color: #ef4444; font-size: 12px; margin-top: 5px; }
+.form-help { display: block; margin-top: 4px; font-size: 12px; color: var(--text-muted); }
 .checkbox-group { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
 .checkbox-label { display: flex; align-items: center; gap: 8px; cursor: pointer; color: var(--text-primary); }
 .checkbox-input { width: 18px; height: 18px; accent-color: var(--accent-copper); }
@@ -117,132 +130,5 @@
 .alert-success { background: rgba(52,211,153,0.1); border: 1px solid rgba(52,211,153,0.3); color: #34d399; }
 .alert-danger { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); color: #ef4444; }
 .card-header { display: flex; justify-content: space-between; align-items: center; padding: 20px; border-bottom: 1px solid var(--border); }
-.error-message { display: none; color: #ef4444; font-size: 12px; margin-top: 4px; }
 </style>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const form = document.getElementById('editUserForm');
-    const submitBtn = document.getElementById('submitBtn');
-
-    // Messages d'erreur personnalisés
-    const errorMessages = {
-        nom: 'Le nom doit contenir uniquement des lettres (2-50 caractères)',
-        prenom: 'Le prénom doit contenir uniquement des lettres (2-50 caractères)',
-        email: 'Veuillez entrer une adresse email valide',
-        telephone: 'Le téléphone doit contenir exactement 8 chiffres',
-        roles: 'Veuillez sélectionner au moins un rôle'
-    };
-
-    // Validation en temps réel
-    const validateField = (field) => {
-        const errorElement = field.parentElement.querySelector('.error-message');
-        let isValid = true;
-        let errorMessage = '';
-
-        if (field.hasAttribute('required') && !field.value.trim()) {
-            errorMessage = 'Ce champ est obligatoire';
-            isValid = false;
-        } else if (field.pattern && field.value) {
-            const regex = new RegExp(field.pattern);
-            if (!regex.test(field.value)) {
-                errorMessage = field.title || 'Format invalide';
-                isValid = false;
-            }
-        }
-
-        // Validation spécifique pour certains champs
-        if (field.id === 'email' && field.value) {
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(field.value)) {
-                errorMessage = errorMessages.email;
-                isValid = false;
-            }
-        }
-
-        // Affichage de l'erreur
-        if (errorElement) {
-            errorElement.textContent = errorMessage;
-            errorElement.style.display = isValid ? 'none' : 'block';
-            field.style.borderColor = isValid ? '' : '#ef4444';
-        }
-
-        return isValid;
-    };
-
-    // Validation des rôles
-    const validateRoles = () => {
-        const checkboxes = document.querySelectorAll('input[name="roles[]"]:checked');
-        const errorElement = document.getElementById('rolesError');
-        const isValid = checkboxes.length > 0;
-
-        if (errorElement) {
-            errorElement.textContent = isValid ? '' : errorMessages.roles;
-            errorElement.style.display = isValid ? 'none' : 'block';
-        }
-
-        return isValid;
-    };
-
-    // Écouteurs d'événements
-    form.querySelectorAll('input').forEach(field => {
-        field.addEventListener('blur', () => validateField(field));
-        field.addEventListener('input', () => {
-            if (field.parentElement.querySelector('.error-message').style.display === 'block') {
-                validateField(field);
-            }
-        });
-    });
-
-    // Validation des rôles
-    form.querySelectorAll('input[name="roles[]"]').forEach(checkbox => {
-        checkbox.addEventListener('change', validateRoles);
-    });
-
-    // Validation à la soumission
-    form.addEventListener('submit', function(e) {
-        e.preventDefault();
-
-        let isFormValid = true;
-
-        // Validation de tous les champs
-        form.querySelectorAll('input[required]').forEach(field => {
-            if (!validateField(field)) {
-                isFormValid = false;
-            }
-        });
-
-        // Validation des rôles
-        if (!validateRoles()) {
-            isFormValid = false;
-        }
-
-        if (isFormValid) {
-            // Désactiver le bouton pour éviter les doubles soumissions
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '⏳ Enregistrement en cours...';
-
-            // Soumettre le formulaire
-            form.submit();
-        } else {
-            // Faire défiler vers le premier champ invalide
-            const firstInvalid = form.querySelector('.error-message[style*="block"]');
-            if (firstInvalid) {
-                firstInvalid.parentElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
-        }
-    });
-
-    // Nettoyage du formulaire
-    form.addEventListener('reset', function() {
-        form.querySelectorAll('.error-message').forEach(error => {
-            error.style.display = 'none';
-            error.textContent = '';
-        });
-        form.querySelectorAll('input').forEach(field => {
-            field.style.borderColor = '';
-        });
-    });
-});
-</script>
 {% endblock %}

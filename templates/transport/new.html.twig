@@ -4,12 +4,14 @@
 {% block admin_content %}
 <div class="page-header">
     <h1>Nouveau Transport</h1>
-    <p>Ajouter un nouveau transport</p>
+    <p>Ajouter un nouveau transport{% if voyage_id %} pour le voyage <strong>{{ voyage_id }}</strong>{% endif %}</p>
 </div>
+
+
 
 <div class="card">
     {{ include('transport/_form.html.twig') }}
-    <a href="{{ path('app_transport_index') }}" class="action-btn" style="margin-top:10px">Retour</a>
+    <a href="{{ path('app_voyage_index') }}" class="action-btn" style="margin-top:10px">← Retour aux voyages</a>
 </div>
 
 <footer class="copyright">Copyright &copy; 2026 VoyageLoisir</footer>

@@ -20,7 +20,7 @@ use Symfony\Component\Routing\Attribute\Route;
 class AdminAvisController extends AbstractController
 {
     #[Route('', name: 'admin_avis_index', methods: ['GET'])]
-    public function index(Request $request, AvisRepository $avisRepository): Response
+    public function index(Request $request, AvisRepository $avisRepository, \Knp\Component\Pager\PaginatorInterface $paginator): Response
     {
         $statut    = $request->query->get('statut');
         $recherche = $request->query->get('recherche');
@@ -35,7 +35,11 @@ class AdminAvisController extends AbstractController
                ->setParameter('recherche', '%' . $recherche . '%');
         }
 
-        $avisList = $qb->getQuery()->getResult();
+        $avisList = $paginator->paginate(
+            $qb->getQuery(),
+            $request->query->getInt('page', 1),
+            10
+        );
 
         $allAvisForStats = $avisRepository->findAll();
         $total = 0; $en_attente = 0; $valides = 0; $rejetes = 0; $sumEtoiles = 0;
@@ -61,7 +65,7 @@ class AdminAvisController extends AbstractController
     }
 
     #[Route('/stats', name: 'admin_avis_stats', methods: ['GET'])]
-    public function stats(AvisRepository $avisRepository): Response
+    public function stats(AvisRepository $avisRepository, ReclamationRepository $reclamationRepository): Response
     {
         $allAvis = $avisRepository->findAll();
 
@@ -105,10 +109,39 @@ class AdminAvisController extends AbstractController
             'moy_etoiles'=> $totalAvis > 0 ? round($sumEtoiles / $totalAvis, 1) : 0,
         ];
 
+        // Stats réclamations
+        $allRec = $reclamationRepository->findAll();
+        $recStats = [
+            'total'      => count($allRec),
+            'en_attente' => count(array_filter($allRec, fn($r) => $r->getStatut() === 'En attente')),
+            'traitees'   => count(array_filter($allRec, fn($r) => $r->getStatut() === 'Traitée')),
+            'fermees'    => count(array_filter($allRec, fn($r) => $r->getStatut() === 'Fermée')),
+            'haute'      => count(array_filter($allRec, fn($r) => $r->getPriorite() === 'Haute')),
+            'urgente'    => count(array_filter($allRec, fn($r) => $r->getPriorite() === 'Urgente')),
+        ];
+
+        $recParJourData   = [];
+        $recParJourLabels = [];
+        for ($i = 6; $i >= 0; $i--) {
+            $date = (new \DateTime("-$i days"))->format('Y-m-d');
+            $recParJourLabels[] = (new \DateTime("-$i days"))->format('d/m');
+            $recParJourData[$date] = 0;
+        }
+        foreach ($allRec as $r) {
+            if ($r->getDateCreation()) {
+                $dateStr = $r->getDateCreation()->format('Y-m-d');
+                if (isset($recParJourData[$dateStr])) {
+                    $recParJourData[$dateStr]++;
+                }
+            }
+        }
+
         return $this->render('admin/avis/stats.html.twig', [
             'stats'          => $stats,
             'avisParJour'    => ['labels' => $dailyCountsLabels, 'data' => array_values($dailyCountsData)],
             'etoilesDistrib' => $etoilesDistrib,
+            'recStats'       => $recStats,
+            'recParJour'     => ['labels' => $recParJourLabels, 'data' => array_values($recParJourData)],
         ]);
     }
 

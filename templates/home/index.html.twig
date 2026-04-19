@@ -1,6 +1,236 @@
-{% extends 'base_front.html.twig' %}
+﻿{% extends 'base_front.html.twig' %}
 
-{% block title %}Villa Agency - Home{% endblock %}
+{% block title %}Villa Agency - Accueil{% endblock %}
+
+{% block stylesheets %}
+  {{ parent() }}
+  <style>
+    .top-destinations-section {
+      padding: 48px 0 24px;
+      background: #f3f4f6;
+    }
+
+    .properties.section + .properties.section {
+      display: none;
+    }
+
+    .top-destinations-head {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(280px, 430px);
+      gap: 24px;
+      align-items: end;
+      margin-bottom: 28px;
+    }
+
+    .top-destinations-kicker {
+      display: inline-block;
+      margin-bottom: 10px;
+      color: #f97316;
+      font-size: 0.88rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .top-destinations-title {
+      margin: 0;
+      color: #111827;
+      font-size: clamp(2rem, 4vw, 3rem);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+    }
+
+    .top-destinations-subtitle {
+      margin: 0;
+      color: #6b7280;
+      font-size: 0.98rem;
+      line-height: 1.8;
+      text-align: right;
+    }
+
+    .top-destinations-viewport {
+      overflow: hidden;
+    }
+
+    .top-destinations-track {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 22px;
+      transition: transform 0.35s ease;
+    }
+
+    .top-destination-card {
+      position: relative;
+      min-height: 410px;
+      border-radius: 28px;
+      overflow: hidden;
+      background: #d1d5db;
+      box-shadow: 0 18px 40px rgba(15, 23, 42, 0.12);
+      isolation: isolate;
+    }
+
+    .top-destination-card::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(15, 23, 42, 0.08) 0%, rgba(15, 23, 42, 0.78) 78%, rgba(15, 23, 42, 0.92) 100%);
+      z-index: 1;
+    }
+
+    .top-destination-media,
+    .top-destination-media img {
+      width: 100%;
+      height: 100%;
+    }
+
+    .top-destination-media img {
+      display: block;
+      object-fit: cover;
+    }
+
+    .top-destination-price {
+      position: absolute;
+      top: 18px;
+      right: 18px;
+      z-index: 2;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.92);
+      color: #111827;
+      font-size: 0.82rem;
+      font-weight: 700;
+      box-shadow: 0 10px 24px rgba(15, 23, 42, 0.14);
+    }
+
+    .top-destination-content {
+      position: absolute;
+      right: 18px;
+      bottom: 18px;
+      left: 18px;
+      z-index: 2;
+      color: #fff;
+    }
+
+    .top-destination-name {
+      margin: 0 0 10px;
+      color: #fff;
+      font-size: 1.45rem;
+      font-weight: 700;
+      line-height: 1.15;
+    }
+
+    .top-destination-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .top-destination-tag {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.16);
+      backdrop-filter: blur(8px);
+      color: #fff;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .top-destination-rating,
+    .top-destination-location {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      color: rgba(255, 255, 255, 0.92);
+      font-size: 0.88rem;
+    }
+
+    .top-destinations-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      margin-top: 26px;
+    }
+
+    .top-destinations-view-more {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 14px 24px;
+      border-radius: 999px;
+      background: #111827;
+      color: #fff;
+      font-size: 0.94rem;
+      font-weight: 600;
+      text-decoration: none;
+      box-shadow: 0 12px 28px rgba(17, 24, 39, 0.16);
+    }
+
+    .top-destinations-nav {
+      display: flex;
+      gap: 10px;
+    }
+
+    .top-destinations-arrow {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 48px;
+      height: 48px;
+      border: 0;
+      border-radius: 50%;
+      background: #fff;
+      color: #111827;
+      box-shadow: 0 10px 26px rgba(15, 23, 42, 0.1);
+      transition: transform 0.2s ease, background 0.2s ease;
+    }
+
+    .top-destinations-arrow:hover {
+      background: #e5e7eb;
+      transform: translateY(-1px);
+    }
+
+    @media (max-width: 1199px) {
+      .top-destinations-track {
+        grid-template-columns: repeat(4, minmax(280px, 1fr));
+      }
+    }
+
+    @media (max-width: 991px) {
+      .top-destinations-head {
+        grid-template-columns: 1fr;
+      }
+
+      .top-destinations-subtitle {
+        text-align: left;
+      }
+    }
+
+    @media (max-width: 767px) {
+      .top-destinations-section {
+        padding-top: 28px;
+      }
+
+      .top-destination-card {
+        min-height: 360px;
+      }
+
+      .top-destinations-actions {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .top-destinations-nav {
+        justify-content: flex-end;
+      }
+    }
+  </style>
+{% endblock %}
 
 {% block body %}
 
@@ -28,153 +258,351 @@
     </div>
 </div>
 
-  <div class="featured section">
+
+  
+
+
+  
+
+  <section class="top-destinations-section">
     <div class="container">
-      <div class="row">
-        <div class="col-lg-4">
-          <div class="left-image">
-            <img src="{{ asset('assets_front/images/images/featured.jpg') }}" alt="">
-          </div>
+      <div class="top-destinations-head">
+        <div>
+          <span class="top-destinations-kicker">Sélection</span>
+          <h2 class="top-destinations-title">Meilleures Destinations</h2>
         </div>
-        <div class="col-lg-5">
-          <div class="section-heading">
-            <h6>| Featured</h6>
-            <h2>Best Appartment &amp; Sea view</h2>
-          </div>
-          <div class="accordion" id="accordionExample">
-            <div class="accordion-item">
-              <h2 class="accordion-header" id="headingOne">
-                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
-                  Best useful links ?
-                </button>
-              </h2>
-              <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
-                <div class="accordion-body">
-                  Get <strong>the best villa</strong> website template in HTML CSS and Bootstrap for your business.
+        
+      </div>
+
+      <div class="top-destinations-viewport">
+        <div class="top-destinations-track" id="top-destinations-track">
+          {% for destination in destinations|slice(0, 4) %}
+            {% set ratingBase = 3.8 %}
+            {% set ratingBoost = (destination.nbVisites ?? 0) >= 5000 ? 1.0 : ((destination.nbVisites ?? 0) >= 2000 ? 0.7 : ((destination.nbVisites ?? 0) >= 500 ? 0.4 : 0.1)) %}
+            {% set rating = min(ratingBase + ratingBoost, 5) %}
+            {% set reviews = destination.nbVisites ?? 0 %}
+            {% set firstVoyage = destination.voyages|length > 0 ? destination.voyages[0] : null %}
+            {% set startPrice = firstVoyage and firstVoyage.prix ? firstVoyage.prix : ((destination.nbVisites ?? 0) * 2 + 1499) %}
+            <article class="top-destination-card">
+              <a href="{{ path('app_destination_detail', {'id': destination.id}) }}" class="top-destination-media">
+                {% if destination.images|length > 0 %}
+                  <img src="{{ asset(destination.images[0].urlImage) }}" alt="{{ destination.nom }}">
+                {% else %}
+                  <img src="{{ asset('assets_front/images/images/property-03.jpg') }}" alt="{{ destination.nom }}">
+                {% endif %}
+              </a>
+
+              <div class="top-destination-price">
+                À partir de {{ startPrice|number_format(0, '.', ',') }} Euro
+              </div>
+
+              <div class="top-destination-content">
+                <h3 class="top-destination-name">{{ destination.nom }}</h3>
+                <div class="top-destination-meta">
+                  <span class="top-destination-tag">{{ destination.meilleureSaison ?: 'Signature Escape' }}</span>
+                </div>
+                <div class="top-destination-meta">
+                  <span class="top-destination-rating">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="#fbbf24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                    <span>{{ rating|number_format(1) }} ({{ reviews }})</span>
+                  </span>
+                </div>
+                <div class="top-destination-location">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" aria-hidden="true"><path d="M12 21s-6-5.33-6-11a6 6 0 1 1 12 0c0 5.67-6 11-6 11z"/><circle cx="12" cy="10" r="2.5"/></svg>
+                  <span>{{ destination.pays }}</span>
                 </div>
               </div>
-            </div>
-            <div class="accordion-item">
-              <h2 class="accordion-header" id="headingTwo">
-                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
-                  How does this work ?
-                </button>
-              </h2>
-              <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#accordionExample">
-                <div class="accordion-body">
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+            </article>
+          {% else %}
+            <article class="top-destination-card">
+              <div class="top-destination-content">
+                <h3 class="top-destination-name">Aucune destination</h3>
+                <div class="top-destination-location">
+                  <span>De nouvelles destinations apparaîtront bientôt.</span>
                 </div>
               </div>
-            </div>
-            <div class="accordion-item">
-              <h2 class="accordion-header" id="headingThree">
-                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
-                  Why is Villa Agency the best ?
-                </button>
-              </h2>
-              <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#accordionExample">
-                <div class="accordion-body">
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                </div>
-              </div>
-            </div>
-          </div>
+            </article>
+          {% endfor %}
         </div>
-        <div class="col-lg-3">
-          <div class="info-table">
-            <ul>
-              <li>
-                <img src="{{ asset('assets_front/images/images/info-icon-01.png') }}" alt="" style="max-width: 52px;">
-                <h4>250 m2<br><span>Total Flat Space</span></h4>
-              </li>
-              <li>
-                <img src="{{ asset('assets_front/images/images/info-icon-02.png') }}" alt="" style="max-width: 52px;">
-                <h4>Contract<br><span>Contract Ready</span></h4>
-              </li>
-              <li>
-                <img src="{{ asset('assets_front/images/images/info-icon-03.png') }}" alt="" style="max-width: 52px;">
-                <h4>Payment<br><span>Payment Process</span></h4>
-              </li>
-              <li>
-                <img src="{{ asset('assets_front/images/images/info-icon-04.png') }}" alt="" style="max-width: 52px;">
-                <h4>Safety<br><span>24/7 Under Control</span></h4>
-              </li>
-            </ul>
-          </div>
+      </div>
+
+      <div class="top-destinations-actions">
+        <a href="{{ path('app_destinations') }}" class="top-destinations-view-more">Voir plus</a>
+        <div class="top-destinations-nav">
+          <button class="top-destinations-arrow" id="top-destinations-prev" type="button" aria-label="Destinations précédentes">&#8249;</button>
+          <button class="top-destinations-arrow" id="top-destinations-next" type="button" aria-label="Destinations suivantes">&#8250;</button>
         </div>
       </div>
     </div>
-  </div>
+  </section>
 
-  <div class="fun-facts">
+  
+  {# ===== RECOMMANDATIONS ===== #}
+  {% if recommandations is defined and recommandations|length > 0 %}
+  <section style="padding:60px 0;background:#f8fafc;">
     <div class="container">
-      <div class="row">
-        <div class="col-lg-12">
-          <div class="wrapper">
-            <div class="row">
-              <div class="col-lg-4">
-                <div class="counter">
-                  <h2 class="timer count-title count-number" data-to="34" data-speed="1000"></h2>
-                  <p class="count-text">Buildings<br>Finished Now</p>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:36px;flex-wrap:wrap;gap:16px;">
+        <div>
+          <h2 style="margin:0;color:#111827;font-size:clamp(1.6rem,3vw,2.2rem);font-weight:700;">
+            {{ isPersonalized ? 'Hébergements recommandés' : 'Les plus réservés' }}
+          </h2>
+          <p style="margin:8px 0 0;color:#6b7280;font-size:0.95rem;">
+            {{ isPersonalized ? 'Basé sur vos réservations précédentes' : 'Découvrez nos hébergements les plus populaires' }}
+          </p>
+        </div>
+        <a href="{{ path('app_properties') }}" style="display:inline-flex;align-items:center;gap:6px;padding:12px 24px;background:#f97316;color:#fff;border-radius:10px;text-decoration:none;font-weight:600;font-size:0.9rem;">Voir tous →</a>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:24px;">
+        {% for item in recommandations %}
+          {% set heb = item.hebergement %}
+          {% set score = item.score %}
+          <div style="background:#fff;border-radius:16px;overflow:hidden;border:1px solid #e5e7eb;box-shadow:0 4px 20px rgba(0,0,0,0.06);">
+            <div style="position:relative;height:200px;overflow:hidden;">
+              {% if heb.imagePath %}
+                <img src="{{ asset('uploads/hebergements/' ~ heb.imagePath) }}" alt="" style="width:100%;height:100%;object-fit:cover;">
+              {% else %}
+                <div style="width:100%;height:100%;background:linear-gradient(135deg,#f97316,#fb923c);display:flex;align-items:center;justify-content:center;font-size:3rem;">🏠</div>
+              {% endif %}
+              {% if score is not null %}
+                <div style="position:absolute;top:12px;right:12px;background:{% if score >= 80 %}#16a34a{% elseif score >= 60 %}#f97316{% else %}#635bff{% endif %};color:#fff;padding:4px 10px;border-radius:20px;font-size:0.75rem;font-weight:700;">{{ score }}% match</div>
+              {% endif %}
+              {% if heb.type %}
+                <div style="position:absolute;top:12px;left:12px;background:rgba(0,0,0,0.6);color:#fff;padding:4px 10px;border-radius:20px;font-size:0.75rem;font-weight:600;">{{ heb.type.nom }}</div>
+              {% endif %}
+            </div>
+            <div style="padding:18px;">
+              <h4 style="margin:0 0 6px;font-size:1rem;font-weight:700;color:#111827;">{{ heb.description|slice(0,50) }}{% if heb.description|length > 50 %}...{% endif %}</h4>
+              {% if heb.adresse %}<p style="margin:0 0 12px;font-size:0.83rem;color:#6b7280;">📍 {{ heb.adresse|slice(0,40) }}</p>{% endif %}
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-top:14px;">
+                <div>
+                  <span style="font-size:0.75rem;color:#9ca3af;">À partir de</span>
+                  <div style="font-size:1.3rem;font-weight:800;color:#f97316;">{{ heb.prix }} Euro<span style="font-size:0.75rem;font-weight:500;color:#9ca3af;">/nuit</span></div>
                 </div>
-              </div>
-              <div class="col-lg-4">
-                <div class="counter">
-                  <h2 class="timer count-title count-number" data-to="12" data-speed="1000"></h2>
-                  <p class="count-text">Years<br>Experience</p>
-                </div>
-              </div>
-              <div class="col-lg-4">
-                <div class="counter">
-                  <h2 class="timer count-title count-number" data-to="24" data-speed="1000"></h2>
-                  <p class="count-text">Awards<br>Won 2026</p>
-                </div>
+                <a href="{{ path('app_property_details', {'id': heb.id}) }}" style="padding:9px 18px;background:linear-gradient(135deg,#f97316,#fb923c);color:#fff;border-radius:8px;text-decoration:none;font-size:0.85rem;font-weight:600;">Réserver</a>
               </div>
             </div>
           </div>
+        {% endfor %}
+      </div>
+      {% if not isPersonalized %}
+        <div style="text-align:center;margin-top:28px;">
+          <p style="color:#6b7280;font-size:0.9rem;">Connectez-vous pour des recommandations personnalisées.</p>
+        </div>
+      {% endif %}
+    </div>
+  </section>
+  {% endif %}
+<section class="reviews-section">
+    <div class="container">
+      <div class="reviews-heading">
+        <h2>Articles de voyage</h2>
+        <p>Récits de voyages, idées de destinations et coups de cœur de nos derniers articles publiés.</p>
+      </div>
+
+      <div class="reviews-carousel-shell">
+        <div class="reviews-track" id="reviews-track">
+        {% for blog in blogs %}
+          <article class="review-card">
+            <div class="review-card-image">
+              <img src="{{ blog.image }}" alt="{{ blog.title }}" onerror="this.src='https://picsum.photos/seed/blog-home-fallback-{{ blog.id }}/900/650'">
+              <div class="review-rating-badge">{% if blog.rating > 0 %}&#9733; {{ blog.rating }}{% else %}Article{% endif %}</div>
+            </div>
+            <div class="review-content">
+              <h3>{{ blog.title }}</h3>
+              <span class="review-trip">
+                {{ blog.published_at ? blog.published_at|date('d/m/Y') : 'Récemment publié' }}
+                {% if blog.slug %} - {{ blog.slug }}{% endif %}
+              </span>
+              <p>{{ blog.excerpt }}</p>
+              <div class="review-author">
+                <span>{{ blog.author }}</span>
+                <a href="{{ path('app_blog_show', {'id': blog.id}) }}">Lire la suite</a>
+              </div>
+            </div>
+          </article>
+        {% endfor %}
+        {% if blogs is empty %}
+          <article class="review-card">
+            <div class="review-content">
+              <h3>Aucun article disponible</h3>
+              <span class="review-trip">En attente de publication</span>
+              <p>Dès que des articles seront publiés, ils apparaîtront ici sur la page d'accueil.</p>
+              <div class="review-author">
+                <span>VoyageLoisir</span>
+                <a href="{{ path('app_blog_index') }}">Explorer les articles</a>
+              </div>
+            </div>
+          </article>
+        {% endif %}
         </div>
       </div>
-    </div>
-  </div>
 
-  <div class="properties section">
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-4 offset-lg-4">
-                <div class="section-heading text-center">
-                    <h6>| Hébergements</h6>
-                    <h2>Nos Meilleurs Hébergements</h2>
-                </div>
-            </div>
-        </div>
-        <div class="row">
-            {% for hebergement in hebergements %}
-            <div class="col-lg-4 col-md-6">
-                <div class="item">
-                    {% if hebergement.imagePath %}
-                        <img src="{{ asset('uploads/hebergements/' ~ hebergement.imagePath) }}" alt="{{ hebergement.description }}">
-                    {% else %}
-                        <img src="{{ asset('assets_front/images/images/property-01.jpg') }}" alt="">
-                    {% endif %}
-                    <span class="category">{{ hebergement.type ? hebergement.type.nom : 'Hébergement' }}</span>
-                    <h6>{{ hebergement.prix }} TND</h6>
-                    <h4>{{ hebergement.description|slice(0,40) }}</h4>
-                    <ul>
-                        <li>Chambres: <span>{{ hebergement.no|length }}</span></li>
-                    </ul>
-                    <div class="main-button">
-                        <a href="{{ path('app_property_details', {'id': hebergement.id}) }}">Voir & Réserver</a>
-                    </div>
-                </div>
-            </div>
-            {% else %}
-            <div class="col-12 text-center">
-                <p>Aucun hébergement disponible pour le moment.</p>
-            </div>
-            {% endfor %}
-        </div>
-    </div>
-</div>
+      <div class="reviews-controls">
+        <button class="reviews-arrow" id="reviews-prev" type="button" aria-label="Articles précédents">&#8249;</button>
+        <button class="reviews-arrow" id="reviews-next" type="button" aria-label="Articles suivants">&#8250;</button>
+      </div>
 
+      <div class="reviews-dots" id="reviews-dots" aria-label="Blogs pagination"></div>
+
+      <div class="reviews-action">
+        <a href="{{ path('app_blog_index') }}">Explorer tous les articles</a>
+      </div>
+    </div>
+  </section>
+
+  {% include 'home/partials/footer.html.twig' %}
 
 {% endblock %}
+
+{% block javascripts %}
+  {{ parent() }}
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const destinationTrack = document.getElementById('top-destinations-track');
+      const destinationPrev = document.getElementById('top-destinations-prev');
+      const destinationNext = document.getElementById('top-destinations-next');
+
+      if (destinationTrack && destinationPrev && destinationNext) {
+        let destinationIndex = 0;
+
+        const getDestinationCards = () => Array.from(destinationTrack.querySelectorAll('.top-destination-card'));
+
+        const getDestinationStep = () => {
+          const firstCard = getDestinationCards()[0];
+          if (!firstCard) {
+            return 0;
+          }
+
+          const styles = window.getComputedStyle(destinationTrack);
+          const gap = parseFloat(styles.columnGap || styles.gap || '0');
+          return firstCard.getBoundingClientRect().width + gap;
+        };
+
+        const getVisibleDestinationCount = () => {
+          const firstCard = getDestinationCards()[0];
+          if (!firstCard) {
+            return 1;
+          }
+
+          const shellWidth = destinationTrack.parentElement.getBoundingClientRect().width;
+          const cardWidth = firstCard.getBoundingClientRect().width;
+          return Math.max(1, Math.floor(shellWidth / cardWidth));
+        };
+
+        const scrollDestinations = (index) => {
+          const maxIndex = Math.max(0, getDestinationCards().length - getVisibleDestinationCount());
+          destinationIndex = Math.max(0, Math.min(index, maxIndex));
+          destinationTrack.style.transform = `translateX(-${getDestinationStep() * destinationIndex}px)`;
+        };
+
+        destinationPrev.addEventListener('click', function () {
+          scrollDestinations(destinationIndex - 1);
+        });
+
+        destinationNext.addEventListener('click', function () {
+          scrollDestinations(destinationIndex + 1);
+        });
+
+        window.addEventListener('resize', function () {
+          scrollDestinations(destinationIndex);
+        });
+      }
+
+      const track = document.getElementById('reviews-track');
+      const prev = document.getElementById('reviews-prev');
+      const next = document.getElementById('reviews-next');
+      const dotsWrap = document.getElementById('reviews-dots');
+
+      if (!track || !prev || !next || !dotsWrap) {
+        return;
+      }
+
+      const getCards = () => Array.from(track.querySelectorAll('.review-card'));
+      let currentIndex = 0;
+      let dots = [];
+
+      const getStep = () => {
+        const firstCard = getCards()[0];
+        if (!firstCard) {
+          return 0;
+        }
+
+        const styles = window.getComputedStyle(track);
+        const gap = parseFloat(styles.columnGap || styles.gap || '0');
+        return firstCard.getBoundingClientRect().width + gap;
+      };
+
+      const getVisibleCount = () => {
+        const firstCard = getCards()[0];
+        if (!firstCard) {
+          return 1;
+        }
+
+        const shellWidth = track.parentElement.getBoundingClientRect().width;
+        const cardWidth = firstCard.getBoundingClientRect().width;
+        return Math.max(1, Math.floor(shellWidth / cardWidth));
+      };
+
+      const getPageCount = () => {
+        const visibleCount = getVisibleCount();
+        return Math.max(1, getCards().length - visibleCount + 1);
+      };
+
+      const renderDots = () => {
+        const pageCount = getPageCount();
+        dotsWrap.innerHTML = '';
+
+        for (let index = 0; index < pageCount; index += 1) {
+          const dot = document.createElement('button');
+          dot.type = 'button';
+          dot.className = 'reviews-dot';
+          dot.dataset.index = String(index);
+          dot.setAttribute('aria-label', `Aller à l'article ${index + 1}`);
+          dotsWrap.appendChild(dot);
+        }
+
+        dots = Array.from(dotsWrap.querySelectorAll('.reviews-dot'));
+        dots.forEach((dot) => {
+          dot.addEventListener('click', function () {
+            scrollToIndex(Number(dot.dataset.index || 0));
+          });
+        });
+      };
+
+      const updateDots = () => {
+        if (!dots.length) {
+          return;
+        }
+
+        dots.forEach((dot, dotIndex) => {
+          dot.classList.toggle('is-active', dotIndex === currentIndex);
+        });
+      };
+
+      const scrollToIndex = (index) => {
+        const maxIndex = getPageCount() - 1;
+        currentIndex = Math.max(0, Math.min(index, maxIndex));
+        const step = getStep();
+        track.style.transform = `translateX(-${step * currentIndex}px)`;
+        updateDots();
+      };
+
+      prev.addEventListener('click', function () {
+        scrollToIndex(currentIndex - 1);
+      });
+
+      next.addEventListener('click', function () {
+        scrollToIndex(currentIndex + 1);
+      });
+
+      window.addEventListener('resize', function () {
+        renderDots();
+        scrollToIndex(currentIndex);
+      });
+
+      renderDots();
+      scrollToIndex(0);
+    });
+  </script>
+{% endblock %}
+

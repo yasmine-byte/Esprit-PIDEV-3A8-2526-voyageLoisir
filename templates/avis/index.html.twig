@@ -94,6 +94,7 @@
                         <th style="color:#f35525; cursor:pointer;" data-col="4" class="sort-th">
                             Date <span class="sort-icon">⇅</span>
                         </th>
+                        <th style="color:#f35525;">Sentiment IA</th>
                         <th style="color:#f35525;">💬 Réponse admin</th>
                         <th style="color:#f35525;">Actions</th>
                     </tr>
@@ -131,6 +132,15 @@
                         </td>
                         <td style="white-space:nowrap; font-size:0.85rem; color:#888;">
                             {{ avi.dateAvis ? avi.dateAvis|date('d/m/Y') : '—' }}
+                        </td>
+                        <td>
+                            {% if avi.sentimentLabel == 'positive' %}
+                                <span class="badge rounded-pill" style="background:#e8f5e9; color:#2e7d32; border:1px solid #a5d6a7;">😊 Positif</span>
+                            {% elseif avi.sentimentLabel == 'negative' %}
+                                <span class="badge rounded-pill" style="background:#ffebee; color:#c62828; border:1px solid #ef9a9a;">☹️ Négatif</span>
+                            {% else %}
+                                <span class="badge rounded-pill" style="background:#f5f5f5; color:#757575; border:1px solid #e0e0e0;">😐 Neutre</span>
+                            {% endif %}
                         </td>
                         <td style="max-width:200px;">
                             {% if avi.reponse %}
@@ -190,7 +200,7 @@
                     </tr>
                 {% else %}
                     <tr id="emptyRow">
-                        <td colspan="7" class="text-center py-5" style="color:#bbb;">
+                        <td colspan="8" class="text-center py-5" style="color:#bbb;">
                             <div style="font-size:2.5rem; margin-bottom:10px;">⭐</div>
                             Vous n'avez pas encore soumis d'avis.<br>
                             <a href="{{ path('avis_new') }}" style="color:#f35525;">Donnez votre premier avis !</a>
@@ -203,6 +213,35 @@
                 Aucun avis ne correspond à votre recherche.
             </div>
         </div>
+
+        {# Pagination #}
+        {% if avis.pageCount is defined and avis.pageCount > 1 %}
+        <div class="d-flex justify-content-between align-items-center mt-4 px-2">
+            <div style="font-size:0.85rem; color:#888;">
+                Page <strong>{{ avis.currentPageNumber }}</strong> sur <strong>{{ avis.pageCount }}</strong>
+                &mdash; <strong>{{ avis.totalItemCount }}</strong> avis
+            </div>
+            <nav>
+                <ul class="pagination pagination-sm mb-0">
+                    <li class="page-item {{ avis.currentPageNumber == 1 ? 'disabled' : '' }}">
+                        <a class="page-link rounded-pill px-3" href="?page={{ avis.currentPageNumber - 1 }}">&laquo;</a>
+                    </li>
+                    {% for page in avis.paginationData.pagesInRange %}
+                        <li class="page-item {{ page == avis.currentPageNumber ? 'active' : '' }}">
+                            <a class="page-link rounded-pill px-3" href="?page={{ page }}"
+                               style="{{ page == avis.currentPageNumber ? 'background:#f35525; border-color:#f35525; color:#fff;' : '' }}">
+                                {{ page }}
+                            </a>
+                        </li>
+                    {% endfor %}
+                    <li class="page-item {{ avis.currentPageNumber == avis.pageCount ? 'disabled' : '' }}">
+                        <a class="page-link rounded-pill px-3" href="?page={{ avis.currentPageNumber + 1 }}">&raquo;</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+
     </div>
 
     
@@ -236,7 +275,7 @@
 
     if (results.length === 0) {
       tbody.innerHTML = `
-        <tr><td colspan="7" class="text-center py-5" style="color:#bbb;">
+        <tr><td colspan="8" class="text-center py-5" style="color:#bbb;">
           <div style="font-size:2.5rem; margin-bottom:10px;">🔍</div>
           Aucun avis ne correspond à votre recherche.
         </td></tr>`;
@@ -255,6 +294,13 @@
           : a.statut === 'Rejeté'
             ? '<span class="badge rounded-pill bg-danger">✗ Rejeté</span>'
             : '<span class="badge rounded-pill bg-warning text-dark">⏳ En attente</span>';
+        
+        // Badge sentiment
+        const sentimentBadge = a.sentiment === 'positive'
+          ? '<span class="badge rounded-pill" style="background:#e8f5e9;color:#2e7d32;border:1px solid #a5d6a7;">😊 Positif</span>'
+          : a.sentiment === 'negative'
+            ? '<span class="badge rounded-pill" style="background:#ffebee;color:#c62828;border:1px solid #ef9a9a;">☹️ Négatif</span>'
+            : '<span class="badge rounded-pill" style="background:#f5f5f5;color:#757575;border:1px solid #e0e0e0;">😐 Neutre</span>';
 
         // Réponse admin
         const reponseHtml = a.reponse
@@ -283,6 +329,7 @@
             <td>${a.type}</td>
             <td>${statutBadge}</td>
             <td style="white-space:nowrap;font-size:0.85rem;color:#888;">${a.dateAvis}</td>
+            <td>${sentimentBadge}</td>
             <td style="max-width:200px;">${reponseHtml}</td>
             <td style="white-space:nowrap;">
               <div style="display:flex;gap:5px;align-items:center;flex-wrap:nowrap;">
@@ -317,7 +364,7 @@
       const data = await res.json();
       renderRows(data.results || []);
     } catch (e) {
-      tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-danger">Erreur lors de la recherche.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-danger">Erreur lors de la recherche.</td></tr>';
     } finally {
       spinner.style.display = 'none';
       tbody.style.opacity   = '1';
@@ -336,8 +383,6 @@
   if (filterEtoiles) filterEtoiles.addEventListener('change', doSearch);
   if (sortSelect)    sortSelect.addEventListener('change',    doSearch);
 
-  // Chargement initial
-  doSearch();
 })();
 </script>
 {% endblock %}

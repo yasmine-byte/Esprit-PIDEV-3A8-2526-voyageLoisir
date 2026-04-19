@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Transport;
 use App\Form\TransportType;
 use App\Repository\TransportRepository;
+use App\Repository\VoyageRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -34,9 +35,18 @@ final class TransportController extends AbstractController
     }
 
     #[Route('/new', name: 'app_transport_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager): Response
+    public function new(Request $request, EntityManagerInterface $entityManager, VoyageRepository $voyageRepo): Response
     {
         $transport = new Transport();
+
+        $voyageId = $request->query->getInt('voyage_id');
+        if ($voyageId) {
+            $voyage = $voyageRepo->find($voyageId);
+            if ($voyage) {
+                $transport->setVoyage($voyage);
+            }
+        }
+
         $form = $this->createForm(TransportType::class, $transport);
         $form->handleRequest($request);
 
@@ -49,6 +59,7 @@ final class TransportController extends AbstractController
         return $this->render('transport/new.html.twig', [
             'transport' => $transport,
             'form'      => $form,
+            'voyage_id' => $voyageId,
         ]);
     }
 

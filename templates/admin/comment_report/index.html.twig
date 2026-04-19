@@ -1,0 +1,363 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}Signalements de commentaires{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+{% endblock %}
+
+{% block admin_content %}
+    <style>
+        .admin-page {
+            display: grid;
+            gap: 24px;
+        }
+
+        .admin-breadcrumb {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+        }
+
+        .admin-breadcrumb a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .admin-breadcrumb span {
+            margin: 0 6px;
+            opacity: 0.65;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 14px;
+            margin-bottom: 22px;
+        }
+
+        .market-stat {
+            border: 1px solid var(--border-color);
+        }
+
+        .toolbar-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-bottom: 14px;
+        }
+
+        .toolbar-field {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            border-radius: 10px;
+            padding: 10px 12px;
+            min-height: 42px;
+        }
+
+        .toolbar-search {
+            flex: 1 1 320px;
+            min-width: 260px;
+        }
+
+        .toolbar-btn {
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            background: var(--card-bg);
+            color: var(--text-primary);
+            padding: 10px 14px;
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .toolbar-btn--primary {
+            background: var(--accent-color);
+            border-color: var(--accent-color);
+            color: #fff;
+        }
+
+        .chip-row {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 14px;
+        }
+
+        .chip {
+            border: 1px solid var(--border-color);
+            border-radius: 999px;
+            padding: 7px 12px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-decoration: none;
+            background: var(--card-bg);
+        }
+
+        .chip.is-active {
+            background: var(--accent-color);
+            border-color: var(--accent-color);
+            color: #fff;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            border-radius: 999px;
+            padding: 5px 11px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .status-pending { background: #ffedd5; color: #c2410c; }
+        .status-reviewed { background: #dbeafe; color: #1d4ed8; }
+        .status-dismissed { background: #e2e8f0; color: #334155; }
+
+        .reason-badge {
+            display: inline-flex;
+            border-radius: 999px;
+            padding: 5px 11px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: capitalize;
+        }
+
+        .reason-spam { background: #fee2e2; color: #b91c1c; }
+        .reason-inappropriate { background: #ffedd5; color: #c2410c; }
+        .reason-harassment { background: #f3e8ff; color: #7e22ce; }
+        .reason-misinformation { background: #dbeafe; color: #1d4ed8; }
+        .reason-autre { background: #e2e8f0; color: #334155; }
+
+        .icon-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .icon-btn {
+            width: 34px;
+            height: 34px;
+            border-radius: 10px;
+            border: 1px solid transparent;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            font-size: 16px;
+        }
+
+        .icon-btn i {
+            line-height: 1;
+        }
+
+        .icon-btn--view { background: #e2e8f0; color: #334155; border-color: #cbd5e1; }
+        .icon-btn--review { background: #dcfce7; color: #15803d; border-color: #bbf7d0; }
+        .icon-btn--delete { background: #fee2e2; color: #dc2626; border-color: #fecaca; }
+        .icon-btn--dismiss { background: #ffedd5; color: #ea580c; border-color: #fed7aa; }
+
+        .icon-form {
+            margin: 0;
+            display: inline-flex;
+        }
+
+        @media (max-width: 1000px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+
+    {% set pending_count = reports|filter(r => r.status == 'pending')|length %}
+    {% set reviewed_count = reports|filter(r => r.status == 'reviewed')|length %}
+    {% set dismissed_count = reports|filter(r => r.status == 'dismissed')|length %}
+
+    <main class="admin-page">
+        <div class="page-header">
+            <div class="admin-breadcrumb">
+                <a href="{{ path('app_admin') }}">Tableau de bord</a><span>&gt;</span>Signalements
+            </div>
+            <h1>Signalements de commentaires</h1>
+            <p>Examinez, moderez et traitez les commentaires signales.</p>
+        </div>
+
+        <div class="stats-grid">
+            <div class="market-stat">
+                <div class="market-stat-label">En attente</div>
+                <div class="market-stat-value">{{ pending_count }}</div>
+            </div>
+            <div class="market-stat">
+                <div class="market-stat-label">Traites</div>
+                <div class="market-stat-value">{{ reviewed_count }}</div>
+            </div>
+            <div class="market-stat">
+                <div class="market-stat-label">Ignores</div>
+                <div class="market-stat-value">{{ dismissed_count }}</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">File des signalements</h3>
+                <span style="color:var(--text-secondary);font-size:13px;font-weight:600;">{{ reports|length }} resultats</span>
+            </div>
+
+            <div style="padding:18px 20px 6px;">
+                <form method="get" action="{{ path('admin_comment_reports_index') }}">
+                    <div class="chip-row">
+                        <a class="chip {{ status_filter == 'all' ? 'is-active' : '' }}" href="{{ path('admin_comment_reports_index', { reason: reason_filter, status: 'all' }) }}">Tous</a>
+                        <a class="chip {{ status_filter == 'pending' ? 'is-active' : '' }}" href="{{ path('admin_comment_reports_index', { reason: reason_filter, status: 'pending' }) }}">En attente</a>
+                        <a class="chip {{ status_filter == 'reviewed' ? 'is-active' : '' }}" href="{{ path('admin_comment_reports_index', { reason: reason_filter, status: 'reviewed' }) }}">Traites</a>
+                        <a class="chip {{ status_filter == 'dismissed' ? 'is-active' : '' }}" href="{{ path('admin_comment_reports_index', { reason: reason_filter, status: 'dismissed' }) }}">Ignores</a>
+                    </div>
+
+                    <div class="toolbar-row">
+                        <select class="toolbar-field" name="reason">
+                            <option value="all" {{ reason_filter == 'all' ? 'selected' : '' }}>Toutes les raisons</option>
+                            {% for reason in all_reasons %}
+                                {% set reasonLabel = reason == 'spam' ? 'Spam'
+                                    : (reason == 'inappropriate' ? 'Inapproprie'
+                                    : (reason == 'harassment' ? 'Harcelement'
+                                    : (reason == 'misinformation' ? 'Fausse information' : 'Autre')))
+                                %}
+                                <option value="{{ reason }}" {{ reason_filter == reason ? 'selected' : '' }}>{{ reasonLabel }}</option>
+                            {% endfor %}
+                        </select>
+                        <input type="hidden" name="status" value="{{ status_filter }}">
+                        <button class="toolbar-btn toolbar-btn--primary" type="submit">Rechercher</button>
+                        <a class="toolbar-btn" href="{{ path('admin_comment_reports_index') }}">Reinitialiser</a>
+                    </div>
+                </form>
+            </div>
+
+            {% for label, messages in app.flashes %}
+                <div style="padding:0 20px 14px;">
+                    {% for message in messages %}
+                        <div style="padding:10px 12px;border-radius:10px;background:#dcfce7;color:#166534;border:1px solid #bbf7d0;font-size:13px;font-weight:600;">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+
+            {% if reports is empty %}
+                <div style="padding:20px;color:var(--text-secondary);">Aucun signalement ne correspond a vos filtres.</div>
+            {% else %}
+                <table class="market-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Commentaire</th>
+                            <th>Raison</th>
+                            <th>Statut</th>
+                            <th>Auteur du signalement</th>
+                            <th>Date de creation</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for report in reports %}
+                            {% set statusClass = report.status == 'reviewed'
+                                ? 'status-reviewed'
+                                : (report.status == 'dismissed' ? 'status-dismissed' : 'status-pending')
+                            %}
+                            {% set reasonClass = 'reason-' ~ report.reason|lower|replace({' ': '-', '_': '-'}) %}
+                            {% set reasonLabel = report.reason == 'spam' ? 'Spam'
+                                : (report.reason == 'inappropriate' ? 'Inapproprie'
+                                : (report.reason == 'harassment' ? 'Harcelement'
+                                : (report.reason == 'misinformation' ? 'Fausse information' : 'Autre')))
+                            %}
+                            {% set statusLabel = report.status == 'pending' ? 'En attente'
+                                : (report.status == 'reviewed' ? 'Traite' : 'Ignore')
+                            %}
+                            <tr>
+                                <td>#{{ report.id }}</td>
+                                <td>
+                                    {% if report.commentaire %}
+                                        <div style="font-weight:700;">{{ report.commentaire.blog ? report.commentaire.blog.titre : 'Article supprime' }}</div>
+                                        <div style="font-size:12px;color:var(--text-secondary);">{{ report.commentaire.contenu|slice(0, 120) }}{% if report.commentaire.contenu|length > 120 %}...{% endif %}</div>
+                                    {% else %}
+                                        <span style="font-size:12px;color:var(--text-secondary);">Commentaire supprime</span>
+                                    {% endif %}
+                                </td>
+                                <td><span class="reason-badge {{ reasonClass }}">{{ reasonLabel }}</span></td>
+                                <td><span class="status-badge {{ statusClass }}">{{ statusLabel }}</span></td>
+                                <td>{{ report.user ? ((report.user.prenom|default('') ~ ' ' ~ report.user.nom|default(''))|trim ?: report.user.userIdentifier) : 'Inconnu' }}</td>
+                                <td>{{ report.createdAt ? report.createdAt|date('Y-m-d H:i') : '-' }}</td>
+                                <td>
+                                    <div class="icon-actions">
+                                        {% if report.commentaire and report.commentaire.blog %}
+                                            <a href="{{ path('admin_blog_show', { id: report.commentaire.blog.id }) }}"
+                                               class="icon-btn icon-btn--view"
+                                               data-bs-toggle="tooltip"
+                                               data-bs-title="Voir le contexte"
+                                               aria-label="Voir le contexte">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                        {% endif %}
+
+                                        {% if report.status != 'reviewed' %}
+                                            <form class="icon-form" method="post" action="{{ path('admin_comment_report_review', { id: report.id }) }}">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('admin_review_report_' ~ report.id) }}">
+                                                <input type="hidden" name="status_filter" value="{{ status_filter }}">
+                                                <input type="hidden" name="reason_filter" value="{{ reason_filter }}">
+                                                <button type="submit"
+                                                        class="icon-btn icon-btn--review"
+                                                        data-bs-toggle="tooltip"
+                                                        data-bs-title="Marquer comme traite"
+                                                        aria-label="Marquer comme traite">
+                                                    <i class="bi bi-check-circle"></i>
+                                                </button>
+                                            </form>
+                                        {% endif %}
+
+                                        {% if report.commentaire %}
+                                            <form class="icon-form" method="post" action="{{ path('admin_comment_report_delete_comment', { id: report.id }) }}" onsubmit="return confirm('Supprimer ce commentaire ?');">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('admin_delete_report_comment_' ~ report.id) }}">
+                                                <input type="hidden" name="status_filter" value="{{ status_filter }}">
+                                                <input type="hidden" name="reason_filter" value="{{ reason_filter }}">
+                                                <button type="submit"
+                                                        class="icon-btn icon-btn--delete"
+                                                        data-bs-toggle="tooltip"
+                                                        data-bs-title="Supprimer le commentaire"
+                                                        aria-label="Supprimer le commentaire">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </form>
+                                        {% endif %}
+
+                                        {% if report.status != 'dismissed' %}
+                                            <form class="icon-form" method="post" action="{{ path('admin_comment_report_dismiss', { id: report.id }) }}">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('admin_dismiss_report_' ~ report.id) }}">
+                                                <input type="hidden" name="status_filter" value="{{ status_filter }}">
+                                                <input type="hidden" name="reason_filter" value="{{ reason_filter }}">
+                                                <button type="submit"
+                                                        class="icon-btn icon-btn--dismiss"
+                                                        data-bs-toggle="tooltip"
+                                                        data-bs-title="Ignorer le signalement"
+                                                        aria-label="Ignorer le signalement">
+                                                    <i class="bi bi-slash-circle"></i>
+                                                </button>
+                                            </form>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% endif %}
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            if (window.bootstrap && bootstrap.Tooltip) {
+                document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(function (element) {
+                    bootstrap.Tooltip.getOrCreateInstance(element);
+                });
+            }
+        });
+    </script>
+{% endblock %}
