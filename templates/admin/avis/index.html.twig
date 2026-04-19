@@ -269,6 +269,46 @@
             Aucun avis ne correspond à votre recherche.
         </div>
     </div>
+    {% if totalPages is defined and totalPages > 1 %}
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:24px; padding:16px 20px; border-radius:12px; border:1px solid;" class="pag-wrap">
+        <div style="font-size:0.82rem; opacity:0.5;">
+            Page <strong>{{ currentPage }}</strong> / <strong>{{ totalPages }}</strong>
+            &mdash; <strong>{{ totalItems }}</strong> avis
+        </div>
+        <div style="display:flex; gap:6px; align-items:center;">
+            {% if currentPage > 1 %}
+            <a href="?page={{ currentPage - 1 }}&statut={{ currentStatut }}&recherche={{ currentRecherche }}" style="width:34px;height:34px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;text-decoration:none;font-weight:700;font-size:1rem;" class="pag-btn">&laquo;</a>
+            {% else %}
+            <span style="width:34px;height:34px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;opacity:0.25;font-weight:700;font-size:1rem;" class="pag-btn">&laquo;</span>
+            {% endif %}
+
+            {% for p in 1..totalPages %}
+                {% if p == 1 or p == totalPages or (p >= currentPage - 2 and p <= currentPage + 2) %}
+                    {% if p == currentPage %}
+                    <span style="width:34px;height:34px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:0.85rem;background:#4a9eff;color:#fff;">{{ p }}</span>
+                    {% else %}
+                    <a href="?page={{ p }}&statut={{ currentStatut }}&recherche={{ currentRecherche }}" style="width:34px;height:34px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;text-decoration:none;font-size:0.85rem;font-weight:600;" class="pag-btn">{{ p }}</a>
+                    {% endif %}
+                {% elseif p == currentPage - 3 or p == currentPage + 3 %}
+                <span style="opacity:0.4;padding:0 4px;">...</span>
+                {% endif %}
+            {% endfor %}
+
+            {% if currentPage < totalPages %}
+            <a href="?page={{ currentPage + 1 }}&statut={{ currentStatut }}&recherche={{ currentRecherche }}" style="width:34px;height:34px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;text-decoration:none;font-weight:700;font-size:1rem;" class="pag-btn">&raquo;</a>
+            {% else %}
+            <span style="width:34px;height:34px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;opacity:0.25;font-weight:700;font-size:1rem;" class="pag-btn">&raquo;</span>
+            {% endif %}
+        </div>
+    </div>
+    <style>
+    [data-theme="dark"]  .pag-wrap { background:rgba(255,255,255,0.03); border-color:rgba(255,255,255,0.07); }
+    [data-theme="light"] .pag-wrap { background:#f8f9fa; border-color:#e0e0e0; }
+    [data-theme="dark"]  .pag-btn  { background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); color:#ccc; }
+    [data-theme="light"] .pag-btn  { background:#fff; border:1px solid #dee2e6; color:#444; }
+    .pag-btn:hover { opacity:0.75; transform:translateY(-1px); }
+    </style>
+    {% endif %}
 </div>
 
 <script>

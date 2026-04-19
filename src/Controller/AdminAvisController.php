@@ -29,8 +29,20 @@ class AdminAvisController extends AbstractController
             $qb->andWhere('a.contenu LIKE :recherche OR a.userId LIKE :recherche')
                ->setParameter('recherche', '%' . $recherche . '%');
         }
+<<<<<<< Updated upstream
         
         $avisList = $qb->getQuery()->getResult();
+=======
+
+        $allAvis = $qb->getQuery()->getResult();
+
+        $page       = max(1, (int) $request->query->get('page', 1));
+        $perPage    = 5;
+        $total      = count($allAvis);
+        $totalPages = (int) ceil($total / $perPage);
+        $page       = min($page, max(1, $totalPages));
+        $avisList   = array_slice($allAvis, ($page - 1) * $perPage, $perPage);
+>>>>>>> Stashed changes
 
         $allAvisForStats = $avisRepository->findAll();
         $total = 0;
@@ -60,10 +72,20 @@ class AdminAvisController extends AbstractController
         ];
 
         return $this->render('admin/avis/index.html.twig', [
+<<<<<<< Updated upstream
             'avis_list' => $avisList,
             'stats' => $stats,
             'currentStatut' => $statut,
             'currentRecherche' => $recherche
+=======
+            'avis_list'        => $avisList,
+            'stats'            => compact('total', 'en_attente', 'valides', 'rejetes', 'moy_etoiles'),
+            'currentStatut'    => $statut,
+            'currentRecherche' => $recherche,
+            'currentPage'      => $page,
+            'totalPages'       => $totalPages,
+            'totalItems'       => $total,
+>>>>>>> Stashed changes
         ]);
     }
 

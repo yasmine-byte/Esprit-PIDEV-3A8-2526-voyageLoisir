@@ -30,10 +30,19 @@ class AdminReclamationController extends AbstractController
         }
         if ($recherche) {
             $qb->andWhere('r.titre LIKE :recherche OR r.contenu LIKE :recherche')
-               ->setParameter('recherche', '%' . $recherche . '%');
+                ->setParameter('recherche', '%' . $recherche . '%');
         }
 
+<<<<<<< Updated upstream
         $reclamations = $qb->getQuery()->getResult();
+=======
+        $perPage = 8;
+        $reclamations = $paginator->paginate(
+            $qb->getQuery(),
+            $request->query->getInt('page', 1),
+            $perPage
+        );
+>>>>>>> Stashed changes
 
         $allReclamations = $reclamationRepository->findAll();
         $total = 0;
@@ -46,10 +55,25 @@ class AdminReclamationController extends AbstractController
         foreach ($allReclamations as $r) {
             $total++;
             switch ($r->getStatut()) {
+<<<<<<< Updated upstream
                 case 'En attente': $en_attente++; break;
                 case 'En cours': $en_cours++; break;
                 case 'Traitée': $traitees++; break;
                 case 'Fermée': $fermees++; break;
+=======
+                case 'En attente':
+                    $en_attente++;
+                    break;
+                case 'En cours':
+                    $en_cours++;
+                    break;
+                case 'Traitée':
+                    $traitees++;
+                    break;
+                case 'Fermée':
+                    $fermees++;
+                    break;
+>>>>>>> Stashed changes
             }
             if ($r->getPriorite() === 'Urgente' && $r->getStatut() !== 'Fermée') {
                 $urgentes++;
@@ -70,7 +94,14 @@ class AdminReclamationController extends AbstractController
             'stats' => $stats,
             'currentStatut' => $statut,
             'currentPriorite' => $priorite,
+<<<<<<< Updated upstream
             'currentRecherche' => $recherche
+=======
+            'currentRecherche' => $recherche,
+            'currentPage' => $reclamations->getCurrentPageNumber(),
+            'totalPages' => $reclamations->getPageCount(),
+            'totalItems' => $reclamations->getTotalItemCount(),
+>>>>>>> Stashed changes
         ]);
     }
 
@@ -79,10 +110,48 @@ class AdminReclamationController extends AbstractController
     {
         return $this->render('admin/reclamation/show.html.twig', [
             'reclamation' => $reclamation,
+<<<<<<< Updated upstream
             'avis' => $reclamation->getAvis()
         ]);
     }
 
+=======
+            'avis' => $reclamation->getAvis(),
+        ]);
+    }
+
+    #[Route('/{id}/pdf', name: 'admin_reclamation_pdf', methods: ['GET'])]
+    public function exportPdf(
+        Reclamation $reclamation
+    ): Response {
+        $html = $this->renderView('reclamation/pdf.html.twig', [
+            'reclamation' => $reclamation,
+            'avis' => $reclamation->getAvis(),
+        ]);
+
+        $options = new Options();
+        $options->set('defaultFont', 'DejaVu Sans');
+        $options->set('isHtml5ParserEnabled', true);
+        $options->set('isRemoteEnabled', false);
+
+        $dompdf = new Dompdf($options);
+        $dompdf->loadHtml($html, 'UTF-8');
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+
+        $filename = 'reclamation_' . $reclamation->getId() . '_' . date('Ymd') . '.pdf';
+
+        return new Response(
+            $dompdf->output(),
+            200,
+            [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            ]
+        );
+    }
+
+>>>>>>> Stashed changes
     #[Route('/{id}/statut', name: 'admin_reclamation_statut', methods: ['POST'])]
     public function changerStatut(Request $request, Reclamation $reclamation, EntityManagerInterface $entityManager): Response
     {
@@ -113,8 +182,17 @@ class AdminReclamationController extends AbstractController
     }
 
     #[Route('/{id}/repondre', name: 'admin_reclamation_repondre', methods: ['POST'])]
+<<<<<<< Updated upstream
     public function repondre(Request $request, Reclamation $reclamation, EntityManagerInterface $entityManager): Response
     {
+=======
+    public function repondre(
+        Request $request,
+        Reclamation $reclamation,
+        EntityManagerInterface $entityManager,
+        MailerService $mailerService
+    ): Response {
+>>>>>>> Stashed changes
         $reponse = $request->request->get('reponse');
         $reclamation->setReponse($reponse);
         $entityManager->flush();
