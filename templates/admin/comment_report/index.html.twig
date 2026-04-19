@@ -283,7 +283,7 @@
                                 </td>
                                 <td><span class="reason-badge {{ reasonClass }}">{{ reasonLabel }}</span></td>
                                 <td><span class="status-badge {{ statusClass }}">{{ statusLabel }}</span></td>
-                                <td>{{ report.reportedBy ? report.reportedBy.username : 'Inconnu' }}</td>
+                                <td>{{ report.user ? ((report.user.prenom|default('') ~ ' ' ~ report.user.nom|default(''))|trim ?: report.user.userIdentifier) : 'Inconnu' }}</td>
                                 <td>{{ report.createdAt ? report.createdAt|date('Y-m-d H:i') : '-' }}</td>
                                 <td>
                                     <div class="icon-actions">

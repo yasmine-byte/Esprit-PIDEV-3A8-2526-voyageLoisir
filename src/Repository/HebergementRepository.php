@@ -4,9 +4,25 @@ namespace App\Repository;
 use App\Entity\Hebergement;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
-
+use App\Entity\Reservation;
 class HebergementRepository extends ServiceEntityRepository
 {
+    /**
+ * Historique des réservations d'un client par email
+ */
+public function findHistoriqueClient(string $email): array
+{
+    return $this->createQueryBuilder('r')
+        ->join('r.hebergement', 'h')
+        ->where('r.clientEmail = :email')
+        ->andWhere('r.statut = :statut')
+        ->setParameter('email', $email)
+        ->setParameter('statut', 'confirmée')
+        ->orderBy('r.createdAt', 'DESC')
+        ->getQuery()
+        ->getResult();
+}
+    
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Hebergement::class);
@@ -72,4 +88,56 @@ class HebergementRepository extends ServiceEntityRepository
 
         return $qb->getQuery()->getResult();
     }
+    /**
+ * Hébergements similaires : même type, prix proche, pas déjà vus
+ */
+public function findSimilaires(int $typeId, float $prixMoyen, array $exclusIds, int $limit = 4): array
+{
+    $qb = $this->createQueryBuilder('h')
+        ->join('h.type', 't')
+        ->where('t.id = :typeId')
+        ->andWhere('h.prix BETWEEN :prixMin AND :prixMax')
+        ->setParameter('typeId', $typeId)
+        ->setParameter('prixMin', $prixMoyen * 0.6)
+        ->setParameter('prixMax', $prixMoyen * 1.4)
+        ->setMaxResults($limit);
+
+    if (!empty($exclusIds)) {
+        $qb->andWhere('h.id NOT IN (:exclus)')
+           ->setParameter('exclus', $exclusIds);
+    }
+
+    $results = $qb->getQuery()->getResult();
+
+    // Compléter si pas assez de résultats
+    if (count($results) < $limit) {
+        $manquants = $limit - count($results);
+        $autresIds = array_merge($exclusIds, array_map(fn($h) => $h->getId(), $results));
+
+        $autres = $this->createQueryBuilder('h')
+            ->where('h.id NOT IN (:exclus)')
+            ->setParameter('exclus', $autresIds)
+            ->setMaxResults($manquants)
+            ->getQuery()
+            ->getResult();
+
+        $results = array_merge($results, $autres);
+    }
+
+    return $results;
+}
+
+/**
+ * Les hébergements les plus réservés
+ */
+public function findLesReserves(int $limit = 4): array
+{
+    return $this->createQueryBuilder('h')
+        ->leftJoin(Reservation::class, 'r', 'WITH', 'r.hebergement = h.id')
+        ->groupBy('h.id')
+        ->orderBy('COUNT(r.id)', 'DESC')
+        ->setMaxResults($limit)
+        ->getQuery()
+        ->getResult();
+}
 }

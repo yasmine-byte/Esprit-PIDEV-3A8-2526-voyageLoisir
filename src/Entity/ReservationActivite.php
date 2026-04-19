@@ -6,6 +6,7 @@ use App\Repository\ReservationActiviteRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
+use App\Entity\Users;
 
 #[ORM\Entity(repositoryClass: ReservationActiviteRepository::class)]
 class ReservationActivite
@@ -21,7 +22,7 @@ class ReservationActivite
         value: "today",
         message: "La date de réservation ne peut pas être dans le passé."
     )]
-    private ?\DateTime $dateReservation = null;
+    private ?\DateTimeInterface $dateReservation = null;
 
     #[ORM\Column(name: 'nombre_personnes')]
     #[Assert\NotNull(message: "Le nombre de personnes est obligatoire.")]
@@ -47,17 +48,21 @@ class ReservationActivite
     #[Assert\NotNull(message: "L'activité est obligatoire.")]
     private ?Activite $activite = null;
 
+    #[ORM\ManyToOne(targetEntity: Users::class)]
+    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL')]
+    private ?Users $user = null;
+
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getDateReservation(): ?\DateTime
+    public function getDateReservation(): ?\DateTimeInterface
     {
         return $this->dateReservation;
     }
 
-    public function setDateReservation(\DateTime $dateReservation): static
+    public function setDateReservation(\DateTimeInterface $dateReservation): static
     {
         $this->dateReservation = $dateReservation;
         return $this;
@@ -104,6 +109,17 @@ class ReservationActivite
     public function setActivite(?Activite $activite): static
     {
         $this->activite = $activite;
+        return $this;
+    }
+
+    public function getUser(): ?Users
+    {
+        return $this->user;
+    }
+
+    public function setUser(?Users $user): static
+    {
+        $this->user = $user;
         return $this;
     }
 }

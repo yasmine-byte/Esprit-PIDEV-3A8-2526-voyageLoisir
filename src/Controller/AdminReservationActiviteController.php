@@ -54,6 +54,8 @@ final class AdminReservationActiviteController extends AbstractController
 
         $todayCount = 0;
         $pendingCount = 0;
+        $confirmedCount = 0;
+        $cancelledCount = 0;
 
         $today = new \DateTime();
         $todayStr = $today->format('Y-m-d');
@@ -68,7 +70,26 @@ final class AdminReservationActiviteController extends AbstractController
 
             if ($reservation->getStatut() === 'EN_ATTENTE') {
                 $pendingCount++;
+            } elseif ($reservation->getStatut() === 'CONFIRMEE') {
+                $confirmedCount++;
+            } elseif ($reservation->getStatut() === 'ANNULEE') {
+                $cancelledCount++;
             }
+        }
+
+        $totalReservations = count($reservationActivites);
+
+        $aiSummary = $this->generateReservationSummary(
+            $totalReservations,
+            $pendingCount,
+            $todayCount,
+            $confirmedCount,
+            $cancelledCount
+        );
+
+        // Si aucun ?activite=... n'est fourni, on prend l'id de la première activité disponible
+        if (!$activiteId && !empty($reservationActivites) && $reservationActivites[0]->getActivite()) {
+            $activiteId = $reservationActivites[0]->getActivite()->getId();
         }
 
         return $this->render('admin/reservation_activite/index.html.twig', [
@@ -77,6 +98,7 @@ final class AdminReservationActiviteController extends AbstractController
             'events' => $events,
             'todayCount' => $todayCount,
             'pendingCount' => $pendingCount,
+            'aiSummary' => $aiSummary,
         ]);
     }
 
@@ -97,6 +119,8 @@ final class AdminReservationActiviteController extends AbstractController
             $prix = $reservationActivite->getActivite()?->getPrix() ?? 0;
             $nb = $reservationActivite->getNombrePersonnes() ?? 0;
             $reservationActivite->setTotal($prix * $nb);
+
+            $reservationActivite->setUser($this->getUser());
 
             $entityManager->persist($reservationActivite);
             $entityManager->flush();
@@ -159,4 +183,106 @@ final class AdminReservationActiviteController extends AbstractController
 
         return $this->redirectToRoute('admin_reservation_activite_index');
     }
+
+    private function generateReservationSummary(
+    int $totalReservations,
+    int $pendingCount,
+    int $todayCount,
+    int $confirmedCount,
+    int $cancelledCount
+): string {
+    $apiKey = $_ENV['OPENROUTER_API_KEY'] ?? $_SERVER['OPENROUTER_API_KEY'] ?? '';
+
+    if (!$apiKey) {
+        return "Résumé IA indisponible : clé API manquante.";
+    }
+
+    $severity = 'normal';
+    $priorityMessage = 'Situation stable.';
+
+    if ($pendingCount >= 5) {
+        $severity = 'critique';
+        $priorityMessage = "Priorité critique : volume élevé de réservations en attente.";
+    } elseif ($pendingCount >= 2) {
+        $severity = 'attention';
+        $priorityMessage = "Attention : plusieurs réservations en attente nécessitent un traitement rapide.";
+    } elseif ($pendingCount === 1) {
+        $severity = 'suivi';
+        $priorityMessage = "Une réservation en attente doit être traitée.";
+    }
+
+    if ($todayCount > 0 && $pendingCount > 0) {
+        $priorityMessage .= " Des réservations prévues aujourd'hui imposent un suivi immédiat.";
+    }
+
+    $prompt = "Tu es un assistant administratif pour une plateforme touristique.
+
+Rédige un résumé détaillé et professionnel pour un tableau de bord admin des réservations.
+Contraintes :
+- écrire en français
+- ton formel, administratif et clair
+- longueur : 5 à 7 phrases
+- ne rien inventer
+- utiliser uniquement les données fournies
+- inclure une conclusion opérationnelle pour l'équipe admin
+
+Niveau d'alerte : $severity
+
+Constat métier :
+$priorityMessage
+
+Données exactes :
+- Nombre total de réservations : $totalReservations
+- Réservations en attente : $pendingCount
+- Réservations confirmées : $confirmedCount
+- Réservations annulées : $cancelledCount
+- Réservations prévues aujourd'hui : $todayCount
+
+Le résumé doit :
+- décrire la situation générale
+- commenter le volume en attente
+- commenter les confirmations et annulations
+- indiquer si la journée nécessite une attention particulière
+- terminer par une recommandation administrative claire.";
+
+    $data = [
+        "model" => "openai/gpt-3.5-turbo",
+        "messages" => [
+            [
+                "role" => "user",
+                "content" => $prompt
+            ]
+        ],
+        "temperature" => 0.4
+    ];
+
+    $ch = curl_init("https://openrouter.ai/api/v1/chat/completions");
+
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        "Authorization: Bearer " . $apiKey,
+        "Content-Type: application/json",
+        "HTTP-Referer: http://127.0.0.1:8000",
+        "X-Title: Vianova Admin Reservations Summary"
+    ]);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+
+    $response = curl_exec($ch);
+
+    if (curl_errno($ch)) {
+        curl_close($ch);
+        return "Résumé IA indisponible pour le moment.";
+    }
+
+    curl_close($ch);
+
+    $result = json_decode($response, true);
+
+    if (!isset($result['choices'][0]['message']['content'])) {
+        return "Aucun résumé généré.";
+    }
+
+    return trim($result['choices'][0]['message']['content']);
+}
 }

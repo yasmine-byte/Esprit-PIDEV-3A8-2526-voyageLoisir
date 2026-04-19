@@ -16,7 +16,7 @@
 
 .activities-search-bar {
   display: grid;
-grid-template-columns: 1.2fr 1fr 1fr 1fr 1fr auto;
+  grid-template-columns: 1.2fr 1fr 1fr 1fr 1fr 0.9fr auto;
   background: #fdfcf9;
   border: 1px solid #e7dcc8;
   border-radius: 22px;
@@ -144,6 +144,113 @@ grid-template-columns: 1.2fr 1fr 1fr 1fr 1fr auto;
   margin-top: auto;
 }
 
+/* ===== PLAN MY DAY FLOATING BUTTON ===== */
+
+#plan-day-btn {
+  position: fixed;
+  bottom: 100px;
+  right: 25px;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #d6a96c, #c79352);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  cursor: pointer;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.20);
+  z-index: 9999;
+  transition: transform 0.2s ease;
+}
+
+#plan-day-btn:hover {
+  transform: scale(1.08);
+}
+
+#plan-day-box {
+  position: fixed;
+  bottom: 175px;
+  right: 25px;
+  width: 360px;
+  max-width: calc(100vw - 30px);
+  background: #ffffff;
+  border-radius: 18px;
+  display: none;
+  padding: 0;
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.22);
+  overflow: hidden;
+  z-index: 9999;
+  border: 1px solid #eee2d1;
+}
+
+.plan-header {
+  background: linear-gradient(135deg, #d6a96c, #c79352);
+  color: #ffffff;
+  padding: 14px 16px;
+  font-weight: 700;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 16px;
+}
+
+#plan-close {
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.plan-body {
+  padding: 15px;
+  background: #fffdf9;
+}
+
+#plan-result {
+  font-size: 14px;
+  line-height: 1.6;
+  margin-bottom: 12px;
+  min-height: 90px;
+  max-height: 260px;
+  overflow-y: auto;
+  background: #ffffff;
+  border: 1px solid #f0e4d3;
+  border-radius: 12px;
+  padding: 12px;
+  color: #2b2b2b;
+}
+
+#plan-input {
+  width: 100%;
+  padding: 11px 12px;
+  margin-bottom: 10px;
+  border: 1px solid #e5d7c4;
+  border-radius: 12px;
+  outline: none;
+  font-size: 14px;
+}
+
+#plan-send {
+  width: 100%;
+  background: #1f1f1f;
+  color: #ffffff;
+  border: none;
+  padding: 11px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 700;
+  transition: 0.2s ease;
+}
+
+#plan-send:hover {
+  background: #000000;
+}
+
+#plan-send:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
 /* ===== RESPONSIVE ===== */
 
 @media (max-width: 991px) {
@@ -168,6 +275,19 @@ grid-template-columns: 1.2fr 1fr 1fr 1fr 1fr auto;
   .properties-items .item h4,
   .properties-items .item ul {
     min-height: unset;
+  }
+}
+
+@media (max-width: 576px) {
+  #plan-day-btn {
+    right: 15px;
+    bottom: 90px;
+  }
+
+  #plan-day-box {
+    right: 15px;
+    bottom: 165px;
+    width: calc(100vw - 30px);
   }
 }
 </style>
@@ -218,14 +338,24 @@ grid-template-columns: 1.2fr 1fr 1fr 1fr 1fr auto;
       <input type="number" min="1" name="duree_max" placeholder="Ex: 120 min"
              value="{{ app.request.get('duree_max') }}">
     </div>
+
     <div class="search-segment">
-  <label>Trier par prix</label>
-  <select name="sort">
-    <option value="">Par défaut</option>
-    <option value="prix_asc" {{ current_sort == 'prix_asc' ? 'selected' : '' }}>Prix croissant</option>
-    <option value="prix_desc" {{ current_sort == 'prix_desc' ? 'selected' : '' }}>Prix décroissant</option>
-  </select>
-</div>
+      <label>Trier par prix</label>
+      <select name="sort">
+        <option value="">Par défaut</option>
+        <option value="prix_asc" {{ current_sort == 'prix_asc' ? 'selected' : '' }}>Prix croissant</option>
+        <option value="prix_desc" {{ current_sort == 'prix_desc' ? 'selected' : '' }}>Prix décroissant</option>
+      </select>
+    </div>
+
+    <div class="search-segment">
+      <label>Devise</label>
+      <select id="currency-select">
+        <option value="TND" selected>TND</option>
+        <option value="EUR">EUR</option>
+        <option value="USD">USD</option>
+      </select>
+    </div>
 
     <button type="submit" class="search-main-btn">
       Rechercher
@@ -261,7 +391,9 @@ grid-template-columns: 1.2fr 1fr 1fr 1fr 1fr auto;
               {{ activite.type ? activite.type : 'Activité' }}
             </span>
 
-            <h6>{{ activite.prix }} TND</h6>
+            <h6 class="activity-price" data-price-tnd="{{ activite.prix }}">
+              {{ activite.prix }} TND
+            </h6>
 
             <h4>
               <a href="{{ path('app_activite_show', {'id': activite.id}) }}">
@@ -307,5 +439,136 @@ grid-template-columns: 1.2fr 1fr 1fr 1fr 1fr auto;
 
   </div>
 </div>
+
+<!-- PLAN MY DAY FLOATING BUTTON -->
+<div id="plan-day-btn" title="Plan My Day">
+  🗺️
+</div>
+
+<!-- PLAN MY DAY POPUP -->
+<div id="plan-day-box">
+  <div class="plan-header">
+    <span>Plan My Day ✨</span>
+    <span id="plan-close">✖</span>
+  </div>
+
+  <div class="plan-body">
+    <div id="plan-result">
+      Décrivez votre journée idéale. Exemple : 1 jour à Tunis avec 100 TND.
+    </div>
+
+    <input
+      id="plan-input"
+      type="text"
+      placeholder="Ex: 1 jour à Tunis avec 100 TND"
+    >
+
+    <button id="plan-send" type="button">
+      Générer mon plan
+    </button>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const btn = document.getElementById('plan-day-btn');
+  const box = document.getElementById('plan-day-box');
+  const close = document.getElementById('plan-close');
+
+  const input = document.getElementById('plan-input');
+  const send = document.getElementById('plan-send');
+  const result = document.getElementById('plan-result');
+
+  btn.addEventListener('click', () => {
+    box.style.display = 'block';
+  });
+
+  close.addEventListener('click', () => {
+    box.style.display = 'none';
+  });
+
+  function setLoading(isLoading) {
+    send.disabled = isLoading;
+    send.textContent = isLoading ? 'Génération...' : 'Générer mon plan';
+  }
+
+  async function generatePlan() {
+    const text = input.value.trim();
+
+    if (!text) {
+      result.innerHTML = "Veuillez écrire votre demande.";
+      return;
+    }
+
+    result.innerHTML = "⏳ Génération en cours...";
+    setLoading(true);
+
+    try {
+      const res = await fetch('{{ path('app_plan_day') }}', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: text })
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        result.innerHTML = data.plan.replace(/\n/g, '<br>');
+      } else {
+        result.innerHTML = data.message ? data.message : 'Erreur 😢';
+      }
+    } catch (e) {
+      result.innerHTML = 'Erreur serveur.';
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  send.addEventListener('click', generatePlan);
+
+  input.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      generatePlan();
+    }
+  });
+
+  const currencySelect = document.getElementById('currency-select');
+  const priceElements = document.querySelectorAll('.activity-price');
+
+  const rates = {
+  TND: 1,
+  EUR: Number({{ currency_rates.TND_TO_EUR|default(0.295)|json_encode|raw }}),
+  USD: Number({{ currency_rates.TND_TO_USD|default(0.344)|json_encode|raw }})
+};
+
+  function formatPrice(value) {
+    return Number(value).toFixed(2).replace(/\.00$/, '');
+  }
+
+  function updatePrices(currency) {
+    priceElements.forEach(function (element) {
+      const priceTnd = parseFloat(element.dataset.priceTnd || '0');
+      let converted = priceTnd;
+      let symbol = currency;
+
+      if (currency === 'EUR' && rates.EUR > 0) {
+        converted = priceTnd * rates.EUR;
+      } else if (currency === 'USD' && rates.USD > 0) {
+        converted = priceTnd * rates.USD;
+      }
+
+      element.textContent = formatPrice(converted) + ' ' + symbol;
+    });
+  }
+
+  if (currencySelect) {
+    currencySelect.addEventListener('change', function () {
+      updatePrices(this.value);
+    });
+  }
+  updatePrices(currencySelect.value);
+});
+</script>
 
 {% endblock %}

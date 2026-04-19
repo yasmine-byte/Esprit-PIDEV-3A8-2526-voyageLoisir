@@ -35,7 +35,7 @@
                     
                     <div class="row mb-3">
                         <div class="col-sm-3 fw-bold text-muted">Type:</div>
-                        <div class="col-sm-9">{{ reclamation.type.nom }}</div>
+                        <div class="col-sm-9">{{ reclamation.type ? reclamation.type.nom : 'Non défini' }}</div>
                     </div>
                     
                     <div class="row mb-3">

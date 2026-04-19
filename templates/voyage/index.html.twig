@@ -7,6 +7,67 @@
     <p>Gérer tous les voyages</p>
 </div>
 
+{# ===== NOTIFICATION VOYAGES EXPIRÉS ===== #}
+{% set voyagesExpires = [] %}
+{% for voyage in voyages %}
+    {% if voyage.dateDepart and voyage.dateDepart|date('U') < "now"|date('U') %}
+        {% set voyagesExpires = voyagesExpires|merge([voyage]) %}
+    {% endif %}
+{% endfor %}
+
+{% if voyagesExpires|length > 0 %}
+<div style="background:linear-gradient(135deg,#2d1515,#1a0f0f);border:1px solid #7f1d1d;border-radius:12px;padding:20px 24px;margin-bottom:24px">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+        <span style="font-size:20px">⚠️</span>
+        <div>
+            <div style="font-size:14px;font-weight:700;color:#fca5a5">
+                {{ voyagesExpires|length }} voyage{{ voyagesExpires|length > 1 ? 's' : '' }} expiré{{ voyagesExpires|length > 1 ? 's' : '' }} détecté{{ voyagesExpires|length > 1 ? 's' : '' }}
+            </div>
+            <div style="font-size:12px;color:#9ca3af;margin-top:2px">
+                La date de départ de ces voyages est dépassée. Veuillez les supprimer ou modifier leurs dates.
+            </div>
+        </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:10px">
+        {% for voyage in voyagesExpires %}
+        <div style="background:rgba(255,255,255,0.04);border:1px solid #3d1f1f;border-radius:8px;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+                <span style="background:#7f1d1d;color:#fca5a5;border-radius:6px;padding:3px 9px;font-size:12px;font-weight:700">#{{ voyage.id }}</span>
+                <span style="color:#e2e8f0;font-size:13px;font-weight:600">
+                    {{ voyage.pointDepart ?? '?' }} → {{ voyage.pointArrivee ?? '?' }}
+                </span>
+                {% if voyage.destination %}
+                <span style="color:#4ade80;font-size:12px">({{ voyage.destination.nom }})</span>
+                {% endif %}
+                <span style="color:#f87171;font-size:12px;font-weight:600">
+                    Départ prévu le {{ voyage.dateDepart|date('d/m/Y') }}
+                </span>
+            </div>
+            <div style="display:flex;gap:8px">
+                <a href="{{ path('app_voyage_edit', {'id': voyage.id}) }}"
+                   style="display:inline-flex;align-items:center;gap:6px;padding:7px 16px;border-radius:6px;background:#1e3a5f;border:1px solid #2563eb;color:#93c5fd;font-size:12px;font-weight:600;text-decoration:none;transition:all 0.2s"
+                   onmouseover="this.style.background='#1d4ed8';this.style.color='white'"
+                   onmouseout="this.style.background='#1e3a5f';this.style.color='#93c5fd'">
+                    ✏️ Modifier les dates
+                </a>
+                <form action="{{ path('app_voyage_delete', {'id': voyage.id}) }}" method="POST"
+                      onsubmit="return confirm('Supprimer le voyage #{{ voyage.id }} définitivement ?')">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ voyage.id) }}">
+                    <button type="submit"
+                            style="display:inline-flex;align-items:center;gap:6px;padding:7px 16px;border-radius:6px;background:#3d1f1f;border:1px solid #dc2626;color:#f87171;font-size:12px;font-weight:600;cursor:pointer;transition:all 0.2s"
+                            onmouseover="this.style.background='#dc2626';this.style.color='white'"
+                            onmouseout="this.style.background='#3d1f1f';this.style.color='#f87171'">
+                        🗑️ Supprimer
+                    </button>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
 {# ===== FILTRES ===== #}
 <div class="card" style="margin-bottom:20px">
     <div class="card-header">
@@ -71,33 +132,82 @@
 
     {% set params = {search: search} %}
 
+    <style>
+        .voyage-table { width:100%; border-collapse:separate; border-spacing:0; }
+        .voyage-table thead tr { background:#12122a; }
+        .voyage-table thead th {
+            padding:12px 16px;
+            font-size:11px;
+            font-weight:700;
+            letter-spacing:.08em;
+            text-transform:uppercase;
+            color:#6b7280;
+            border-bottom:1px solid #1e1e3a;
+            white-space:nowrap;
+        }
+        .voyage-table thead th a { color:inherit; text-decoration:none; }
+        .voyage-table thead th a:hover { color:#e0e0e0; }
+        .voyage-table tbody tr {
+            transition:background .15s;
+            border-bottom:1px solid #1a1a30;
+        }
+        .voyage-table tbody tr:hover { background:#14142a; }
+        .voyage-table tbody tr.row-expire { background:#1a0f0f; }
+        .voyage-table tbody tr.row-expire:hover { background:#200f0f; }
+        .voyage-table tbody td { padding:14px 16px; vertical-align:middle; }
+
+        .vbadge-id      { background:#1e1e2a; color:#818cf8; border-radius:6px; padding:3px 9px; font-size:12px; font-weight:700; }
+        .vbadge-expire  { background:#7f1d1d; color:#fca5a5; border-radius:6px; padding:3px 9px; font-size:11px; font-weight:700; margin-left:6px; }
+        .vbadge-dest    { background:#0f2a1a; color:#4ade80; border:1px solid #1a3d28; border-radius:6px; padding:3px 9px; font-size:12px; font-weight:600; }
+        .vbadge-dur     { background:#1e1e2a; color:#a78bfa; border-radius:6px; padding:3px 9px; font-size:11px; font-weight:700; }
+        .vbadge-tp      { background:#1e1e2a; color:#94a3b8; border:1px solid #2a2a3a; border-radius:6px; padding:3px 9px; font-size:11px; font-weight:600; }
+
+        .trajet-arrow { color:#f97316; margin:0 5px; font-size:12px; }
+        .prix-val { font-size:14px; font-weight:700; color:#fb923c; }
+        .prix-sym { font-size:10px; margin-left:1px; font-weight:400; color:#888; }
+
+        .vact { display:flex; gap:6px; align-items:center; flex-wrap:nowrap; }
+        .vbtn {
+            display:inline-flex; align-items:center; gap:4px;
+            padding:5px 11px; border-radius:6px; font-size:12px; font-weight:500;
+            text-decoration:none; border:1px solid #2a2a3a; cursor:pointer;
+            background:#1a1a28; color:#94a3b8;
+            transition:color .15s, border-color .15s; white-space:nowrap;
+        }
+        .vbtn:hover { color:#e0e0e0; border-color:#444; }
+        .vbtn-edit   { color:#818cf8; border-color:#2e2e50; }
+        .vbtn-tp     { color:#c084fc; border-color:#3a2060; }
+        .vbtn-del    { color:#f87171; border-color:#3d1f1f; }
+        .vbtn-del form, .vbtn-del button {
+            margin:0; padding:0; background:none; border:none;
+            color:inherit; font:inherit; font-size:12px; font-weight:600;
+            cursor:pointer; display:inline;
+        }
+    </style>
+
     <div style="overflow-x:auto">
-    <table class="market-table">
+    <table class="voyage-table">
         <thead>
             <tr>
                 <th>
-                    <a href="{{ path('app_voyage_index', params|merge({tri: 'id', ordre: (tri == 'id' and ordre == 'ASC') ? 'DESC' : 'ASC'})) }}"
-                       style="color:inherit;text-decoration:none;white-space:nowrap">
+                    <a href="{{ path('app_voyage_index', params|merge({tri: 'id', ordre: (tri == 'id' and ordre == 'ASC') ? 'DESC' : 'ASC'})) }}">
                         ID {% if tri == 'id' %}{{ ordre == 'ASC' ? '▲' : '▼' }}{% endif %}
                     </a>
                 </th>
                 <th>Destination</th>
                 <th>
-                    <a href="{{ path('app_voyage_index', params|merge({tri: 'point_depart', ordre: (tri == 'point_depart' and ordre == 'ASC') ? 'DESC' : 'ASC'})) }}"
-                       style="color:inherit;text-decoration:none;white-space:nowrap">
+                    <a href="{{ path('app_voyage_index', params|merge({tri: 'point_depart', ordre: (tri == 'point_depart' and ordre == 'ASC') ? 'DESC' : 'ASC'})) }}">
                         Trajet {% if tri == 'point_depart' %}{{ ordre == 'ASC' ? '▲' : '▼' }}{% endif %}
                     </a>
                 </th>
                 <th>
-                    <a href="{{ path('app_voyage_index', params|merge({tri: 'date_depart', ordre: (tri == 'date_depart' and ordre == 'ASC') ? 'DESC' : 'ASC'})) }}"
-                       style="color:inherit;text-decoration:none;white-space:nowrap">
+                    <a href="{{ path('app_voyage_index', params|merge({tri: 'date_depart', ordre: (tri == 'date_depart' and ordre == 'ASC') ? 'DESC' : 'ASC'})) }}">
                         Dates {% if tri == 'date_depart' %}{{ ordre == 'ASC' ? '▲' : '▼' }}{% endif %}
                     </a>
                 </th>
                 <th>Durée</th>
                 <th>
-                    <a href="{{ path('app_voyage_index', params|merge({tri: 'prix', ordre: (tri == 'prix' and ordre == 'ASC') ? 'DESC' : 'ASC'})) }}"
-                       style="color:inherit;text-decoration:none;white-space:nowrap">
+                    <a href="{{ path('app_voyage_index', params|merge({tri: 'prix', ordre: (tri == 'prix' and ordre == 'ASC') ? 'DESC' : 'ASC'})) }}">
                         Prix {% if tri == 'prix' %}{{ ordre == 'ASC' ? '▲' : '▼' }}{% endif %}
                     </a>
                 </th>
@@ -107,96 +217,82 @@
         </thead>
         <tbody>
             {% for voyage in voyages %}
-            <tr>
-                {# ID #}
+            {% set expire = voyage.dateDepart and voyage.dateDepart|date('U') < "now"|date('U') %}
+            <tr class="{{ expire ? 'row-expire' : '' }}">
                 <td>
-                    <span style="background:#2a2a3e;color:#a0a0c0;border-radius:6px;padding:3px 8px;font-size:12px;font-weight:700">
-                        #{{ voyage.id }}
-                    </span>
-                </td>
-
-                {# Destination #}
-                <td>
-                    {% if voyage.destination %}
-                        <span style="background:#1a2e1a;color:#6fcf97;border-radius:6px;padding:3px 9px;font-size:12px;font-weight:600">
-                            {{ voyage.destination.nom }}
-                        </span>
-                        <div style="font-size:10px;color:#666;margin-top:2px">ID #{{ voyage.destination.id }}</div>
-                    {% else %}
-                        <span style="color:#555;font-size:12px">—</span>
+                    <span class="vbadge-id">#{{ voyage.id }}</span>
+                    {% if expire %}
+                        <span class="vbadge-expire">⚠ Expiré</span>
                     {% endif %}
                 </td>
 
-                {# Trajet #}
+                <td>
+                    {% if voyage.destination %}
+                        <span class="vbadge-dest">{{ voyage.destination.nom }}</span>
+                        <div style="font-size:10px;color:#4b5563;margin-top:3px">ID #{{ voyage.destination.id }}</div>
+                    {% else %}
+                        <span style="color:#4b5563">—</span>
+                    {% endif %}
+                </td>
+
                 <td style="white-space:nowrap">
-                    <div style="display:flex;align-items:center;gap:6px;font-size:13px">
-                        <span style="font-weight:600;color:#e0e0e0">{{ voyage.pointDepart ?? '?' }}</span>
-                        <span style="color:#f97316;font-size:11px">→</span>
-                        <span style="font-weight:600;color:#e0e0e0">{{ voyage.pointArrivee ?? '?' }}</span>
+                    <span style="color:#e2e8f0;font-weight:600;font-size:13px">{{ voyage.pointDepart ?? '?' }}</span>
+                    <span class="trajet-arrow">→</span>
+                    <span style="color:#e2e8f0;font-weight:600;font-size:13px">{{ voyage.pointArrivee ?? '?' }}</span>
+                </td>
+
+                <td style="white-space:nowrap">
+                    <div style="font-size:13px;color:{{ expire ? '#f87171' : '#e2e8f0' }};font-weight:600">
+                        {{ voyage.dateDepart ? voyage.dateDepart|date('d/m/Y') : '—' }}
+                        {% if expire %}<span style="font-size:10px;color:#f87171"> (passée)</span>{% endif %}
+                    </div>
+                    <div style="font-size:11px;color:#4b5563;margin-top:2px">
+                        → {{ voyage.dateArrivee ? voyage.dateArrivee|date('d/m/Y') : '—' }}
                     </div>
                 </td>
 
-                {# Dates #}
-                <td style="white-space:nowrap">
-                    <div style="font-size:12px;color:#aaa">
-                        <span style="color:#e0e0e0;font-weight:600">{{ voyage.dateDepart ? voyage.dateDepart|date('d/m/Y') : '—' }}</span>
-                        <br>
-                        <span style="font-size:10px;color:#666">→ {{ voyage.dateArrivee ? voyage.dateArrivee|date('d/m/Y') : '—' }}</span>
-                    </div>
-                </td>
-
-                {# Durée #}
                 <td>
                     {% if voyage.dateDepart and voyage.dateArrivee %}
                         {% set duree = ((voyage.dateArrivee|date('U') - voyage.dateDepart|date('U')) / 86400)|round %}
-                        <span style="background:#1a1a2e;color:#818cf8;border-radius:20px;padding:3px 10px;font-size:11px;font-weight:700;white-space:nowrap">
-                            {{ duree }}j
-                        </span>
+                        <span class="vbadge-dur">{{ duree }}j</span>
                     {% else %}
-                        <span style="color:#555">—</span>
+                        <span style="color:#4b5563">—</span>
                     {% endif %}
                 </td>
 
-                {# Prix #}
                 <td>
                     {% if voyage.prix %}
-                        <span style="font-size:14px;font-weight:800;color:#f97316">
-                            {{ voyage.prix }}<span style="font-size:10px;font-weight:500;margin-left:1px">€</span>
-                        </span>
+                        <span class="prix-val">{{ voyage.prix }}<span class="prix-sym">€</span></span>
                     {% else %}
-                        <span style="color:#555">—</span>
+                        <span style="color:#4b5563">—</span>
                     {% endif %}
                 </td>
 
-                {# Transports #}
                 <td>
                     {% if voyage.transports|length > 0 %}
-                        <div style="display:flex;flex-wrap:wrap;gap:4px">
                         {% set icons = {'Avion': '✈', 'Bus': '🚌', 'Train': '🚆', 'Voiture': '🚗'} %}
+                        <div style="display:flex;flex-wrap:wrap;gap:4px">
                         {% for t in voyage.transports %}
-                            <span style="background:#2a1a3e;color:#c084fc;border-radius:20px;padding:2px 8px;font-size:11px;font-weight:600;white-space:nowrap">
-                                {{ icons[t.typeTransport] ?? '' }} {{ t.typeTransport }}
-                            </span>
+                            <span class="vbadge-tp">{{ icons[t.typeTransport] ?? '' }} {{ t.typeTransport }}</span>
                         {% endfor %}
                         </div>
                     {% else %}
-                        <span style="color:#555;font-size:12px">—</span>
+                        <span style="color:#4b5563;font-size:12px">—</span>
                     {% endif %}
                 </td>
 
-                {# Actions #}
-                <td style="white-space:nowrap">
-                    <a href="{{ path('app_voyage_show', {'id': voyage.id}) }}" class="action-btn">Voir</a>
-                    <a href="{{ path('app_voyage_edit', {'id': voyage.id}) }}" class="action-btn">Modifier</a>
-                    <a href="{{ path('app_transport_new', {'voyage_id': voyage.id}) }}"
-                       class="action-btn"
-                       style="background:#6a3fa0;color:#fff;border-color:#6a3fa0">+ Transport</a>
-                    {{ include('voyage/_delete_form.html.twig') }}
+                <td>
+                    <div class="vact">
+                        <a href="{{ path('app_voyage_show', {'id': voyage.id}) }}" class="vbtn vbtn-view">👁 Voir</a>
+                        <a href="{{ path('app_voyage_edit', {'id': voyage.id}) }}" class="vbtn vbtn-edit">✏️ Modifier</a>
+                        <a href="{{ path('app_transport_new', {'voyage_id': voyage.id}) }}" class="vbtn vbtn-tp">+ Transport</a>
+                        <span class="vbtn vbtn-del">{{ include('voyage/_delete_form.html.twig') }}</span>
+                    </div>
                 </td>
             </tr>
             {% else %}
             <tr>
-                <td colspan="8" style="text-align:center;color:#888;padding:30px">
+                <td colspan="8" style="text-align:center;color:#4b5563;padding:40px;font-size:14px">
                     Aucun voyage trouvé
                 </td>
             </tr>

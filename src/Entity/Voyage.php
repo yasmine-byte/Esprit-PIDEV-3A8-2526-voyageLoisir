@@ -57,17 +57,124 @@ class Voyage
     #[ORM\JoinColumn(nullable: true, onDelete: "SET NULL")]
     private ?Users $created_by = null;
 
-    #[ORM\ManyToOne(targetEntity: Users::class)]
-    #[ORM\JoinColumn(nullable: true, onDelete: "SET NULL")]
-    private ?Users $reserved_by = null;
+    /**
+     * Tous les users qui ont réservé ce voyage (chacun indépendamment).
+     */
+    #[ORM\ManyToMany(targetEntity: Users::class)]
+    #[ORM\JoinTable(name: "voyage_reservations")]
+    private Collection $reservedByUsers;
+
+    #[ORM\ManyToMany(targetEntity: Hebergement::class, inversedBy: 'voyages')]
+    #[ORM\JoinTable(name: "voyage_hebergement")]
+    private Collection $hebergements;
 
     public function __construct()
     {
-        $this->transports = new ArrayCollection();
+        $this->transports      = new ArrayCollection();
+        $this->reservedByUsers = new ArrayCollection();
+        $this->hebergements    = new ArrayCollection();
     }
 
-    public function getId(): ?int { return $this->id; }
-    public function getTransports(): Collection { return $this->transports; }
+    // ----------------------------------------------------------------
+    // Identifiant
+    // ----------------------------------------------------------------
+
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    // ----------------------------------------------------------------
+    // Dates
+    // ----------------------------------------------------------------
+
+    public function getDateDepart(): ?\DateTimeInterface
+    {
+        return $this->date_depart;
+    }
+
+    public function setDateDepart(?\DateTimeInterface $d): static
+    {
+        $this->date_depart = $d;
+        return $this;
+    }
+
+    public function getDateArrivee(): ?\DateTimeInterface
+    {
+        return $this->date_arrivee;
+    }
+
+    public function setDateArrivee(?\DateTimeInterface $d): static
+    {
+        $this->date_arrivee = $d;
+        return $this;
+    }
+
+    // ----------------------------------------------------------------
+    // Trajet
+    // ----------------------------------------------------------------
+
+    public function getPointDepart(): ?string
+    {
+        return $this->point_depart;
+    }
+
+    public function setPointDepart(?string $v): static
+    {
+        $this->point_depart = $v;
+        return $this;
+    }
+
+    public function getPointArrivee(): ?string
+    {
+        return $this->point_arrivee;
+    }
+
+    public function setPointArrivee(?string $v): static
+    {
+        $this->point_arrivee = $v;
+        return $this;
+    }
+
+    // ----------------------------------------------------------------
+    // Prix
+    // ----------------------------------------------------------------
+
+    public function getPrix(): ?float
+    {
+        return $this->prix;
+    }
+
+    public function setPrix(?float $v): static
+    {
+        $this->prix = $v;
+        return $this;
+    }
+
+    // ----------------------------------------------------------------
+    // Destination
+    // ----------------------------------------------------------------
+
+    public function getDestination(): ?Destination
+    {
+        return $this->destination;
+    }
+
+    public function setDestination(?Destination $destination): static
+    {
+        $this->destination = $destination;
+        return $this;
+    }
+
+    // ----------------------------------------------------------------
+    // Transports
+    // ----------------------------------------------------------------
+
+    public function getTransports(): Collection
+    {
+        return $this->transports;
+    }
+
     public function addTransport(Transport $transport): static
     {
         if (!$this->transports->contains($transport)) {
@@ -76,29 +183,119 @@ class Voyage
         }
         return $this;
     }
+
     public function removeTransport(Transport $transport): static
     {
         if ($this->transports->removeElement($transport)) {
-            if ($transport->getVoyage() === $this) $transport->setVoyage(null);
+            if ($transport->getVoyage() === $this) {
+                $transport->setVoyage(null);
+            }
         }
         return $this;
     }
-    public function getDestination(): ?Destination { return $this->destination; }
-    public function setDestination(?Destination $destination): static { $this->destination = $destination; return $this; }
-    public function getDateDepart(): ?\DateTimeInterface { return $this->date_depart; }
-    public function setDateDepart(?\DateTimeInterface $d): static { $this->date_depart = $d; return $this; }
-    public function getDateArrivee(): ?\DateTimeInterface { return $this->date_arrivee; }
-    public function setDateArrivee(?\DateTimeInterface $d): static { $this->date_arrivee = $d; return $this; }
-    public function getPointDepart(): ?string { return $this->point_depart; }
-    public function setPointDepart(?string $v): static { $this->point_depart = $v; return $this; }
-    public function getPointArrivee(): ?string { return $this->point_arrivee; }
-    public function setPointArrivee(?string $v): static { $this->point_arrivee = $v; return $this; }
-    public function getPrix(): ?float { return $this->prix; }
-    public function setPrix(?float $v): static { $this->prix = $v; return $this; }
 
-    public function getCreatedBy(): ?Users { return $this->created_by; }
-    public function setCreatedBy(?Users $u): static { $this->created_by = $u; return $this; }
+    // ----------------------------------------------------------------
+    // Créateur du voyage
+    // ----------------------------------------------------------------
 
-    public function getReservedBy(): ?Users { return $this->reserved_by; }
-    public function setReservedBy(?Users $u): static { $this->reserved_by = $u; return $this; }
+    public function getCreatedBy(): ?Users
+    {
+        return $this->created_by;
+    }
+
+    public function setCreatedBy(?Users $u): static
+    {
+        $this->created_by = $u;
+        return $this;
+    }
+
+    // ----------------------------------------------------------------
+    // Réservations (ManyToMany — chaque user réserve indépendamment)
+    // ----------------------------------------------------------------
+
+    /**
+     * Retourne tous les users qui ont réservé ce voyage.
+     */
+    public function getReservedByUsers(): Collection
+    {
+        return $this->reservedByUsers;
+    }
+
+    /**
+     * Ajoute une réservation pour un user (si pas déjà réservé).
+     */
+    public function addReservation(Users $user): static
+    {
+        if (!$this->reservedByUsers->contains($user)) {
+            $this->reservedByUsers->add($user);
+        }
+        return $this;
+    }
+
+    /**
+     * Annule la réservation d'un user.
+     */
+    public function removeReservation(Users $user): static
+    {
+        $this->reservedByUsers->removeElement($user);
+        return $this;
+    }
+
+    /**
+     * Vérifie si un user précis a réservé ce voyage.
+     * Utiliser dans Twig : voyage.isReservedByUser(app.user)
+     */
+   public function isReservedByUser($user): bool
+{
+    if (!$user) return false;
+    foreach ($this->reservedByUsers as $u) {
+        if ($u->getId() === $user->getId()) return true;
+    }
+    return false;
+}
+
+public function isPaidByUser($user): bool
+{
+    // On vérifie via une requête directe — géré dans le controller
+    return false; // placeholder
+}
+    /**
+     * Compatibilité : indique si au moins un user a réservé ce voyage.
+     * Utile pour l'affichage admin (colonne "Réservé par").
+     */
+    public function getReservedBy(): ?Users
+    {
+        return $this->reservedByUsers->first() ?: null;
+    }
+    #[ORM\Column(type: "boolean", options: ["default" => false])]
+    private bool $paid = false;
+
+    public function isPaid(): bool { return $this->paid; }
+    public function setPaid(bool $paid): static { $this->paid = $paid; return $this; }
+
+    // ----------------------------------------------------------------
+    // Hébergements (ManyToMany)
+    // ----------------------------------------------------------------
+
+    public function getHebergements(): Collection
+    {
+        return $this->hebergements;
+    }
+
+    public function addHebergement(Hebergement $hebergement): static
+    {
+        if (!$this->hebergements->contains($hebergement)) {
+            $this->hebergements->add($hebergement);
+            $hebergement->addVoyage($this);
+        }
+        return $this;
+    }
+
+    public function removeHebergement(Hebergement $hebergement): static
+    {
+        if ($this->hebergements->removeElement($hebergement)) {
+            $hebergement->removeVoyage($this);
+        }
+        return $this;
+    }
 }

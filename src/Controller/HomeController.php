@@ -7,6 +7,8 @@ use App\Repository\DestinationRepository;
 use App\Repository\HebergementRepository;
 use App\Repository\TypeRepository;
 use App\Repository\ActiviteRepository;
+use App\Service\HebergementRecommandationService;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -21,12 +23,12 @@ class HomeController extends AbstractController
         HebergementRepository $hebergementRepository,
         DestinationRepository $destinationRepository,
         ActiviteRepository $activiteRepository,
-        BlogRepository $blogRepository
+        BlogRepository $blogRepository,
+        HebergementRecommandationService $recommandationService
     ): Response {
         $blogs = array_map(function (Blog $blog): array {
-            $image = trim((string) $blog->getImageCouverture());
+            $image   = trim((string) $blog->getImageCouverture());
             $excerpt = trim((string) ($blog->getExtrait() ?: $blog->getContenu()));
-
             return [
                 'id'           => $blog->getId(),
                 'title'        => $blog->getTitre(),
@@ -41,11 +43,34 @@ class HomeController extends AbstractController
             ];
         }, $blogRepository->findBy(['status' => true], ['datePublication' => 'DESC', 'id' => 'DESC'], 6));
 
+        $user = $this->getUser();
+        $recommandations = [];
+        $isPersonalized  = false;
+
+        if ($user) {
+            $email = $user->getUserIdentifier();
+            $recommandations = $recommandationService->recommanderPourClient($email, 4);
+            $isPersonalized  = true;
+            $recommandations = array_map(function($heb) use ($recommandationService, $email) {
+                return [
+                    'hebergement' => $heb,
+                    'score'       => $recommandationService->calculerScore($heb, $email),
+                ];
+            }, $recommandations);
+        } else {
+            $populaires = $recommandationService->getHebPopulaires(4);
+            $recommandations = array_map(function($heb) {
+                return ['hebergement' => $heb, 'score' => null];
+            }, $populaires);
+        }
+
         return $this->render('home/index.html.twig', [
-            'hebergements' => $hebergementRepository->findAll(),
-            'destinations' => $destinationRepository->findAll(),
-            'activites'    => $activiteRepository->findAll(),
-            'blogs'        => $blogs,
+            'hebergements'    => $hebergementRepository->findAll(),
+            'destinations'    => $destinationRepository->findAll(),
+            'activites'       => $activiteRepository->findAll(),
+            'blogs'           => $blogs,
+            'recommandations' => $recommandations,
+            'isPersonalized'  => $isPersonalized,
         ]);
     }
 
@@ -55,7 +80,6 @@ class HomeController extends AbstractController
         $search = $request->query->get('search', '');
         $saison = $request->query->get('saison', '');
         $destinations = $repo->findByFilters($search, $saison, '', 'id', 'ASC');
-
         return $this->render('home/destinations.html.twig', [
             'destinations' => $destinations,
             'search'       => $search,
@@ -63,36 +87,65 @@ class HomeController extends AbstractController
         ]);
     }
 
-    #[Route('/destinations/{id}', name: 'app_destination_detail')]
-    public function destinationDetail(int $id, DestinationRepository $repo): Response
-    {
-        $destination = $repo->find($id);
+   #[Route('/destinations/{id}', name: 'app_destination_detail')]
+public function destinationDetail(
+    int $id,
+    DestinationRepository $repo,
+    EntityManagerInterface $em,
+    HebergementRepository $hebergementRepository
+): Response {
+    $destination = $repo->find($id);
+    if (!$destination) {
+        return $this->redirectToRoute('app_destinations');
+    }
+    if (!$destination->isStatut()) {
+        $this->addFlash('error', 'Cette destination est actuellement inactive.');
+        return $this->redirectToRoute('app_destinations');
+    }
+    $destination->setNbVisites(($destination->getNbVisites() ?? 0) + 1);
+    $em->flush();
 
-        if (!$destination) {
-            return $this->redirectToRoute('app_destinations');
+    // Hébergements proches (rayon 50 km)
+    $hebergementsProches = [];
+    if ($destination->getLatitude() && $destination->getLongitude()) {
+        foreach ($hebergementRepository->findAll() as $heb) {
+            if (!$heb->getLatitude() || !$heb->getLongitude()) continue;
+            $dist = $this->haversine(
+                $destination->getLatitude(), $destination->getLongitude(),
+                $heb->getLatitude(), $heb->getLongitude()
+            );
+            if ($dist <= 50) {
+                $hebergementsProches[] = ['hebergement' => $heb, 'distance' => round($dist, 1)];
+            }
         }
-
-        $sharePath = $this->generateUrl('app_destination_detail', [
-            'id' => $destination->getId(),
-        ], UrlGeneratorInterface::ABSOLUTE_PATH);
-
-        $shareUrl = rtrim((string) $this->getParameter('public_base_url'), '/') . $sharePath;
-
-        $qrCodeUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=' . rawurlencode($shareUrl);
-
-        return $this->render('home/destination-detail.html.twig', [
-            'destination' => $destination,
-            'share_url' => $shareUrl,
-            'qr_code_url' => $qrCodeUrl,
-        ]);
+        usort($hebergementsProches, fn($a, $b) => $a['distance'] <=> $b['distance']);
     }
 
+    $sharePath = $this->generateUrl('app_destination_detail', ['id' => $destination->getId()], UrlGeneratorInterface::ABSOLUTE_PATH);
+    $shareUrl  = rtrim((string) $this->getParameter('public_base_url'), '/') . $sharePath;
+    $qrCodeUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=' . rawurlencode($shareUrl);
+
+    return $this->render('home/destination-detail.html.twig', [
+        'destination'          => $destination,
+        'share_url'            => $shareUrl,
+        'qr_code_url'          => $qrCodeUrl,
+        'hebergements_proches' => $hebergementsProches,
+    ]);
+}
+
+private function haversine(float $lat1, float $lon1, float $lat2, float $lon2): float
+{
+    $R = 6371;
+    $dLat = deg2rad($lat2 - $lat1);
+    $dLon = deg2rad($lon2 - $lon1);
+    $a = sin($dLat/2) * sin($dLat/2) +
+         cos(deg2rad($lat1)) * cos(deg2rad($lat2)) *
+         sin($dLon/2) * sin($dLon/2);
+    return $R * 2 * atan2(sqrt($a), sqrt(1-$a));
+}
     #[Route('/hebergements', name: 'app_hebergements_front')]
-    public function hebergements(
-        Request $request,
-        HebergementRepository $hebergementRepository,
-        TypeRepository $typeRepository
-    ): Response {
+    public function hebergements(Request $request, HebergementRepository $hebergementRepository, TypeRepository $typeRepository): Response
+    {
         $description  = $request->query->get('description');
         $typeId       = $request->query->get('type') ? (int)$request->query->get('type') : null;
         $prixMin      = $request->query->get('prixMin') ? (float)$request->query->get('prixMin') : null;
@@ -103,9 +156,7 @@ class HomeController extends AbstractController
         $dateDebut    = $dateDebutStr ? new \DateTime($dateDebutStr) : null;
         $dateFin      = $dateFinStr   ? new \DateTime($dateFinStr)   : null;
 
-        $hebergements = $hebergementRepository->search(
-            $description, $typeId, $prixMin, $prixMax, $tri, $dateDebut, $dateFin
-        );
+        $hebergements = $hebergementRepository->search($description, $typeId, $prixMin, $prixMax, $tri, $dateDebut, $dateFin);
 
         return $this->render('home/properties.html.twig', [
             'hebergements' => $hebergements,
@@ -123,11 +174,8 @@ class HomeController extends AbstractController
     }
 
     #[Route('/properties', name: 'app_properties')]
-    public function properties(
-        Request $request,
-        HebergementRepository $hebergementRepository,
-        TypeRepository $typeRepository
-    ): Response {
+    public function properties(Request $request, HebergementRepository $hebergementRepository, TypeRepository $typeRepository): Response
+    {
         $description  = $request->query->get('description');
         $typeId       = $request->query->get('type') ? (int)$request->query->get('type') : null;
         $prixMin      = $request->query->get('prixMin') ? (float)$request->query->get('prixMin') : null;
@@ -138,9 +186,7 @@ class HomeController extends AbstractController
         $dateDebut    = $dateDebutStr ? new \DateTime($dateDebutStr) : null;
         $dateFin      = $dateFinStr   ? new \DateTime($dateFinStr)   : null;
 
-        $hebergements = $hebergementRepository->search(
-            $description, $typeId, $prixMin, $prixMax, $tri, $dateDebut, $dateFin
-        );
+        $hebergements = $hebergementRepository->search($description, $typeId, $prixMin, $prixMax, $tri, $dateDebut, $dateFin);
 
         return $this->render('home/properties.html.twig', [
             'hebergements' => $hebergements,
@@ -161,11 +207,9 @@ class HomeController extends AbstractController
     public function propertyDetails(int $id, HebergementRepository $hebergementRepository): Response
     {
         $hebergement = $hebergementRepository->find($id);
-
         if (!$hebergement) {
             throw $this->createNotFoundException('Hébergement introuvable.');
         }
-
         return $this->render('home/property-details.html.twig', [
             'hebergement' => $hebergement,
         ]);

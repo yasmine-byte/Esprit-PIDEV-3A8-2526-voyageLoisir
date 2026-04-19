@@ -4,7 +4,6 @@
 
 {% block admin_content %}
 
-{# ─── EN-TÊTE ─────────────────────────────────────────────────────────────── #}
 <div class="page-header">
     <div>
         <h1>Tableau de bord</h1>
@@ -16,11 +15,12 @@
             ➕ Ajouter un utilisateur
         </a>
         {% endif %}
+        <a href="{{ path('admin_user_profile', {'id': app.user.id}) }}" class="btn btn-outline-primary">
+            👤 Mon profil
+        </a>
     </div>
 </div>
 
-{# ─── CARTES STATISTIQUES ──────────────────────────────────────────────────── #}
-{% if totalUsers is defined %}
 <div class="stats-grid">
     <div class="stat-card">
         <div class="stat-icon">
@@ -95,13 +95,7 @@
         </div>
     </div>
 </div>
-{% else %}
-<div class="alert-info">
-    <p>Chargement des données...</p>
-</div>
-{% endif %}
 
-{# ─── DERNIERS INSCRITS ───────────────────────────────────────────────────── #}
 <div class="card mt-4">
     <div class="card-header">
         <h3>🕐 Derniers utilisateurs inscrits</h3>
@@ -169,7 +163,6 @@
     </div>
 </div>
 
-{# ─── GRAPHIQUES ──────────────────────────────────────────────────────────── #}
 <div class="charts-grid">
     <div class="card">
         <div class="card-header">
@@ -196,101 +189,53 @@
     </div>
 </div>
 
-{# ─── STYLES ──────────────────────────────────────────────────────────────── #}
 <style>
-.stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 20px;
-    margin-bottom: 28px;
-}
-.stat-card {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 20px;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    transition: transform 0.2s, box-shadow 0.2s;
-}
-.stat-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.15); }
-.stat-card.stat-success { border-left: 4px solid #34d399; }
-.stat-card.stat-danger  { border-left: 4px solid #ef4444; }
-.stat-card.stat-info    { border-left: 4px solid #60a5fa; }
-.stat-icon {
-    width: 48px; height: 48px; border-radius: 12px;
-    background: var(--bg-secondary);
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0; color: var(--accent-copper);
-}
-.stat-info { flex: 1; }
-.stat-value { font-size: 2rem; font-weight: 700; color: var(--text-primary); line-height: 1; }
-.stat-label { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
-.stat-percent { font-size: 13px; font-weight: 600; color: var(--text-muted); }
-.stat-link { font-size: 12px; color: var(--accent-copper); text-decoration: none; }
-.stat-link:hover { text-decoration: underline; }
-.charts-grid {
-    display: grid;
-    grid-template-columns: 2fr 1fr;
-    gap: 20px;
-    margin-bottom: 20px;
-}
-.card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
-.page-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 28px;
-    padding-bottom: 20px;
-    border-bottom: 1px solid var(--border);
-}
-.page-header h1 { margin: 0 0 4px 0; color: var(--text-primary); }
-.page-header p { margin: 0; color: var(--text-muted); }
-.header-actions { display: flex; gap: 12px; align-items: center; }
-.card-body.p-0 { padding: 0; }
-.mt-4 { margin-top: 20px; }
-.badge { background: var(--bg-secondary); color: var(--text-muted); padding: 4px 10px; border-radius: 20px; font-size: 12px; }
-.chart-pie-container { display: flex; align-items: center; justify-content: center; }
-.empty-chart { color: var(--text-muted); text-align: center; padding: 40px; }
-.users-table { width: 100%; border-collapse: collapse; }
-.users-table th {
-    background: var(--bg-secondary); padding: 12px 16px;
-    text-align: left; font-size: 12px; font-weight: 600;
-    color: var(--text-muted); text-transform: uppercase;
-    border-bottom: 1px solid var(--border);
-}
-.users-table td { padding: 12px 16px; border-bottom: 1px solid var(--border); color: var(--text-secondary); }
-.users-table tr:last-child td { border-bottom: none; }
-.users-table tr:hover { background: var(--bg-card-hover); }
-.user-cell { display: flex; align-items: center; gap: 10px; }
-.user-avatar-sm {
-    width: 32px; height: 32px; border-radius: 50%;
-    background: var(--accent-gradient); color: #1c1c1e;
-    font-size: 11px; font-weight: 700;
-    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-}
-.role-badge { background: var(--accent-gradient); color: #1c1c1e; padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; }
-.status-badge { padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; }
-.status-badge.active { background: rgba(52,211,153,0.1); border: 1px solid rgba(52,211,153,0.3); color: #34d399; }
-.status-badge.inactive { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); color: #ef4444; }
-.alert-info { background: rgba(96,165,250,0.1); border: 1px solid rgba(96,165,250,0.3); color: #60a5fa; padding: 16px; border-radius: 8px; }
-.text-muted { color: var(--text-muted); font-style: italic; font-size: 13px; }
-.btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 16px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-card); color: var(--text-primary); text-decoration: none; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s ease; }
-.btn-primary { background: var(--accent-copper); color: #1c1c1e; border-color: var(--accent-copper); font-weight: 600; }
-.btn-sm { padding: 6px 12px; font-size: 12px; border-radius: 6px; }
-.btn-outline-primary { border: 1px solid var(--accent-copper); color: var(--accent-copper); background: transparent; cursor: pointer; text-decoration: none; }
-.btn-outline-primary:hover { background: var(--accent-copper); color: #1c1c1e; }
-.btn-outline-danger { border: 1px solid #ef4444; color: #ef4444; background: transparent; cursor: pointer; text-decoration: none; }
-.btn-outline-danger:hover { background: #ef4444; color: #fff; }
-.empty-state { text-align: center; padding: 32px; color: var(--text-muted); }
-@media (max-width: 768px) {
-    .charts-grid { grid-template-columns: 1fr; }
-    .stats-grid  { grid-template-columns: 1fr 1fr; }
-}
+.stats-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:20px; margin-bottom:28px; }
+.stat-card { background:var(--bg-card); border:1px solid var(--border); border-radius:12px; padding:20px; display:flex; align-items:center; gap:16px; transition:transform .2s,box-shadow .2s; }
+.stat-card:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(0,0,0,.15); }
+.stat-card.stat-success { border-left:4px solid #34d399; }
+.stat-card.stat-danger  { border-left:4px solid #ef4444; }
+.stat-card.stat-info    { border-left:4px solid #60a5fa; }
+.stat-icon { width:48px; height:48px; border-radius:12px; background:var(--bg-secondary); display:flex; align-items:center; justify-content:center; flex-shrink:0; color:var(--accent-copper); }
+.stat-info { flex:1; }
+.stat-value { font-size:2rem; font-weight:700; color:var(--text-primary); line-height:1; }
+.stat-label { font-size:13px; color:var(--text-muted); margin-top:4px; }
+.stat-percent { font-size:13px; font-weight:600; color:var(--text-muted); }
+.stat-link { font-size:12px; color:var(--accent-copper); text-decoration:none; }
+.charts-grid { display:grid; grid-template-columns:2fr 1fr; gap:20px; margin-bottom:20px; }
+.card { background:var(--bg-card); border:1px solid var(--border); border-radius:12px; overflow:hidden; }
+.page-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:28px; padding-bottom:20px; border-bottom:1px solid var(--border); }
+.page-header h1 { margin:0 0 4px 0; color:var(--text-primary); }
+.page-header p { margin:0; color:var(--text-muted); }
+.header-actions { display:flex; gap:12px; align-items:center; }
+.card-body.p-0 { padding:0; }
+.mt-4 { margin-top:20px; }
+.badge { background:var(--bg-secondary); color:var(--text-muted); padding:4px 10px; border-radius:20px; font-size:12px; }
+.chart-pie-container { display:flex; align-items:center; justify-content:center; }
+.empty-chart { color:var(--text-muted); text-align:center; padding:40px; }
+.users-table { width:100%; border-collapse:collapse; }
+.users-table th { background:var(--bg-secondary); padding:12px 16px; text-align:left; font-size:12px; font-weight:600; color:var(--text-muted); text-transform:uppercase; border-bottom:1px solid var(--border); }
+.users-table td { padding:12px 16px; border-bottom:1px solid var(--border); color:var(--text-secondary); }
+.users-table tr:last-child td { border-bottom:none; }
+.users-table tr:hover { background:var(--bg-card-hover); }
+.user-cell { display:flex; align-items:center; gap:10px; }
+.user-avatar-sm { width:32px; height:32px; border-radius:50%; background:var(--accent-gradient); color:#1c1c1e; font-size:11px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.role-badge { background:var(--accent-gradient); color:#1c1c1e; padding:3px 8px; border-radius:12px; font-size:11px; font-weight:600; }
+.status-badge { padding:4px 10px; border-radius:12px; font-size:12px; font-weight:600; }
+.status-badge.active { background:rgba(52,211,153,.1); border:1px solid rgba(52,211,153,.3); color:#34d399; }
+.status-badge.inactive { background:rgba(239,68,68,.1); border:1px solid rgba(239,68,68,.3); color:#ef4444; }
+.text-muted { color:var(--text-muted); font-style:italic; font-size:13px; }
+.btn { display:inline-flex; align-items:center; gap:8px; padding:10px 16px; border:1px solid var(--border); border-radius:8px; background:var(--bg-card); color:var(--text-primary); text-decoration:none; font-size:14px; font-weight:500; cursor:pointer; transition:all .2s ease; }
+.btn-primary { background:var(--accent-copper); color:#1c1c1e; border-color:var(--accent-copper); font-weight:600; }
+.btn-sm { padding:6px 12px; font-size:12px; border-radius:6px; }
+.btn-outline-primary { border:1px solid var(--accent-copper); color:var(--accent-copper); background:transparent; cursor:pointer; text-decoration:none; }
+.btn-outline-primary:hover { background:var(--accent-copper); color:#1c1c1e; }
+.btn-outline-danger { border:1px solid #ef4444; color:#ef4444; background:transparent; cursor:pointer; text-decoration:none; }
+.btn-outline-danger:hover { background:#ef4444; color:#fff; }
+.empty-state { text-align:center; padding:32px; color:var(--text-muted); }
+@media (max-width:768px) { .charts-grid { grid-template-columns:1fr; } .stats-grid { grid-template-columns:1fr 1fr; } }
 </style>
 
-{# ─── CHART.JS ────────────────────────────────────────────────────────────── #}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script>
 const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
@@ -299,7 +244,6 @@ const textColor = isDark ? '#94a3b8' : '#64748b';
 
 const monthlyLabels = {{ monthlyData|keys|json_encode|raw }};
 const monthlyValues = {{ monthlyData|map(v => v)|json_encode|raw }};
-
 const monthNames = ['Jan','Fév','Mar','Avr','Mai','Juin','Juil','Aoû','Sep','Oct','Nov','Déc'];
 const formattedLabels = monthlyLabels.map(m => {
     const [year, month] = m.split('-');
@@ -310,49 +254,18 @@ new Chart(document.getElementById('monthlyChart'), {
     type: 'bar',
     data: {
         labels: formattedLabels,
-        datasets: [{
-            label: 'Inscriptions',
-            data: monthlyValues,
-            backgroundColor: 'rgba(205,127,50,0.7)',
-            borderColor: '#cd7f32',
-            borderWidth: 2,
-            borderRadius: 6,
-        }]
+        datasets: [{ label: 'Inscriptions', data: monthlyValues, backgroundColor: 'rgba(205,127,50,0.7)', borderColor: '#cd7f32', borderWidth: 2, borderRadius: 6 }]
     },
-    options: {
-        responsive: true,
-        plugins: { legend: { display: false } },
-        scales: {
-            x: { grid: { color: gridColor }, ticks: { color: textColor } },
-            y: { grid: { color: gridColor }, ticks: { color: textColor, stepSize: 1 }, beginAtZero: true }
-        }
-    }
+    options: { responsive: true, plugins: { legend: { display: false } }, scales: { x: { grid: { color: gridColor }, ticks: { color: textColor } }, y: { grid: { color: gridColor }, ticks: { color: textColor, stepSize: 1 }, beginAtZero: true } } }
 });
 
 {% if roleStats|length > 0 %}
 const roleLabels = {{ roleStats|keys|json_encode|raw }};
 const roleValues = {{ roleStats|map(v => v)|json_encode|raw }};
-
 new Chart(document.getElementById('rolesChart'), {
     type: 'doughnut',
-    data: {
-        labels: roleLabels,
-        datasets: [{
-            data: roleValues,
-            backgroundColor: ['#cd7f32','#60a5fa','#34d399','#f472b6','#a78bfa'],
-            borderWidth: 2,
-            borderColor: isDark ? '#1a1a2e' : '#ffffff',
-        }]
-    },
-    options: {
-        responsive: true,
-        plugins: {
-            legend: {
-                position: 'bottom',
-                labels: { color: textColor, padding: 12, font: { size: 12 } }
-            }
-        }
-    }
+    data: { labels: roleLabels, datasets: [{ data: roleValues, backgroundColor: ['#cd7f32','#60a5fa','#34d399','#f472b6','#a78bfa'], borderWidth: 2, borderColor: isDark ? '#1a1a2e' : '#ffffff' }] },
+    options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { color: textColor, padding: 12, font: { size: 12 } } } } }
 });
 {% endif %}
 </script>

@@ -1,4 +1,187 @@
-{{ form_start(form) }}
-    {{ form_widget(form) }}
-    <button class="btn">{{ button_label|default('Save') }}</button>
+{{ form_start(form, {'attr': {'id': 'contact-form', 'novalidate': 'novalidate'}}) }}
+
+    {{ form_errors(form) }}
+
+    <div class="row">
+        <div class="col-lg-12">
+            {{ form_row(form.nom) }}
+        </div>
+
+        <div class="col-lg-12" style="position: relative;">
+            {{ form_row(form.description) }}
+
+            <button
+                type="button"
+                id="generate-ai"
+                style="
+                    position: absolute;
+                    top: 10px;
+                    right: 10px;
+                    background: #e7b67b;
+                    color: #1c1c1c;
+                    border: none;
+                    padding: 6px 12px;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    font-size: 13px;
+                    font-weight: 600;
+                    z-index: 10;
+                "
+            >
+                🤖 AI
+            </button>
+        </div>
+
+        <div class="col-lg-12">
+            {{ form_row(form.type) }}
+        </div>
+
+        <div class="col-lg-12">
+            {{ form_row(form.prix) }}
+        </div>
+
+        <div class="col-lg-12">
+            {{ form_row(form.duree) }}
+        </div>
+
+        <div class="col-lg-12">
+            {{ form_row(form.lieu) }}
+        </div>
+
+        <div class="col-lg-12">
+            {{ form_row(form.imageUrl) }}
+        </div>
+
+        {# champ caché pour stocker la note AI #}
+        {{ form_widget(form.aiRating) }}
+
+        <div class="col-lg-12 mb-3">
+            <button type="button" id="generate-rating-ai" class="btn btn-warning">
+                ⭐ Générer note AI
+            </button>
+
+            <span id="rating-result" style="margin-left:10px; font-weight:600;"></span>
+        </div>
+
+        <div class="col-lg-12">
+            <button type="submit" class="orange-button">
+                {{ button_label|default('Enregistrer') }}
+            </button>
+        </div>
+    </div>
+
 {{ form_end(form) }}
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const generateBtn = document.getElementById('generate-ai');
+    const ratingBtn = document.getElementById('generate-rating-ai');
+    const ratingResult = document.getElementById('rating-result');
+
+    const nomField = document.querySelector('[name="activite[nom]"]');
+    const descriptionField = document.querySelector('[name="activite[description]"]');
+    const typeField = document.querySelector('[name="activite[type]"]');
+    const prixField = document.querySelector('[name="activite[prix]"]');
+    const dureeField = document.querySelector('[name="activite[duree]"]');
+    const lieuField = document.querySelector('[name="activite[lieu]"]');
+    const aiRatingField = document.querySelector('[name="activite[aiRating]"]');
+
+    // ===== Génération description =====
+    if (generateBtn) {
+        generateBtn.addEventListener('click', async function () {
+            const nom = nomField?.value.trim();
+            const type = typeField?.value.trim();
+            const lieu = lieuField?.value.trim();
+            const duree = dureeField?.value.trim();
+
+            if (!nom || !type || !lieu || !duree) {
+                alert('Veuillez remplir le nom, le type, le lieu et la durée avant de générer la description.');
+                return;
+            }
+
+            generateBtn.disabled = true;
+            generateBtn.innerHTML = '⏳ ...';
+
+            try {
+                const response = await fetch('/api/activite/generate-description', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        nom: nom,
+                        type: type,
+                        lieu: lieu,
+                        duree: duree
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    descriptionField.value = data.description;
+                } else {
+                    alert(data.message || 'Erreur lors de la génération.');
+                }
+            } catch (error) {
+                alert('Erreur de connexion à l’API.');
+            }
+
+            generateBtn.disabled = false;
+            generateBtn.innerHTML = '🤖 AI';
+        });
+    }
+
+    // ===== Génération note AI =====
+    if (ratingBtn) {
+        ratingBtn.addEventListener('click', async function () {
+            const nom = nomField?.value.trim();
+            const description = descriptionField?.value.trim();
+            const type = typeField?.value.trim();
+            const prix = prixField?.value.trim();
+            const duree = dureeField?.value.trim();
+            const lieu = lieuField?.value.trim();
+
+            if (!nom || !description || !type || !prix || !duree || !lieu) {
+                alert('Veuillez remplir le nom, la description, le type, le prix, la durée et le lieu avant de générer la note AI.');
+                return;
+            }
+
+            ratingBtn.disabled = true;
+            ratingBtn.innerHTML = '⏳ Génération...';
+            ratingResult.textContent = '';
+
+            try {
+                const response = await fetch('/api/activite/generate-rating-from-form', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        nom: nom,
+                        description: description,
+                        type: type,
+                        prix: prix,
+                        duree: duree,
+                        lieu: lieu
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    aiRatingField.value = data.rating;
+                    ratingResult.textContent = '⭐ ' + data.rating + '/10';
+                } else {
+                    alert(data.message || 'Erreur lors de la génération de la note.');
+                }
+            } catch (error) {
+                alert('Erreur de connexion à l’API.');
+            }
+
+            ratingBtn.disabled = false;
+            ratingBtn.innerHTML = '⭐ Générer note AI';
+        });
+    }
+});
+</script>

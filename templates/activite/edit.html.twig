@@ -41,31 +41,58 @@
             </div>
 
             <div class="col-lg-6">
-                {{ form_start(form, {'attr': {'id': 'contact-form'}}) }}
+                {{ form_start(form, {
+    'attr': {
+        'id': 'contact-form',
+        'novalidate': 'novalidate'
+    }
+}) }}
 
-                    {{ form_errors(form) }}
+    {{ form_errors(form) }}
 
-                    <div class="row">
-                        <div class="col-lg-12">{{ form_row(form.nom) }}</div>
-                        <div class="col-lg-12">{{ form_row(form.description) }}</div>
-                        <div class="col-lg-12">{{ form_row(form.prix) }}</div>
-                        <div class="col-lg-12">{{ form_row(form.type) }}</div>
-                        <div class="col-lg-12">{{ form_row(form.lieu) }}</div>
-                        <div class="col-lg-12">{{ form_row(form.duree) }}</div>
-                        <div class="col-lg-12">{{ form_row(form.imageUrl) }}</div>
+    <div class="row">
+        <div class="col-lg-12">
+            {{ form_row(form.nom) }}
+        </div>
 
-                        <div class="col-lg-12">
-                            <button type="submit" class="orange-button">Enregistrer</button>
-                        </div>
+        <div class="col-lg-12">
+            {{ form_row(form.description) }}
+        </div>
 
-                        <div class="col-lg-12 mt-3">
-                            <a href="{{ path('app_activite_index') }}" class="btn btn-dark">
-                                Retour à la liste
-                            </a>
-                        </div>
-                    </div>
+        <div class="col-lg-12">
+            {{ form_row(form.prix) }}
+        </div>
 
-                {{ form_end(form, {'render_rest': false}) }}
+        <div class="col-lg-12">
+            {{ form_row(form.type) }}
+        </div>
+
+        <div class="col-lg-12">
+            {{ form_row(form.lieu) }}
+        </div>
+
+        <div class="col-lg-12">
+            {{ form_row(form.duree) }}
+        </div>
+
+        <div class="col-lg-12">
+            {{ form_row(form.imageUrl) }}
+        </div>
+
+        <div class="col-lg-12">
+            <button type="submit" class="orange-button">
+                Enregistrer
+            </button>
+        </div>
+
+        <div class="col-lg-12 mt-3">
+            <a href="{{ path('app_activite_index') }}" class="btn btn-dark">
+                Retour à la liste
+            </a>
+        </div>
+    </div>
+
+{{ form_end(form) }}
             </div>
 
         </div>

@@ -1,6 +1,6 @@
 {% extends "base_front.html.twig" %}
 
-{% block title %}{{ destination.nom }} - VoyageLoisir{% endblock %}
+{% block title %}{{ destination.nom }} — VoyageLoisir{% endblock %}
 
 {% block body %}
 
@@ -11,570 +11,1514 @@
   </div>
 </div>
 
-{# ===== HERO SLIDER ===== #}
 <style>
-.dslide { position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;opacity:0;transition:opacity 1s ease;z-index:0; }
-.dslide.active { opacity:1;z-index:1; }
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap');
+
+:root {
+  --accent: #c8956c;
+  --accent-light: rgba(200,149,108,0.15);
+  --accent-border: rgba(200,149,108,0.3);
+  --dark: #0d0e12;
+  --dark2: #13141a;
+  --dark3: #1a1b22;
+  --text-white: rgba(255,255,255,0.92);
+  --text-muted: rgba(255,255,255,0.42);
+  --text-mid: rgba(255,255,255,0.65);
+  --card-bg: #ffffff;
+  --card-border: #eeece8;
+  --body-text: #2c2b28;
+  --muted-text: #8a8880;
+  --radius: 20px;
+  --radius-sm: 12px;
+  --cream: #f7f5f1;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body, html { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(--body-text); }
+
+/* ===== HERO ===== */
+.vl-hero {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  min-height: 600px;
+  max-height: 800px;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-end;
+}
+
+.vl-hero-slider { position: absolute; inset: 0; }
+
+.vl-slide {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  opacity: 0;
+  transition: opacity 1.2s ease;
+}
+
+.vl-slide.active { opacity: 1; }
+
+.vl-hero-veil {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(to top, rgba(10,9,8,0.96) 0%, rgba(10,9,8,0.6) 40%, rgba(10,9,8,0.15) 100%),
+    linear-gradient(to right, rgba(10,9,8,0.4) 0%, transparent 60%);
+  z-index: 1;
+}
+
+.vl-hero-content {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  padding: 0 80px 72px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: flex-end;
+  gap: 60px;
+}
+
+.vl-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 24px;
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.vl-breadcrumb a { color: var(--text-muted); text-decoration: none; transition: color 0.2s; }
+.vl-breadcrumb a:hover { color: var(--accent); }
+.vl-breadcrumb-sep { opacity: 0.3; }
+
+.vl-hero-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--accent-light);
+  border: 1px solid var(--accent-border);
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  padding: 6px 16px;
+  border-radius: 30px;
+  margin-bottom: 20px;
+}
+
+.vl-hero-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(52px, 7vw, 96px);
+  font-weight: 300;
+  color: var(--text-white);
+  line-height: 0.95;
+  letter-spacing: -2px;
+  margin-bottom: 28px;
+}
+.vl-hero-title em { font-style: italic; color: var(--accent); }
+
+.vl-hero-desc {
+  font-size: 15px;
+  font-weight: 300;
+  color: var(--text-mid);
+  line-height: 1.8;
+  max-width: 520px;
+  margin-bottom: 36px;
+}
+
+.vl-hero-meta { display: flex; align-items: center; gap: 0; }
+
+.vl-meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-right: 28px;
+  margin-right: 28px;
+  border-right: 1px solid rgba(255,255,255,0.12);
+}
+.vl-meta-item:last-child { border-right: none; margin-right: 0; padding-right: 0; }
+.vl-meta-val { font-size: 18px; font-weight: 500; color: var(--text-white); line-height: 1; }
+.vl-meta-key { font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-muted); }
+
+.vl-hero-score { text-align: right; }
+.vl-score-num {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 88px;
+  font-weight: 300;
+  color: var(--text-white);
+  line-height: 1;
+  letter-spacing: -4px;
+}
+.vl-score-sub { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); margin-top: 4px; }
+.vl-stars { display: flex; justify-content: flex-end; gap: 4px; margin-top: 10px; }
+.vl-star { width: 14px; height: 14px; fill: var(--accent); }
+.vl-star.empty { fill: rgba(255,255,255,0.15); }
+
+.vl-dots { position: absolute; bottom: 32px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; z-index: 3; }
+.vl-dot { width: 6px; height: 6px; border-radius: 3px; background: rgba(255,255,255,0.25); cursor: pointer; transition: all 0.3s; }
+.vl-dot.active { width: 24px; background: var(--accent); }
+
+/* ===== TRANSLATE BAR ===== */
+.vl-trad-bar {
+  position: sticky;
+  top: 0;
+  z-index: 500;
+  background: rgba(247,245,241,0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--card-border);
+  padding: 10px 80px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+#pt-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  background: var(--card-bg);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--card-border);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.1);
+  min-width: 190px;
+  overflow: hidden;
+  z-index: 600;
+  display: none;
+}
+#pt-dropdown.open { display: block; }
+
+.pt-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  font-size: 13px;
+  color: var(--body-text);
+  cursor: pointer;
+  transition: background 0.15s;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+}
+.pt-option:hover, .pt-option.active { background: var(--accent-light); color: var(--accent); }
+
+/* ===== LAYOUT PRINCIPAL — 2 colonnes ===== */
+.vl-main {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 60px 80px 0;
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 40px;
+  align-items: start;
+}
+
+/* ===== CARDS ===== */
+.vl-card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  padding: 36px 40px;
+  margin-bottom: 24px;
+}
+
+.vl-section-label {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 10px;
+}
+
+.vl-section-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 30px;
+  font-weight: 400;
+  color: var(--body-text);
+  margin-bottom: 16px;
+  line-height: 1.2;
+}
+
+.vl-section-divider { width: 40px; height: 1px; background: var(--accent); margin-bottom: 20px; opacity: 0.5; }
+.vl-section-text { font-size: 15px; font-weight: 300; color: var(--muted-text); line-height: 1.9; }
+
+/* ===== GALERIE PLEIN ÉCRAN ===== */
+.vl-fullwidth-section {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 0 80px;
+}
+
+.vl-fullwidth-card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  padding: 48px 52px;
+  margin-bottom: 32px;
+}
+
+/* Galerie masonry plein écran */
+.vl-gallery-full {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-auto-rows: 240px;
+  gap: 12px;
+  margin-top: 28px;
+}
+
+.vl-gallery-full .vl-gallery-item:nth-child(1) { grid-column: span 2; grid-row: span 2; }
+.vl-gallery-full .vl-gallery-item:nth-child(5) { grid-column: span 2; }
+
+.vl-gallery-item {
+  position: relative;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.vl-gallery-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.vl-gallery-item:hover img { transform: scale(1.06); }
+
+.vl-gallery-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(200,149,108,0.25);
+  opacity: 0;
+  transition: opacity 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.vl-gallery-item:hover .vl-gallery-overlay { opacity: 1; }
+
+/* ===== METEO PLEIN ÉCRAN ===== */
+.vl-meteo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.vl-meteo-card {
+  background: #f9f8f5;
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-sm);
+  padding: 20px 14px;
+  text-align: center;
+  transition: all 0.2s;
+}
+
+.vl-meteo-card:hover {
+  border-color: var(--accent-border);
+  background: var(--accent-light);
+}
+
+/* ===== YOUTUBE PLEIN ÉCRAN ===== */
+.vl-yt-fullwidth {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 40px;
+  align-items: start;
+  margin-top: 24px;
+}
+
+.vl-video-wrap {
+  position: relative;
+  padding-bottom: 56.25%;
+  height: 0;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.vl-video-wrap iframe,
+.vl-video-wrap video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* ===== ITINÉRAIRE ===== */
+.vl-itin-btns { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 6px; }
+
+.vl-btn-itin {
+  padding: 10px 26px;
+  border-radius: 30px;
+  border: 1px solid var(--accent-border);
+  background: transparent;
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  transition: all 0.2s;
+}
+
+.vl-btn-itin:hover { background: var(--accent); color: white; border-color: var(--accent); }
+
+/* ===== MODAL ITINÉRAIRE ===== */
+#modal-itineraire {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(10,9,8,0.82);
+  backdrop-filter: blur(8px);
+  z-index: 9999;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+#modal-inner {
+  background: #13141a;
+  border-radius: var(--radius);
+  width: 100%;
+  max-width: 960px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.itin-day-card {
+  background: #1a1b22;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  margin-bottom: 14px;
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+.itin-day-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 24px;
+  background: rgba(200,149,108,0.1);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.itin-day-num {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 32px;
+  font-weight: 300;
+  color: var(--accent);
+  line-height: 1;
+  min-width: 44px;
+}
+
+.itin-day-title { font-size: 15px; font-weight: 500; color: rgba(255,255,255,0.9); }
+.itin-slots { padding: 8px 24px 16px; }
+
+.itin-slot {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.itin-slot:last-child { border-bottom: none; }
+
+.itin-slot-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.itin-slot-lbl { font-size: 10px; font-weight: 500; letter-spacing: 1.5px; text-transform: uppercase; color: var(--accent); margin-bottom: 4px; }
+.itin-slot-txt { font-size: 13px; color: rgba(255,255,255,0.55); line-height: 1.7; }
+
+/* ===== VOYAGE BTN ===== */
+.vl-voyage-btn {
+  padding: 7px 16px;
+  border-radius: 20px;
+  border: 1px solid var(--card-border);
+  background: white;
+  color: var(--muted-text);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  transition: all 0.2s;
+}
+.vl-voyage-btn.active, .vl-voyage-btn:hover { background: var(--accent); color: white; border-color: var(--accent); }
+
+/* ===== MAP ===== */
+.vl-map-btn {
+  padding: 7px 16px;
+  border-radius: 20px;
+  border: 1px solid var(--card-border);
+  background: white;
+  color: var(--muted-text);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.vl-map-btn.active, .vl-map-btn:hover { background: var(--accent); color: white; border-color: var(--accent); }
+
+/* ===== SIDEBAR ===== */
+.vl-stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.vl-stat {
+  background: #f9f8f5;
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-sm);
+  padding: 18px 16px;
+}
+
+.vl-stat-val { font-size: 17px; font-weight: 500; color: var(--body-text); margin-bottom: 4px; line-height: 1.2; }
+.vl-stat-key { font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted-text); }
+
+/* ===== TICKET ===== */
+.vl-ticket {
+  position: relative;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  min-height: 200px;
+  margin-bottom: 14px;
+  cursor: pointer;
+  transition: transform 0.3s;
+}
+.vl-ticket:hover { transform: translateY(-4px); }
+
+.vl-ticket-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: brightness(0.45) saturate(1.1);
+  transition: transform 0.5s;
+}
+.vl-ticket:hover .vl-ticket-bg { transform: scale(1.05); }
+
+.vl-ticket-veil {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(160deg, rgba(0,0,0,0.05), rgba(0,0,0,0.7));
+}
+
+.vl-ticket-notch { position: absolute; top: 50%; width: 20px; height: 20px; border-radius: 50%; background: var(--cream); z-index: 2; }
+.vl-ticket-notch.l { left: -10px; transform: translateY(-50%); }
+.vl-ticket-notch.r { right: -10px; transform: translateY(-50%); }
+
+.vl-ticket-inner {
+  position: relative;
+  z-index: 3;
+  padding: 22px 22px 18px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.vl-ticket-route {
+  display: flex;
+  align-items: center;
+  background: rgba(255,255,255,0.1);
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin: 12px 0;
+  gap: 10px;
+}
+
+.vl-ticket-city { flex: 1; font-size: 15px; font-weight: 500; color: white; text-transform: uppercase; letter-spacing: 0.5px; }
+.vl-ticket-city-date { font-size: 10px; color: rgba(255,255,255,0.45); margin-top: 3px; font-weight: 400; text-transform: none; letter-spacing: 0; }
+.vl-ticket-arr { text-align: right; }
+.vl-ticket-line { display: flex; align-items: center; gap: 0; flex: 0; }
+.vl-ticket-dot { width: 5px; height: 5px; border-radius: 50%; background: rgba(255,255,255,0.4); }
+.vl-ticket-seg { width: 22px; height: 1px; background: rgba(255,255,255,0.25); }
+
+.vl-conv-btn {
+  padding: 3px 10px;
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.2);
+  background: rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.7);
+  font-size: 10px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  transition: all 0.2s;
+}
+.vl-conv-btn.active { background: rgba(255,255,255,0.25); font-weight: 700; }
+
+.vl-reserve-btn {
+  display: block;
+  width: 100%;
+  padding: 11px;
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  margin-top: 14px;
+  font-family: 'DM Sans', sans-serif;
+  transition: all 0.2s;
+  text-align: center;
+  text-decoration: none;
+}
+.vl-reserve-btn:hover { background: #b8845a; color: white; }
+
+/* ===== SHARE CARD ===== */
+.vl-share-card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  padding: 28px 32px;
+  text-align: center;
+  margin-top: 4px;
+}
+
+.vl-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--muted-text);
+  text-decoration: none;
+  margin-top: 16px;
+  transition: color 0.2s;
+}
+.vl-back:hover { color: var(--accent); }
+
+/* ===== SECTION SEPARATOR ===== */
+.vl-sep {
+  max-width: 1320px;
+  margin: 0 auto 40px;
+  padding: 0 80px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+.vl-sep-line { flex: 1; height: 1px; background: var(--card-border); }
+.vl-sep-label {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--accent);
+  white-space: nowrap;
+}
+
+/* ===== BOTTOM PADDING ===== */
+.vl-page-bottom { padding-bottom: 100px; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.fade-up { animation: fadeUp 0.6s ease both; }
 </style>
-<div style="position:relative;width:100%;height:520px;overflow:hidden;background:#222">
 
-  {% if destination.images|length > 0 %}
-    {% for image in destination.images %}
-      <img src="{{ asset(image.urlImage) }}"
-           alt="{{ destination.nom }}"
-           class="dslide{% if loop.first %} active{% endif %}">
-    {% endfor %}
-  {% else %}
-    <img src="{{ asset("assets_front/images/images/single-property.jpg") }}"
-         alt="{{ destination.nom }}"
-         class="dslide active">
-  {% endif %}
+{# ===== HERO ===== #}
+<div class="vl-hero">
+  <div class="vl-hero-slider">
+    {% if destination.images|length > 0 %}
+      {% for image in destination.images %}
+        <img src="{{ asset(image.urlImage) }}" alt="{{ destination.nom }}" class="vl-slide{% if loop.first %} active{% endif %}">
+      {% endfor %}
+    {% else %}
+      <img src="{{ asset('assets_front/images/images/single-property.jpg') }}" alt="{{ destination.nom }}" class="vl-slide active">
+    {% endif %}
+  </div>
+  <div class="vl-hero-veil"></div>
 
-  <div style="position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,0.2) 0%,rgba(0,0,0,0.65) 100%);z-index:2"></div>
+  <div class="vl-hero-content fade-up">
+    <div>
+      <div class="vl-breadcrumb">
+        <a href="{{ path('app_destinations') }}">Accueil</a>
+        <span class="vl-breadcrumb-sep">—</span>
+        <a href="{{ path('app_destinations') }}">Destinations</a>
+        <span class="vl-breadcrumb-sep">—</span>
+        <span style="color: var(--text-mid)">{{ destination.nom }}</span>
+      </div>
 
-  <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px;z-index:3">
-    <span style="color:#f97316;font-size:14px;font-weight:600;letter-spacing:3px;text-transform:uppercase;margin-bottom:14px">{{ destination.pays }}</span>
-    <h1 style="color:#fff;font-size:52px;font-weight:700;margin-bottom:12px;text-shadow:0 2px 8px rgba(0,0,0,0.4)">{{ destination.nom }}</h1>
-    <p style="color:rgba(255,255,255,0.85);font-size:17px;max-width:520px;margin-bottom:0">
-      {{ destination.meilleureSaison ? "Meilleure saison : " ~ destination.meilleureSaison : "" }}
-    </p>
-    <div style="margin-top:20px">
-      <a href="{{ path("app_destinations") }}" style="color:rgba(255,255,255,0.7);font-size:13px;text-decoration:none">Accueil</a>
-      <span style="color:rgba(255,255,255,0.5);margin:0 8px">/</span>
-      <a href="{{ path("app_destinations") }}" style="color:rgba(255,255,255,0.7);font-size:13px;text-decoration:none">Destinations</a>
-      <span style="color:rgba(255,255,255,0.5);margin:0 8px">/</span>
-      <span style="color:#f97316;font-size:13px">{{ destination.nom }}</span>
+      <div class="vl-hero-tag">
+        <span style="width:5px;height:5px;border-radius:50%;background:var(--accent);display:inline-block;flex-shrink:0"></span>
+        {{ destination.pays }}
+      </div>
+
+      <h1 class="vl-hero-title">
+        {% set words = destination.nom|split(' ') %}
+        {% if words|length > 1 %}
+          {{ words[0] }} <em>{{ words[1:]|join(' ') }}</em>
+        {% else %}
+          <em>{{ destination.nom }}</em>
+        {% endif %}
+      </h1>
+
+      <p class="vl-hero-desc">{{ destination.description|slice(0, 160) }}{% if destination.description|length > 160 %}…{% endif %}</p>
+
+      <div class="vl-hero-meta">
+        <div class="vl-meta-item">
+          <div class="vl-meta-val">{{ destination.nbVisites ?? 0 }}</div>
+          <div class="vl-meta-key">Visites</div>
+        </div>
+        {% if destination.meilleureSaison %}
+        <div class="vl-meta-item">
+          <div class="vl-meta-val">{{ destination.meilleureSaison }}</div>
+          <div class="vl-meta-key">Meilleure saison</div>
+        </div>
+        {% endif %}
+        <div class="vl-meta-item">
+          <div class="vl-meta-val" style="color: {% if destination.statut %}#7ec99a{% else %}#e07070{% endif %}">
+            {{ destination.statut ? 'Actif' : 'Inactif' }}
+          </div>
+          <div class="vl-meta-key">Statut</div>
+        </div>
+        <div class="vl-meta-item">
+          <div class="vl-meta-val">{{ destination.nbLikes ?? 0 }}</div>
+          <div class="vl-meta-key">J'aime</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="vl-hero-score">
+      {% set note_visites = 0 %}
+      {% if destination.nbVisites >= 10000 %}{% set note_visites = 2.5 %}
+      {% elseif destination.nbVisites >= 5000 %}{% set note_visites = 2 %}
+      {% elseif destination.nbVisites >= 2000 %}{% set note_visites = 1.5 %}
+      {% elseif destination.nbVisites >= 1000 %}{% set note_visites = 1 %}
+      {% elseif destination.nbVisites >= 500 %}{% set note_visites = 0.5 %}{% endif %}
+      {% set note_saison = 0 %}
+      {% if destination.meilleureSaison == "Ete" %}{% set note_saison = 2.5 %}
+      {% elseif destination.meilleureSaison == "Printemps" %}{% set note_saison = 2 %}
+      {% elseif destination.meilleureSaison == "Automne" %}{% set note_saison = 1.5 %}
+      {% elseif destination.meilleureSaison == "Hiver" %}{% set note_saison = 1 %}{% endif %}
+      {% set note_jaimes = 0 %}
+      {% if destination.nbLikes >= 50 %}{% set note_jaimes = 1 %}
+      {% elseif destination.nbLikes >= 20 %}{% set note_jaimes = 0.75 %}
+      {% elseif destination.nbLikes >= 10 %}{% set note_jaimes = 0.5 %}
+      {% elseif destination.nbLikes >= 5 %}{% set note_jaimes = 0.25 %}
+      {% elseif destination.nbLikes >= 1 %}{% set note_jaimes = 0.1 %}{% endif %}
+      {% set note_totale = note_visites + note_saison + note_jaimes %}
+      {% if note_totale > 5 %}{% set note_totale = 5 %}{% endif %}
+      {% set etoiles_pleines = note_totale|round(0, 'floor') %}
+      {% set demi_etoile = ((note_totale - etoiles_pleines) >= 0.5) ? 1 : 0 %}
+      {% set etoiles_vides = 5 - etoiles_pleines - demi_etoile %}
+
+      <div class="vl-score-num">{{ note_totale|number_format(1) }}</div>
+      <div class="vl-score-sub">/ 5 · Note globale</div>
+      <div class="vl-stars">
+        {% for i in 1..etoiles_pleines %}
+          <svg class="vl-star" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        {% endfor %}
+        {% if demi_etoile %}
+          <svg class="vl-star" viewBox="0 0 24 24"><defs><linearGradient id="h2"><stop offset="50%" stop-color="#c8956c"/><stop offset="50%" stop-color="rgba(255,255,255,0.15)"/></linearGradient></defs><path fill="url(#h2)" d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        {% endif %}
+        {% for i in 1..etoiles_vides %}
+          <svg class="vl-star empty" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        {% endfor %}
+      </div>
     </div>
   </div>
 
-  <div style="position:absolute;bottom:20px;left:50%;transform:translateX(-50%);display:flex;gap:8px;z-index:4" id="detail-dots"></div>
-
+  <div class="vl-dots" id="vl-dots"></div>
 </div>
 
 <script>
-(function() {
-    var cur = 0;
-    var timer = null;
-
-    function init() {
-        var slides = document.querySelectorAll(".dslide");
-        var dc     = document.getElementById("detail-dots");
-        if (!slides || slides.length <= 1) return;
-
-        var dots = [];
-        for (var i = 0; i < slides.length; i++) {
-            (function(idx) {
-                var d = document.createElement("div");
-                d.style.cssText = "width:10px;height:10px;border-radius:50%;cursor:pointer;transition:background 0.3s;background:" + (idx===0 ? "#f97316" : "rgba(255,255,255,0.5)");
-                d.addEventListener("click", function() { go(idx, slides, dots); });
-                dc.appendChild(d);
-                dots.push(d);
-            })(i);
-        }
-
-        timer = setInterval(function() {
-            go((cur + 1) % slides.length, slides, dots);
-        }, 7000);
-
-        function go(i, slides, dots) {
-            slides[cur].classList.remove("active");
-            dots[cur].style.background = "rgba(255,255,255,0.5)";
-            cur = i;
-            slides[cur].classList.add("active");
-            dots[cur].style.background = "#f97316";
-            clearInterval(timer);
-            timer = setInterval(function() { go((cur+1) % slides.length, slides, dots); }, 7000);
-        }
-    }
-
-    if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", init);
-    } else {
-        init();
-    }
+(function(){
+  var cur=0, timer=null;
+  var slides=document.querySelectorAll('.vl-slide');
+  var dotsEl=document.getElementById('vl-dots');
+  if(!slides||slides.length<=1) return;
+  var dots=[];
+  for(var i=0;i<slides.length;i++){
+    (function(idx){
+      var d=document.createElement('div');
+      d.className='vl-dot'+(idx===0?' active':'');
+      d.onclick=function(){go(idx);};
+      dotsEl.appendChild(d);
+      dots.push(d);
+    })(i);
+  }
+  function go(i){
+    slides[cur].classList.remove('active');dots[cur].classList.remove('active');
+    cur=i;slides[cur].classList.add('active');dots[cur].classList.add('active');
+    clearInterval(timer);timer=setInterval(function(){go((cur+1)%slides.length);},7000);
+  }
+  timer=setInterval(function(){go((cur+1)%slides.length);},7000);
 })();
 </script>
 
-{# ===== CONTENU ===== #}
-<div class="single-property section">
-  <div class="container">
-    <div class="row">
+{# ===== BARRE DE TRADUCTION ===== #}
+<div class="vl-trad-bar">
+  <div style="position:relative">
+    <button id="pt-toggle-btn" onclick="toggleDropdown()" style="display:flex;align-items:center;gap:8px;padding:8px 18px;border-radius:30px;border:1px solid var(--accent-border);background:transparent;color:var(--accent);font-size:12px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:0.5px">
+      <span id="pt-flag">🌍</span>
+      <span id="pt-label">Traduire la page</span>
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+    </button>
+    <div id="pt-dropdown">
+      <button class="pt-option" data-lang="en" onclick="choisirLang('en','🇬🇧','English')">🇬🇧 English</button>
+      <button class="pt-option" data-lang="ar" onclick="choisirLang('ar','🇸🇦','العربية')">🇸🇦 العربية</button>
+      <button class="pt-option" data-lang="es" onclick="choisirLang('es','🇪🇸','Español')">🇪🇸 Español</button>
+      <button class="pt-option" data-lang="de" onclick="choisirLang('de','🇩🇪','Deutsch')">🇩🇪 Deutsch</button>
+      <button class="pt-option" data-lang="it" onclick="choisirLang('it','🇮🇹','Italiano')">🇮🇹 Italiano</button>
+      <button class="pt-option" data-lang="tr" onclick="choisirLang('tr','🇹🇷','Türkçe')">🇹🇷 Türkçe</button>
+      <button class="pt-option" data-lang="zh" onclick="choisirLang('zh','🇨🇳','中文')">🇨🇳 中文</button>
+      <button class="pt-option" data-lang="ja" onclick="choisirLang('ja','🇯🇵','日本語')">🇯🇵 日本語</button>
+      <div style="border-top:1px solid var(--card-border);margin:4px 0"></div>
+      <button class="pt-option" onclick="restaurerPage();fermerDropdown()">↺ Original (Français)</button>
+    </div>
+  </div>
+  <span id="pt-status" style="font-size:12px;color:var(--accent);font-weight:500;display:none"></span>
+</div>
 
-      <div class="col-lg-8">
+<script>
+function toggleDropdown(){document.getElementById('pt-dropdown').classList.toggle('open');}
+function fermerDropdown(){document.getElementById('pt-dropdown').classList.remove('open');}
+function choisirLang(lang,flag,label){fermerDropdown();document.getElementById('pt-flag').textContent=flag;document.getElementById('pt-label').textContent=label;document.querySelectorAll('.pt-option').forEach(function(b){b.classList.remove('active');});var opt=document.querySelector('.pt-option[data-lang="'+lang+'"]');if(opt)opt.classList.add('active');traduirePage(lang);}
+document.addEventListener('click',function(e){if(!e.target.closest('.vl-trad-bar'))fermerDropdown();});
+</script>
 
+<script>
+(function(){
+  var _originals=null,_currentLang=null,MAX=450;
+  function collectNodes(){var root=document.body;if(!root)return[];var result=[];var walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:function(node){if(!node.textContent.trim())return NodeFilter.FILTER_REJECT;var p=node.parentElement;if(!p)return NodeFilter.FILTER_REJECT;var tag=p.tagName.toLowerCase();if(['script','style','noscript','iframe','code'].indexOf(tag)>=0)return NodeFilter.FILTER_REJECT;if(p.closest('.vl-trad-bar'))return NodeFilter.FILTER_REJECT;if(p.closest('#pt-dropdown'))return NodeFilter.FILTER_REJECT;if(p.closest('#js-preloader'))return NodeFilter.FILTER_REJECT;return NodeFilter.FILTER_ACCEPT;}});var n;while((n=walker.nextNode()))result.push(n);return result;}
+  function sauvegarderOriginaux(nodes){_originals=new Map();nodes.forEach(function(n){_originals.set(n,n.textContent);});}
+  function restaurerOriginaux(nodes){if(!_originals)return;nodes.forEach(function(n){if(_originals.has(n))n.textContent=_originals.get(n);});}
+  function splitLongText(text,maxLen){var trimmed=text.trim();if(trimmed.length<=maxLen)return[trimmed];var parts=[];var remaining=trimmed;while(remaining.length>maxLen){var cut=remaining.lastIndexOf(' ',maxLen);if(cut<Math.floor(maxLen*0.6))cut=maxLen;parts.push(remaining.slice(0,cut).trim());remaining=remaining.slice(cut).trim();}if(remaining)parts.push(remaining);return parts;}
+  function traduireChunk(chunk,lang){return fetch('https://api.mymemory.translated.net/get?q='+encodeURIComponent(chunk)+'&langpair=fr|'+lang).then(function(r){return r.json();}).then(function(d){var t=d&&d.responseData&&d.responseData.translatedText?d.responseData.translatedText:'';if(!t||/QUERY LENGTH LIMIT EXCEEDED/i.test(t))return chunk;return t;}).catch(function(){return chunk;});}
+  function grouperNoeuds(nodes){var groupes=[],courant={nodes:[],textes:[],total:0};function pushCurrent(){if(courant.nodes.length>0){groupes.push(courant);courant={nodes:[],textes:[],total:0};}}nodes.forEach(function(n){var text=n.textContent.trim();if(!text)return;splitLongText(text,MAX).forEach(function(part,index,allParts){if(courant.total+part.length+1>MAX)pushCurrent();var nodeRef=index===0?n:null;courant.nodes.push(nodeRef);courant.textes.push(part);courant.total+=part.length+1;if(index<allParts.length-1)pushCurrent();});});pushCurrent();return groupes;}
+  function appliquerTraductionAuGroupe(groupe,traduit){var lignes=traduit.split('\n');var buffer=[];groupe.nodes.forEach(function(nodeRef,i){buffer.push(lignes[i]!==undefined?lignes[i]:groupe.textes[i]);if(nodeRef){nodeRef.textContent=buffer.join(' ');buffer=[];}});}
+  window.traduirePage=function(lang){if(_currentLang===lang)return;_currentLang=lang;var nodes=collectNodes();if(!_originals)sauvegarderOriginaux(nodes);else restaurerOriginaux(nodes);var groupes=grouperNoeuds(nodes);var status=document.getElementById('pt-status');status.style.display='inline';status.textContent='⟳ Traduction... (0/'+groupes.length+')';var done=0;Promise.all(groupes.map(function(g){return traduireChunk(g.textes.join('\n'),lang).then(function(traduit){appliquerTraductionAuGroupe(g,traduit);done++;status.textContent='⟳ ('+done+'/'+groupes.length+')';});})).then(function(){status.textContent='✓ Traduit';setTimeout(function(){status.style.display='none';},3000);});};
+  window.restaurerPage=function(){_currentLang=null;var nodes=collectNodes();if(_originals)restaurerOriginaux(nodes);document.getElementById('pt-status').style.display='none';};
+})();
+</script>
 
-        {# ===== NOTE AUTOMATIQUE ===== #}
-        {% set note_visites = 0 %}
-        {% if destination.nbVisites >= 10000 %}
-            {% set note_visites = 2.5 %}
-        {% elseif destination.nbVisites >= 5000 %}
-            {% set note_visites = 2 %}
-        {% elseif destination.nbVisites >= 2000 %}
-            {% set note_visites = 1.5 %}
-        {% elseif destination.nbVisites >= 1000 %}
-            {% set note_visites = 1 %}
-        {% elseif destination.nbVisites >= 500 %}
-            {% set note_visites = 0.5 %}
-        {% endif %}
+{# ===== LAYOUT PRINCIPAL 2 COLONNES — description + sidebar ===== #}
+<div id="vl-page-content">
+<div class="vl-main">
 
-        {% set note_saison = 0 %}
-        {% if destination.meilleureSaison == "Ete" %}
-            {% set note_saison = 2.5 %}
-        {% elseif destination.meilleureSaison == "Printemps" %}
-            {% set note_saison = 2 %}
-        {% elseif destination.meilleureSaison == "Automne" %}
-            {% set note_saison = 1.5 %}
-        {% elseif destination.meilleureSaison == "Hiver" %}
-            {% set note_saison = 1 %}
-        {% endif %}
+  {# COLONNE GAUCHE #}
+  <div>
+    {# DESCRIPTION #}
+    <div class="vl-card fade-up">
+      <div class="vl-section-label">À propos</div>
+      <h2 class="vl-section-title">{{ destination.nom }}, {{ destination.pays }}</h2>
+      <div class="vl-section-divider"></div>
+      <p class="vl-section-text">{{ destination.description ?? 'Aucune description disponible.' }}</p>
+    </div>
 
-        {% set note_totale = note_visites + note_saison %}
-        {% if note_totale > 5 %}{% set note_totale = 5 %}{% endif %}
-        {% set etoiles_pleines = note_totale|round(0, "floor") %}
-        {% set demi_etoile = ((note_totale - etoiles_pleines) >= 0.5) ? 1 : 0 %}
-        {% set etoiles_vides = 5 - etoiles_pleines - demi_etoile %}
+    {# ITINÉRAIRE IA #}
+    <div class="vl-card fade-up">
+      <div class="vl-section-label">Intelligence artificielle</div>
+      <h3 class="vl-section-title" style="font-size:22px">Programme de voyage</h3>
+      <p class="vl-section-text" style="margin-bottom:20px">Choisissez la durée et l'IA génère votre programme complet jour par jour.</p>
+      <div class="vl-itin-btns">
+  {% set durees_affichees = [] %}
+  {% for v in destination.voyages %}
+    {% if v.dateDepart and v.dateArrivee %}
+      {% set duree = ((v.dateArrivee|date("U") - v.dateDepart|date("U")) / 86400)|round %}
+      {% if duree > 0 and duree not in durees_affichees %}
+        {% set durees_affichees = durees_affichees|merge([duree]) %}
+        <button type="button" class="vl-btn-itin" onclick="genererItineraire({{ duree }})">
+          {{ duree }} jour{{ duree > 1 ? 's' : '' }}
+          <span style="font-size:10px;opacity:0.6;display:block">Voyage #{{ v.id }}</span>
+        </button>
+      {% endif %}
+    {% endif %}
+  {% endfor %}
 
-        <div style="margin-bottom:30px;padding:20px;background:#fff3e0;border-radius:12px;border:1px solid #ffe0b2">
-          <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap">
-            <div style="text-align:center;min-width:70px">
-              <div style="font-size:42px;font-weight:700;color:#f97316;line-height:1">{{ note_totale|number_format(1) }}</div>
-              <div style="font-size:12px;color:#888;margin-top:4px">sur 5</div>
-            </div>
-            <div>
-              <div style="display:flex;gap:4px;margin-bottom:8px">
-                {% for i in 1..etoiles_pleines %}
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="#f97316"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                {% endfor %}
-                {% if demi_etoile %}
-                  <svg width="24" height="24" viewBox="0 0 24 24"><defs><linearGradient id="half"><stop offset="50%" stop-color="#f97316"/><stop offset="50%" stop-color="#ddd"/></linearGradient></defs><path fill="url(#half)" d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                {% endif %}
-                {% for i in 1..etoiles_vides %}
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="#ddd"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                {% endfor %}
-              </div>
-              <div style="display:flex;gap:16px;flex-wrap:wrap">
-                <div style="font-size:12px;color:#666">
-                  <span style="font-weight:600;color:#f97316">Visites</span> :
-                  {% if destination.nbVisites >= 10000 %} Tres populaire
-                  {% elseif destination.nbVisites >= 5000 %} Populaire
-                  {% elseif destination.nbVisites >= 2000 %} Bien visite
-                  {% elseif destination.nbVisites >= 1000 %} Connu
-                  {% elseif destination.nbVisites >= 500 %}  Emergent
-                  {% else %} Peu connu
-                  {% endif %}
-                  ({{ destination.nbVisites ?? 0 }})
-                </div>
-                <div style="font-size:12px;color:#666">
-                  <span style="font-weight:600;color:#f97316">Saison</span> :
-                  {% if destination.meilleureSaison == "Ete" %} Excellente
-                  {% elseif destination.meilleureSaison == "Printemps" %} Tres bonne
-                  {% elseif destination.meilleureSaison == "Automne" %} Bonne
-                  {% elseif destination.meilleureSaison == "Hiver" %} Correcte
-                  {% else %} -
-                  {% endif %}
-                  ({{ destination.meilleureSaison ?? "-" }})
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+  {% if durees_affichees is empty %}
+    <p style="font-size:13px;color:var(--muted-text);font-style:italic">
+      Aucun voyage avec dates disponibles.
+    </p>
+  {% endif %}
 
-        <div class="main-content" style="margin-bottom:30px">
-          <span class="category">{{ destination.pays }}</span>
-          <h4>{{ destination.nom }} - {{ destination.pays }}</h4>
-          <p>{{ destination.description ?? "Aucune description disponible." }}</p>
-        </div>
+  <span id="itineraire-loading" style="display:none;font-size:13px;color:var(--accent);align-self:center">⟳ Génération...</span>
+</div>
+    </div>
 
-        {# ===== GALERIE EN GRILLE ===== #}
-        {% if destination.images|length > 0 %}
-        <div style="margin-bottom:30px">
-          <h5 style="margin-bottom:16px">Galerie photos</h5>
-          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
-            {% for image in destination.images %}
-              <div style="overflow:hidden;border-radius:10px;cursor:pointer" onclick="openLightbox({{ loop.index0 }})">
-                <img src="{{ asset(image.urlImage) }}"
-                     alt="{{ destination.nom }}"
-                     style="width:100%;height:130px;object-fit:cover;transition:transform 0.3s"
-                     onmouseover="this.style.transform='scale(1.06)'"
-                     onmouseout="this.style.transform='scale(1)'">
-              </div>
-            {% endfor %}
-          </div>
-        </div>
-        {% endif %}
-
-        {# ===== LIGHTBOX ===== #}
-        <div id="lightbox" onclick="closeLightbox()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:9999;align-items:center;justify-content:center">
-          <button onclick="prevLight(event)" style="position:absolute;left:20px;top:50%;transform:translateY(-50%);background:rgba(255,255,255,0.15);border:none;color:#fff;font-size:28px;width:48px;height:48px;border-radius:50%;cursor:pointer">&#8249;</button>
-          <img id="lightbox-img" src="" alt="" style="max-width:90vw;max-height:85vh;border-radius:10px;object-fit:contain">
-          <button onclick="nextLight(event)" style="position:absolute;right:20px;top:50%;transform:translateY(-50%);background:rgba(255,255,255,0.15);border:none;color:#fff;font-size:28px;width:48px;height:48px;border-radius:50%;cursor:pointer">&#8250;</button>
-          <span onclick="closeLightbox()" style="position:absolute;top:20px;right:24px;color:#fff;font-size:28px;cursor:pointer">&#10005;</span>
-          <div id="lightbox-count" style="position:absolute;bottom:20px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,0.7);font-size:13px"></div>
-        </div>
-
-        <script>
-        var imgUrls = [{% for image in destination.images %}"{{ asset(image.urlImage) }}"{% if not loop.last %},{% endif %}{% endfor %}];
-        var lbCurrent = 0;
-        function openLightbox(i) {
-            lbCurrent = i;
-            document.getElementById("lightbox").style.display = "flex";
-            document.getElementById("lightbox-img").src = imgUrls[i];
-            document.getElementById("lightbox-count").textContent = (i+1) + " / " + imgUrls.length;
-        }
-        function closeLightbox() { document.getElementById("lightbox").style.display = "none"; }
-        function prevLight(e) { e.stopPropagation(); lbCurrent=(lbCurrent-1+imgUrls.length)%imgUrls.length; openLightbox(lbCurrent); }
-        function nextLight(e) { e.stopPropagation(); lbCurrent=(lbCurrent+1)%imgUrls.length; openLightbox(lbCurrent); }
-        document.addEventListener("keydown", function(e) {
-            if (document.getElementById("lightbox").style.display==="flex") {
-                if (e.key==="ArrowLeft") prevLight({stopPropagation:function(){}});
-                if (e.key==="ArrowRight") nextLight({stopPropagation:function(){}});
-                if (e.key==="Escape") closeLightbox();
-            }
-        });
-        </script>
-
-
-        {# ===== METEO VOYAGE ===== #}
-        {% if destination.latitude and destination.longitude %}
-        {% set voyagesAvecDates = [] %}
-        {% for v in destination.voyages %}
-            {% if v.dateDepart and v.dateArrivee %}
-                {% set voyagesAvecDates = voyagesAvecDates|merge([v]) %}
-            {% endif %}
+    {# CARTE LEAFLET #}
+    {% if destination.latitude and destination.longitude %}
+    {% set voyagesAvecDepart = [] %}
+    {% for v in destination.voyages %}{% if v.pointDepart %}{% set voyagesAvecDepart = voyagesAvecDepart|merge([v]) %}{% endif %}{% endfor %}
+    <div class="vl-card fade-up">
+      <div class="vl-section-label">Localisation</div>
+      <h3 class="vl-section-title" style="font-size:22px">Carte & Trajets</h3>
+      <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+      <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+      {% if voyagesAvecDepart|length > 0 %}
+      <div style="margin-bottom:14px;display:flex;flex-wrap:wrap;gap:8px">
+        {% for v in voyagesAvecDepart %}
+          {% set ticons = {'Avion': '✈', 'Bus': '🚌', 'Train': '🚆', 'Voiture': '🚗'} %}
+          {% set transportIcons = '' %}
+          {% for t in v.transports %}{% set transportIcons = transportIcons ~ (ticons[t.typeTransport] ?? '') %}{% endfor %}
+          <button type="button" id="map-btn-{{ v.id }}" onclick="showVoyageRoute({{ v.id }})" class="vl-map-btn{% if loop.first %} active{% endif %}">
+            {{ transportIcons }} Voyage {{ v.id }}
+          </button>
         {% endfor %}
+      </div>
+      {% endif %}
+      <div id="trajet-map" style="height:380px;border-radius:var(--radius-sm);border:1px solid var(--card-border);z-index:1;position:relative;margin-top:16px"></div>
+      <div id="route-info" style="display:none;margin-top:12px;padding:14px 18px;background:#f9f8f5;border-radius:10px;border:1px solid var(--card-border);font-size:13px;color:var(--body-text);line-height:1.7"></div>
+      <small style="color:#ccc;font-size:11px;margin-top:8px;display:block;text-align:right">OpenStreetMap / OSRM</small>
+    </div>
+    <script>
+    (function(){
+      var destLat={{ destination.latitude }},destLng={{ destination.longitude }},destNom="{{ destination.nom|e('js') }}",destPays="{{ destination.pays|e('js') }}";
+      var VOYAGES_MAP=[{% for v in voyagesAvecDepart %}{id:{{ v.id }},depart:"{{ v.pointDepart|e('js') }}",arrivee:"{{ v.pointArrivee ? v.pointArrivee|e('js') : '' }}",transports:[{% for t in v.transports %}"{{ t.typeTransport|e('js') }}"{% if not loop.last %},{% endif %}{% endfor %}],dateD:"{{ v.dateDepart ? v.dateDepart|date('d/m/Y') : '' }}",dateA:"{{ v.dateArrivee ? v.dateArrivee|date('d/m/Y') : '' }}"}{% if not loop.last %},{% endif %}{% endfor %}];
+      var map=L.map("trajet-map").setView([destLat,destLng],5);
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{attribution:"© OpenStreetMap"}).addTo(map);
+      var destIcon=L.divIcon({className:"",html:"<div style='width:16px;height:16px;border-radius:50%;background:#c8956c;border:3px solid white;box-shadow:0 2px 8px rgba(200,149,108,0.5)'></div>",iconSize:[16,16],iconAnchor:[8,8]});
+      L.marker([destLat,destLng],{icon:destIcon}).addTo(map).bindPopup("<strong style='color:#c8956c'>"+destNom+"</strong><br><small>Destination</small>").openPopup();
+      var routeLayers=[];
+      function clearRoute(){routeLayers.forEach(function(l){map.removeLayer(l);});routeLayers=[];document.getElementById("route-info").style.display="none";}
+      function addLayer(l){l.addTo(map);routeLayers.push(l);return l;}
+      function geocode(q,cb){fetch("https://nominatim.openstreetmap.org/search?q="+encodeURIComponent(q)+"&format=json&limit=1",{headers:{"Accept-Language":"fr"}}).then(function(r){return r.json();}).then(function(d){cb(d&&d.length>0?[parseFloat(d[0].lat),parseFloat(d[0].lon)]:null);}).catch(function(){cb(null);});}
+      function findAirport(name,cb){geocode(name+" aéroport international",function(c){if(c){cb(c);return;}geocode(name+" airport",cb);});}
+      function getOsrmRoute(la1,lo1,la2,lo2,cb){fetch("https://router.project-osrm.org/route/v1/driving/"+lo1+","+la1+";"+lo2+","+la2+"?overview=full&geometries=geojson").then(function(r){return r.json();}).then(function(d){cb(d&&d.code==="Ok"&&d.routes&&d.routes[0]?d.routes[0]:null);}).catch(function(){cb(null);});}
+      function haversine(la1,lo1,la2,lo2){var R=6371,dLa=(la2-la1)*Math.PI/180,dLo=(lo2-lo1)*Math.PI/180;var a=Math.sin(dLa/2)*Math.sin(dLa/2)+Math.cos(la1*Math.PI/180)*Math.cos(la2*Math.PI/180)*Math.sin(dLo/2)*Math.sin(dLo/2);return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));}
+      function fmtDur(min){min=Math.round(min);if(min<60)return min+" min";var h=Math.floor(min/60),m=min%60;return h+"h"+(m>0?m+"min":"");}
+      function makeArc(la1,lo1,la2,lo2,color,dashed){var mLa=(la1+la2)/2+Math.abs(lo2-lo1)*0.14,mLo=(lo1+lo2)/2,pts=[];for(var t=0;t<=1;t+=0.02)pts.push([(1-t)*(1-t)*la1+2*(1-t)*t*mLa+t*t*la2,(1-t)*(1-t)*lo1+2*(1-t)*t*mLo+t*t*lo2]);return L.polyline(pts,{color:color,weight:3,opacity:0.8,dashArray:dashed?"8 5":null});}
+      function mkIcon(la,lo,color,size,popup){var m=L.marker([la,lo],{icon:L.divIcon({className:"",html:"<div style='width:"+size+"px;height:"+size+"px;border-radius:50%;background:"+color+";border:2px solid white;box-shadow:0 2px 6px rgba(0,0,0,.3)'></div>",iconSize:[size,size],iconAnchor:[size/2,size/2]})});if(popup)m.bindPopup(popup);return m;}
+      function showInfo(html){var el=document.getElementById("route-info");el.innerHTML=html;el.style.display="block";}
+      window.showVoyageRoute=function(vid){
+        clearRoute();
+        VOYAGES_MAP.forEach(function(v){var btn=document.getElementById("map-btn-"+v.id);if(!btn)return;if(v.id===vid)btn.classList.add("active");else btn.classList.remove("active");});
+        var voyage=null;for(var i=0;i<VOYAGES_MAP.length;i++){if(VOYAGES_MAP[i].id===vid){voyage=VOYAGES_MAP[i];break;}}
+        if(!voyage)return;
+        var hasAvion=voyage.transports.indexOf("Avion")>=0,hasTrain=voyage.transports.indexOf("Train")>=0,hasBus=voyage.transports.indexOf("Bus")>=0;
+        showInfo("<span style='color:var(--muted-text);font-style:italic'>⟳ Calcul en cours...</span>");
+        geocode(voyage.depart,function(depC){
+          if(!depC){showInfo("<span style='color:#e07070'>Impossible de localiser : <strong>"+voyage.depart+"</strong></span>");return;}
+          var dLa=depC[0],dLo=depC[1];
+          addLayer(mkIcon(dLa,dLo,"#c8956c",14,"<strong style='color:#c8956c'>Départ — "+voyage.depart+"</strong>"+(voyage.dateD?"<br><small>"+voyage.dateD+"</small>":"")));
+          if(hasAvion){findAirport(voyage.depart,function(depAirC){if(!depAirC)depAirC=depC;findAirport(destNom+" "+destPays,function(destAirC){var aLa=destAirC?destAirC[0]:destLat,aLo=destAirC?destAirC[1]:destLng;if(haversine(dLa,dLo,depAirC[0],depAirC[1])>2){addLayer(makeArc(dLa,dLo,depAirC[0],depAirC[1],"#c8956c",true));addLayer(mkIcon(depAirC[0],depAirC[1],"#7ec9a0",14,"<strong>✈ Aéroport de départ</strong>"));}addLayer(makeArc(depAirC[0],depAirC[1],aLa,aLo,"#c8956c",false));if(destAirC&&haversine(aLa,aLo,destLat,destLng)>2){addLayer(mkIcon(aLa,aLo,"#7ec9a0",14,"<strong>✈ Aéroport d'arrivée</strong>"));addLayer(makeArc(aLa,aLo,destLat,destLng,"#c8956c",true));}var fd=haversine(depAirC[0],depAirC[1],aLa,aLo);showInfo("✈ <strong>"+voyage.depart+" → "+destNom+"</strong> · "+Math.round(fd)+" km · <strong style='color:#c8956c'>"+fmtDur(fd/800*60+120)+"</strong>");var b=L.latLngBounds([[destLat,destLng],[dLa,dLo],[depAirC[0],depAirC[1]]]);if(destAirC)b.extend([aLa,aLo]);map.fitBounds(b,{padding:[40,40]});});});}
+          else{getOsrmRoute(dLa,dLo,destLat,destLng,function(route){var tColor="#c8956c",tLabel=hasTrain?"🚆 Train":hasBus?"🚌 Bus":"🚗 Voiture",speed=hasTrain?160:hasBus?70:100;if(route&&route.geometry){var pts=route.geometry.coordinates.map(function(c){return[c[1],c[0]];});addLayer(L.polyline(pts,{color:tColor,weight:3,opacity:0.8}));var distKm=Math.round(route.distance/1000);showInfo(tLabel+" <strong>"+voyage.depart+" → "+destNom+"</strong> · "+distKm+" km · <strong style='color:#c8956c'>"+fmtDur((distKm/speed)*60)+"</strong>");}else{var dist=haversine(dLa,dLo,destLat,destLng);addLayer(makeArc(dLa,dLo,destLat,destLng,tColor,true));showInfo(tLabel+" <strong>"+voyage.depart+" → "+destNom+"</strong> · "+Math.round(dist)+" km");}map.fitBounds(L.latLngBounds([[destLat,destLng],[dLa,dLo]]),{padding:[40,40]});});}
+        });
+      };
+      if(VOYAGES_MAP.length>0)showVoyageRoute(VOYAGES_MAP[0].id);
+    })();
+    </script>
+    {% endif %}
 
-        <div style="margin-bottom:30px">
-          <h5 style="margin-bottom:12px">Meteo pendant le voyage</h5>
+    {# VIDÉO LOCALE #}
+    {% if destination.videoPath %}
+    <div class="vl-card fade-up">
+      <div class="vl-section-label">Présentation</div>
+      <h3 class="vl-section-title" style="font-size:22px">Vidéo de la destination</h3>
+      <div class="vl-video-wrap" style="margin-top:16px">
+        <video controls style="border-radius:var(--radius-sm)">
+          <source src="{{ asset(destination.videoPath) }}" type="video/mp4">
+        </video>
+      </div>
+    </div>
+    {% endif %}
+  </div>
 
-          {% if voyagesAvecDates|length > 0 %}
-          <p style="font-size:13px;color:#888;margin-bottom:10px">Choisissez un voyage pour afficher la meteo :</p>
-          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px">
-            {% for v in voyagesAvecDates %}
-            <button type="button"
-                    onclick="selectVoyage({{ loop.index0 }})"
-                    id="btn-voyage-{{ loop.index0 }}"
-                    style="padding:8px 14px;border-radius:20px;border:2px solid {% if loop.first %}#f97316{% else %}#ddd{% endif %};
-                           background:{% if loop.first %}#f97316{% else %}#fff{% endif %};
-                           color:{% if loop.first %}#fff{% else %}#555{% endif %};
-                           font-size:12px;font-weight:600;cursor:pointer;transition:all .2s">
-                Voyage #{{ v.id }} &mdash; {{ v.dateDepart|date("d/m/Y") }} → {{ v.dateArrivee|date("d/m/Y") }}
-            </button>
-            {% endfor %}
-          </div>
-
-          <div id="meteo-voyage-info" style="background:#fff3e0;border-radius:10px;padding:12px 16px;margin-bottom:14px;border:1px solid #ffe0b2;font-size:13px;color:#555"></div>
-          {% endif %}
-
-          <div id="meteo-loading" style="text-align:center;color:#888;padding:20px;font-size:14px">Chargement...</div>
-          <div id="meteo-days" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px"></div>
-          <div id="meteo-msg" style="display:none;text-align:center;font-size:13px;padding:10px;margin-top:8px;border-radius:8px"></div>
-          <div style="margin-top:8px;text-align:right"><small style="color:#bbb;font-size:11px">Source : Open-Meteo.com</small></div>
+  {# SIDEBAR #}
+  <div>
+    <div class="vl-stats-grid">
+      <div class="vl-stat">
+        <div class="vl-stat-val">{{ destination.pays }}</div>
+        <div class="vl-stat-key">Pays</div>
+      </div>
+      <div class="vl-stat">
+        <div class="vl-stat-val">{{ destination.meilleureSaison ?? '—' }}</div>
+        <div class="vl-stat-key">Saison</div>
+      </div>
+      <div class="vl-stat">
+        <div class="vl-stat-val">{{ destination.nbVisites ?? 0 }}</div>
+        <div class="vl-stat-key">Visites</div>
+      </div>
+      <div class="vl-stat">
+        <div class="vl-stat-val" style="color:{% if destination.statut %}#7ec99a{% else %}#e07070{% endif %}">
+          {{ destination.statut ? 'Actif' : 'Inactif' }}
         </div>
+        <div class="vl-stat-key">Statut</div>
+      </div>
+    </div>
 
-        <script>
-        (function() {
-            var lat = {{ destination.latitude }};
-            var lng = {{ destination.longitude }};
+    {# CONVERTISSEUR #}
+    <script>
+    var _rateCache={};
+    var _rateSym={'EUR':'€','USD':'$','GBP':'£','TND':'TND','MAD':'MAD','JPY':'¥','CAD':'C$','CHF':'Fr'};
+    function getRate(from,to,cb){var key=from+'_'+to;if(_rateCache[key]){cb(_rateCache[key]);return;}fetch('{{ path("app_exchange_rate", {"from": "__F__", "to": "__T__"}) }}'.replace('__F__',from).replace('__T__',to)).then(function(r){return r.json();}).then(function(d){if(d.rate){_rateCache[key]=d.rate;cb(d.rate);}}).catch(function(){});}
+    function convertirPrix(voyageId,prix,devise){['EUR','USD','GBP','TND','MAD'].forEach(function(d){var btn=document.getElementById('conv-btn-'+voyageId+'-'+d);if(btn){btn.classList.toggle('active',d===devise);}});var displayEl=document.getElementById('conv-display-'+voyageId);if(devise==='EUR'){displayEl.textContent=prix+' €';return;}getRate('EUR',devise,function(rate){displayEl.textContent=(prix*rate).toFixed(2)+' '+(_rateSym[devise]||devise);});}
+    </script>
 
-            var VOYAGES = [
-                {% for v in voyagesAvecDates %}
-                {
-                    id:    {{ v.id }},
-                    start: "{{ v.dateDepart|date("Y-m-d") }}",
-                    end:   "{{ v.dateArrivee|date("Y-m-d") }}",
-                    depart:  "{{ v.pointDepart ?? '' }}",
-                    arrivee: "{{ v.pointArrivee ?? '' }}"
-                }{% if not loop.last %},{% endif %}
-                {% endfor %}
-            ];
-
-            var WC = {0:"Ciel clair",1:"Princ. clair",2:"Part. nuageux",3:"Couvert",45:"Brouillard",48:"Brouillard",51:"Bruine",53:"Bruine",55:"Bruine dense",61:"Pluie legere",63:"Pluie",65:"Pluie forte",71:"Neige legere",73:"Neige",75:"Neige forte",80:"Averses",81:"Averses",82:"Averses",95:"Orage",96:"Orage",99:"Orage fort"};
-            var DAYS = ["Dim","Lun","Mar","Mer","Jeu","Ven","Sam"];
-
-            function fmt(d) {
-                return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
-            }
-            function iconType(c) {
-                if(c===0)return"sun";if(c<=2)return"partly";if(c===3)return"cloud";if(c<=48)return"fog";if(c<=67)return"rain";if(c<=77)return"snow";if(c<=82)return"shower";return"storm";
-            }
-            function svgIcon(t,s){s=s||36;var ic={sun:"<svg width='"+s+"' height='"+s+"' viewBox='0 0 48 48' fill='none'><circle cx='24' cy='24' r='10' fill='#f97316'/><g stroke='#f97316' stroke-width='2.5' stroke-linecap='round'><line x1='24' y1='4' x2='24' y2='10'/><line x1='24' y1='38' x2='24' y2='44'/><line x1='4' y1='24' x2='10' y2='24'/><line x1='38' y1='24' x2='44' y2='24'/></g></svg>",partly:"<svg width='"+s+"' height='"+s+"' viewBox='0 0 48 48' fill='none'><circle cx='20' cy='20' r='8' fill='#f97316'/><rect x='10' y='26' width='28' height='12' rx='6' fill='#90caf9'/></svg>",cloud:"<svg width='"+s+"' height='"+s+"' viewBox='0 0 48 48' fill='none'><rect x='6' y='18' width='36' height='18' rx='9' fill='#90caf9'/><ellipse cx='20' cy='20' rx='10' ry='8' fill='#bbdefb'/></svg>",fog:"<svg width='"+s+"' height='"+s+"' viewBox='0 0 48 48' fill='none'><g stroke='#90a4ae' stroke-width='3' stroke-linecap='round'><line x1='8' y1='16' x2='40' y2='16'/><line x1='8' y1='24' x2='40' y2='24'/><line x1='8' y1='32' x2='40' y2='32'/></g></svg>",rain:"<svg width='"+s+"' height='"+s+"' viewBox='0 0 48 48' fill='none'><rect x='8' y='10' width='32' height='16' rx='8' fill='#90caf9'/><g stroke='#1976d2' stroke-width='2.5' stroke-linecap='round'><line x1='16' y1='32' x2='14' y2='40'/><line x1='24' y1='32' x2='22' y2='40'/><line x1='32' y1='32' x2='30' y2='40'/></g></svg>",snow:"<svg width='"+s+"' height='"+s+"' viewBox='0 0 48 48' fill='none'><rect x='8' y='10' width='32' height='16' rx='8' fill='#bbdefb'/><g fill='#90caf9'><circle cx='16' cy='36' r='3'/><circle cx='24' cy='36' r='3'/><circle cx='32' cy='36' r='3'/></g></svg>",shower:"<svg width='"+s+"' height='"+s+"' viewBox='0 0 48 48' fill='none'><circle cx='22' cy='14' r='7' fill='#f97316'/><rect x='8' y='18' width='32' height='12' rx='6' fill='#90caf9'/><g stroke='#1976d2' stroke-width='2.5' stroke-linecap='round'><line x1='16' y1='34' x2='14' y2='42'/><line x1='24' y1='34' x2='22' y2='42'/><line x1='32' y1='34' x2='30' y2='42'/></g></svg>",storm:"<svg width='"+s+"' height='"+s+"' viewBox='0 0 48 48' fill='none'><rect x='6' y='8' width='36' height='16' rx='8' fill='#546e7a'/><polyline points='26,26 20,36 25,36 19,46' stroke='#fdd835' stroke-width='3' fill='none'/></svg>"};return ic[t]||ic["sun"];}
-
-            function showMsg(txt, color) {
-                var m = document.getElementById("meteo-msg");
-                m.style.display = "block";
-                m.style.color   = color || "#E24B4A";
-                m.style.background = color === "#BA7517" ? "#fff8e1" : "#ffebee";
-                m.textContent   = txt;
-            }
-            function clearMsg() {
-                var m = document.getElementById("meteo-msg");
-                m.style.display = "none";
-                m.textContent = "";
-            }
-
-            window.selectVoyage = function(idx) {
-                var v = VOYAGES[idx];
-                if (!v) return;
-
-                // mise a jour boutons
-                VOYAGES.forEach(function(_, i) {
-                    var btn = document.getElementById("btn-voyage-" + i);
-                    if (!btn) return;
-                    btn.style.background   = i === idx ? "#f97316" : "#fff";
-                    btn.style.color        = i === idx ? "#fff"    : "#555";
-                    btn.style.borderColor  = i === idx ? "#f97316" : "#ddd";
-                });
-
-                // info voyage
-                var info = document.getElementById("meteo-voyage-info");
-                if (info) {
-                    var parts = [];
-                    if (v.depart || v.arrivee) parts.push("<strong>" + (v.depart||"?") + "</strong> → <strong>" + (v.arrivee||"?") + "</strong>");
-                    var sd = v.start.split("-"); var ed = v.end.split("-");
-                    parts.push("du <strong style='color:#f97316'>" + sd[2]+"/"+sd[1]+"/"+sd[0] + "</strong> au <strong style='color:#f97316'>" + ed[2]+"/"+ed[1]+"/"+ed[0] + "</strong>");
-                    info.innerHTML = parts.join(" &nbsp;|&nbsp; ");
-                }
-
-                loadMeteo(v.start, v.end);
-            };
-
-            function loadMeteo(startDate, endDate) {
-                clearMsg();
-                var loading = document.getElementById("meteo-loading");
-                var daysDiv = document.getElementById("meteo-days");
-                loading.style.display = "block";
-                daysDiv.innerHTML = "";
-
-                var today   = new Date(); today.setHours(0,0,0,0);
-                var maxDate = new Date(today); maxDate.setDate(today.getDate() + 14);
-                var sDate   = new Date(startDate);
-                var eDate   = new Date(endDate);
-
-                if (sDate > maxDate) {
-                    loading.style.display = "none";
-                    showMsg("Meteo non disponible - le voyage commence apres le " + fmt(maxDate) + ".", "#E24B4A");
-                    return;
-                }
-                if (sDate < today) sDate = today;
-                var partiel = false;
-                if (eDate > maxDate) { eDate = maxDate; partiel = true; }
-
-                var url = "https://api.open-meteo.com/v1/forecast"
-                    + "?latitude=" + lat + "&longitude=" + lng
-                    + "&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_sum,windspeed_10m_max"
-                    + "&timezone=auto&start_date=" + fmt(sDate) + "&end_date=" + fmt(eDate);
-
-                fetch(url)
-                    .then(function(r){return r.json();})
-                    .then(function(data){
-                        loading.style.display = "none";
-                        if (data.error) { showMsg("Erreur API : " + (data.reason||"inconnue"), "#E24B4A"); return; }
-                        var daily = data.daily;
-                        if (!daily||!daily.time||daily.time.length===0) { showMsg("Aucune donnee disponible.", "#E24B4A"); return; }
-                        daysDiv.innerHTML = "";
-                        for (var i=0;i<daily.time.length;i++) {
-                            var d=new Date(daily.time[i]),code=daily.weathercode[i];
-                            var tmax=Math.round(daily.temperature_2m_max[i]),tmin=Math.round(daily.temperature_2m_min[i]);
-                            var pluie=Math.round(daily.precipitation_sum[i]),vent=Math.round(daily.windspeed_10m_max[i]);
-                            var card=document.createElement("div");
-                            card.style.cssText="background:#fff;border-radius:10px;padding:14px 10px;text-align:center;border:1px solid #eee;transition:box-shadow 0.2s";
-                            card.onmouseover=function(){this.style.boxShadow="0 4px 16px rgba(249,115,22,0.15)";};
-                            card.onmouseout=function(){this.style.boxShadow="none";};
-                            card.innerHTML="<div style='font-size:13px;font-weight:700;color:#333'>"+DAYS[d.getDay()]+"</div>"
-                                +"<div style='font-size:11px;color:#aaa;margin-bottom:8px'>"+d.getDate()+"/"+(d.getMonth()+1)+"</div>"
-                                +"<div style='display:flex;justify-content:center;margin-bottom:6px'>"+svgIcon(iconType(code),36)+"</div>"
-                                +"<div style='font-size:11px;color:#666;margin-bottom:8px;min-height:28px'>"+(WC[code]||"")+"</div>"
-                                +"<div style='font-size:16px;font-weight:700;color:#f97316'>"+tmax+" °C</div>"
-                                +"<div style='font-size:12px;color:#90a4ae;margin-bottom:6px'>"+tmin+" °C</div>"
-                                +"<div style='font-size:11px;color:#64b5f6'>Pluie : "+pluie+" mm</div>"
-                                +"<div style='font-size:11px;color:#78909c'>Vent : "+vent+" km/h</div>";
-                            daysDiv.appendChild(card);
-                        }
-                        if (partiel) showMsg("Affichage partiel - meteo disponible jusqu au "+fmt(maxDate)+" seulement.", "#BA7517");
-                    })
-                    .catch(function(e){ document.getElementById("meteo-loading").style.display="none"; showMsg("Erreur reseau : "+e.message, "#E24B4A"); });
-            }
-
-            if (VOYAGES.length > 0) {
-                selectVoyage(0);
-            } else {
-                document.getElementById("meteo-loading").style.display = "none";
-                showMsg("Aucun voyage avec des dates associe a cette destination.", "#E24B4A");
-            }
-        })();
-        </script>
-        {% endif %}
-
-        {% if destination.videoPath %}
-          <div style="margin-bottom:30px">
-            <h5 style="margin-bottom:15px">Video de presentation</h5>
-            <video controls style="width:100%;border-radius:10px;max-height:360px">
-              <source src="{{ asset(destination.videoPath) }}" type="video/mp4">
-            </video>
-          </div>
-        {% endif %}
-
-        {% if destination.latitude and destination.longitude %}
-          <div style="margin-bottom:30px">
-            <h5 style="margin-bottom:15px">Localisation</h5>
-            <iframe src="https://www.google.com/maps?q={{ destination.latitude }},{{ destination.longitude }}&z=12&output=embed"
-              width="100%" height="300" frameborder="0" style="border:0;border-radius:10px" allowfullscreen=""></iframe>
-          </div>
-        {% endif %}
-
+    {# VOYAGES #}
+    {% if destination.voyages|length > 0 %}
+    <div style="margin-bottom:20px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <div>
+          <div class="vl-section-label">Offres disponibles</div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:400;color:var(--body-text)">Voyages</div>
+        </div>
+        <span style="background:var(--accent-light);color:var(--accent);border:1px solid var(--accent-border);border-radius:20px;padding:4px 14px;font-size:12px;font-weight:500">
+          {{ destination.voyages|length }} voyage{{ destination.voyages|length > 1 ? 's' : '' }}
+        </span>
       </div>
 
-      <div class="col-lg-4">
+      {% set tp_icons = {'Avion': '✈', 'Bus': '🚌', 'Train': '🚆', 'Voiture': '🚗'} %}
+      {% for v in destination.voyages %}
+        {% if v.dateDepart and v.dateArrivee %}{% set duree = ((v.dateArrivee|date("U") - v.dateDepart|date("U")) / 86400)|round %}{% else %}{% set duree = null %}{% endif %}
+        {% set primaryTransport = v.transports|first %}
+        {% set bgImg = destination.images|first %}
 
-        <div class="info-table">
-          <ul>
-            <li>
-              <img src="{{ asset("assets_front/images/images/info-icon-01.png") }}" alt="" style="max-width:52px">
-              <h4>{{ destination.pays }}<br><span>Pays</span></h4>
-            </li>
-            <li>
-              <img src="{{ asset("assets_front/images/images/info-icon-02.png") }}" alt="" style="max-width:52px">
-              <h4>{{ destination.meilleureSaison ?? "-" }}<br><span>Meilleure saison</span></h4>
-            </li>
-            <li>
-              <img src="{{ asset("assets_front/images/images/info-icon-03.png") }}" alt="" style="max-width:52px">
-              <h4>{{ destination.nbVisites ?? 0 }}<br><span>Visites</span></h4>
-            </li>
-            <li>
-              <img src="{{ asset("assets_front/images/images/info-icon-04.png") }}" alt="" style="max-width:52px">
-              <h4>{{ destination.statut ? "Actif" : "Inactif" }}<br><span>Statut</span></h4>
-            </li>
-          </ul>
-        </div>
+        <div class="vl-ticket" onclick="if(window.showVoyageRoute)showVoyageRoute({{ v.id }})">
+          {% if bgImg %}
+            <img class="vl-ticket-bg" src="{{ asset(bgImg.urlImage) }}" alt="">
+          {% else %}
+            <div style="position:absolute;inset:0;background:linear-gradient(135deg,#1e1a15,#0d0e12)"></div>
+          {% endif %}
+          <div class="vl-ticket-veil"></div>
+          <div class="vl-ticket-notch l"></div>
+          <div class="vl-ticket-notch r"></div>
 
-        {% if destination.voyages|length > 0 %}
-        <div style="margin-top:32px">
-
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
-            <h5 style="margin:0;font-size:15px;font-weight:700;color:#1a1a1a">
-              Voyages disponibles
-            </h5>
-            <span style="background:#fff4ec;color:#f97316;border-radius:20px;padding:3px 12px;font-size:12px;font-weight:700;border:1px solid #fdd5b5">
-              {{ destination.voyages|length }} voyage{{ destination.voyages|length > 1 ? 's' : '' }}
-            </span>
-          </div>
-
-          <div style="display:flex;flex-direction:column;gap:12px">
-          {% for v in destination.voyages %}
-
-            {% if v.dateDepart and v.dateArrivee %}
-              {% set duree = ((v.dateArrivee|date("U") - v.dateDepart|date("U")) / 86400)|round %}
-            {% else %}
-              {% set duree = null %}
-            {% endif %}
-
-            <div style="background:#fff;border:1px solid #ececec;border-radius:16px;overflow:hidden;transition:box-shadow .2s"
-                 onmouseover="this.style.boxShadow='0 6px 24px rgba(249,115,22,.12)'"
-                 onmouseout="this.style.boxShadow='none'">
-
-              {# ---- Ligne prix + id ---- #}
-              <div style="padding:14px 18px 0;display:flex;justify-content:space-between;align-items:flex-start">
-                <span style="font-size:11px;font-weight:600;color:#bbb;letter-spacing:.5px;text-transform:uppercase">Voyage #{{ v.id }}</span>
-                {% if v.prix %}
-                  <span style="font-size:18px;font-weight:800;color:#f97316">{{ v.prix }}<span style="font-size:11px;font-weight:600;margin-left:2px">EUR</span></span>
-                {% endif %}
-              </div>
-
-              {# ---- Trajet timeline ---- #}
-              <div style="padding:12px 18px;display:flex;align-items:center;gap:0">
-                <div style="flex:1">
-                  <div style="font-size:11px;color:#bbb;margin-bottom:2px">Départ</div>
-                  <div style="font-size:14px;font-weight:700;color:#1a1a1a">{{ v.pointDepart ?? "—" }}</div>
-                  <div style="font-size:11px;color:#888;margin-top:2px">{{ v.dateDepart ? v.dateDepart|date("d MMM Y")|upper : "—" }}</div>
-                  <div style="font-size:11px;color:#888">{{ v.dateDepart ? v.dateDepart|date("d/m/Y") : "" }}</div>
-                </div>
-
-                <div style="display:flex;flex-direction:column;align-items:center;padding:0 14px;flex-shrink:0">
-                  {% if duree %}
-                  <span style="font-size:10px;color:#f97316;font-weight:600;margin-bottom:4px">{{ duree }}j</span>
-                  {% endif %}
-                  <div style="display:flex;align-items:center;gap:0">
-                    <div style="width:6px;height:6px;border-radius:50%;background:#f97316"></div>
-                    <div style="width:50px;height:1px;background:linear-gradient(to right,#f97316,#fb923c)"></div>
-                    <div style="font-size:14px;color:#f97316;margin:0 2px">✈</div>
-                    <div style="width:50px;height:1px;background:linear-gradient(to right,#fb923c,#f97316)"></div>
-                    <div style="width:6px;height:6px;border-radius:50%;background:#f97316"></div>
-                  </div>
-                </div>
-
-                <div style="flex:1;text-align:right">
-                  <div style="font-size:11px;color:#bbb;margin-bottom:2px">Arrivée</div>
-                  <div style="font-size:14px;font-weight:700;color:#1a1a1a">{{ v.pointArrivee ?? "—" }}</div>
-                  <div style="font-size:11px;color:#888;margin-top:2px">{{ v.dateArrivee ? v.dateArrivee|date("d/m/Y") : "" }}</div>
-                </div>
-              </div>
-
-              {# ---- Transports ---- #}
-              {% if v.transports|length > 0 %}
-              <div style="border-top:1px solid #f5f5f5;padding:10px 18px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-                <span style="font-size:11px;color:#bbb;font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-right:4px">Transport</span>
-                {% for t in v.transports %}
-                  {% set icons = {'Avion': '✈', 'Bus': '🚌', 'Train': '🚆', 'Voiture': '🚗'} %}
-                  <span style="display:inline-flex;align-items:center;gap:5px;background:#fff4ec;color:#f97316;border:1px solid #fdd5b5;border-radius:20px;padding:4px 12px;font-size:12px;font-weight:600">
-                    {{ icons[t.typeTransport] ?? '' }} {{ t.typeTransport }}
-                  </span>
-                {% endfor %}
+          <div class="vl-ticket-inner">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start">
+              <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.35)">Voyage #{{ v.id }}</div>
+              {% if destination.meilleureSaison == 'Hiver' %}
+      <div style="background:linear-gradient(135deg,#1e3a5f,#2563eb);color:white;font-size:10px;font-weight:700;padding:4px 10px;border-radius:12px;letter-spacing:1px">
+  ❄️ -20% Offre Hiver
+</div>
+{% endif %}
+              {% if v.prix %}
+              <div style="text-align:right">
+                <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:300;color:white;letter-spacing:-1px;line-height:1" id="conv-display-{{ v.id }}">{{ v.prix }} €</div>
+                {% if duree %}<div style="font-size:10px;color:rgba(255,255,255,0.35);margin-top:2px">{{ duree }} jour{{ duree > 1 ? 's' : '' }}</div>{% endif %}
               </div>
               {% endif %}
-
             </div>
-          {% endfor %}
+
+            <div class="vl-ticket-route">
+              <div class="vl-ticket-city">
+                <div>{{ v.pointDepart ?? '?' }}</div>
+                <div class="vl-ticket-city-date">{{ v.dateDepart ? v.dateDepart|date('d/m/Y') : '—' }}</div>
+              </div>
+              <div class="vl-ticket-line">
+                <div class="vl-ticket-dot"></div>
+                <div class="vl-ticket-seg"></div>
+                <span style="font-size:14px;margin:0 4px">{{ tp_icons[primaryTransport.typeTransport] ?? '✈' }}</span>
+                <div class="vl-ticket-seg"></div>
+                <div class="vl-ticket-dot"></div>
+              </div>
+              <div class="vl-ticket-city vl-ticket-arr">
+                <div>{{ v.pointArrivee ?? '?' }}</div>
+                <div class="vl-ticket-city-date">{{ v.dateArrivee ? v.dateArrivee|date('d/m/Y') : '—' }}</div>
+              </div>
+            </div>
+
+            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+              <div style="display:flex;gap:5px;flex-wrap:wrap">
+                {% for t in v.transports %}
+                  <span style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);border-radius:30px;padding:3px 10px;font-size:10px;color:rgba(255,255,255,0.65);font-weight:500">{{ tp_icons[t.typeTransport] ?? '' }} {{ t.typeTransport }}</span>
+                {% endfor %}
+              </div>
+            </div>
+
+            {% if v.prix %}
+            <div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:10px" onclick="event.stopPropagation()">
+              {% for devise in ['EUR','USD','GBP','TND','MAD'] %}
+              <button id="conv-btn-{{ v.id }}-{{ devise }}" onclick="convertirPrix({{ v.id }}, {{ v.prix }}, '{{ devise }}')" class="vl-conv-btn {% if devise == 'EUR' %}active{% endif %}">{{ devise }}</button>
+              {% endfor %}
+            </div>
+            {% endif %}
+
+            {% set voyageExpire = v.dateDepart and v.dateDepart|date('U') < "now"|date('U') %}
+
+{% if voyageExpire %}
+  {# Badge expiré sur le ticket #}
+  <div onclick="event.stopPropagation()"
+       style="margin-top:12px;padding:10px 16px;background:rgba(127,29,29,0.4);border:1px solid #dc2626;border-radius:10px;font-size:12px;font-weight:600;text-align:center;color:#f87171">
+    ⚠️ Ce voyage est expiré — date de départ dépassée
+  </div>
+
+{% elseif app.user and v.isReservedByUser(app.user) %}
+  <div onclick="event.stopPropagation()"
+       style="margin-top:12px;padding:10px 16px;background:rgba(126,201,154,0.15);border:1px solid rgba(126,201,154,0.3);border-radius:10px;font-size:12px;font-weight:500;text-align:center;color:rgba(126,201,154,0.9)">
+    ✓ Déjà réservé
+  </div>
+
+{% elseif app.user %}
+  <form action="{{ path('app_voyage_reserve', {id: v.id}) }}" method="POST" onclick="event.stopPropagation()">
+    <input type="hidden" name="_token" value="{{ csrf_token('reserve' ~ v.id) }}">
+    <button type="submit" class="vl-reserve-btn">Réserver ce voyage</button>
+  </form>
+
+{% else %}
+  <a href="{{ path('front_login') }}" onclick="event.stopPropagation()" class="vl-reserve-btn">Connexion requise</a>
+{% endif %}
+
+ </div>
+ </div>
+{% endfor %}
+{% endif %}
+
+    {# PARTAGE QR #}
+    <div class="vl-share-card">
+      <div class="vl-section-label" style="margin-bottom:16px">Partager</div>
+      <div style="display:inline-flex;padding:10px;background:#f9f8f5;border-radius:var(--radius-sm);border:1px solid var(--card-border);margin-bottom:12px">
+        <img src="{{ qr_code_url }}" alt="QR Code" style="width:130px;height:130px;display:block">
+      </div>
+      <p style="font-size:12px;color:var(--muted-text);margin-bottom:14px">Scannez pour partager</p>
+      <a href="{{ qr_code_url }}" download="qrcode-{{ destination.nom|replace({' ': '-'}) }}.png"
+         style="display:block;padding:11px;background:var(--accent);color:white;border-radius:var(--radius-sm);font-size:13px;font-weight:500;text-decoration:none;transition:all 0.2s"
+         onmouseover="this.style.background='#b8845a'" onmouseout="this.style.background='var(--accent)'">
+        Télécharger le QR Code
+      </a>
+      <div style="font-size:10px;color:#ccc;margin-top:12px;word-break:break-all;line-height:1.5">{{ share_url }}</div>
+    </div>
+
+    <a href="{{ path('app_destinations') }}" class="vl-back">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m15 18-6-6 6-6"/></svg>
+      Toutes les destinations
+    </a>
+  </div>
+</div>
+</div>
+
+{# ======================================================
+   GALERIE — PLEIN ÉCRAN HORIZONTAL
+   ====================================================== #}
+{% if destination.images|length > 0 %}
+<div style="height:60px"></div>
+<div class="vl-sep">
+  <div class="vl-sep-line"></div>
+  <span class="vl-sep-label">Galerie photos</span>
+  <div class="vl-sep-line"></div>
+</div>
+
+<div class="vl-fullwidth-section">
+  <div class="vl-fullwidth-card">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:8px">
+      <div>
+        <div class="vl-section-label">Galerie</div>
+        <h3 class="vl-section-title" style="font-size:28px;margin-bottom:0">Photos de {{ destination.nom }}</h3>
+      </div>
+      <span style="font-size:13px;color:var(--muted-text)">{{ destination.images|length }} photo{{ destination.images|length > 1 ? 's' : '' }}</span>
+    </div>
+
+    <div class="vl-gallery-full">
+      {% for image in destination.images %}
+        <div class="vl-gallery-item" onclick="openLightbox({{ loop.index0 }})">
+          <img src="{{ asset(image.urlImage) }}" alt="{{ destination.nom }}">
+          <div class="vl-gallery-overlay">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
           </div>
         </div>
-        {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endif %}
 
+{# LIGHTBOX #}
+<div id="vl-lightbox" onclick="closeLightbox()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.96);z-index:9999;align-items:center;justify-content:center">
+  <button onclick="prevLight(event)" style="position:absolute;left:20px;top:50%;transform:translateY(-50%);background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:white;font-size:26px;width:50px;height:50px;border-radius:50%;cursor:pointer">&#8249;</button>
+  <img id="vl-lightbox-img" src="" alt="" style="max-width:90vw;max-height:85vh;border-radius:12px;object-fit:contain">
+  <button onclick="nextLight(event)" style="position:absolute;right:20px;top:50%;transform:translateY(-50%);background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:white;font-size:26px;width:50px;height:50px;border-radius:50%;cursor:pointer">&#8250;</button>
+  <span onclick="closeLightbox()" style="position:absolute;top:20px;right:24px;color:rgba(255,255,255,0.5);font-size:24px;cursor:pointer">✕</span>
+</div>
+<script>
+var imgUrls=[{% for image in destination.images %}"{{ asset(image.urlImage) }}"{% if not loop.last %},{% endif %}{% endfor %}];
+var lbCurrent=0;
+function openLightbox(i){lbCurrent=i;document.getElementById('vl-lightbox').style.display='flex';document.getElementById('vl-lightbox-img').src=imgUrls[i];}
+function closeLightbox(){document.getElementById('vl-lightbox').style.display='none';}
+function prevLight(e){e.stopPropagation();lbCurrent=(lbCurrent-1+imgUrls.length)%imgUrls.length;openLightbox(lbCurrent);}
+function nextLight(e){e.stopPropagation();lbCurrent=(lbCurrent+1)%imgUrls.length;openLightbox(lbCurrent);}
+document.addEventListener('keydown',function(e){if(document.getElementById('vl-lightbox').style.display==='flex'){if(e.key==='ArrowLeft')prevLight({stopPropagation:function(){}});if(e.key==='ArrowRight')nextLight({stopPropagation:function(){}});if(e.key==='Escape')closeLightbox();}});
+</script>
 
-        <div class="info-table" style="margin-top:20px">
-          <ul>
-            <li style="display:block;padding:15px;text-align:center">
-              <h5 style="margin-bottom:12px;border-bottom:1px solid #eee;padding-bottom:8px;text-align:left">Partager cette destination</h5>
-              <div style="display:inline-block;padding:10px;background:#fff;border-radius:8px;border:1px solid #eee;margin-bottom:10px">
-                <img
-                  src="{{ qr_code_url }}"
-                  alt="QR Code pour {{ destination.nom }}"
-                  width="150"
-                  height="150"
-                  style="display:block;width:150px;height:150px"
-                >
-              </div>
-              <div style="font-size:12px;color:#888;margin-bottom:12px">Scannez pour partager</div>
-              <a
-                href="{{ qr_code_url }}"
-                download="qrcode-{{ destination.nom|replace({' ': '-'}) }}.png"
-                style="display:block;width:100%;padding:10px;background:#f97316;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;text-decoration:none"
-              >
-                Telecharger le QR Code
-              </a>
-              <div style="font-size:11px;color:#999;margin-top:10px;word-break:break-all">
-                {{ share_url }}
-              </div>
-            </li>
-          </ul>
+{# ======================================================
+   MÉTÉO — PLEIN ÉCRAN HORIZONTAL
+   ====================================================== #}
+{% if destination.latitude and destination.longitude %}
+{% set voyagesAvecDates = [] %}
+{% for v in destination.voyages %}{% if v.dateDepart and v.dateArrivee %}{% set voyagesAvecDates = voyagesAvecDates|merge([v]) %}{% endif %}{% endfor %}
+
+<div style="height:20px"></div>
+<div class="vl-sep">
+  <div class="vl-sep-line"></div>
+  <span class="vl-sep-label">Conditions climatiques</span>
+  <div class="vl-sep-line"></div>
+</div>
+
+<div class="vl-fullwidth-section">
+  <div class="vl-fullwidth-card">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:20px">
+      <div>
+        <div class="vl-section-label">Météo en temps réel</div>
+        <h3 class="vl-section-title" style="font-size:28px;margin-bottom:0">Conditions pendant le voyage</h3>
+      </div>
+      {% if voyagesAvecDates|length > 0 %}
+      <div style="display:flex;flex-wrap:wrap;gap:8px">
+        {% for v in voyagesAvecDates %}
+        <button type="button" onclick="selectVoyage({{ loop.index0 }})" id="btn-voyage-{{ loop.index0 }}" class="vl-voyage-btn{% if loop.first %} active{% endif %}">
+          Voyage #{{ v.id }} — {{ v.dateDepart|date('d/m/Y') }} → {{ v.dateArrivee|date('d/m/Y') }}
+        </button>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+    <div id="meteo-voyage-info" style="background:#f9f8f5;border-radius:10px;padding:12px 16px;margin-bottom:16px;border:1px solid var(--card-border);font-size:13px;color:var(--body-text);display:none"></div>
+    <div id="meteo-loading" style="text-align:center;color:var(--muted-text);padding:40px;font-size:13px">Chargement de la météo...</div>
+    <div id="meteo-days" class="vl-meteo-grid"></div>
+    <div id="meteo-msg" style="display:none;text-align:center;font-size:13px;padding:10px;margin-top:8px;border-radius:8px"></div>
+    <div style="margin-top:16px;text-align:right"><small style="color:#ccc;font-size:11px">Source : Open-Meteo.com</small></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var lat={{ destination.latitude }},lng={{ destination.longitude }};
+  var VOYAGES=[{% for v in voyagesAvecDates %}{id:{{ v.id }},start:"{{ v.dateDepart|date("Y-m-d") }}",end:"{{ v.dateArrivee|date("Y-m-d") }}",depart:"{{ v.pointDepart ?? '' }}",arrivee:"{{ v.pointArrivee ?? '' }}"}{% if not loop.last %},{% endif %}{% endfor %}];
+  var WC={0:"Ciel clair",1:"Princ. clair",2:"Part. nuageux",3:"Couvert",45:"Brouillard",48:"Brouillard",51:"Bruine",53:"Bruine",55:"Bruine dense",61:"Pluie légère",63:"Pluie",65:"Pluie forte",71:"Neige légère",73:"Neige",75:"Neige forte",80:"Averses",81:"Averses",82:"Averses",95:"Orage",96:"Orage",99:"Orage fort"};
+  var DAYS=["Dim","Lun","Mar","Mer","Jeu","Ven","Sam"];
+  function fmt(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
+  function iconType(c){if(c===0)return"sun";if(c<=2)return"partly";if(c===3)return"cloud";if(c<=48)return"fog";if(c<=67)return"rain";if(c<=77)return"snow";if(c<=82)return"shower";return"storm";}
+  function svgIcon(t,s){s=s||40;var ic={sun:"<svg width='"+s+"' height='"+s+"' viewBox='0 0 48 48' fill='none'><circle cx='24' cy='24' r='10' fill='#c8956c'/><g stroke='#c8956c' stroke-width='2.5' stroke-linecap='round'><line x1='24' y1='4' x2='24' y2='10'/><line x1='24' y1='38' x2='24' y2='44'/><line x1='4' y1='24' x2='10' y2='24'/><line x1='38' y1='24' x2='44' y2='24'/></g></svg>",partly:"<svg width='"+s+"' height='"+s+"' viewBox='0 0 48 48' fill='none'><circle cx='20' cy='20' r='8' fill='#c8956c'/><rect x='10' y='26' width='28' height='12' rx='6' fill='#90caf9'/></svg>",cloud:"<svg width='"+s+"' height='"+s+"' viewBox='0 0 48 48' fill='none'><rect x='6' y='18' width='36' height='18' rx='9' fill='#90caf9'/><ellipse cx='20' cy='20' rx='10' ry='8' fill='#bbdefb'/></svg>",fog:"<svg width='"+s+"' height='"+s+"' viewBox='0 0 48 48' fill='none'><g stroke='#90a4ae' stroke-width='3' stroke-linecap='round'><line x1='8' y1='16' x2='40' y2='16'/><line x1='8' y1='24' x2='40' y2='24'/><line x1='8' y1='32' x2='40' y2='32'/></g></svg>",rain:"<svg width='"+s+"' height='"+s+"' viewBox='0 0 48 48' fill='none'><rect x='8' y='10' width='32' height='16' rx='8' fill='#90caf9'/><g stroke='#1976d2' stroke-width='2.5' stroke-linecap='round'><line x1='16' y1='32' x2='14' y2='40'/><line x1='24' y1='32' x2='22' y2='40'/><line x1='32' y1='32' x2='30' y2='40'/></g></svg>",snow:"<svg width='"+s+"' height='"+s+"' viewBox='0 0 48 48' fill='none'><rect x='8' y='10' width='32' height='16' rx='8' fill='#bbdefb'/><g fill='#90caf9'><circle cx='16' cy='36' r='3'/><circle cx='24' cy='36' r='3'/><circle cx='32' cy='36' r='3'/></g></svg>",shower:"<svg width='"+s+"' height='"+s+"' viewBox='0 0 48 48' fill='none'><circle cx='22' cy='14' r='7' fill='#c8956c'/><rect x='8' y='18' width='32' height='12' rx='6' fill='#90caf9'/><g stroke='#1976d2' stroke-width='2.5' stroke-linecap='round'><line x1='16' y1='34' x2='14' y2='42'/><line x1='24' y1='34' x2='22' y2='42'/><line x1='32' y1='34' x2='30' y2='42'/></g></svg>",storm:"<svg width='"+s+"' height='"+s+"' viewBox='0 0 48 48' fill='none'><rect x='6' y='8' width='36' height='16' rx='8' fill='#546e7a'/><polyline points='26,26 20,36 25,36 19,46' stroke='#fdd835' stroke-width='3' fill='none'/></svg>"};return ic[t]||ic["sun"];}
+  function showMsg(txt,color){var m=document.getElementById("meteo-msg");m.style.display="block";m.style.color=color||"#e07070";m.textContent=txt;}
+  function clearMsg(){document.getElementById("meteo-msg").style.display="none";}
+  window.selectVoyage=function(idx){var v=VOYAGES[idx];if(!v)return;
+    VOYAGES.forEach(function(_,i){var btn=document.getElementById("btn-voyage-"+i);if(!btn)return;if(i===idx)btn.classList.add("active");else btn.classList.remove("active");});
+    var info=document.getElementById("meteo-voyage-info");if(info){var sd=v.start.split("-"),ed=v.end.split("-");info.style.display="block";info.innerHTML=(v.depart?"<strong>"+v.depart+"</strong> → <strong>"+(v.arrivee||'?')+"</strong> &nbsp;|&nbsp; ":"")+"du <strong style='color:var(--accent)'>"+sd[2]+"/"+sd[1]+"/"+sd[0]+"</strong> au <strong style='color:var(--accent)'>"+ed[2]+"/"+ed[1]+"/"+ed[0]+"</strong>";}
+    if(window.showVoyageRoute)window.showVoyageRoute(v.id);loadMeteo(v.start,v.end);};
+  function loadMeteo(startDate,endDate){clearMsg();var loading=document.getElementById("meteo-loading"),daysDiv=document.getElementById("meteo-days");loading.style.display="block";daysDiv.innerHTML="";var today=new Date();today.setHours(0,0,0,0);var maxDate=new Date(today);maxDate.setDate(today.getDate()+14);var sDate=new Date(startDate),eDate=new Date(endDate);if(sDate>maxDate){loading.style.display="none";showMsg("Météo non disponible pour cette période.");return;}if(sDate<today)sDate=today;var partiel=false;if(eDate>maxDate){eDate=maxDate;partiel=true;}var url="https://api.open-meteo.com/v1/forecast?latitude="+lat+"&longitude="+lng+"&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_sum,windspeed_10m_max&timezone=auto&start_date="+fmt(sDate)+"&end_date="+fmt(eDate);
+    fetch(url).then(function(r){return r.json();}).then(function(data){loading.style.display="none";if(data.error){showMsg("Erreur API");return;}var daily=data.daily;if(!daily||!daily.time||daily.time.length===0){showMsg("Aucune donnée.");return;}daysDiv.innerHTML="";for(var i=0;i<daily.time.length;i++){var d=new Date(daily.time[i]),code=daily.weathercode[i];var tmax=Math.round(daily.temperature_2m_max[i]),tmin=Math.round(daily.temperature_2m_min[i]);var pluie=Math.round(daily.precipitation_sum[i]),vent=Math.round(daily.windspeed_10m_max[i]);var card=document.createElement("div");card.className="vl-meteo-card";card.innerHTML="<div style='font-size:13px;font-weight:500;color:var(--body-text)'>"+DAYS[d.getDay()]+"</div><div style='font-size:11px;color:var(--muted-text);margin-bottom:10px'>"+d.getDate()+"/"+(d.getMonth()+1)+"</div><div style='display:flex;justify-content:center;margin-bottom:8px'>"+svgIcon(iconType(code),40)+"</div><div style='font-size:11px;color:var(--muted-text);margin-bottom:10px;min-height:28px;line-height:1.4'>"+(WC[code]||"")+"</div><div style='font-size:18px;font-weight:500;color:var(--accent)'>"+tmax+"°</div><div style='font-size:12px;color:var(--muted-text);margin-bottom:6px'>"+tmin+"°</div><div style='font-size:11px;color:#7ec5e0'>🌧 "+pluie+" mm</div><div style='font-size:11px;color:var(--muted-text)'>💨 "+vent+" km/h</div>";daysDiv.appendChild(card);}if(partiel)showMsg("Affichage partiel (limite 14 jours).");}).catch(function(){document.getElementById("meteo-loading").style.display="none";showMsg("Erreur réseau.");});}
+  if(VOYAGES.length>0){selectVoyage(0);}else{document.getElementById("meteo-loading").style.display="none";showMsg("Aucun voyage associé.");}
+})();
+</script>
+{% endif %}
+
+{# ======================================================
+   YOUTUBE — PLEIN ÉCRAN HORIZONTAL
+   ====================================================== #}
+<div style="height:20px"></div>
+<div class="vl-sep">
+  <div class="vl-sep-line"></div>
+  <span class="vl-sep-label">Découverte en vidéo</span>
+  <div class="vl-sep-line"></div>
+</div>
+
+<div class="vl-fullwidth-section vl-page-bottom">
+  <div class="vl-fullwidth-card">
+    <div class="vl-section-label">YouTube</div>
+    <h3 class="vl-section-title" style="font-size:28px">{{ destination.nom }} en vidéo</h3>
+
+    <div class="vl-yt-fullwidth">
+      {# Vidéo #}
+      <div>
+        <div id="yt-loading" style="text-align:center;color:var(--muted-text);padding:60px;font-size:14px;background:#f9f8f5;border-radius:var(--radius-sm)">⟳ Recherche de la meilleure vidéo...</div>
+        <div id="yt-container" style="display:none">
+          <div class="vl-video-wrap">
+            <iframe id="yt-iframe" src="" frameborder="0" allowfullscreen style="border-radius:var(--radius-sm)"></iframe>
+          </div>
+          <p id="yt-titre" style="font-size:13px;color:var(--muted-text);margin-top:12px;font-weight:400;line-height:1.5"></p>
         </div>
+        <div id="yt-error" style="display:none;font-size:14px;color:var(--muted-text);text-align:center;padding:40px">Aucune vidéo trouvée.</div>
+      </div>
 
-        <div class="main-button" style="margin-top:20px">
-          <a href="{{ path("app_contact") }}">Reserver cette destination</a>
+      {# Infos destination à droite #}
+      <div style="display:flex;flex-direction:column;gap:16px;padding-top:4px">
+        <div style="background:#f9f8f5;border-radius:var(--radius-sm);border:1px solid var(--card-border);padding:24px">
+          <div class="vl-section-label" style="margin-bottom:12px">À propos</div>
+          <h4 style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:400;color:var(--body-text);margin-bottom:12px">{{ destination.nom }}, {{ destination.pays }}</h4>
+          <p style="font-size:14px;font-weight:300;color:var(--muted-text);line-height:1.8">{{ destination.description|slice(0,200) }}{% if destination.description|length > 200 %}…{% endif %}</p>
         </div>
-        <div style="margin-top:15px;text-align:center">
-          <a href="{{ path("app_destinations") }}" style="color:#888;font-size:13px">Retour aux destinations</a>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div style="background:#f9f8f5;border:1px solid var(--card-border);border-radius:var(--radius-sm);padding:16px;text-align:center">
+            <div style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;color:var(--accent)">{{ destination.nbVisites ?? 0 }}</div>
+            <div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted-text);margin-top:4px">Visites</div>
+          </div>
+          <div style="background:#f9f8f5;border:1px solid var(--card-border);border-radius:var(--radius-sm);padding:16px;text-align:center">
+            <div style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;color:var(--accent)">{{ destination.meilleureSaison ?? '—' }}</div>
+            <div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted-text);margin-top:4px">Meilleure saison</div>
+          </div>
         </div>
-
+        <a href="{{ path('app_destinations') }}" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:14px;border:1px solid var(--accent-border);border-radius:var(--radius-sm);color:var(--accent);font-size:13px;font-weight:500;text-decoration:none;transition:all 0.2s" onmouseover="this.style.background='var(--accent-light)'" onmouseout="this.style.background='transparent'">
+          ← Voir toutes les destinations
+        </a>
       </div>
     </div>
   </div>
 </div>
 
-<footer>
-  <div class="container">
-    <div class="col-lg-12">
-      <p>Copyright &copy; 2026 VoyageLoisir. Design: <a href="https://templatemo.com" target="_blank">TemplateMo</a></p>
+<script>
+(function(){
+  fetch('{{ path("app_destination_videos", {"id": destination.id}) }}')
+    .then(function(r){return r.json();})
+    .then(function(v){
+      document.getElementById('yt-loading').style.display='none';
+      if(!v||!v.id){document.getElementById('yt-error').style.display='block';return;}
+      document.getElementById('yt-iframe').src='https://www.youtube.com/embed/'+v.id;
+      document.getElementById('yt-titre').textContent=v.titre||'';
+      document.getElementById('yt-container').style.display='block';
+    })
+    .catch(function(){
+      document.getElementById('yt-loading').style.display='none';
+      document.getElementById('yt-error').style.display='block';
+    });
+})();
+</script>
+
+{# MODAL ITINÉRAIRE #}
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<style>
+#modal-itineraire { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.55); backdrop-filter:blur(6px); z-index:9999; align-items:center; justify-content:center; padding:20px; }
+#modal-inner { background:#fff; border-radius:24px; width:100%; max-width:860px; max-height:90vh; display:flex; flex-direction:column; overflow:hidden; box-shadow:0 32px 80px rgba(0,0,0,0.18); }
+.modal-header-vianova { background:linear-gradient(135deg,#f5a623,#e8960f); padding:24px 32px; display:flex; align-items:center; justify-content:space-between; flex-shrink:0; }
+.modal-logo { width:56px; height:56px; border-radius:10px; background:white; padding:4px; object-fit:contain; }
+.modal-brand { color:white; margin-left:14px; }
+.modal-brand-name { font-family:'Cormorant Garamond',serif; font-size:20px; font-weight:700; letter-spacing:2px; }
+.modal-brand-sub { font-size:10px; letter-spacing:2px; text-transform:uppercase; opacity:0.85; margin-top:2px; }
+.modal-title-block { text-align:right; color:white; }
+.modal-dest-name { font-family:'Cormorant Garamond',serif; font-size:18px; font-weight:600; }
+.modal-dest-sub { font-size:10px; opacity:0.8; letter-spacing:1px; margin-top:2px; }
+#modal-contenu { overflow-y:auto; padding:24px 32px 28px; flex:1; background:#f8f9fa; }
+.itin-day-card { background:#fff; border-radius:14px; overflow:hidden; margin-bottom:14px; border:1px solid #eee; box-shadow:0 2px 10px rgba(0,0,0,0.05); }
+.itin-day-header { display:flex; align-items:center; gap:14px; padding:14px 22px; background:linear-gradient(135deg,#fff8ee,#fff3e0); border-bottom:1px solid #fde8c0; }
+.itin-day-num { font-family:'Cormorant Garamond',serif; font-size:34px; font-weight:700; color:#f5a623; line-height:1; min-width:44px; }
+.itin-day-title { font-size:14px; font-weight:600; color:#1a1814; }
+.itin-slots { padding:6px 22px 14px; }
+.itin-slot { display:flex; align-items:flex-start; gap:12px; padding:10px 0; border-bottom:1px solid #f0f0f0; }
+.itin-slot:last-child { border-bottom:none; }
+.itin-slot-icon { width:32px; height:32px; border-radius:9px; background:#fff8ee; border:1px solid #fde8c0; display:flex; align-items:center; justify-content:center; font-size:14px; flex-shrink:0; }
+.itin-slot-lbl { font-size:9px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:#f5a623; margin-bottom:3px; }
+.itin-slot-txt { font-size:13px; color:#555; line-height:1.65; margin:0; }
+.modal-footer-vianova { padding:14px 32px; background:white; border-top:1px solid #eee; display:flex; align-items:center; justify-content:space-between; flex-shrink:0; }
+.btn-dl-pdf { display:inline-flex; align-items:center; gap:8px; padding:10px 26px; border-radius:30px; border:none; background:#f5a623; color:white; font-size:13px; font-weight:600; cursor:pointer; font-family:'DM Sans',sans-serif; transition:all 0.2s; }
+.btn-dl-pdf:hover { background:#e8960f; }
+.btn-close-modal { width:36px; height:36px; border-radius:50%; border:1.5px solid #ddd; background:white; color:#888; font-size:15px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.2s; }
+.btn-close-modal:hover { background:#f5a623; color:white; border-color:#f5a623; }
+</style>
+
+<div id="modal-itineraire">
+  <div id="modal-inner">
+
+    <div class="modal-header-vianova">
+      <div style="display:flex;align-items:center">
+        <img src="data:image/png;base64,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" alt="Vianova" class="modal-logo">
+        <div class="modal-brand">
+          <div class="modal-brand-name">VIANOVA</div>
+          <div class="modal-brand-sub">Travel Agency</div>
+        </div>
+      </div>
+      <div class="modal-title-block">
+        <div class="modal-dest-name" id="modal-titre"></div>
+        <div class="modal-dest-sub" id="modal-sous-titre"></div>
+      </div>
     </div>
+
+    <div id="modal-contenu"></div>
+
+    <div class="modal-footer-vianova">
+      <button class="btn-dl-pdf" id="btn-pdf" onclick="telechargerPDF()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Télécharger PDF
+      </button>
+      <button class="btn-close-modal" onclick="fermerModal()">✕</button>
+    </div>
+
   </div>
-</footer>
+</div>
+
+<script>
+var LOGO_VIANOVA = 'data:image/png;base64,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';
+
+function genererItineraire(duree) {
+  document.getElementById('itineraire-loading').style.display = 'inline';
+  fetch('{{ path("app_destination_itineraire", {"id": destination.id}) }}', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: 'duree=' + duree
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    document.getElementById('itineraire-loading').style.display = 'none';
+    if (!data || !data.jours) { alert('Erreur de génération.'); return; }
+    afficherModal(data.jours, duree);
+  })
+  .catch(function() {
+    document.getElementById('itineraire-loading').style.display = 'none';
+    alert('Erreur réseau.');
+  });
+}
+
+function afficherModal(jours, duree) {
+  document.getElementById('modal-titre').textContent = '{{ destination.nom|e("js") }} — ' + duree + ' jour' + (duree > 1 ? 's' : '');
+  document.getElementById('modal-sous-titre').textContent = '{{ destination.pays|e("js") }} · Programme généré par IA';
+
+  var slots = [
+    { key:'matin',      label:'Matin',      icon:'🌅' },
+    { key:'dejeuner',   label:'Déjeuner',   icon:'🍽️' },
+    { key:'apres_midi', label:'Après-midi', icon:'☀️' },
+    { key:'diner',      label:'Dîner',      icon:'🌙' },
+    { key:'transport',  label:'Transport',  icon:'🚗' },
+    { key:'conseil',    label:'Conseil',    icon:'💡' },
+  ];
+
+  var html = '';
+  jours.forEach(function(j) {
+    html += '<div class="itin-day-card"><div class="itin-day-header"><div class="itin-day-num">' + j.jour + '</div><div><p class="itin-day-title">' + (j.titre || 'Jour ' + j.jour) + '</p></div></div><div class="itin-slots">';
+    slots.forEach(function(s) {
+      if (!j[s.key]) return;
+      html += '<div class="itin-slot"><div class="itin-slot-icon">' + s.icon + '</div><div><div class="itin-slot-lbl">' + s.label + '</div><p class="itin-slot-txt">' + j[s.key] + '</p></div></div>';
+    });
+    html += '</div></div>';
+  });
+
+  document.getElementById('modal-contenu').innerHTML = html;
+  document.getElementById('modal-itineraire').style.display = 'flex';
+}
+
+function fermerModal() {
+  document.getElementById('modal-itineraire').style.display = 'none';
+}
+
+function telechargerPDF() {
+  var btn = document.getElementById('btn-pdf');
+  btn.textContent = '⟳ Génération...';
+  btn.disabled = true;
+
+  var { jsPDF } = window.jspdf;
+  var pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  var pw = 210, ph = 297, margin = 14, y = 0, lh = 5.5;
+
+  // HEADER
+  pdf.setFillColor(245, 166, 35);
+  pdf.rect(0, 0, pw, 36, 'F');
+  try { pdf.addImage(LOGO_VIANOVA, 'PNG', margin, 4, 26, 26); } catch(e) {}
+  pdf.setFont('helvetica', 'bold');
+  pdf.setFontSize(15);
+  pdf.setTextColor(255, 255, 255);
+  pdf.text('VIANOVA', margin + 30, 15);
+  pdf.setFont('helvetica', 'normal');
+  pdf.setFontSize(8);
+  pdf.text('Travel Agency', margin + 30, 21);
+  var titre = document.getElementById('modal-titre').textContent;
+  var sousTitre = document.getElementById('modal-sous-titre').textContent;
+  pdf.setFont('helvetica', 'bold');
+  pdf.setFontSize(12);
+  pdf.text(titre, pw - margin, 15, { align: 'right' });
+  pdf.setFont('helvetica', 'normal');
+  pdf.setFontSize(8);
+  pdf.text(sousTitre, pw - margin, 21, { align: 'right' });
+  y = 44;
+
+  var slots = [
+    { key:'matin',      label:'MATIN' },
+    { key:'dejeuner',   label:'DÉJEUNER' },
+    { key:'apres_midi', label:'APRÈS-MIDI' },
+    { key:'diner',      label:'DÎNER' },
+    { key:'transport',  label:'TRANSPORT' },
+    { key:'conseil',    label:'CONSEIL' },
+  ];
+
+  document.querySelectorAll('.itin-day-card').forEach(function(card) {
+    var num = card.querySelector('.itin-day-num').textContent.trim();
+    var title = card.querySelector('.itin-day-title').textContent.trim();
+    var slotEls = card.querySelectorAll('.itin-slot');
+
+    // Calcul hauteur estimée
+    var cardH = 14;
+    slotEls.forEach(function(sl) {
+      var txt = sl.querySelector('.itin-slot-txt').textContent.trim();
+      cardH += pdf.splitTextToSize(txt, pw - margin * 2 - 10).length * lh + 8;
+    });
+
+    if (y + cardH > ph - 16) { pdf.addPage(); y = margin; }
+
+    // En-tête jour
+    pdf.setFillColor(255, 248, 238);
+    pdf.roundedRect(margin, y, pw - margin * 2, 12, 3, 3, 'F');
+    pdf.setDrawColor(253, 232, 192);
+    pdf.setLineWidth(0.3);
+    pdf.roundedRect(margin, y, pw - margin * 2, 12, 3, 3, 'S');
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(17);
+    pdf.setTextColor(245, 166, 35);
+    pdf.text(num, margin + 5, y + 9);
+    pdf.setFontSize(10);
+    pdf.setTextColor(26, 24, 20);
+    pdf.text(title, margin + 18, y + 8.5);
+    y += 14;
+
+    slotEls.forEach(function(sl) {
+      var lbl = sl.querySelector('.itin-slot-lbl').textContent.trim();
+      var txt = sl.querySelector('.itin-slot-txt').textContent.trim();
+      var lines = pdf.splitTextToSize(txt, pw - margin * 2 - 10);
+      var slotH = lines.length * lh + 8;
+      if (y + slotH > ph - 16) { pdf.addPage(); y = margin; }
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(7);
+      pdf.setTextColor(245, 166, 35);
+      pdf.text(lbl, margin + 4, y + 4);
+      pdf.setFont('helvetica', 'normal');
+      pdf.setFontSize(9);
+      pdf.setTextColor(80, 80, 80);
+      pdf.text(lines, margin + 4, y + 9);
+      pdf.setDrawColor(240, 240, 240);
+      pdf.setLineWidth(0.2);
+      pdf.line(margin + 2, y + slotH, pw - margin - 2, y + slotH);
+      y += slotH + 2;
+    });
+    y += 6;
+  });
+
+  // FOOTER sur chaque page
+  var total = pdf.internal.getNumberOfPages();
+  for (var i = 1; i <= total; i++) {
+    pdf.setPage(i);
+    pdf.setFillColor(245, 166, 35);
+    pdf.rect(0, ph - 10, pw, 10, 'F');
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(7);
+    pdf.setTextColor(255, 255, 255);
+    pdf.text('VIANOVA Travel Agency', margin, ph - 3.5);
+    pdf.text('Page ' + i + ' / ' + total, pw - margin, ph - 3.5, { align: 'right' });
+  }
+
+  pdf.save('Itineraire-{{ destination.nom|e("js")|replace({" ": "-"}) }}.pdf');
+  btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Télécharger PDF';
+  btn.disabled = false;
+}
+
+document.getElementById('modal-itineraire').addEventListener('click', function(e) {
+  if (e.target === this) fermerModal();
+});
+</script>
 
 {% endblock %}
+

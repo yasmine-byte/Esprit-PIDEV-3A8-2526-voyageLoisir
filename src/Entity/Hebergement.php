@@ -34,15 +34,28 @@ class Hebergement
     #[Assert\NotNull(message: "Le type est obligatoire.")]
     private ?Type $type = null;
 
+    #[ORM\Column(nullable: true)]
+    private ?float $latitude = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?float $longitude = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $adresse = null;
+
     /**
      * @var Collection<int, Chambre>
      */
     #[ORM\OneToMany(targetEntity: Chambre::class, mappedBy: 'hebergement')]
     private Collection $no;
 
+    #[ORM\ManyToMany(targetEntity: Voyage::class, mappedBy: 'hebergements')]
+    private Collection $voyages;
+
     public function __construct()
     {
-        $this->no = new ArrayCollection();
+        $this->no     = new ArrayCollection();
+        $this->voyages = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -94,6 +107,39 @@ class Hebergement
         return $this;
     }
 
+    public function getLatitude(): ?float
+    {
+        return $this->latitude;
+    }
+
+    public function setLatitude(?float $latitude): static
+    {
+        $this->latitude = $latitude;
+        return $this;
+    }
+
+    public function getLongitude(): ?float
+    {
+        return $this->longitude;
+    }
+
+    public function setLongitude(?float $longitude): static
+    {
+        $this->longitude = $longitude;
+        return $this;
+    }
+
+    public function getAdresse(): ?string
+    {
+        return $this->adresse;
+    }
+
+    public function setAdresse(?string $adresse): static
+    {
+        $this->adresse = $adresse;
+        return $this;
+    }
+
     public function getNo(): Collection
     {
         return $this->no;
@@ -115,6 +161,29 @@ class Hebergement
                 $no->setHebergement(null);
             }
         }
+        return $this;
+    }
+
+    // ----------------------------------------------------------------
+    // Voyages (ManyToMany — côté inverse)
+    // ----------------------------------------------------------------
+
+    public function getVoyages(): Collection
+    {
+        return $this->voyages;
+    }
+
+    public function addVoyage(Voyage $voyage): static
+    {
+        if (!$this->voyages->contains($voyage)) {
+            $this->voyages->add($voyage);
+        }
+        return $this;
+    }
+
+    public function removeVoyage(Voyage $voyage): static
+    {
+        $this->voyages->removeElement($voyage);
         return $this;
     }
 }
