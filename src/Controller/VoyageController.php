@@ -228,7 +228,7 @@ public function show(Voyage $voyage, EntityManagerInterface $entityManager): Res
     }
 
     // ÉTAPE 1 — Envoyer l'email de confirmation avec lien vers la page de paiement
-#[Route("/{id}/checkout", name: "app_payment_checkout", methods: ["GET"])]
+#[Route("/{id}/checkout", name: "app_payment_checkout", methods: ["GET", "POST"])]
 public function checkout(Voyage $voyage): Response
 {
     $user = $this->getUser();
