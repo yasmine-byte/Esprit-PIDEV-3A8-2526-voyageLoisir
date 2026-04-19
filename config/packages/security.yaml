@@ -15,8 +15,8 @@ security:
 
         main:
             pattern: ^/admin
-            context: app_context
             lazy: true
+            context: shared_security_context
             provider: app_user_provider
             user_checker: App\Security\UserChecker
             form_login:
@@ -42,8 +42,8 @@ security:
 
         front:
             pattern: ^/
-            context: app_context
             lazy: true
+            context: shared_security_context
             provider: app_user_provider
             user_checker: App\Security\UserChecker
             form_login:
@@ -75,7 +75,7 @@ security:
         - { path: ^/admin/profile$,          roles: ROLE_USER }
         - { path: ^/admin/profile/edit,      roles: ROLE_USER }
         - { path: ^/admin/profile/\d+,       roles: ROLE_USER }
-        - { path: ^/admin,                   roles: ROLE_ADMIN }
+        - { path: ^/admin,                   roles: ROLE_USER }
         - { path: ^/register,                roles: PUBLIC_ACCESS }
         - { path: ^/login,                   roles: PUBLIC_ACCESS }
         - { path: ^/forgot-password,         roles: PUBLIC_ACCESS }

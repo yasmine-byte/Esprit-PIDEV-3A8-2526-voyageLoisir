@@ -271,6 +271,35 @@
             Aucune réclamation ne correspond à votre recherche.
         </div>
     </div>
+
+{% if reclamations.pageCount is defined and reclamations.pageCount > 1 %}
+<div style="display:flex; justify-content:space-between; align-items:center; margin-top:24px; padding:16px 20px; background:rgba(255,255,255,0.03); border-radius:12px; border:1px solid rgba(255,255,255,0.07);">
+    <div style="font-size:0.82rem; color:#888;">
+        Page <strong style="color:#4a9eff;">{{ reclamations.currentPageNumber }}</strong> sur <strong style="color:#4a9eff;">{{ reclamations.pageCount }}</strong>
+        &mdash; <strong style="color:#fff;">{{ reclamations.totalItemCount }}</strong> réclamation(s)
+    </div>
+    <div style="display:flex; gap:6px; align-items:center;">
+        {% if reclamations.currentPageNumber > 1 %}
+        <a href="?page={{ reclamations.currentPageNumber - 1 }}" style="width:36px;height:36px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;text-decoration:none;font-weight:700;font-size:1rem;background:rgba(74,158,255,0.15);border:1px solid rgba(74,158,255,0.3);color:#4a9eff;">&laquo;</a>
+        {% else %}
+        <span style="width:36px;height:36px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;opacity:0.25;font-weight:700;background:rgba(255,255,255,0.05);color:#888;">&#171;</span>
+        {% endif %}
+        {% for page in reclamations.paginationData.pagesInRange %}
+            {% if page == reclamations.currentPageNumber %}
+            <span style="width:36px;height:36px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:0.85rem;background:#4a9eff;color:#fff;box-shadow:0 0 12px rgba(74,158,255,0.5);">{{ page }}</span>
+            {% else %}
+            <a href="?page={{ page }}" style="width:36px;height:36px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;text-decoration:none;font-size:0.85rem;font-weight:600;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:#ccc;">{{ page }}</a>
+            {% endif %}
+        {% endfor %}
+        {% if reclamations.currentPageNumber < reclamations.pageCount %}
+        <a href="?page={{ reclamations.currentPageNumber + 1 }}" style="width:36px;height:36px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;text-decoration:none;font-weight:700;font-size:1rem;background:rgba(74,158,255,0.15);border:1px solid rgba(74,158,255,0.3);color:#4a9eff;">&raquo;</a>
+        {% else %}
+        <span style="width:36px;height:36px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;opacity:0.25;font-weight:700;background:rgba(255,255,255,0.05);color:#888;">&#187;</span>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
 </div>
 
 <script>

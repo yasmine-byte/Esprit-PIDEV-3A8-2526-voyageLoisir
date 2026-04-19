@@ -155,12 +155,10 @@
             <div class="form-panel" id="panel-register">
                 <form method="POST" action="{{ path('front_register') }}" novalidate>
 
-                    {# Message succès #}
                     {% for message in app.flashes('register_success') %}
                         <div class="alert alert-success">✔ {{ message }}</div>
                     {% endfor %}
 
-                    {# Erreur globale #}
                     {% if registerFieldErrors is defined and registerFieldErrors|length > 0 %}
                         <div class="alert alert-danger">Veuillez corriger les erreurs ci-dessous.</div>
                     {% endif %}

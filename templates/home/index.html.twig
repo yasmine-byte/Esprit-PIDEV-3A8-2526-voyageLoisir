@@ -1,6 +1,6 @@
 ﻿{% extends 'base_front.html.twig' %}
 
-{% block title %}Villa Agency - Home{% endblock %}
+{% block title %}Villa Agency - Accueil{% endblock %}
 
 {% block stylesheets %}
   {{ parent() }}
@@ -246,223 +246,32 @@
         <div class="item" style="background-image: url('{{ asset('assets_front/images/images/banner-02.jpg') }}'); background-size:cover; background-position:center;">
             <div class="header-text">
                 <span class="category">Sousse, <em>Tunisie</em></span>
-                <h2>Trouvez<br>l'hÃ©bergement idÃ©al</h2>
+                <h2>Trouvez<br>l'hébergement idéal</h2>
             </div>
         </div>
         <div class="item" style="background-image: url('{{ asset('assets_front/images/images/banner-03.jpg') }}'); background-size:cover; background-position:center;">
             <div class="header-text">
                 <span class="category">Djerba, <em>Tunisie</em></span>
-                <h2>RÃ©servez<br>dÃ¨s maintenant !</h2>
+                <h2>Réservez<br>dès maintenant !</h2>
             </div>
         </div>
     </div>
 </div>
 
-  <div class="featured section">
-    <div class="container">
-      <div class="row">
-        <div class="col-lg-4">
-          <div class="left-image">
-            <img src="{{ asset('assets_front/images/images/featured.jpg') }}" alt="">
-          </div>
-        </div>
-        <div class="col-lg-5">
-          <div class="section-heading">
-            <h6>| Featured</h6>
-            <h2>Best Appartment &amp; Sea view</h2>
-          </div>
-          <div class="accordion" id="accordionExample">
-            <div class="accordion-item">
-              <h2 class="accordion-header" id="headingOne">
-                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
-                  Best useful links ?
-                </button>
-              </h2>
-              <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
-                <div class="accordion-body">
-                  Get <strong>the best villa</strong> website template in HTML CSS and Bootstrap for your business.
-                </div>
-              </div>
-            </div>
-            <div class="accordion-item">
-              <h2 class="accordion-header" id="headingTwo">
-                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
-                  How does this work ?
-                </button>
-              </h2>
-              <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#accordionExample">
-                <div class="accordion-body">
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                </div>
-              </div>
-            </div>
-            <div class="accordion-item">
-              <h2 class="accordion-header" id="headingThree">
-                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
-                  Why is Villa Agency the best ?
-                </button>
-              </h2>
-              <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#accordionExample">
-                <div class="accordion-body">
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="col-lg-3">
-          <div class="info-table">
-            <ul>
-              <li>
-                <img src="{{ asset('assets_front/images/images/info-icon-01.png') }}" alt="" style="max-width: 52px;">
-                <h4>250 m2<br><span>Total Flat Space</span></h4>
-              </li>
-              <li>
-                <img src="{{ asset('assets_front/images/images/info-icon-02.png') }}" alt="" style="max-width: 52px;">
-                <h4>Contract<br><span>Contract Ready</span></h4>
-              </li>
-              <li>
-                <img src="{{ asset('assets_front/images/images/info-icon-03.png') }}" alt="" style="max-width: 52px;">
-                <h4>Payment<br><span>Payment Process</span></h4>
-              </li>
-              <li>
-                <img src="{{ asset('assets_front/images/images/info-icon-04.png') }}" alt="" style="max-width: 52px;">
-                <h4>Safety<br><span>24/7 Under Control</span></h4>
-              </li>
-            </ul>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
 
-  <div class="fun-facts">
-    <div class="container">
-      <div class="row">
-        <div class="col-lg-12">
-          <div class="wrapper">
-            <div class="row">
-              <div class="col-lg-4">
-                <div class="counter">
-                  <h2 class="timer count-title count-number" data-to="34" data-speed="1000"></h2>
-                  <p class="count-text">Buildings<br>Finished Now</p>
-                </div>
-              </div>
-              <div class="col-lg-4">
-                <div class="counter">
-                  <h2 class="timer count-title count-number" data-to="12" data-speed="1000"></h2>
-                  <p class="count-text">Years<br>Experience</p>
-                </div>
-              </div>
-              <div class="col-lg-4">
-                <div class="counter">
-                  <h2 class="timer count-title count-number" data-to="24" data-speed="1000"></h2>
-                  <p class="count-text">Awards<br>Won 2026</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+  
 
-  <div class="properties section">
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-4 offset-lg-4">
-                <div class="section-heading text-center">
-                    <h6>| HÃ©bergements</h6>
-                    <h2>Nos Meilleurs HÃ©bergements</h2>
-                </div>
-            </div>
-        </div>
-        <div class="row">
-            {% for hebergement in hebergements %}
-            <div class="col-lg-4 col-md-6">
-                <div class="item">
-                    {% if hebergement.imagePath %}
-                        <img src="{{ asset('uploads/hebergements/' ~ hebergement.imagePath) }}" alt="{{ hebergement.description }}">
-                    {% else %}
-                        <img src="{{ asset('assets_front/images/images/property-01.jpg') }}" alt="">
-                    {% endif %}
-                    <span class="category">{{ hebergement.type ? hebergement.type.nom : 'HÃ©bergement' }}</span>
-                    <h6>{{ hebergement.prix }} TND</h6>
-                    <h4>{{ hebergement.description|slice(0,40) }}</h4>
-                    <ul>
-                        <li>Chambres: <span>{{ hebergement.no|length }}</span></li>
-                    </ul>
-                    <div class="main-button">
-                        <a href="{{ path('app_property_details', {'id': hebergement.id}) }}">Voir & RÃ©server</a>
-                    </div>
-                </div>
-            </div>
-            {% else %}
-            <div class="col-12 text-center">
-                <p>Aucun hÃ©bergement disponible pour le moment.</p>
-            </div>
-            {% endfor %}
-        </div>
-    </div>
-</div>
 
-  <div class="properties section">
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-4 offset-lg-4">
-                <div class="section-heading text-center">
-                    <h6>| Destinations</h6>
-                    <h2>Quelques Destinations Ã  DÃ©couvrir</h2>
-                </div>
-            </div>
-        </div>
-        <div class="row">
-            {% for destination in destinations|slice(0, 3) %}
-            <div class="col-lg-4 col-md-6">
-                <div class="item">
-                    {% if destination.images|length > 0 %}
-                        <img src="{{ asset(destination.images[0].urlImage) }}" alt="{{ destination.nom }}" style="height: 240px; object-fit: cover;">
-                    {% else %}
-                        <img src="{{ asset('assets_front/images/images/property-02.jpg') }}" alt="{{ destination.nom }}" style="height: 240px; object-fit: cover;">
-                    {% endif %}
-                    <span class="category">{{ destination.meilleureSaison ?: 'Destination' }}</span>
-                    <h6>{{ destination.pays }}</h6>
-                    <h4>{{ destination.nom }}</h4>
-                    <ul>
-                        <li>Visites: <span>{{ destination.nbVisites ?? 0 }}</span></li>
-                        <li>Statut: <span>{{ destination.statut ? 'Actif' : 'Inactif' }}</span></li>
-                    </ul>
-                    <div class="main-button">
-                        <a href="{{ path('app_destination_detail', {'id': destination.id}) }}">Voir la destination</a>
-                    </div>
-                </div>
-            </div>
-            {% else %}
-            <div class="col-12 text-center">
-                <p>Aucune destination disponible pour le moment.</p>
-            </div>
-            {% endfor %}
-        </div>
-        <div class="row">
-            <div class="col-12 text-center" style="margin-top: 10px;">
-                <div class="main-button">
-                    <a href="{{ path('app_destinations') }}">Explorer toutes les destinations</a>
-                </div>
-            </div>
-        </div>
-    </div>
-  </div>
+  
 
   <section class="top-destinations-section">
     <div class="container">
       <div class="top-destinations-head">
         <div>
-          <span class="top-destinations-kicker">Curated Picks</span>
-          <h2 class="top-destinations-title">Top Destinations</h2>
+          <span class="top-destinations-kicker">Sélection</span>
+          <h2 class="top-destinations-title">Meilleures Destinations</h2>
         </div>
-        <p class="top-destinations-subtitle">
-          Handpicked escapes with beautiful scenery, memorable stays, and inspiring routes for your next trip.
-        </p>
+        
       </div>
 
       <div class="top-destinations-viewport">
@@ -484,7 +293,7 @@
               </a>
 
               <div class="top-destination-price">
-                starts at &#8369;{{ startPrice|number_format(0, '.', ',') }}
+                À partir de {{ startPrice|number_format(0, '.', ',') }} Euro
               </div>
 
               <div class="top-destination-content">
@@ -507,9 +316,9 @@
           {% else %}
             <article class="top-destination-card">
               <div class="top-destination-content">
-                <h3 class="top-destination-name">No destinations yet</h3>
+                <h3 class="top-destination-name">Aucune destination</h3>
                 <div class="top-destination-location">
-                  <span>New travel spots will appear here soon.</span>
+                  <span>De nouvelles destinations apparaîtront bientôt.</span>
                 </div>
               </div>
             </article>
@@ -518,10 +327,10 @@
       </div>
 
       <div class="top-destinations-actions">
-        <a href="{{ path('app_destinations') }}" class="top-destinations-view-more">View more</a>
+        <a href="{{ path('app_destinations') }}" class="top-destinations-view-more">Voir plus</a>
         <div class="top-destinations-nav">
-          <button class="top-destinations-arrow" id="top-destinations-prev" type="button" aria-label="Previous destinations">&#8249;</button>
-          <button class="top-destinations-arrow" id="top-destinations-next" type="button" aria-label="Next destinations">&#8250;</button>
+          <button class="top-destinations-arrow" id="top-destinations-prev" type="button" aria-label="Destinations précédentes">&#8249;</button>
+          <button class="top-destinations-arrow" id="top-destinations-next" type="button" aria-label="Destinations suivantes">&#8250;</button>
         </div>
       </div>
     </div>
@@ -534,9 +343,6 @@
     <div class="container">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:36px;flex-wrap:wrap;gap:16px;">
         <div>
-          <span style="display:inline-block;margin-bottom:8px;color:#f97316;font-size:0.88rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;">
-            {{ isPersonalized ? '✨ Personnalisé pour vous' : '🔥 Populaires' }}
-          </span>
           <h2 style="margin:0;color:#111827;font-size:clamp(1.6rem,3vw,2.2rem);font-weight:700;">
             {{ isPersonalized ? 'Hébergements recommandés' : 'Les plus réservés' }}
           </h2>
@@ -570,7 +376,7 @@
               <div style="display:flex;align-items:center;justify-content:space-between;margin-top:14px;">
                 <div>
                   <span style="font-size:0.75rem;color:#9ca3af;">À partir de</span>
-                  <div style="font-size:1.3rem;font-weight:800;color:#f97316;">{{ heb.prix }} TND<span style="font-size:0.75rem;font-weight:500;color:#9ca3af;">/nuit</span></div>
+                  <div style="font-size:1.3rem;font-weight:800;color:#f97316;">{{ heb.prix }} Euro<span style="font-size:0.75rem;font-weight:500;color:#9ca3af;">/nuit</span></div>
                 </div>
                 <a href="{{ path('app_property_details', {'id': heb.id}) }}" style="padding:9px 18px;background:linear-gradient(135deg,#f97316,#fb923c);color:#fff;border-radius:8px;text-decoration:none;font-size:0.85rem;font-weight:600;">Réserver</a>
               </div>
@@ -589,8 +395,8 @@
 <section class="reviews-section">
     <div class="container">
       <div class="reviews-heading">
-        <h2>Blogs</h2>
-        <p>Fresh travel stories, destination ideas, and highlights from our latest published blogs.</p>
+        <h2>Articles de voyage</h2>
+        <p>Récits de voyages, idées de destinations et coups de cœur de nos derniers articles publiés.</p>
       </div>
 
       <div class="reviews-carousel-shell">
@@ -599,18 +405,18 @@
           <article class="review-card">
             <div class="review-card-image">
               <img src="{{ blog.image }}" alt="{{ blog.title }}" onerror="this.src='https://picsum.photos/seed/blog-home-fallback-{{ blog.id }}/900/650'">
-              <div class="review-rating-badge">{% if blog.rating > 0 %}&#9733; {{ blog.rating }}{% else %}Blog{% endif %}</div>
+              <div class="review-rating-badge">{% if blog.rating > 0 %}&#9733; {{ blog.rating }}{% else %}Article{% endif %}</div>
             </div>
             <div class="review-content">
               <h3>{{ blog.title }}</h3>
               <span class="review-trip">
-                {{ blog.published_at ? blog.published_at|date('M d, Y') : 'Recently published' }}
+                {{ blog.published_at ? blog.published_at|date('d/m/Y') : 'Récemment publié' }}
                 {% if blog.slug %} - {{ blog.slug }}{% endif %}
               </span>
               <p>{{ blog.excerpt }}</p>
               <div class="review-author">
                 <span>{{ blog.author }}</span>
-                <a href="{{ path('app_blog_show', {'id': blog.id}) }}">Read more</a>
+                <a href="{{ path('app_blog_show', {'id': blog.id}) }}">Lire la suite</a>
               </div>
             </div>
           </article>
@@ -618,12 +424,12 @@
         {% if blogs is empty %}
           <article class="review-card">
             <div class="review-content">
-              <h3>No blogs available yet</h3>
-              <span class="review-trip">Publishing queue</span>
-              <p>Once blog posts are published, they will appear here on the home page.</p>
+              <h3>Aucun article disponible</h3>
+              <span class="review-trip">En attente de publication</span>
+              <p>Dès que des articles seront publiés, ils apparaîtront ici sur la page d'accueil.</p>
               <div class="review-author">
                 <span>VoyageLoisir</span>
-                <a href="{{ path('app_blog_index') }}">Browse blog area</a>
+                <a href="{{ path('app_blog_index') }}">Explorer les articles</a>
               </div>
             </div>
           </article>
@@ -632,14 +438,14 @@
       </div>
 
       <div class="reviews-controls">
-        <button class="reviews-arrow" id="reviews-prev" type="button" aria-label="Previous blogs">&#8249;</button>
-        <button class="reviews-arrow" id="reviews-next" type="button" aria-label="Next blogs">&#8250;</button>
+        <button class="reviews-arrow" id="reviews-prev" type="button" aria-label="Articles précédents">&#8249;</button>
+        <button class="reviews-arrow" id="reviews-next" type="button" aria-label="Articles suivants">&#8250;</button>
       </div>
 
       <div class="reviews-dots" id="reviews-dots" aria-label="Blogs pagination"></div>
 
       <div class="reviews-action">
-        <a href="{{ path('app_blog_index') }}">Explore all blogs</a>
+        <a href="{{ path('app_blog_index') }}">Explorer tous les articles</a>
       </div>
     </div>
   </section>
@@ -751,7 +557,7 @@
           dot.type = 'button';
           dot.className = 'reviews-dot';
           dot.dataset.index = String(index);
-          dot.setAttribute('aria-label', `Go to blog slide ${index + 1}`);
+          dot.setAttribute('aria-label', `Aller à l'article ${index + 1}`);
           dotsWrap.appendChild(dot);
         }
 

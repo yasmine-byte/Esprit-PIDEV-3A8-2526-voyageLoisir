@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Users;
 use App\Repository\UsersRepository;
 use App\Repository\RoleRepository;
+use App\Repository\VoyageRepository;
 use App\Service\GmailService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -55,7 +56,6 @@ class FrontSecurityController extends AbstractController
 
         $fieldErrors = [];
 
-        // ── Validation ──
         if (empty($nom) || !preg_match('/^[A-Za-zÀ-ÿ\s]{2,50}$/', $nom))
             $fieldErrors['nom'] = empty($nom) ? 'Le nom est obligatoire.' : 'Le nom doit contenir uniquement des lettres.';
 
@@ -94,14 +94,13 @@ class FrontSecurityController extends AbstractController
             return $this->redirectToRoute('admin_login');
         }
 
-        // ── Création du compte ──
         $user = new Users();
         $user->setNom($nom);
         $user->setPrenom($prenom);
         $user->setEmail($email);
         $user->setTelephone($telephone ?: null);
-        $user->setIsActive(false);       // inactif jusqu'à vérification
-        $user->setIsVerified(false);     // non vérifié
+        $user->setIsActive(false);
+        $user->setIsVerified(false);
         $user->setCreatedAt(new \DateTime());
         $user->setUpdatedAt(new \DateTime());
         $user->setPasswordHash($hasher->hashPassword($user, $password));
@@ -136,5 +135,34 @@ class FrontSecurityController extends AbstractController
         $request->getSession()->remove('register_form_data');
         $this->addFlash('register_success', '✔ Compte créé ! Vérifiez votre email pour activer votre compte.');
         return $this->redirectToRoute('admin_login');
+    }
+
+    #[Route('/profile', name: 'front_profile')]
+    public function profile(VoyageRepository $voyageRepository, EntityManagerInterface $entityManager): Response
+    {
+        $user = $this->getUser();
+        if (!$user) {
+            return $this->redirectToRoute('app_home');
+        }
+
+        $reservations = $voyageRepository->findByReservedUser($user);
+
+        // ✅ Récupérer le statut paid PAR USER pour chaque voyage
+        $paidVoyages = [];
+        if ($user instanceof Users) {
+            $rows = $entityManager->getConnection()->fetchAllAssociative(
+                'SELECT voyage_id FROM voyage_reservations WHERE users_id = :uid AND paid = 1',
+                ['uid' => $user->getId()]
+            );
+            foreach ($rows as $row) {
+                $paidVoyages[$row['voyage_id']] = true;
+            }
+        }
+
+        return $this->render('home/profile.html.twig', [
+            'user'         => $user,
+            'reservations' => $reservations,
+            'paidVoyages'  => $paidVoyages,
+        ]);
     }
 }

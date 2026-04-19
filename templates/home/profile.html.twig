@@ -121,6 +121,7 @@
             <div class="col-lg-12">
                 <span class="breadcrumb"><a href="{{ path('app_home') }}">Accueil</a> / Mon Profil</span>
                 <h3>Mon Profil</h3>
+                <p style="font-size:12px;color:#ccc">Roles : {{ app.user.roles|join(", ") }}</p>
             </div>
         </div>
     </div>
@@ -388,9 +389,21 @@
                                     </div>
                                 </div>
                                 <div class="resa-footer">
+                                    {# ── Prix avec réduction hiver (logique fusionnée) ── #}
                                     <div>
                                         <div style="font-size:11px;color:#94a3b8;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:2px">Prix total</div>
-                                        <div class="resa-price">{{ voyage.prix ? voyage.prix ~ " €" : "—" }}</div>
+                                        {% set dest = voyage.destination %}
+                                        {% set prix_original = voyage.prix %}
+                                        {% if dest and dest.meilleureSaison == 'Hiver' and prix_original %}
+                                            {% set prix_final = (prix_original * 0.80)|round(2) %}
+                                            <div style="font-size:14px;color:#aaa;text-decoration:line-through;line-height:1">
+                                                {{ prix_original }} €
+                                            </div>
+                                            <div class="resa-price">{{ prix_final }} €</div>
+                                            <span style="display:inline-block;margin-top:4px;background:#dbeafe;color:#1d4ed8;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700">❄️ -20% Offre Hiver</span>
+                                        {% else %}
+                                            <div class="resa-price">{{ prix_original ? prix_original ~ " €" : "—" }}</div>
+                                        {% endif %}
                                     </div>
                                     <div class="resa-actions">
                                         {% if is_paid %}

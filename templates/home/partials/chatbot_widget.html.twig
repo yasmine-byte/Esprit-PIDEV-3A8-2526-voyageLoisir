@@ -1,0 +1,298 @@
+{% set chatbotArticleContent = (chatbot_article_content|default('')|striptags|trim) %}
+
+<style>
+  .vl-chatbot-toggle {
+    position: fixed;
+    right: 22px;
+    bottom: 22px;
+    z-index: 5000;
+    width: 58px;
+    height: 58px;
+    border: none;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #e88b5a, #d4845a);
+    color: #fff;
+    box-shadow: 0 12px 28px rgba(42, 28, 20, 0.3);
+    cursor: pointer;
+    font-size: 24px;
+    font-weight: 700;
+  }
+
+  .vl-chatbot-panel {
+    position: fixed;
+    right: 22px;
+    bottom: 92px;
+    z-index: 5000;
+    width: min(360px, calc(100vw - 24px));
+    max-height: min(620px, 82vh);
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: 0 25px 60px rgba(42, 28, 20, 0.28);
+    border: 1px solid rgba(13, 13, 13, 0.08);
+    display: none;
+    overflow: hidden;
+  }
+
+  .vl-chatbot-panel.is-open {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .vl-chatbot-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 14px;
+    background: #f6f6f6;
+    border-bottom: 1px solid #ededed;
+  }
+
+  .vl-chatbot-title {
+    margin: 0;
+    font-size: 15px;
+    color: #1f2937;
+    font-weight: 700;
+  }
+
+  .vl-chatbot-close {
+    border: none;
+    background: transparent;
+    font-size: 22px;
+    line-height: 1;
+    color: #6b7280;
+    cursor: pointer;
+  }
+
+  .vl-chatbot-tools {
+    display: flex;
+    gap: 8px;
+    padding: 10px;
+    border-bottom: 1px solid #ececec;
+    background: #fff;
+  }
+
+  .vl-chatbot-tool-btn {
+    border: 1px solid #f0c8ae;
+    border-radius: 999px;
+    background: #fff6f1;
+    color: #9a3412;
+    padding: 7px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .vl-chatbot-messages {
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    overflow-y: auto;
+    min-height: 200px;
+    max-height: 360px;
+    background: #fcfcfc;
+  }
+
+  .vl-chatbot-msg {
+    max-width: 88%;
+    padding: 9px 11px;
+    border-radius: 11px;
+    font-size: 14px;
+    line-height: 1.45;
+    white-space: pre-wrap;
+  }
+
+  .vl-chatbot-msg.user {
+    margin-left: auto;
+    background: #e7f0ff;
+    color: #1f2937;
+  }
+
+  .vl-chatbot-msg.bot {
+    margin-right: auto;
+    background: #f2f2f2;
+    color: #111827;
+  }
+
+  .vl-chatbot-input-row {
+    padding: 10px;
+    border-top: 1px solid #ececec;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 8px;
+    background: #fff;
+  }
+
+  .vl-chatbot-input {
+    border: 1px solid #d1d5db;
+    border-radius: 10px;
+    padding: 9px 10px;
+    font-size: 14px;
+    outline: none;
+  }
+
+  .vl-chatbot-send {
+    border: none;
+    border-radius: 10px;
+    background: #d4845a;
+    color: #fff;
+    font-weight: 600;
+    padding: 0 12px;
+    cursor: pointer;
+  }
+</style>
+
+<button id="vlChatbotToggle" class="vl-chatbot-toggle" type="button" aria-label="Ouvrir le chatbot">AI</button>
+<div id="vlChatbotPanel" class="vl-chatbot-panel" aria-live="polite">
+  <div class="vl-chatbot-header">
+    <h3 class="vl-chatbot-title">Assistant Blog</h3>
+    <button id="vlChatbotClose" class="vl-chatbot-close" type="button" aria-label="Fermer">×</button>
+  </div>
+
+  {% if chatbotArticleContent is not empty %}
+    <div class="vl-chatbot-tools">
+      <button id="vlChatbotSummarize" class="vl-chatbot-tool-btn" type="button">Resumer moi cet article</button>
+    </div>
+  {% endif %}
+
+  <div id="vlChatbotMessages" class="vl-chatbot-messages">
+    <div class="vl-chatbot-msg bot">Bonjour, je peux resumer des articles, recommander des blogs et vous guider.</div>
+  </div>
+  <div class="vl-chatbot-input-row">
+    <input id="vlChatbotInput" class="vl-chatbot-input" type="text" placeholder="Posez votre question..." maxlength="700">
+    <button id="vlChatbotSend" class="vl-chatbot-send" type="button">Envoyer</button>
+  </div>
+</div>
+
+<script>
+  (function () {
+    const endpointUrl = {{ path('api_chatbot_ask')|json_encode|raw }};
+    const articleContent = {{ chatbotArticleContent|json_encode|raw }};
+    const toggleButton = document.getElementById('vlChatbotToggle');
+    const closeButton = document.getElementById('vlChatbotClose');
+    const summarizeButton = document.getElementById('vlChatbotSummarize');
+    const panel = document.getElementById('vlChatbotPanel');
+    const messages = document.getElementById('vlChatbotMessages');
+    const input = document.getElementById('vlChatbotInput');
+    const sendButton = document.getElementById('vlChatbotSend');
+
+    if (!toggleButton || !closeButton || !panel || !messages || !input || !sendButton) {
+      return;
+    }
+
+    const appendMessage = function (role, text) {
+      const bubble = document.createElement('div');
+      bubble.className = 'vl-chatbot-msg ' + role;
+      bubble.textContent = text;
+      messages.appendChild(bubble);
+      messages.scrollTop = messages.scrollHeight;
+      return bubble;
+    };
+
+    const setOpen = function (open) {
+      panel.classList.toggle('is-open', open);
+      if (open) {
+        input.focus();
+      }
+    };
+
+    const shouldAttachArticleContext = function (text, forced) {
+      if (!articleContent) {
+        return false;
+      }
+      if (forced) {
+        return true;
+      }
+      return /(resume|résumé|cet article|this article)/i.test(String(text || ''));
+    };
+
+    const readResponsePayload = async function (response) {
+      const rawText = await response.text();
+      if (!rawText) {
+        return {};
+      }
+      try {
+        return JSON.parse(rawText);
+      } catch (error) {
+        return { success: false, message: 'Reponse serveur invalide.' };
+      }
+    };
+
+    const sendMessage = async function (customText, forceArticleContext) {
+      const userText = (customText || input.value || '').trim();
+      if (!userText) {
+        return;
+      }
+
+      appendMessage('user', userText);
+      input.value = '';
+      sendButton.disabled = true;
+      if (summarizeButton) {
+        summarizeButton.disabled = true;
+      }
+      const loading = appendMessage('bot', 'Je reflechis...');
+
+      const payload = { message: userText };
+      if (shouldAttachArticleContext(userText, !!forceArticleContext)) {
+        payload.article_content = articleContent;
+      }
+
+      try {
+        const response = await fetch(endpointUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+          },
+          body: JSON.stringify(payload)
+        });
+
+        const responsePayload = await readResponsePayload(response);
+        loading.remove();
+
+        if (!response.ok || !responsePayload || responsePayload.success === false) {
+          appendMessage('bot', responsePayload && (responsePayload.reply || responsePayload.message) ? (responsePayload.reply || responsePayload.message) : 'Une erreur est survenue.');
+          return;
+        }
+
+        appendMessage('bot', responsePayload.reply || 'Je n ai pas de reponse pour le moment.');
+      } catch (error) {
+        loading.remove();
+        appendMessage('bot', 'Erreur reseau. Veuillez reessayer.');
+      } finally {
+        sendButton.disabled = false;
+        if (summarizeButton) {
+          summarizeButton.disabled = false;
+        }
+        input.focus();
+      }
+    };
+
+    toggleButton.addEventListener('click', function () {
+      setOpen(!panel.classList.contains('is-open'));
+    });
+
+    closeButton.addEventListener('click', function () {
+      setOpen(false);
+    });
+
+    if (summarizeButton) {
+      summarizeButton.addEventListener('click', function () {
+        setOpen(true);
+        sendMessage('Resume moi cet article', true);
+      });
+    }
+
+    sendButton.addEventListener('click', function () {
+      sendMessage();
+    });
+
+    input.addEventListener('keydown', function (event) {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        sendMessage();
+      }
+    });
+  })();
+</script>
+

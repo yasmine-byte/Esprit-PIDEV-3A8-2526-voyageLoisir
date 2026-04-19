@@ -119,6 +119,12 @@ class Avis
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $reponse = null;
 
+    #[ORM\Column(length: 20, nullable: true)]
+    private ?string $sentimentLabel = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?float $sentimentScore = null;
+
     public function getReponse(): ?string
     {
         return $this->reponse;
@@ -128,6 +134,28 @@ class Avis
     {
         $this->reponse = $reponse;
 
+        return $this;
+    }
+
+    public function getSentimentLabel(): ?string
+    {
+        return $this->sentimentLabel;
+    }
+
+    public function setSentimentLabel(?string $sentimentLabel): static
+    {
+        $this->sentimentLabel = $sentimentLabel;
+        return $this;
+    }
+
+    public function getSentimentScore(): ?float
+    {
+        return $this->sentimentScore;
+    }
+
+    public function setSentimentScore(?float $sentimentScore): static
+    {
+        $this->sentimentScore = $sentimentScore;
         return $this;
     }
 }

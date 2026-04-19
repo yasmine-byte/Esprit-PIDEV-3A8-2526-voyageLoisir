@@ -1,0 +1,405 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}Détail de l'article{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+{% endblock %}
+
+{% block admin_content %}
+    <style>
+        .admin-blog-show-page { display: grid; gap: 24px; }
+        .admin-breadcrumb { font-size: 13px; color: var(--text-secondary); margin-bottom: 10px; }
+        .admin-breadcrumb a { color: inherit; text-decoration: none; }
+        .admin-breadcrumb span { margin: 0 6px; opacity: .65; }
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: 10px;
+            border: 1px solid #374151;
+            background: #1f2937;
+            color: #d1d5db;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+            width: fit-content;
+            margin-bottom: 10px;
+        }
+
+        .header-card,
+        .section-card {
+            background: #1e1e2e;
+            border-radius: 16px;
+            border: 1px solid #2d2d3f;
+            box-shadow: 0 12px 28px rgba(0, 0, 0, .28);
+        }
+
+        .header-card { padding: 24px; display: grid; gap: 16px; }
+        .header-top { display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
+        .header-title { margin: 0; font-size: clamp(1.6rem, 3vw, 2.4rem); color: #ffffff; }
+
+        .status-badge {
+            display: inline-flex;
+            padding: 5px 11px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 700;
+            color: #fff;
+        }
+        .status-badge--publie { background: #22c55e; }
+        .status-badge--brouillon { background: #f97316; }
+        .status-badge--attente { background: #3b82f6; }
+
+        .action-row { display: flex; gap: 10px; flex-wrap: wrap; }
+        .action-btn {
+            border-radius: 10px;
+            border: 1px solid #374151;
+            background: #111827;
+            color: #e5e7eb;
+            padding: 10px 14px;
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .action-btn--primary { background: #ea580c; border-color: #ea580c; color: #fff; }
+        .action-btn--danger { background: #7f1d1d; border-color: #dc2626; color: #fecaca; }
+
+        .hero-image-wrap {
+            width: 100%;
+            height: 350px;
+            overflow: hidden;
+            border-radius: 12px;
+            background: #374151;
+            border: 1px solid #2d2d3f;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #9ca3af;
+            font-size: 32px;
+        }
+        .hero-image-wrap img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+            display: block;
+        }
+
+        .content-grid { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 24px; }
+        .section-card { padding: 24px; }
+        .section-card h2 { margin: 0 0 16px; font-size: 1.2rem; color: #ffffff; }
+        .meta-list { display: grid; gap: 12px; }
+        .meta-item small { display: block; color: #9ca3af; margin-bottom: 4px; text-transform: uppercase; font-size: 11px; letter-spacing: .06em; }
+        .meta-item strong { color: #ffffff; }
+
+        .stats-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+        .stat-item { background: #111827; border: 1px solid #374151; border-radius: 12px; padding: 14px; }
+        .stat-item small { display: block; color: #9ca3af; margin-bottom: 6px; }
+        .stat-item strong { color: #ffffff; font-size: 1.2rem; }
+
+        .content-body p { margin: 0 0 14px; line-height: 1.85; color: #e5e7eb; }
+        .comment-list { display: grid; gap: 12px; }
+        .comment-card { background: #111827; border: 1px solid #374151; border-radius: 12px; padding: 14px; color: #e5e7eb; }
+        .comment-top {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 8px;
+            flex-wrap: wrap;
+        }
+        .comment-user {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .comment-avatar {
+            width: 38px;
+            height: 38px;
+            border-radius: 999px;
+            background: #1e293b;
+            border: 1px solid #334155;
+            color: #e2e8f0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .comment-meta strong { color: #ffffff; display: block; line-height: 1.1; }
+        .comment-meta span { color: #9ca3af; font-size: 12px; }
+        .comment-state {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 9px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 700;
+            border: 1px solid #1f2937;
+            background: #0f172a;
+            color: #d1d5db;
+        }
+        .comment-state--reported {
+            border-color: #7f1d1d;
+            background: #7f1d1d33;
+            color: #fca5a5;
+        }
+        .comment-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        .comment-reactions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        .reaction-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 3px 8px;
+            border-radius: 999px;
+            border: 1px solid #374151;
+            background: #1f2937;
+            color: #d1d5db;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .comment-action-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            border: 1px solid #374151;
+            background: #1f2937;
+            color: #d1d5db;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+        }
+        .comment-action-btn--delete {
+            background: #7f1d1d;
+            border-color: #dc2626;
+            color: #fecaca;
+        }
+        .comment-action-btn--hide {
+            background: #0f172a;
+            border-color: #475569;
+            color: #cbd5e1;
+        }
+
+        @media (max-width: 980px) {
+            .content-grid { grid-template-columns: 1fr; }
+            .stats-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+
+    {% set coverImage = blog.imageCouverture ?: '' %}
+    {% set statusLabel = blog.status ? 'Publié' : 'Brouillon' %}
+    {% set statusClass = blog.status ? 'status-badge--publie' : 'status-badge--brouillon' %}
+    {% if blog.publicationRequested and not blog.status %}
+        {% set statusLabel = 'En attente' %}
+        {% set statusClass = 'status-badge--attente' %}
+    {% endif %}
+    {% set totalReactions = 0 %}
+    {% for comment in comments %}
+        {% set totalReactions = totalReactions + (comment.likesCount ?: 0) %}
+    {% endfor %}
+    {% set pending_report_comment_ids = pending_report_comment_ids|default([]) %}
+    {% set comment_reaction_counts = comment_reaction_counts|default({}) %}
+
+    <main class="admin-blog-show-page">
+        <div class="page-header">
+            <a href="{{ path('admin_blogs') }}" class="back-btn">
+                <i class="bi bi-arrow-left"></i> Retour à la liste
+            </a>
+            <div class="admin-breadcrumb">
+                <a href="{{ path('app_admin') }}">Tableau de bord</a><span>&gt;</span><a href="{{ path('admin_blogs') }}">Articles</a><span>&gt;</span>Détail
+            </div>
+            <h1>Détail de l'article</h1>
+            <p>Consultez les informations de publication et les statistiques de l'article.</p>
+        </div>
+
+        <section class="header-card">
+            <div class="header-top">
+                <div>
+                    <h2 class="header-title">{{ blog.titre }}</h2>
+                    <span class="status-badge {{ statusClass }}">{{ statusLabel }}</span>
+                </div>
+                <div class="action-row">
+                    <a href="{{ path('app_blog_edit', {'id': blog.id}) }}" class="action-btn">
+                        <i class="bi bi-pencil"></i> Modifier
+                    </a>
+                    <form method="post" action="{{ path('admin_blog_workflow', {'id': blog.id}) }}">
+                        <input type="hidden" name="_token" value="{{ csrf_token('admin_workflow_blog_' ~ blog.id) }}">
+                        <input type="hidden" name="action" value="{{ blog.status ? 'draft' : 'publish' }}">
+                        <input type="hidden" name="redirect_route" value="admin_blog_show">
+                        <button type="submit" class="action-btn action-btn--primary">
+                            <i class="bi {{ blog.status ? 'bi-x-circle' : 'bi-check-circle' }}"></i> {{ blog.status ? 'Dépublier' : 'Publier' }}
+                        </button>
+                    </form>
+                    <form method="post" action="{{ path('admin_blog_delete', {'id': blog.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet article ?');">
+                        <input type="hidden" name="_token" value="{{ csrf_token('admin_delete_blog_' ~ blog.id) }}">
+                        <button type="submit" class="action-btn action-btn--danger">
+                            <i class="bi bi-trash"></i> Supprimer
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="hero-image-wrap">
+                {% if coverImage %}
+                    <img src="{{ coverImage }}" alt="{{ blog.titre }}">
+                {% else %}
+                    <i class="bi bi-image" aria-hidden="true"></i>
+                {% endif %}
+            </div>
+        </section>
+
+        <section class="content-grid">
+            <article class="section-card">
+                <h2>Informations générales</h2>
+                <div class="meta-list">
+                    <div class="meta-item">
+                        <small>Auteur</small>
+                        <strong>{{ blog.authorId ?: 'Utilisateur' }}</strong>
+                    </div>
+                    <div class="meta-item">
+                        <small>Date de création</small>
+                        <strong>{{ blog.dateCreation ? blog.dateCreation|date('d/m/Y H:i') : '-' }}</strong>
+                    </div>
+                    <div class="meta-item">
+                        <small>Date de publication</small>
+                        <strong>{{ blog.datePublication ? blog.datePublication|date('d/m/Y H:i') : 'Non publié' }}</strong>
+                    </div>
+                    <div class="meta-item">
+                        <small>Slug</small>
+                        <strong>{{ blog.slug ?: 'Aucun slug' }}</strong>
+                    </div>
+                </div>
+            </article>
+
+            <aside class="section-card">
+                <h2>Statistiques</h2>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <small>Vues</small>
+                        <strong>{{ views_count }}</strong>
+                    </div>
+                    <div class="stat-item">
+                        <small>Réactions</small>
+                        <strong>{{ totalReactions }}</strong>
+                    </div>
+                    <div class="stat-item">
+                        <small>Commentaires</small>
+                        <strong>{{ comments|length }}</strong>
+                    </div>
+                </div>
+            </aside>
+        </section>
+
+        <section class="section-card">
+            <h2>Contenu</h2>
+            <div class="content-body">
+                {% for paragraph in blog.contenu|split('\n') %}
+                    {% if paragraph|trim is not empty %}
+                        <p>{{ paragraph|trim }}</p>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </section>
+
+        <section class="section-card">
+            <h2>Suggestions ML</h2>
+            {% if ml_suggestion is defined and ml_suggestion %}
+                <p style="color:#e5e7eb;">Suggestion: <strong>{{ ml_suggestion.categorie|default('Non disponible') }}</strong> ({{ ml_suggestion.confiance|default(0) }}%)</p>
+            {% else %}
+                <p style="color:#9ca3af;">Aucune suggestion ML disponible pour cet article.</p>
+            {% endif %}
+        </section>
+
+        <section class="section-card">
+            <h2>Commentaires ({{ comments|length }})</h2>
+            {% if comments is empty %}
+                <p style="color:#9ca3af;">Aucun commentaire pour cet article.</p>
+            {% else %}
+                <div class="comment-list">
+                    {% for comment in comments %}
+                        {% set isReported = comment.id in pending_report_comment_ids %}
+                        <article class="comment-card">
+                            <div class="comment-top">
+                                <div class="comment-user">
+                                    <span class="comment-avatar">{{ comment.nomuser|default('U')|slice(0, 2) }}</span>
+                                    <div class="comment-meta">
+                                        <strong>{{ comment.nomuser|default('Utilisateur') }}</strong>
+                                        <span>{{ comment.dateCreation ? comment.dateCreation|date('d/m/Y H:i') : '-' }}</span>
+                                    </div>
+                                </div>
+                                <span class="comment-state {{ isReported ? 'comment-state--reported' : '' }}">
+                                    {{ isReported ? 'Signalé' : 'Approuvé' }}
+                                </span>
+                            </div>
+
+                            <p style="margin:0;color:#e5e7eb;">{{ comment.contenu }}</p>
+
+                            {% set reactions = comment_reaction_counts[comment.id]|default({}) %}
+                            {% if reactions is not empty %}
+                                <div class="comment-reactions">
+                                    {% set reactionMeta = {
+                                        'like': { emoji: '👍', label: 'Like' },
+                                        'love': { emoji: '❤️', label: 'Love' },
+                                        'haha': { emoji: '😄', label: 'Haha' },
+                                        'wow': { emoji: '😮', label: 'Wow' },
+                                        'sad': { emoji: '😢', label: 'Sad' },
+                                        'angry': { emoji: '😡', label: 'Angry' }
+                                    } %}
+                                    {% for key, meta in reactionMeta %}
+                                        {% set count = reactions[key]|default(0) %}
+                                        {% if count > 0 %}
+                                            <span class="reaction-chip">{{ meta.emoji }} {{ meta.label }} ({{ count }})</span>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+
+                            <div class="comment-actions">
+                                <form method="post" action="{{ path('admin_blog_comment_delete', { blog: blog.id, comment: comment.id }) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce commentaire ?');">
+                                    <input type="hidden" name="_token" value="{{ csrf_token((comment_delete_token_prefix|default('admin_delete_comment_')) ~ comment.id) }}">
+                                    <button class="comment-action-btn comment-action-btn--delete" type="submit" data-bs-toggle="tooltip" data-bs-title="Supprimer">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                                <form method="post" action="{{ path('admin_blog_comment_hide', { blog: blog.id, comment: comment.id }) }}">
+                                    <input type="hidden" name="_token" value="{{ csrf_token((comment_hide_token_prefix|default('admin_hide_comment_')) ~ comment.id) }}">
+                                    <button class="comment-action-btn comment-action-btn--hide" type="submit" data-bs-toggle="tooltip" data-bs-title="Masquer">
+                                        <i class="bi bi-slash-circle"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </article>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </section>
+    </main>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            if (window.bootstrap && bootstrap.Tooltip) {
+                document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(function (element) {
+                    bootstrap.Tooltip.getOrCreateInstance(element);
+                });
+            }
+        });
+    </script>
+{% endblock %}

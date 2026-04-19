@@ -35,7 +35,7 @@
                     
                     <div class="row mb-3">
                         <div class="col-sm-3 fw-bold text-muted">Type:</div>
-                        <div class="col-sm-9">{{ reclamation.type.nom }}</div>
+                        <div class="col-sm-9">{{ reclamation.type ? reclamation.type.nom : 'Non défini' }}</div>
                     </div>
                     
                     <div class="row mb-3">
@@ -75,6 +75,11 @@
                                 <button class="btn btn-outline-danger px-4 py-2 rounded-pill">Supprimer</button>
                             </form>
                         </div>
+                        <a href="{{ path('reclamation_pdf', {'id': reclamation.id}) }}" 
+                           class="btn px-4 py-2 rounded-pill"
+                           style="background:#1a1a2e; color:#fff; border:none;">
+                            📄 Télécharger en PDF
+                        </a>
                         <a href="{{ path('reclamation_index') }}" class="btn text-white px-4 py-2 rounded-pill" style="background-color: #f35525;">Retour à la liste</a>
                     </div>
                 </div>

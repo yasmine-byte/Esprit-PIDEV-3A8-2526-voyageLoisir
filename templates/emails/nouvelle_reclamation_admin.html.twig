@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: Arial; background: #f5f5f5; }
+        .container { max-width: 600px; margin: 0 auto; background: white; padding: 30px; }
+        .header { background: #dc3545; color: white; padding: 20px; text-align: center; }
+        .content { padding: 20px; }
+        .badge { background: #ff9800; color: white; padding: 5px 10px; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚨 Nouvelle Réclamation</h1>
+        </div>
+        <div class="content">
+            <p><strong>Client :</strong> {{ client.nom ?? 'N/A' }} {{ client.prenom ?? 'N/A' }}</p>
+            <p><strong>Email :</strong> {{ client.email ?? 'N/A' }}</p>
+            <p><strong>Titre :</strong> {{ reclamation.titre }}</p>
+            <p><strong>Priorité :</strong> <span class="badge">{{ reclamation.priorite }}</span></p>
+            <p><strong>Description :</strong></p>
+            <p>{{ reclamation.contenu }}</p>
+            <p><a href="{{ url('admin_reclamation_show', {id: reclamation.id}) }}" style="background: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Voir la réclamation</a></p>
+        </div>
+    </div>
+</body>
+</html>

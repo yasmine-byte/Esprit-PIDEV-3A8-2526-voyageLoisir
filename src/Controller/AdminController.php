@@ -1,23 +1,13 @@
 <?php
 namespace App\Controller;
 
-use App\Entity\Blog;
-use App\Repository\BlogRatingRepository;
-use App\Repository\BlogRepository;
-use App\Repository\BlogViewsRepository;
-use App\Repository\CommentaireRepository;
 use App\Repository\ActiviteRepository;
 use App\Repository\HebergementRepository;
 use App\Repository\ChambreRepository;
 use App\Repository\ReservationRepository;
-use App\Repository\RoleRepository;
-use App\Repository\UsersRepository;
-use App\Service\BlogRecommendationService;
-use Doctrine\ORM\EntityManagerInterface;
 use Dompdf\Dompdf;
 use Dompdf\Options;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
@@ -26,24 +16,21 @@ class AdminController extends AbstractController
     #[Route('/admin', name: 'app_admin')]
     #[Route('/admin/index.html', name: 'app_admin_fallback')]
     public function index(
-        UsersRepository $usersRepository,
-        RoleRepository $roleRepository
+        HebergementRepository $hebergementRepo,
+        ChambreRepository $chambreRepo,
+        ReservationRepository $reservationRepo
     ): Response {
-        $latestUsers = $usersRepository->findLatest(5);
-        $roleStats = [];
+        $reservations = $reservationRepo->findBy([], ['id' => 'DESC']);
+        $enAttente = $reservationRepo->findBy(['statut' => 'en_attente']);
 
-        foreach ($roleRepository->findAll() as $role) {
-            $roleStats[$role->getName() ?? 'Sans role'] = $role->getNo()->count();
-        }
-
-        return $this->render('admin/dashboard.html.twig', [
-            'totalUsers' => $usersRepository->count([]),
-            'activeUsers' => $usersRepository->countActive(),
-            'inactiveUsers' => $usersRepository->countInactive(),
-            'totalRoles' => $roleRepository->count([]),
-            'latestUsers' => $latestUsers,
-            'monthlyData' => $usersRepository->countByMonth(),
-            'roleStats' => array_filter($roleStats, static fn (int $count): bool => $count > 0),
+        return $this->render('admin/index.html.twig', [
+            'reservations' => $reservations,
+            'stats' => [
+                'hebergements' => count($hebergementRepo->findAll()),
+                'chambres'     => count($chambreRepo->findAll()),
+                'reservations' => count($reservations),
+                'enAttente'    => count($enAttente),
+            ]
         ]);
     }
 
@@ -155,6 +142,7 @@ class AdminController extends AbstractController
     public function activite(ActiviteRepository $activiteRepository): Response
     {
         $activites = $activiteRepository->findAll();
+
         $totalActivites = count($activites);
 
         $totalPrix = 0;
@@ -170,6 +158,7 @@ class AdminController extends AbstractController
             'prixMoyen'      => $prixMoyen,
         ]);
     }
+
 
     #[Route('/admin/markets', name: 'admin_markets')]
     public function markets(): Response
@@ -189,184 +178,4 @@ class AdminController extends AbstractController
         return $this->render('admin/settings.html.twig');
     }
 
-    #[Route('/admin/add-user', name: 'add_user')]
-    public function addUser(): Response
-    {
-        return $this->render('admin/add-user.html.twig');
-    }
-
-    // ========================
-    // BLOG (branche blog)
-    // ========================
-
-    #[Route('/admin/blogs', name: 'admin_blogs')]
-    public function blogs(
-        Request $request,
-        BlogRepository $blogRepository,
-        CommentaireRepository $commentaireRepository,
-        BlogRecommendationService $blogRecommendationService
-    ): Response {
-        $search = trim((string) $request->query->get('q', ''));
-        $sort = (string) $request->query->get('sort', 'recent');
-        $statusFilter = (string) $request->query->get('status', 'all');
-        if (!in_array($statusFilter, ['all', 'draft', 'published', 'pending'], true)) {
-            $statusFilter = 'all';
-        }
-        if (!in_array($sort, ['recent', 'oldest', 'title', 'status', 'published'], true)) {
-            $sort = 'recent';
-        }
-
-        $blogs = $blogRepository->createAdminListingQueryBuilder($search, $sort, $statusFilter)
-            ->getQuery()
-            ->getResult();
-        $allBlogs = $blogRepository->fetchAdminSummaryData();
-        $blogMetrics = $blogRecommendationService->buildMetrics($blogs);
-
-        $publishedCount = 0;
-        $draftCount = 0;
-        $pendingCount = 0;
-        $publishedReadTimes = [];
-        $highQualityCount = 0;
-
-        foreach ($allBlogs as $blogData) {
-            $isPublished = true === ($blogData['status'] ?? null);
-            $isPending = true === ($blogData['publicationRequested'] ?? null);
-
-            if ($isPublished) {
-                $publishedCount++;
-            } else {
-                $draftCount++;
-            }
-
-            if ($isPending) {
-                $pendingCount++;
-            }
-
-            $publishedReadTimes[] = max(1, (int) ceil(mb_strlen((string) ($blogData['contenu'] ?? '')) / 700));
-
-            if ($this->calculateCompletenessFromData($blogData) >= 80) {
-                $highQualityCount++;
-            }
-        }
-
-        $avgReadTime = [] !== $publishedReadTimes ? (int) ceil(array_sum($publishedReadTimes) / count($publishedReadTimes)) : 0;
-
-        foreach ($blogs as $blog) {
-            $blogId = $blog->getId();
-            $completeness = $this->calculateCompleteness($blog);
-            $blogMetrics[$blogId]['completeness'] = $completeness;
-            $blogMetrics[$blogId]['quality_label'] = $completeness >= 80 ? 'Ready' : ($completeness >= 55 ? 'Needs review' : 'Incomplete');
-            $blogMetrics[$blogId]['ratings'] = $blogMetrics[$blogId]['rating_count'] ?? 0;
-        }
-
-        return $this->render('admin/blogs.html.twig', [
-            'blogs'            => $blogs,
-            'search'           => $search,
-            'sort'             => $sort,
-            'status_filter'    => $statusFilter,
-            'blog_metrics'     => $blogMetrics,
-            'stats'            => [
-                'total'          => count($allBlogs),
-                'published'      => $publishedCount,
-                'drafts'         => $draftCount,
-                'pending'        => $pendingCount,
-                'avg_read_time'  => $avgReadTime,
-                'ready'          => $highQualityCount,
-                'comments_total' => $commentaireRepository->count([]),
-            ],
-        ]);
-    }
-
-    #[Route('/admin/blogs/{id}', name: 'admin_blog_show', methods: ['GET'])]
-    public function showBlog(
-        Blog $blog,
-        CommentaireRepository $commentaireRepository,
-        BlogViewsRepository $blogViewsRepository
-    ): Response {
-        $comments = $commentaireRepository->findBy(
-            ['blog' => $blog],
-            ['dateCreation' => 'DESC', 'id' => 'DESC']
-        );
-
-        return $this->render('admin/blog_show.html.twig', [
-            'blog'        => $blog,
-            'comments'    => $comments,
-            'views_count' => $blogViewsRepository->count(['blog' => $blog]),
-        ]);
-    }
-
-    #[Route('/admin/blogs/{id}/delete', name: 'admin_blog_delete', methods: ['POST'])]
-    public function deleteBlog(Request $request, Blog $blog, EntityManagerInterface $entityManager): Response
-    {
-        if ($this->isCsrfTokenValid('admin_delete_blog_' . $blog->getId(), $request->request->get('_token'))) {
-            $entityManager->remove($blog);
-            $entityManager->flush();
-            $this->addFlash('success', 'Blog deleted successfully.');
-        }
-
-        return $this->redirectToRoute('admin_blogs');
-    }
-
-    #[Route('/admin/blogs/{id}/workflow', name: 'admin_blog_workflow', methods: ['POST'])]
-    public function workflowBlog(Request $request, Blog $blog, EntityManagerInterface $entityManager): Response
-    {
-        if (!$this->isCsrfTokenValid('admin_workflow_blog_' . $blog->getId(), $request->request->get('_token'))) {
-            return $this->redirectToRoute('admin_blogs');
-        }
-
-        $action = (string) $request->request->get('action');
-
-        if ('publish' === $action) {
-            $blog->setStatus(true);
-            $blog->setPublicationRequested(false);
-            $blog->setDatePublication(new \DateTime());
-            $this->addFlash('success', 'Blog published successfully.');
-        } elseif ('draft' === $action) {
-            $blog->setStatus(false);
-            $blog->setPublicationRequested(false);
-            $blog->setDatePublication(null);
-            $this->addFlash('success', 'Blog moved back to draft.');
-        } elseif ('request' === $action) {
-            $blog->setStatus(false);
-            $blog->setPublicationRequested(true);
-            $blog->setDatePublication(null);
-            $this->addFlash('success', 'Publication request marked as pending.');
-        }
-
-        $entityManager->flush();
-
-        $redirectRoute = $request->request->get('redirect_route', 'admin_blogs');
-        if ('admin_blog_show' === $redirectRoute) {
-            return $this->redirectToRoute('admin_blog_show', ['id' => $blog->getId()]);
-        }
-
-        return $this->redirectToRoute('admin_blogs', array_filter([
-            'q'      => $request->request->get('q') ?: null,
-            'sort'   => $request->request->get('sort') ?: null,
-            'status' => $request->request->get('status') ?: null,
-        ]));
-    }
-
-    private function calculateCompleteness(Blog $blog): int
-    {
-        $score = 0;
-        if ($blog->getTitre()) $score += 20;
-        if ($blog->getSlug()) $score += 15;
-        if ($blog->getImageCouverture()) $score += 15;
-        if ($blog->getExtrait() && strlen(trim($blog->getExtrait())) >= 40) $score += 20;
-        if ($blog->getContenu() && strlen(trim($blog->getContenu())) >= 300) $score += 30;
-        return $score;
-    }
-
-    private function calculateCompletenessFromData(array $blogData): int
-    {
-        $score = 0;
-        if (!empty($blogData['titre'])) $score += 20;
-        if (!empty($blogData['slug'])) $score += 15;
-        if (!empty($blogData['imageCouverture'])) $score += 15;
-        if (!empty($blogData['extrait']) && strlen(trim((string) $blogData['extrait'])) >= 40) $score += 20;
-        if (!empty($blogData['contenu']) && strlen(trim((string) $blogData['contenu'])) >= 300) $score += 30;
-
-        return $score;
-    }
 }

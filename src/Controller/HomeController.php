@@ -87,31 +87,62 @@ class HomeController extends AbstractController
         ]);
     }
 
-    #[Route('/destinations/{id}', name: 'app_destination_detail')]
-    public function destinationDetail(int $id, DestinationRepository $repo, EntityManagerInterface $em): Response
-    {
-        $destination = $repo->find($id);
-        if (!$destination) {
-            return $this->redirectToRoute('app_destinations');
-        }
-        if (!$destination->isStatut()) {
-            $this->addFlash('error', 'Cette destination est actuellement inactive.');
-            return $this->redirectToRoute('app_destinations');
-        }
-        $destination->setNbVisites(($destination->getNbVisites() ?? 0) + 1);
-        $em->flush();
+   #[Route('/destinations/{id}', name: 'app_destination_detail')]
+public function destinationDetail(
+    int $id,
+    DestinationRepository $repo,
+    EntityManagerInterface $em,
+    HebergementRepository $hebergementRepository
+): Response {
+    $destination = $repo->find($id);
+    if (!$destination) {
+        return $this->redirectToRoute('app_destinations');
+    }
+    if (!$destination->isStatut()) {
+        $this->addFlash('error', 'Cette destination est actuellement inactive.');
+        return $this->redirectToRoute('app_destinations');
+    }
+    $destination->setNbVisites(($destination->getNbVisites() ?? 0) + 1);
+    $em->flush();
 
-        $sharePath = $this->generateUrl('app_destination_detail', ['id' => $destination->getId()], UrlGeneratorInterface::ABSOLUTE_PATH);
-        $shareUrl  = rtrim((string) $this->getParameter('public_base_url'), '/') . $sharePath;
-        $qrCodeUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=' . rawurlencode($shareUrl);
-
-        return $this->render('home/destination-detail.html.twig', [
-            'destination' => $destination,
-            'share_url'   => $shareUrl,
-            'qr_code_url' => $qrCodeUrl,
-        ]);
+    // Hébergements proches (rayon 50 km)
+    $hebergementsProches = [];
+    if ($destination->getLatitude() && $destination->getLongitude()) {
+        foreach ($hebergementRepository->findAll() as $heb) {
+            if (!$heb->getLatitude() || !$heb->getLongitude()) continue;
+            $dist = $this->haversine(
+                $destination->getLatitude(), $destination->getLongitude(),
+                $heb->getLatitude(), $heb->getLongitude()
+            );
+            if ($dist <= 50) {
+                $hebergementsProches[] = ['hebergement' => $heb, 'distance' => round($dist, 1)];
+            }
+        }
+        usort($hebergementsProches, fn($a, $b) => $a['distance'] <=> $b['distance']);
     }
 
+    $sharePath = $this->generateUrl('app_destination_detail', ['id' => $destination->getId()], UrlGeneratorInterface::ABSOLUTE_PATH);
+    $shareUrl  = rtrim((string) $this->getParameter('public_base_url'), '/') . $sharePath;
+    $qrCodeUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=' . rawurlencode($shareUrl);
+
+    return $this->render('home/destination-detail.html.twig', [
+        'destination'          => $destination,
+        'share_url'            => $shareUrl,
+        'qr_code_url'          => $qrCodeUrl,
+        'hebergements_proches' => $hebergementsProches,
+    ]);
+}
+
+private function haversine(float $lat1, float $lon1, float $lat2, float $lon2): float
+{
+    $R = 6371;
+    $dLat = deg2rad($lat2 - $lat1);
+    $dLon = deg2rad($lon2 - $lon1);
+    $a = sin($dLat/2) * sin($dLat/2) +
+         cos(deg2rad($lat1)) * cos(deg2rad($lat2)) *
+         sin($dLon/2) * sin($dLon/2);
+    return $R * 2 * atan2(sqrt($a), sqrt(1-$a));
+}
     #[Route('/hebergements', name: 'app_hebergements_front')]
     public function hebergements(Request $request, HebergementRepository $hebergementRepository, TypeRepository $typeRepository): Response
     {

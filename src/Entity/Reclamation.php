@@ -165,6 +165,12 @@ class Reclamation
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $reponse = null;
 
+    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 8, nullable: true)]
+    private ?string $latitude = null;
+
+    #[ORM\Column(type: Types::DECIMAL, precision: 11, scale: 8, nullable: true)]
+    private ?string $longitude = null;
+
     public function getReponse(): ?string
     {
         return $this->reponse;
@@ -173,6 +179,30 @@ class Reclamation
     public function setReponse(?string $reponse): static
     {
         $this->reponse = $reponse;
+
+        return $this;
+    }
+
+    public function getLatitude(): ?string
+    {
+        return $this->latitude;
+    }
+
+    public function setLatitude(?string $latitude): static
+    {
+        $this->latitude = $latitude;
+
+        return $this;
+    }
+
+    public function getLongitude(): ?string
+    {
+        return $this->longitude;
+    }
+
+    public function setLongitude(?string $longitude): static
+    {
+        $this->longitude = $longitude;
 
         return $this;
     }

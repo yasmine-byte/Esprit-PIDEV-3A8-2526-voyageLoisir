@@ -49,9 +49,13 @@ class Hebergement
     #[ORM\OneToMany(targetEntity: Chambre::class, mappedBy: 'hebergement')]
     private Collection $no;
 
+    #[ORM\ManyToMany(targetEntity: Voyage::class, mappedBy: 'hebergements')]
+    private Collection $voyages;
+
     public function __construct()
     {
-        $this->no = new ArrayCollection();
+        $this->no     = new ArrayCollection();
+        $this->voyages = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -157,6 +161,29 @@ class Hebergement
                 $no->setHebergement(null);
             }
         }
+        return $this;
+    }
+
+    // ----------------------------------------------------------------
+    // Voyages (ManyToMany — côté inverse)
+    // ----------------------------------------------------------------
+
+    public function getVoyages(): Collection
+    {
+        return $this->voyages;
+    }
+
+    public function addVoyage(Voyage $voyage): static
+    {
+        if (!$this->voyages->contains($voyage)) {
+            $this->voyages->add($voyage);
+        }
+        return $this;
+    }
+
+    public function removeVoyage(Voyage $voyage): static
+    {
+        $this->voyages->removeElement($voyage);
         return $this;
     }
 }

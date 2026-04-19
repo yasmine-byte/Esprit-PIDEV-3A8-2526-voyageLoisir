@@ -1,0 +1,56 @@
+{# templates/reclamation/carte.html.twig #}
+{% extends 'base_front.html.twig' %}
+
+{% block title %}Carte des réclamations{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <style>
+        #map { height: 600px; width: 100%; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-top: 20px;}
+    </style>
+{% endblock %}
+
+{% block body %}
+    <div class="container" style="padding-bottom: 50px;">
+        <h2 class="mt-4 mb-4" style="color: #007bff; font-weight: bold;">📍 Géolocalisation des Réclamations</h2>
+        <p>Retrouvez sur cette carte les réclamations géolocalisées pour mieux identifier les zones nécessitant des actions rapides.</p>
+        
+        <div id="map"></div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var map = L.map('map').setView([36.8065, 10.1815], 7); // Centré sur la Tunisie par défaut
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(map);
+
+            var reclamations = [
+                {% for reclamation in reclamations %}
+                    {% if reclamation.latitude and reclamation.longitude %}
+                    {
+                        lat: {{ reclamation.latitude }},
+                        lng: {{ reclamation.longitude }},
+                        titre: "{{ reclamation.titre|escape('js') }}",
+                        statut: "{{ reclamation.statut|escape('js') }}"
+                    },
+                    {% endif %}
+                {% endfor %}
+            ];
+
+            reclamations.forEach(function(rec) {
+                var markerColor = rec.statut === 'En attente' ? 'red' : 'green';
+                
+                var marker = L.marker([rec.lat, rec.lng]).addTo(map);
+                marker.bindPopup('<b>' + rec.titre + '</b><br>Statut: ' + rec.statut);
+            });
+        });
+    </script>
+{% endblock %}

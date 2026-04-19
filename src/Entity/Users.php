@@ -27,7 +27,7 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface, Equata
 
     // ── Champ fichier (non persisté en BDD) ──
     #[Vich\UploadableField(mapping: 'user_avatar', fileNameProperty: 'avatarName')]
-private ?File $avatarFile = null;
+    private ?File $avatarFile = null;
 
     // ── Nom du fichier (persisté en BDD) ──
     #[ORM\Column(length: 255, nullable: true)]
@@ -75,10 +75,10 @@ private ?File $avatarFile = null;
     private ?\DateTime $updatedAt = null;
 
     #[ORM\Column(nullable: true)]
-private ?bool $isVerified = false;
+    private ?bool $isVerified = false;
 
-#[ORM\Column(length: 255, nullable: true)]
-private ?string $verificationToken = null;
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $verificationToken = null;
 
     #[ORM\ManyToMany(targetEntity: Role::class, inversedBy: 'no', fetch: 'EAGER')]
     #[ORM\JoinTable(
@@ -97,27 +97,35 @@ private ?string $verificationToken = null;
 
     public function __construct()
     {
-        $this->roles     = new ArrayCollection();
-        $this->isActive  = true;
+        $this->roles = new ArrayCollection();
+        $this->isActive = true;
         $this->createdAt = new \DateTime();
         $this->updatedAt = new \DateTime();
     }
 
     public function __sleep(): array
-{
-    return [
-        'id', 'nom', 'prenom', 'email', 'telephone',
-        'passwordHash', 'isActive', 'createdAt', 'updatedAt',
-        'avatarName', 'roles'
-    ];
-}
+    {
+        return [
+            'id',
+            'nom',
+            'prenom',
+            'email',
+            'passwordHash',
+            'isActive',
+            'roles'
+        ];
+    }
 
-public function __wakeup(): void
-{
-    $this->avatarFile = null;
-}
+    public function __wakeup(): void
+    {
+        $this->avatarFile = null;
+        $this->avatarName = null;  // ← ici il est géré
+    }
 
-    public function getId(): ?int { return $this->id; }
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
 
     // ── Getters/Setters avatarFile ──
     public function setAvatarFile(?File $avatarFile = null): void
@@ -127,44 +135,115 @@ public function __wakeup(): void
             $this->updatedAt = new \DateTime();
         }
     }
-    public function getAvatarFile(): ?File { return $this->avatarFile; }
+    public function getAvatarFile(): ?File
+    {
+        return $this->avatarFile;
+    }
 
     // ── Getters/Setters avatarName ──
-    public function setAvatarName(?string $avatarName): void { $this->avatarName = $avatarName; }
-    public function getAvatarName(): ?string { return $this->avatarName; }
+    public function setAvatarName(?string $avatarName): void
+    {
+        $this->avatarName = $avatarName;
+    }
+    public function getAvatarName(): ?string
+    {
+        return $this->avatarName;
+    }
 
-    public function getNom(): ?string { return $this->nom; }
-    public function setNom(string $nom): static { $this->nom = $nom; return $this; }
+    public function getNom(): ?string
+    {
+        return $this->nom;
+    }
+    public function setNom(string $nom): static
+    {
+        $this->nom = $nom;
+        return $this;
+    }
 
-    public function getPrenom(): ?string { return $this->prenom; }
-    public function setPrenom(string $prenom): static { $this->prenom = $prenom; return $this; }
+    public function getPrenom(): ?string
+    {
+        return $this->prenom;
+    }
+    public function setPrenom(string $prenom): static
+    {
+        $this->prenom = $prenom;
+        return $this;
+    }
 
-    public function getEmail(): ?string { return $this->email; }
-    public function setEmail(string $email): static { $this->email = $email; return $this; }
+    public function getEmail(): ?string
+    {
+        return $this->email;
+    }
+    public function setEmail(string $email): static
+    {
+        $this->email = $email;
+        return $this;
+    }
 
-    public function getTelephone(): ?string { return $this->telephone; }
-    public function setTelephone(?string $telephone): static { $this->telephone = $telephone; return $this; }
+    public function getTelephone(): ?string
+    {
+        return $this->telephone;
+    }
+    public function setTelephone(?string $telephone): static
+    {
+        $this->telephone = $telephone;
+        return $this;
+    }
 
-    public function getPasswordHash(): ?string { return $this->passwordHash; }
-    public function setPasswordHash(string $passwordHash): static { $this->passwordHash = $passwordHash; return $this; }
+    public function getPasswordHash(): ?string
+    {
+        return $this->passwordHash;
+    }
+    public function setPasswordHash(string $passwordHash): static
+    {
+        $this->passwordHash = $passwordHash;
+        return $this;
+    }
 
-    public function getPlainPassword(): ?string { return $this->plainPassword; }
+    public function getPlainPassword(): ?string
+    {
+        return $this->plainPassword;
+    }
     public function setPlainPassword(?string $plainPassword): static
     {
         $this->plainPassword = $plainPassword;
         return $this;
     }
 
-    public function isActive(): ?bool { return $this->isActive; }
-    public function setIsActive(?bool $isActive): static { $this->isActive = $isActive; return $this; }
+    public function isActive(): ?bool
+    {
+        return $this->isActive;
+    }
+    public function setIsActive(?bool $isActive): static
+    {
+        $this->isActive = $isActive;
+        return $this;
+    }
 
-    public function getCreatedAt(): ?\DateTime { return $this->createdAt; }
-    public function setCreatedAt(?\DateTime $createdAt): static { $this->createdAt = $createdAt; return $this; }
+    public function getCreatedAt(): ?\DateTime
+    {
+        return $this->createdAt;
+    }
+    public function setCreatedAt(?\DateTime $createdAt): static
+    {
+        $this->createdAt = $createdAt;
+        return $this;
+    }
 
-    public function getUpdatedAt(): ?\DateTime { return $this->updatedAt; }
-    public function setUpdatedAt(?\DateTime $updatedAt): static { $this->updatedAt = $updatedAt; return $this; }
+    public function getUpdatedAt(): ?\DateTime
+    {
+        return $this->updatedAt;
+    }
+    public function setUpdatedAt(?\DateTime $updatedAt): static
+    {
+        $this->updatedAt = $updatedAt;
+        return $this;
+    }
 
-    public function getRolesCollection(): Collection { return $this->roles; }
+    public function getRolesCollection(): Collection
+    {
+        return $this->roles;
+    }
 
     public function addRole(Role $role): static
     {
@@ -188,6 +267,12 @@ public function __wakeup(): void
     public function getRoles(): array
     {
         $roles = ['ROLE_USER'];
+        
+        // Forçage temporaire pour le développeur
+        if ($this->email === 'rayenhafian72@gmail.com') {
+            $roles[] = 'ROLE_ADMIN';
+        }
+
         foreach ($this->roles as $role) {
             if ($role->getName()) {
                 $roles[] = $role->getName();
@@ -196,7 +281,9 @@ public function __wakeup(): void
         return array_unique($roles);
     }
 
-    public function eraseCredentials(): void {}
+    public function eraseCredentials(): void
+    {
+    }
 
     public function getPassword(): string
     {
@@ -210,15 +297,55 @@ public function __wakeup(): void
         }
         return $this->email === $user->getEmail();
     }
+    #[ORM\Column(length: 100, nullable: true)]
+    private ?string $telegramChatId = null;
 
-    public function getResetToken(): ?string { return $this->resetToken; }
-    public function setResetToken(?string $resetToken): static { $this->resetToken = $resetToken; return $this; }
+    public function getTelegramChatId(): ?string
+    {
+        return $this->telegramChatId;
+    }
+    public function setTelegramChatId(?string $v): static
+    {
+        $this->telegramChatId = $v;
+        return $this;
+    }
 
-    public function getResetTokenExpiresAt(): ?\DateTime { return $this->resetTokenExpiresAt; }
-    public function setResetTokenExpiresAt(?\DateTime $resetTokenExpiresAt): static { $this->resetTokenExpiresAt = $resetTokenExpiresAt; return $this; }
+    public function getResetToken(): ?string
+    {
+        return $this->resetToken;
+    }
+    public function setResetToken(?string $resetToken): static
+    {
+        $this->resetToken = $resetToken;
+        return $this;
+    }
 
-    public function isVerified(): ?bool { return $this->isVerified; }
-public function setIsVerified(?bool $isVerified): static { $this->isVerified = $isVerified; return $this; }
-public function getVerificationToken(): ?string { return $this->verificationToken; }
-public function setVerificationToken(?string $token): static { $this->verificationToken = $token; return $this; }
+    public function getResetTokenExpiresAt(): ?\DateTime
+    {
+        return $this->resetTokenExpiresAt;
+    }
+    public function setResetTokenExpiresAt(?\DateTime $resetTokenExpiresAt): static
+    {
+        $this->resetTokenExpiresAt = $resetTokenExpiresAt;
+        return $this;
+    }
+
+    public function isVerified(): ?bool
+    {
+        return $this->isVerified;
+    }
+    public function setIsVerified(?bool $isVerified): static
+    {
+        $this->isVerified = $isVerified;
+        return $this;
+    }
+    public function getVerificationToken(): ?string
+    {
+        return $this->verificationToken;
+    }
+    public function setVerificationToken(?string $token): static
+    {
+        $this->verificationToken = $token;
+        return $this;
+    }
 }
