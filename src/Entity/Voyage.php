@@ -267,12 +267,10 @@ public function isPaidByUser($user): bool
     {
         return $this->reservedByUsers->first() ?: null;
     }
-    #[ORM\Column(type: "boolean", options: ["default" => false])]
     private bool $paid = false;
 
-    public function isPaid(): bool { return $this->paid; }
-    public function setPaid(bool $paid): static { $this->paid = $paid; return $this; }
-
+public function isPaid(): bool { return $this->paid; }
+public function setPaid(bool $paid): static { $this->paid = $paid; return $this; }
     // ----------------------------------------------------------------
     // Hébergements (ManyToMany)
     // ----------------------------------------------------------------

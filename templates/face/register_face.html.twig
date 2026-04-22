@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enregistrer mon visage — Vianova</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background:#f5f5f5; margin:0; padding:20px; }
+        .container { max-width:600px; margin:40px auto; padding:30px; background:#fff; border-radius:16px; box-shadow:0 4px 20px rgba(0,0,0,0.1); }
+        h2 { text-align:center; color:#f75959; margin-bottom:10px; }
+        p { text-align:center; color:#888; margin-bottom:24px; }
+        #status { display:block; text-align:center; padding:10px 20px; border-radius:8px; font-weight:600; background:#fff3f0; color:#f75959; margin-bottom:16px; }
+        video { width:100%; border-radius:12px; background:#000; display:none; margin-bottom:16px; }
+        .btns { display:flex; gap:12px; margin-top:20px; }
+        .btn-red { flex:1; padding:12px; background:#f75959; color:#fff; border:none; border-radius:8px; font-size:15px; font-weight:600; cursor:pointer; }
+        .btn-green { flex:1; padding:12px; background:#16a34a; color:#fff; border:none; border-radius:8px; font-size:15px; font-weight:600; cursor:pointer; opacity:0.5; }
+        .back { display:block; text-align:center; margin-top:16px; color:#888; font-size:14px; text-decoration:none; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>📷 Enregistrer mon visage</h2>
+    <p>Votre visage sera utilisé pour vous connecter rapidement.</p>
+    <span id="status">⏳ Chargement des modèles IA...</span>
+    <video id="video" autoplay muted playsinline></video>
+    <div class="btns">
+        <button class="btn-red" id="btnCamera">📷 Activer la caméra</button>
+        <button class="btn-green" id="btnCapture" disabled>✅ Capturer et sauvegarder</button>
+    </div>
+    <a href="/profile" class="back">← Retour au profil</a>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.js"></script>
+<script>
+const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model';
+let stream = null;
+let modelsLoaded = false;
+let detectionInterval = null;
+
+const video = document.getElementById('video');
+const btnCamera = document.getElementById('btnCamera');
+const btnCapture = document.getElementById('btnCapture');
+
+function setStatus(msg, color, bg) {
+    const el = document.getElementById('status');
+    el.textContent = msg;
+    el.style.color = color;
+    el.style.background = bg;
+}
+
+async function loadModels() {
+    setStatus('⏳ Chargement des modèles IA...', '#f59e0b', '#fffbeb');
+    await faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL);
+    await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
+    await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
+    modelsLoaded = true;
+    setStatus('✅ Modèles chargés. Activez la caméra.', '#16a34a', '#f0fdf4');
+}
+
+btnCamera.addEventListener('click', async function() {
+    if (!modelsLoaded) await loadModels();
+    try {
+        stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        video.srcObject = stream;
+        video.style.display = 'block';
+        setStatus('👀 Positionnez votre visage...', '#3b82f6', '#eff6ff');
+
+        detectionInterval = setInterval(async () => {
+            if (!video.videoWidth) return;
+            const detection = await faceapi.detectSingleFace(video).withFaceLandmarks().withFaceDescriptor();
+            if (detection) {
+                setStatus('✅ Visage détecté ! Cliquez pour sauvegarder.', '#16a34a', '#f0fdf4');
+                btnCapture.disabled = false;
+                btnCapture.style.opacity = '1';
+            } else {
+                setStatus('❌ Aucun visage. Positionnez-vous.', '#ef4444', '#fef2f2');
+                btnCapture.disabled = true;
+                btnCapture.style.opacity = '0.5';
+            }
+        }, 500);
+    } catch(e) {
+        setStatus('❌ Caméra refusée : ' + e.message, '#ef4444', '#fef2f2');
+    }
+});
+
+btnCapture.addEventListener('click', async function() {
+    setStatus('⏳ Capture en cours...', '#f59e0b', '#fffbeb');
+    const detection = await faceapi.detectSingleFace(video).withFaceLandmarks().withFaceDescriptor();
+    if (!detection) {
+        setStatus('❌ Aucun visage. Réessayez.', '#ef4444', '#fef2f2');
+        return;
+    }
+    const descriptor = Array.from(detection.descriptor);
+    try {
+        const response = await fetch('/face/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ descriptor: descriptor })
+        });
+        const data = await response.json();
+        if (data.success) {
+            setStatus('🎉 Visage enregistré avec succès !', '#16a34a', '#f0fdf4');
+            clearInterval(detectionInterval);
+            if (stream) stream.getTracks().forEach(t => t.stop());
+            setTimeout(() => window.location.href = '/profile', 2000);
+        } else {
+            setStatus('❌ Erreur : ' + data.message, '#ef4444', '#fef2f2');
+        }
+    } catch(e) {
+        setStatus('❌ Erreur réseau.', '#ef4444', '#fef2f2');
+    }
+});
+
+loadModels();
+</script>
+</body>
+</html>

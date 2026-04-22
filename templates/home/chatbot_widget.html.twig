@@ -158,16 +158,18 @@ function sendMessage() {
 
     var typingEl = addMessage('En train d\'écrire...', 'typing');
 
-    fetch('/api/chatbot/' + hebergementId, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: message })
-    })
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
-        typingEl.remove();
-        addMessage(data.response || 'Désolé, une erreur est survenue.', 'bot');
-    })
+   var formData = new FormData();
+formData.append('message', message);
+
+fetch('/chatbot/ask', {
+    method: 'POST',
+    body: formData
+})
+.then(function(r) { return r.json(); })
+.then(function(data) {
+    typingEl.remove();
+    addMessage(data.response || 'Désolé, une erreur est survenue.', 'bot');
+})
     .catch(function() {
         typingEl.remove();
         addMessage('Désolé, je ne suis pas disponible pour le moment.', 'bot');

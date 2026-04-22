@@ -95,6 +95,10 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface, Equata
     #[ORM\Column(nullable: true)]
     private ?\DateTime $resetTokenExpiresAt = null;
 
+    #[ORM\Column(type: 'json', nullable: true)]
+private ?array $faceDescriptor = null;
+
+
     public function __construct()
     {
         $this->roles = new ArrayCollection();
@@ -209,6 +213,16 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface, Equata
         $this->plainPassword = $plainPassword;
         return $this;
     }
+    public function getFaceDescriptor(): ?array
+{
+    return $this->faceDescriptor;
+}
+
+public function setFaceDescriptor(?array $faceDescriptor): self
+{
+    $this->faceDescriptor = $faceDescriptor;
+    return $this;
+}
 
     public function isActive(): ?bool
     {

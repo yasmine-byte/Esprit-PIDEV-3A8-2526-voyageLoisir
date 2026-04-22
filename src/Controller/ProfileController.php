@@ -70,12 +70,39 @@ class ProfileController extends AbstractController
         }
 
         // Récupérer les voyages réservés par l'utilisateur (relation ManyToMany)
-        $reservations = $this->voyageRepository->createQueryBuilder('v')
-            ->innerJoin('v.reservedByUsers', 'u')
-            ->where('u = :user')
-            ->setParameter('user', $user)
-            ->getQuery()
-            ->getResult();
+        $conn = $this->entityManager->getConnection();
+$rows = $conn->fetchAllAssociative(
+    'SELECT v.id, vr.paid FROM voyage v 
+     INNER JOIN voyage_reservations vr ON vr.voyage_id = v.id 
+     WHERE vr.users_id = :uid',
+    ['uid' => $user->getId()]
+);
+$paidMap = [];
+foreach ($rows as $row) {
+    $paidMap[$row['id']] = (bool)$row['paid'];
+}
+
+$conn = $this->entityManager->getConnection();
+$paidRows = $conn->fetchAllAssociative(
+    'SELECT voyage_id FROM voyage_reservations WHERE users_id = :uid AND paid = 1',
+    ['uid' => $user->getId()]
+);
+$paidIds = array_column($paidRows, 'voyage_id');
+
+$reservations = $this->voyageRepository->createQueryBuilder('v')
+    ->innerJoin('v.reservedByUsers', 'u')
+    ->where('u = :user')
+    ->setParameter('user', $user)
+    ->getQuery()
+    ->getResult();
+
+foreach ($reservations as $voyage) {
+    $voyage->setPaid(in_array($voyage->getId(), $paidIds));
+}
+
+foreach ($reservations as $voyage) {
+    $voyage->setPaid($paidMap[$voyage->getId()] ?? false);
+}
 
         // Récupérer les réservations hébergement via l'email du client
         $reservationsHebergement = $this->reservationRepository->findBy(['clientEmail' => $user->getEmail()]);
@@ -211,12 +238,23 @@ class ProfileController extends AbstractController
         }
 
         // Récupérer les réservations pour le re-rendu en cas d'erreur
-        $reservations = $this->voyageRepository->createQueryBuilder('v')
-            ->innerJoin('v.reservedByUsers', 'u')
-            ->where('u = :user')
-            ->setParameter('user', $user)
-            ->getQuery()
-            ->getResult();
+        $conn = $this->entityManager->getConnection();
+$paidRows = $conn->fetchAllAssociative(
+    'SELECT voyage_id FROM voyage_reservations WHERE users_id = :uid AND paid = 1',
+    ['uid' => $user->getId()]
+);
+$paidIds = array_column($paidRows, 'voyage_id');
+
+$reservations = $this->voyageRepository->createQueryBuilder('v')
+    ->innerJoin('v.reservedByUsers', 'u')
+    ->where('u = :user')
+    ->setParameter('user', $user)
+    ->getQuery()
+    ->getResult();
+
+foreach ($reservations as $voyage) {
+    $voyage->setPaid(in_array($voyage->getId(), $paidIds));
+}
         $reservationsHebergement = $this->reservationRepository->findBy(['clientEmail' => $user->getEmail()]);
 
         return $this->render('home/profile.html.twig', [

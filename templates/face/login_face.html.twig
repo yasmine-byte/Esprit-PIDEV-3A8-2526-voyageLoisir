@@ -1,0 +1,105 @@
+{% extends 'base_front.html.twig' %}
+{% block title %}Connexion par visage — Vianova{% endblock %}
+
+{% block body %}
+<div style="max-width:600px; margin:60px auto; padding:30px; background:#fff; border-radius:16px; box-shadow:0 4px 20px rgba(0,0,0,0.1);">
+    <h2 style="text-align:center; color:#f75959; margin-bottom:10px;">🔐 Connexion par reconnaissance faciale</h2>
+    <p style="text-align:center; color:#888; margin-bottom:24px;">Positionnez votre visage devant la caméra.</p>
+
+    <div style="text-align:center; margin-bottom:16px;">
+        <div id="status" style="padding:10px 20px; border-radius:8px; font-weight:600; background:#fff3f0; color:#f75959; display:inline-block;">
+            ⏳ Chargement des modèles IA...
+        </div>
+    </div>
+
+    <div style="position:relative; display:inline-block; width:100%;">
+        <video id="video" autoplay muted playsinline
+               style="width:100%; border-radius:12px; background:#000;"></video>
+    </div>
+
+    <div style="text-align:center; margin-top:20px;">
+        <a href="{{ path('front_login') }}"
+           style="color:#888; font-size:14px; text-decoration:none;">← Retour au login classique</a>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.js"></script><script>
+let scanning = false;
+
+async function init() {
+    // Charger les modèles
+    setStatus('⏳ Chargement des modèles IA...', '#f59e0b', '#fffbeb');
+    const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model';
+await faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL);
+await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
+await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
+
+    // Activer la caméra
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        const video = document.getElementById('video');
+        video.srcObject = stream;
+        setStatus('👀 Scan en cours... Regardez la caméra.', '#3b82f6', '#eff6ff');
+        startScanning();
+    } catch (e) {
+        setStatus('❌ Caméra refusée. Autorisez l\'accès.', '#ef4444', '#fef2f2');
+    }
+}
+
+function startScanning() {
+    const video = document.getElementById('video');
+
+    // Scanner toutes les 800ms
+    setInterval(async () => {
+        if (scanning) return;
+        if (!video.videoWidth) return;
+
+        const detection = await faceapi
+            .detectSingleFace(video)
+            .withFaceLandmarks()
+            .withFaceDescriptor();
+
+        if (!detection) {
+            setStatus('👀 Aucun visage détecté. Positionnez-vous.', '#f59e0b', '#fffbeb');
+            return;
+        }
+
+        scanning = true;
+        setStatus('🔍 Visage détecté. Identification...', '#3b82f6', '#eff6ff');
+
+        // Extraire le descriptor
+        const descriptor = Array.from(detection.descriptor);
+
+        try {
+            const response = await fetch('/face/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ descriptor: descriptor })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                setStatus('✅ Identifié ! Redirection...', '#16a34a', '#f0fdf4');
+                window.location.href = data.redirect;
+            } else {
+                setStatus('❌ Visage non reconnu. Réessayez.', '#ef4444', '#fef2f2');
+                setTimeout(() => { scanning = false; }, 2000);
+            }
+        } catch (e) {
+            setStatus('❌ Erreur réseau.', '#ef4444', '#fef2f2');
+            scanning = false;
+        }
+    }, 800);
+}
+
+function setStatus(msg, color, bg) {
+    const el = document.getElementById('status');
+    el.textContent = msg;
+    el.style.color = color;
+    el.style.background = bg;
+}
+
+init();
+</script>
+{% endblock %}

@@ -1,0 +1,89 @@
+<style>
+  {# Copiez tous les styles .vl-chatbot-* du fichier original #}
+  .vl-chatbot-toggle { position:fixed; right:22px; bottom:22px; z-index:5000; width:58px; height:58px; border:none; border-radius:50%; background:linear-gradient(135deg,#e88b5a,#d4845a); color:#fff; box-shadow:0 12px 28px rgba(42,28,20,0.3); cursor:pointer; font-size:24px; font-weight:700; }
+  .vl-chatbot-panel { position:fixed; right:22px; bottom:92px; z-index:5000; width:min(360px,calc(100vw - 24px)); max-height:min(620px,82vh); border-radius:16px; background:#fff; box-shadow:0 25px 60px rgba(42,28,20,0.28); border:1px solid rgba(13,13,13,0.08); display:none; overflow:hidden; }
+  .vl-chatbot-panel.is-open { display:flex; flex-direction:column; }
+  .vl-chatbot-header { display:flex; align-items:center; justify-content:space-between; padding:12px 14px; background:#f6f6f6; border-bottom:1px solid #ededed; }
+  .vl-chatbot-title { margin:0; font-size:15px; color:#1f2937; font-weight:700; }
+  .vl-chatbot-close { border:none; background:transparent; font-size:22px; line-height:1; color:#6b7280; cursor:pointer; }
+  .vl-chatbot-messages { padding:12px; display:flex; flex-direction:column; gap:10px; overflow-y:auto; min-height:200px; max-height:360px; background:#fcfcfc; }
+  .vl-chatbot-msg { max-width:88%; padding:9px 11px; border-radius:11px; font-size:14px; line-height:1.45; white-space:pre-wrap; }
+  .vl-chatbot-msg.user { margin-left:auto; background:#e7f0ff; color:#1f2937; }
+  .vl-chatbot-msg.bot { margin-right:auto; background:#f2f2f2; color:#111827; }
+  .vl-chatbot-input-row { padding:10px; border-top:1px solid #ececec; display:grid; grid-template-columns:1fr auto; gap:8px; background:#fff; }
+  .vl-chatbot-input { border:1px solid #d1d5db; border-radius:10px; padding:9px 10px; font-size:14px; outline:none; }
+  .vl-chatbot-send { border:none; border-radius:10px; background:#d4845a; color:#fff; font-weight:600; padding:0 12px; cursor:pointer; }
+</style>
+
+<button id="vlChatbotToggle" class="vl-chatbot-toggle" type="button" aria-label="Ouvrir le chatbot">🏠</button>
+<div id="vlChatbotPanel" class="vl-chatbot-panel" aria-live="polite">
+  <div class="vl-chatbot-header">
+    <h3 class="vl-chatbot-title">🤖 Assistant Hébergement</h3>
+    <button id="vlChatbotClose" class="vl-chatbot-close" type="button">×</button>
+  </div>
+  <div id="vlChatbotMessages" class="vl-chatbot-messages">
+    <div class="vl-chatbot-msg bot">Bonjour ! Je suis votre assistant pour cet hébergement. Comment puis-je vous aider ? 😊</div>
+  </div>
+  <div class="vl-chatbot-input-row">
+    <input id="vlChatbotInput" class="vl-chatbot-input" type="text" placeholder="Posez votre question..." maxlength="700">
+    <button id="vlChatbotSend" class="vl-chatbot-send" type="button">Envoyer</button>
+  </div>
+</div>
+
+<script>
+(function () {
+    const endpointUrl = {{ path('app_chatbot_hebergement', {id: hebergement.id})|json_encode|raw }};
+    const toggleButton = document.getElementById('vlChatbotToggle');
+    const closeButton  = document.getElementById('vlChatbotClose');
+    const panel        = document.getElementById('vlChatbotPanel');
+    const messages     = document.getElementById('vlChatbotMessages');
+    const input        = document.getElementById('vlChatbotInput');
+    const sendButton   = document.getElementById('vlChatbotSend');
+
+    const appendMessage = function (role, text) {
+        const bubble = document.createElement('div');
+        bubble.className = 'vl-chatbot-msg ' + role;
+        bubble.textContent = text;
+        messages.appendChild(bubble);
+        messages.scrollTop = messages.scrollHeight;
+        return bubble;
+    };
+
+    const setOpen = function (open) {
+        panel.classList.toggle('is-open', open);
+        if (open) input.focus();
+    };
+
+    const sendMessage = async function () {
+        const userText = input.value.trim();
+        if (!userText) return;
+
+        appendMessage('user', userText);
+        input.value = '';
+        sendButton.disabled = true;
+        const loading = appendMessage('bot', 'Je réfléchis...');
+
+        try {
+            const response = await fetch(endpointUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                body: JSON.stringify({ message: userText })
+            });
+            const data = await response.json();
+            loading.remove();
+            appendMessage('bot', data.reply || 'Désolé, je ne peux pas répondre pour le moment.');
+        } catch (e) {
+            loading.remove();
+            appendMessage('bot', 'Erreur réseau. Veuillez réessayer.');
+        } finally {
+            sendButton.disabled = false;
+            input.focus();
+        }
+    };
+
+    toggleButton.addEventListener('click', () => setOpen(!panel.classList.contains('is-open')));
+    closeButton.addEventListener('click', () => setOpen(false));
+    sendButton.addEventListener('click', sendMessage);
+    input.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); sendMessage(); } });
+})();
+</script>

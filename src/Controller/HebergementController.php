@@ -131,4 +131,36 @@ final class HebergementController extends AbstractController
         }
         return $this->redirectToRoute('app_hebergement_index', [], Response::HTTP_SEE_OTHER);
     }
+    #[Route('/reservation/hebergement/{id}/cancel', name: 'app_reservation_hebergement_cancel', methods: ['POST'])]
+public function cancelHebergement(
+    int $id,
+    Request $request,
+    EntityManagerInterface $em
+): Response {
+    $reservation = $em->getRepository(\App\Entity\Reservation::class)->find($id);
+
+    if (!$reservation) {
+        throw $this->createNotFoundException('Réservation introuvable.');
+    }
+
+    if (!$this->isCsrfTokenValid('cancel_heb' . $id, $request->request->get('_token'))) {
+        throw $this->createAccessDeniedException('Token CSRF invalide.');
+    }
+
+    if ($reservation->getUser() !== $this->getUser()) {
+        throw $this->createAccessDeniedException('Accès refusé.');
+    }
+
+    if ($reservation->getStatut() !== 'en_attente') {
+        $this->addFlash('error', 'Cette réservation ne peut pas être annulée.');
+        return $this->redirectToRoute('app_profile');
+    }
+
+    $reservation->setStatut('annulee');
+    $em->flush();
+
+    $this->addFlash('success', 'Réservation annulée avec succès.');
+    return $this->redirectToRoute('app_profile');
+}
+
 }

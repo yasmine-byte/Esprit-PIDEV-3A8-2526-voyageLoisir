@@ -659,28 +659,93 @@ body {
 (function(){
   var rec=null, tr='', on=false;
   var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+
   window.toggleMic=function(){
-    if(!SR){document.getElementById('voiceStatus').textContent='Disponible sur Chrome/Edge uniquement.';return;}
-    if(on){rec.stop();return;}
-    rec=new SR(); rec.lang='fr-FR'; rec.interimResults=true;
-    rec.onstart=function(){on=true;document.getElementById('micBtn').style.background='var(--accent)';document.getElementById('micBtn').style.borderColor='var(--accent)';document.getElementById('voiceStatus').textContent='Écoute en cours…';document.getElementById('voiceResults').innerHTML='';document.getElementById('voiceSearchBtn').disabled=true;};
-    rec.onresult=function(e){var f='',i='';for(var x=e.resultIndex;x<e.results.length;x++){var t=e.results[x][0].transcript;e.results[x].isFinal?f+=t:i+=t;}document.getElementById('voiceTranscript').textContent=f||i;if(f)tr=f;};
-    rec.onend=function(){on=false;document.getElementById('micBtn').style.background='var(--accent-light)';document.getElementById('micBtn').style.borderColor='var(--accent-border)';document.getElementById('voiceStatus').textContent=tr?'Terminé — lancez la recherche':'Rien détecté';if(tr)document.getElementById('voiceSearchBtn').disabled=false;};
-    rec.onerror=function(e){on=false;document.getElementById('voiceStatus').textContent='Erreur : '+e.error;};
-    rec.start();
+    if(!SR){
+      alert('Non supporté. Utilisez Chrome ou Edge.');
+      return;
+    }
+    if(on){ rec.stop(); return; }
+
+    rec=new SR();
+    rec.lang='fr-FR';
+    rec.interimResults=true;
+    rec.continuous=false;
+    rec.maxAlternatives=3;
+
+    rec.onstart=function(){
+      on=true;
+      document.getElementById('micBtn').style.background='var(--accent)';
+      document.getElementById('micBtn').style.borderColor='var(--accent)';
+      document.getElementById('voiceStatus').textContent='🎤 Parlez maintenant...';
+      document.getElementById('voiceResults').innerHTML='';
+      document.getElementById('voiceSearchBtn').disabled=true;
+    };
+
+    rec.onspeechstart=function(){
+      document.getElementById('voiceStatus').textContent='✅ Voix détectée...';
+    };
+
+    rec.onspeechend=function(){
+      document.getElementById('voiceStatus').textContent='⏳ Traitement...';
+      rec.stop();
+    };
+
+    rec.onresult=function(e){
+      var f='', i='';
+      for(var x=e.resultIndex;x<e.results.length;x++){
+        var t=e.results[x][0].transcript;
+        e.results[x].isFinal ? f+=t : i+=t;
+      }
+      document.getElementById('voiceTranscript').textContent=f||i;
+      if(f){ tr=f; document.getElementById('voiceSearchBtn').disabled=false; }
+    };
+
+    rec.onend=function(){
+      on=false;
+      document.getElementById('micBtn').style.background='var(--accent-light)';
+      document.getElementById('micBtn').style.borderColor='var(--accent-border)';
+      if(tr){
+        document.getElementById('voiceStatus').textContent='✅ Terminé — cliquez Lancer la recherche';
+        document.getElementById('voiceSearchBtn').disabled=false;
+      } else {
+        document.getElementById('voiceStatus').textContent='❌ Rien détecté — réessayez';
+      }
+    };
+
+    rec.onerror=function(e){
+      on=false;
+      var msgs={
+        'no-speech':'Aucune voix détectée. Parlez plus fort.',
+        'audio-capture':'Micro non trouvé.',
+        'not-allowed':'Permission micro refusée.',
+        'network':'Erreur réseau.',
+        'aborted':'Annulé.'
+      };
+      document.getElementById('voiceStatus').textContent='❌ '+(msgs[e.error]||'Erreur: '+e.error);
+    };
+
+    try { rec.start(); }
+    catch(err){ document.getElementById('voiceStatus').textContent='Erreur: '+err.message; }
   };
+
   window.runVoiceSearch=function(){
-    if(!tr)return;
+    if(!tr) return;
     document.getElementById('voiceSearchBtn').disabled=true;
-    document.getElementById('voiceStatus').textContent='Recherche en cours…';
+    document.getElementById('voiceStatus').textContent='🔍 Recherche en cours…';
     document.getElementById('voiceResults').innerHTML='<p style="text-align:center;color:var(--muted);font-size:13px">Analyse…</p>';
-    fetch('{{ path("app_destination_voice_query") }}',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({query:tr})})
-    .then(function(r){return r.json();})
+
+    fetch('{{ path("app_destination_voice_query") }}',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({query:tr})
+    })
+    .then(function(r){ return r.json(); })
     .then(function(data){
       var html='';
       var dispo=data.disponibles||[];
       if(dispo.length>0){
-        html+='<div style="font-size:10px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#16a34a;margin-bottom:10px">Dans notre catalogue</div>';
+        html+='<div style="font-size:10px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#16a34a;margin-bottom:10px">✅ Dans notre catalogue</div>';
         dispo.forEach(function(d){
           html+='<div style="background:#f0fdf4;border-radius:12px;padding:14px 16px;margin-bottom:8px;border:1px solid #bbf7d0">'
             +'<strong style="font-size:14px;font-family:Playfair Display,serif;color:var(--text)">'+d.nom+'</strong>'
@@ -693,17 +758,20 @@ body {
       var hors=data.hors_catalogue;
       if(hors&&hors.existe){
         html+='<div style="background:var(--accent-light);border-radius:12px;padding:14px 16px;border:1px solid var(--accent-border)">'
-          +'<strong style="font-family:Playfair Display,serif;font-size:14px;color:var(--text)">'+( hors.nom||'')+'</strong>'
+          +'<strong style="font-family:Playfair Display,serif;font-size:14px;color:var(--text)">'+(hors.nom||'')+'</strong>'
           +(hors.pays?' <span style="font-size:11px;color:var(--muted)">· '+hors.pays+'</span>':'')
-          +'<p style="font-size:13px;color:var(--accent-dark);margin:6px 0;font-style:italic">'+( hors.message||'')+'</p>'
+          +'<p style="font-size:13px;color:var(--accent-dark);margin:6px 0;font-style:italic">'+(hors.message||'')+'</p>'
           +(hors.infos?'<p style="font-size:13px;color:var(--muted);margin:0;font-weight:300">'+hors.infos+'</p>':'')
           +'</div>';
       }
-      if(!html)html='<p style="color:#e07070;font-size:13px;text-align:center">Aucune destination trouvée.</p>';
-      document.getElementById('voiceStatus').textContent=dispo.length+' résultat(s) trouvé(s)';
+      if(!html) html='<p style="color:#e07070;font-size:13px;text-align:center">Aucune destination trouvée.</p>';
+      document.getElementById('voiceStatus').textContent='✅ '+(dispo.length)+' résultat(s)';
       document.getElementById('voiceResults').innerHTML=html;
     })
-    .catch(function(){document.getElementById('voiceResults').innerHTML='<p style="color:#e07070;font-size:13px">Erreur de connexion.</p>';document.getElementById('voiceSearchBtn').disabled=false;});
+    .catch(function(err){
+      document.getElementById('voiceResults').innerHTML='<p style="color:#e07070;font-size:13px">Erreur: '+err.message+'</p>';
+      document.getElementById('voiceSearchBtn').disabled=false;
+    });
   };
 })();
 </script>

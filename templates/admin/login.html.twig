@@ -282,9 +282,23 @@
                         Déjà un compte ?
                         <a href="#" id="go-login">Se connecter</a>
                     </p>
+                
                 </form>
             </div>
-
+            {# ===== BOUTON CONNEXION FACIALE ===== #}
+            <div style="text-align:center; margin-top:16px;">
+              <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
+                <hr style="flex:1; border-color:#eee;">
+                <span style="color:#aaa; font-size:12px;">ou</span>
+                <hr style="flex:1; border-color:#eee;">
+              </div>
+              <a href="{{ path('face_login_page') }}"
+                 style="display:flex; align-items:center; justify-content:center; gap:8px; width:100%; padding:12px; background:#f8f9fa; border:1.5px solid #e0e0e0; border-radius:8px; color:#333; font-size:14px; font-weight:600; text-decoration:none; transition:all 0.2s;"
+                 onmouseover="this.style.background='#fff3f0'; this.style.borderColor='#f75959'; this.style.color='#f75959';"
+                 onmouseout="this.style.background='#f8f9fa'; this.style.borderColor='#e0e0e0'; this.style.color='#333';">
+                📷 Se connecter avec mon visage
+              </a>
+            </div>
         </div>
     </div>
 

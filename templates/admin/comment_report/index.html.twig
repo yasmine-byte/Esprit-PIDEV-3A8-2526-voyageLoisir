@@ -288,7 +288,7 @@
                                 <td>
                                     <div class="icon-actions">
                                         {% if report.commentaire and report.commentaire.blog %}
-                                            <a href="{{ path('admin_blog_show', { id: report.commentaire.blog.id }) }}"
+                                            <a href="{{ path('app_blog_show', { id: report.commentaire.blog.id }) }}"
                                                class="icon-btn icon-btn--view"
                                                data-bs-toggle="tooltip"
                                                data-bs-title="Voir le contexte"

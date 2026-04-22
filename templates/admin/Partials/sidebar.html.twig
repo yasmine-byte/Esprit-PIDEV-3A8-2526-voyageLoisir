@@ -14,10 +14,12 @@
 
 <!-- Sidebar -->
 <aside class="sidebar" id="sidebar">
+    <a href="{{ path('app_home') }}" style="text-decoration:none;">
     <div class="logo">
         <div class="logo-icon">V</div>
         <span class="logo-text">Vianova</span>
     </div>
+</a>    
 
     <nav class="nav-section">
         <div class="nav-label">Main Menu</div>
@@ -138,8 +140,7 @@
         </div>
 
         {# ── GESTION BLOG ── #}
-        {% set blogActive = currentRoute == 'admin_blogs' or currentRoute starts with 'admin_blog' or currentRoute starts with 'admin_comment_report' or currentRoute == 'admin_comment_reports_index' or currentRoute == 'admin_analytics' %}
-        <a href="#" class="nav-item {{ blogActive ? 'active' : '' }}" onclick="toggleMenu(event, 'blog-submenu')">
+        <a href="#" class="nav-item {{ currentRoute == 'admin_blogs' or currentRoute starts with 'admin_blog' or currentRoute starts with 'admin_comment_report' or currentRoute == 'admin_comment_reports_index' or currentRoute == 'admin_analytics' ? 'active' : '' }}" onclick="toggleMenu(event, 'blog-submenu')">
             <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
                 <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
@@ -150,7 +151,7 @@
             </svg>
         </a>
         <div id="blog-submenu" style="display:none; padding-left:16px;">
-            <a href="#" class="nav-item {{ currentRoute == 'admin_blogs' or currentRoute starts with 'admin_blog' ? 'active' : '' }}" style="font-size:14px;">
+            <a href="{{ path('admin_blogs') }}" class="nav-item {{ currentRoute == 'admin_blogs' or currentRoute starts with 'admin_blog' ? 'active' : '' }}" style="font-size:14px;">
                 <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
                     <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
@@ -165,7 +166,7 @@
                 </svg>
                 Signalements commentaires
             </a>
-            <a href="#" class="nav-item {{ currentRoute == 'admin_analytics' ? 'active' : '' }}" style="font-size:14px;">
+            <a href="{{ path('admin_analytics') }}" class="nav-item {{ currentRoute == 'admin_analytics' ? 'active' : '' }}" style="font-size:14px;">
                 <i class="bi bi-bar-chart-line nav-icon"></i>
                 Analytics
             </a>
@@ -321,7 +322,7 @@
             if (arrow) arrow.style.transform = 'rotate(180deg)';
         }
 
-        const blogRoutes = ['admin_blogs', 'admin_comment_reports_index', 'admin_comment_report_dismiss', 'admin_comment_report_review', 'admin_comment_report_delete_comment', 'admin_analytics'];
+        const blogRoutes = ['admin_blogs', 'app_blog_index', 'admin_comment_reports_index', 'admin_comment_report_dismiss', 'admin_comment_report_review', 'admin_comment_report_delete_comment', 'admin_analytics'];
         if (blogRoutes.includes(currentRoute)) {
             var blogMenu  = document.getElementById('blog-submenu');
             var blogArrow = document.getElementById('arrow-blog');
