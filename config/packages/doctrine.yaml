@@ -1,13 +1,15 @@
 doctrine:
     dbal:
         url: '%env(resolve:DATABASE_URL)%'
-        # IMPORTANT: You MUST configure your server version,
-        # either here or in the DATABASE_URL env var (see .env file)
         server_version: '10.4.32-MariaDB'
         profiling_collect_backtrace: '%kernel.debug%'
         use_savepoints: true
+        charset: utf8mb4
+        default_table_options:
+            charset: utf8mb4
+            collate: utf8mb4_unicode_ci
         options:
-            1002: "SET FOREIGN_KEY_CHECKS=0"
+            1002: "SET time_zone = '+00:00', sql_mode = 'STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_ZERO_DATE,NO_ZERO_IN_DATE,NO_ENGINE_SUBSTITUTION'"
     orm:
         auto_generate_proxy_classes: true
         enable_lazy_ghost_objects: true
@@ -26,10 +28,12 @@ doctrine:
                 alias: App
         controller_resolver:
             auto_mapping: false
+
 when@test:
     doctrine:
         dbal:
             dbname_suffix: '_test%env(default::TEST_TOKEN)%'
+
 when@prod:
     doctrine:
         orm:

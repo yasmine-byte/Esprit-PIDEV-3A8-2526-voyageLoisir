@@ -14,11 +14,13 @@ class Blog
     #[ORM\Column]
     private ?int $id = null;
 
+    // ✅ FIX : non-nullable string
     #[ORM\Column(length: 255)]
-    private ?string $titre = null;
+    private string $titre = '';
 
+    // ✅ FIX : non-nullable string
     #[ORM\Column(type: Types::TEXT)]
-    private ?string $contenu = null;
+    private string $contenu = '';
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $imageCouverture = null;
@@ -32,11 +34,13 @@ class Blog
     #[ORM\Column(nullable: true)]
     private ?bool $publicationRequested = null;
 
+    // ✅ FIX : DateTimeImmutable
     #[ORM\Column(nullable: true)]
-    private ?\DateTime $dateCreation = null;
+    private ?\DateTimeImmutable $dateCreation = null;
 
+    // ✅ FIX : DateTimeImmutable
     #[ORM\Column(nullable: true)]
-    private ?\DateTime $datePublication = null;
+    private ?\DateTimeImmutable $datePublication = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $extrait = null;
@@ -47,7 +51,7 @@ class Blog
     #[ORM\Column(nullable: true)]
     private ?int $sentimentScore = null;
 
-    #[ORM\Column(length: 10,nullable: true)]
+    #[ORM\Column(length: 10, nullable: true)]
     private ?string $sentimentEmoji = null;
 
     #[ORM\Column(nullable: true)]
@@ -56,186 +60,54 @@ class Blog
     #[ORM\Column(nullable: true)]
     private ?int $ratingCount = null;
 
-    public function getId(): ?int
+    public function __construct()
     {
-        return $this->id;
+        $this->dateCreation = new \DateTimeImmutable();
     }
 
-    public function getTitre(): ?string
-    {
-        return $this->titre;
-    }
+    public function getId(): ?int { return $this->id; }
 
-    public function setTitre(string $titre): static
-    {
-        $this->titre = $titre;
+    public function getTitre(): string { return $this->titre; }
+    public function setTitre(string $titre): static { $this->titre = $titre; return $this; }
 
-        return $this;
-    }
+    public function getContenu(): string { return $this->contenu; }
+    public function setContenu(string $contenu): static { $this->contenu = $contenu; return $this; }
 
-    public function getContenu(): ?string
-    {
-        return $this->contenu;
-    }
+    public function getImageCouverture(): ?string { return $this->imageCouverture; }
+    public function setImageCouverture(?string $imageCouverture): static { $this->imageCouverture = $imageCouverture; return $this; }
 
-    public function setContenu(string $contenu): static
-    {
-        $this->contenu = $contenu;
+    public function getAuthorId(): ?string { return $this->authorId; }
+    public function setAuthorId(?string $authorId): static { $this->authorId = $authorId; return $this; }
 
-        return $this;
-    }
+    public function getStatus(): ?bool { return $this->status; }
+    public function isStatus(): ?bool { return $this->status; }
+    public function setStatus(?bool $status): static { $this->status = $status; return $this; }
 
-    public function getImageCouverture(): ?string
-    {
-        return $this->imageCouverture;
-    }
+    public function isPublicationRequested(): ?bool { return $this->publicationRequested; }
+    public function getPublicationRequested(): ?bool { return $this->publicationRequested; }
+    public function setPublicationRequested(?bool $publicationRequested): static { $this->publicationRequested = $publicationRequested; return $this; }
 
-    public function setImageCouverture(?string $imageCouverture): static
-    {
-        $this->imageCouverture = $imageCouverture;
+    public function getDateCreation(): ?\DateTimeImmutable { return $this->dateCreation; }
+    public function setDateCreation(?\DateTimeImmutable $dateCreation): static { $this->dateCreation = $dateCreation; return $this; }
 
-        return $this;
-    }
+    public function getDatePublication(): ?\DateTimeImmutable { return $this->datePublication; }
+    public function setDatePublication(?\DateTimeImmutable $datePublication): static { $this->datePublication = $datePublication; return $this; }
 
-    public function getAuthorId(): ?string
-    {
-        return $this->authorId;
-    }
+    public function getExtrait(): ?string { return $this->extrait; }
+    public function setExtrait(?string $extrait): static { $this->extrait = $extrait; return $this; }
 
-    public function setAuthorId(?string $authorId): static
-    {
-        $this->authorId = $authorId;
+    public function getSlug(): ?string { return $this->slug; }
+    public function setSlug(?string $slug): static { $this->slug = $slug; return $this; }
 
-        return $this;
-    }
+    public function getSentimentScore(): ?int { return $this->sentimentScore; }
+    public function setSentimentScore(?int $sentimentScore): static { $this->sentimentScore = $sentimentScore; return $this; }
 
-    public function getStatus(): ?bool
-    {
-        return $this->status;
-    }
+    public function getSentimentEmoji(): ?string { return $this->sentimentEmoji; }
+    public function setSentimentEmoji(?string $sentimentEmoji): static { $this->sentimentEmoji = $sentimentEmoji; return $this; }
 
-    public function isStatus(): ?bool
-    {
-        return $this->status;
-    }
+    public function getRatingAverage(): ?float { return $this->ratingAverage; }
+    public function setRatingAverage(?float $ratingAverage): static { $this->ratingAverage = $ratingAverage; return $this; }
 
-    public function setStatus(?bool $status): static
-    {
-        $this->status = $status;
-
-        return $this;
-    }
-
-    public function isPublicationRequested(): ?bool
-    {
-        return $this->publicationRequested;
-    }
-
-    public function getPublicationRequested(): ?bool
-    {
-        return $this->publicationRequested;
-    }
-
-    public function setPublicationRequested(?bool $publicationRequested): static
-    {
-        $this->publicationRequested = $publicationRequested;
-
-        return $this;
-    }
-
-    public function getDateCreation(): ?\DateTime
-    {
-        return $this->dateCreation;
-    }
-
-    public function setDateCreation(?\DateTime $dateCreation): static
-    {
-        $this->dateCreation = $dateCreation;
-
-        return $this;
-    }
-
-    public function getDatePublication(): ?\DateTime
-    {
-        return $this->datePublication;
-    }
-
-    public function setDatePublication(?\DateTime $datePublication): static
-    {
-        $this->datePublication = $datePublication;
-
-        return $this;
-    }
-
-    public function getExtrait(): ?string
-    {
-        return $this->extrait;
-    }
-
-    public function setExtrait(?string $extrait): static
-    {
-        $this->extrait = $extrait;
-
-        return $this;
-    }
-
-    public function getSlug(): ?string
-    {
-        return $this->slug;
-    }
-
-    public function setSlug(?string $slug): static
-    {
-        $this->slug = $slug;
-
-        return $this;
-    }
-
-    public function getSentimentScore(): ?int
-    {
-        return $this->sentimentScore;
-    }
-
-    public function setSentimentScore(?int $sentimentScore): static
-    {
-        $this->sentimentScore = $sentimentScore;
-
-        return $this;
-    }
-
-    public function getSentimentEmoji(): ?string
-    {
-        return $this->sentimentEmoji;
-    }
-
-    public function setSentimentEmoji(string $sentimentEmoji): static
-    {
-        $this->sentimentEmoji = $sentimentEmoji;
-
-        return $this;
-    }
-
-    public function getRatingAverage(): ?float
-    {
-        return $this->ratingAverage;
-    }
-
-    public function setRatingAverage(?float $ratingAverage): static
-    {
-        $this->ratingAverage = $ratingAverage;
-
-        return $this;
-    }
-
-    public function getRatingCount(): ?int
-    {
-        return $this->ratingCount;
-    }
-
-    public function setRatingCount(?int $ratingCount): static
-    {
-        $this->ratingCount = $ratingCount;
-
-        return $this;
-    }
+    public function getRatingCount(): ?int { return $this->ratingCount; }
+    public function setRatingCount(?int $ratingCount): static { $this->ratingCount = $ratingCount; return $this; }
 }

@@ -18,14 +18,17 @@ class Commentaire
     #[ORM\JoinColumn(nullable: false)]
     private ?Blog $blog = null;
 
+    // ✅ FIX : non-nullable string + DateTimeImmutable
     #[ORM\Column(type: Types::TEXT)]
-    private ?string $contenu = null;
+    private string $contenu = '';
 
+    // ✅ FIX : DateTimeImmutable
     #[ORM\Column(nullable: true)]
-    private ?\DateTime $dateCreation = null;
+    private ?\DateTimeImmutable $dateCreation = null;
 
+    // ✅ FIX : non-nullable string
     #[ORM\Column(length: 100)]
-    private ?string $nomuser = null;
+    private string $nomuser = '';
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $img = null;
@@ -33,80 +36,28 @@ class Commentaire
     #[ORM\Column(nullable: true)]
     private ?int $likesCount = null;
 
-    public function getId(): ?int
+    public function __construct()
     {
-        return $this->id;
+        $this->dateCreation = new \DateTimeImmutable();
     }
 
-    public function getBlog(): ?Blog
-    {
-        return $this->blog;
-    }
+    public function getId(): ?int { return $this->id; }
 
-    public function setBlog(?Blog $blog): static
-    {
-        $this->blog = $blog;
+    public function getBlog(): ?Blog { return $this->blog; }
+    public function setBlog(?Blog $blog): static { $this->blog = $blog; return $this; }
 
-        return $this;
-    }
+    public function getContenu(): string { return $this->contenu; }
+    public function setContenu(string $contenu): static { $this->contenu = $contenu; return $this; }
 
-    public function getContenu(): ?string
-    {
-        return $this->contenu;
-    }
+    public function getDateCreation(): ?\DateTimeImmutable { return $this->dateCreation; }
+    public function setDateCreation(?\DateTimeImmutable $dateCreation): static { $this->dateCreation = $dateCreation; return $this; }
 
-    public function setContenu(string $contenu): static
-    {
-        $this->contenu = $contenu;
+    public function getNomuser(): string { return $this->nomuser; }
+    public function setNomuser(string $nomuser): static { $this->nomuser = $nomuser; return $this; }
 
-        return $this;
-    }
+    public function getImg(): ?string { return $this->img; }
+    public function setImg(?string $img): static { $this->img = $img; return $this; }
 
-    public function getDateCreation(): ?\DateTime
-    {
-        return $this->dateCreation;
-    }
-
-    public function setDateCreation(?\DateTime $dateCreation): static
-    {
-        $this->dateCreation = $dateCreation;
-
-        return $this;
-    }
-
-    public function getNomuser(): ?string
-    {
-        return $this->nomuser;
-    }
-
-    public function setNomuser(string $nomuser): static
-    {
-        $this->nomuser = $nomuser;
-
-        return $this;
-    }
-
-    public function getImg(): ?string
-    {
-        return $this->img;
-    }
-
-    public function setImg(?string $img): static
-    {
-        $this->img = $img;
-
-        return $this;
-    }
-
-    public function getLikesCount(): ?int
-    {
-        return $this->likesCount;
-    }
-
-    public function setLikesCount(?int $likesCount): static
-    {
-        $this->likesCount = $likesCount;
-
-        return $this;
-    }
+    public function getLikesCount(): ?int { return $this->likesCount; }
+    public function setLikesCount(?int $likesCount): static { $this->likesCount = $likesCount; return $this; }
 }

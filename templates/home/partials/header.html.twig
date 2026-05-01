@@ -34,48 +34,29 @@
             <li><a href="{{ path('avis_index') }}">Avis</a></li>
             <li><a href="{{ path('reclamation_index') }}">Réclamations</a></li>
             <li><a href="{{ path('app_blog_index') }}">Blog</a></li>
-            <li>
-              <a href="{{ path('app_contact') }}">
-                <i class="fa fa-envelope" style="margin-right:5px;"></i> Contact
-              </a>
-            </li>
 
             {% if app.user %}
               {% if is_granted('ROLE_ADMIN') %}
                 <li>
-                  <a href="{{ path('app_admin') }}" style="color:#d4845a; font-weight:600;">
-                    <i class="fa fa-cog"></i> Admin
-                  </a>
-                </li>
-              {% endif %}
-              {% if is_granted('ROLE_USER') %}
-                <li>
-                  <a href="{{ path('app_mon_espace') }}" style="color:#E8602D; font-weight:600;">
-                    <i class="fa fa-compass"></i> Mon Espace
-                  </a>
+                  <a href="{{ path('app_admin') }}" style="color:#d4845a; font-weight:600;">Admin</a>
                 </li>
               {% endif %}
               <li>
                 <a href="{{ path('front_profile') }}" style="font-weight:600;">
-                  <i class="fa fa-user-circle"></i>
                   {{ (app.user.prenom|default('') ~ ' ' ~ app.user.nom|default(''))|trim ?: app.user.userIdentifier }}
                 </a>
               </li>
               <li>
-                <a href="{{ path('front_logout') }}" title="Déconnexion" style="color:#ef4444;">
-                  <i class="fa fa-sign-out-alt"></i>
-                </a>
+                <a href="{{ path('front_logout') }}" title="Déconnexion" style="color:#ef4444;">Déconnexion</a>
               </li>
             {% else %}
-  <li>
-    <a href="http://127.0.0.1:8000/admin/login"
-       style="background:#1a1a1a; color:#fff; padding:10px 22px; border-radius:30px; font-weight:600; font-size:14px; text-decoration:none;"
-       onmouseover="this.style.background='#f97316'"
-       onmouseout="this.style.background='#1a1a1a'">
-      <i class="fa fa-sign-in-alt"></i> Login
-    </a>
-  </li>
-{% endif %}
+              <li>
+                <a href="http://127.0.0.1:8000/admin/login"
+                   style="background:#1a1a1a; color:#fff; padding:10px 22px; border-radius:30px; font-weight:600; font-size:14px; text-decoration:none;"
+                   onmouseover="this.style.background='#f97316'"
+                   onmouseout="this.style.background='#1a1a1a'">Login</a>
+              </li>
+            {% endif %}
           </ul>
           <a class="menu-trigger"><span>Menu</span></a>
         </nav>
@@ -120,8 +101,6 @@
                 Se connecter
               </button>
             </form>
-
-            {# ===== BOUTON CONNEXION FACIALE ===== #}
             <div style="text-align:center; margin-top:16px;">
               <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
                 <hr style="flex:1; border-color:#eee;">
@@ -129,13 +108,12 @@
                 <hr style="flex:1; border-color:#eee;">
               </div>
               <a href="{{ path('face_login_page') }}"
-                 style="display:flex; align-items:center; justify-content:center; gap:8px; width:100%; padding:12px; background:#f8f9fa; border:1.5px solid #e0e0e0; border-radius:8px; color:#333; font-size:14px; font-weight:600; text-decoration:none; transition:all 0.2s;"
+                 style="display:flex; align-items:center; justify-content:center; gap:8px; width:100%; padding:12px; background:#f8f9fa; border:1.5px solid #e0e0e0; border-radius:8px; color:#333; font-size:14px; font-weight:600; text-decoration:none;"
                  onmouseover="this.style.background='#fff3f0'; this.style.borderColor='#f75959'; this.style.color='#f75959';"
                  onmouseout="this.style.background='#f8f9fa'; this.style.borderColor='#e0e0e0'; this.style.color='#333';">
                 📷 Se connecter avec mon visage
               </a>
             </div>
-
           </div>
           <div class="tab-pane fade" id="signUp">
             <form method="POST" action="{{ path('front_register') }}">

@@ -19,8 +19,9 @@ class Transport
     #[Assert\Choice(choices: ["Avion", "Bus", "Voiture", "Train"], message: "Type de transport invalide.")]
     private ?string $type_transport = null;
 
+    // ✅ FIX : onDelete="CASCADE" aligné avec cascade=["remove"] dans Voyage
     #[ORM\ManyToOne(targetEntity: Voyage::class, inversedBy: "transports")]
-    #[ORM\JoinColumn(nullable: true, onDelete: "SET NULL")]
+    #[ORM\JoinColumn(nullable: true, onDelete: "CASCADE")]
     #[Assert\NotNull(message: "Le voyage est obligatoire.")]
     private ?Voyage $voyage = null;
 

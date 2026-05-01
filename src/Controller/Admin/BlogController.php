@@ -5,6 +5,7 @@ namespace App\Controller\Admin;
 use App\Entity\Blog;
 use App\Repository\BlogRepository;
 use App\Repository\BlogViewsRepository;
+use App\Repository\CommentaireRepository;
 use App\Service\BlogRecommendationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -32,13 +33,11 @@ final class BlogController extends AbstractController
 
         $qb = $blogRepository->createQueryBuilder('b');
 
-        // Recherche texte
         if ('' !== $search) {
             $qb->andWhere('b.titre LIKE :q OR b.extrait LIKE :q OR b.contenu LIKE :q')
                ->setParameter('q', '%' . $search . '%');
         }
 
-        // Filtre statut
         if (!in_array('all', $selectedStatuses, true) && [] !== $selectedStatuses) {
             $orX = $qb->expr()->orX();
             foreach ($selectedStatuses as $s) {
@@ -53,23 +52,18 @@ final class BlogController extends AbstractController
             $qb->andWhere($orX);
         }
 
-        // Filtre période
         $now = new \DateTimeImmutable();
         if ('today' === $periodFilter) {
-            $qb->andWhere('b.dateCreation >= :from')
-               ->setParameter('from', $now->modify('today'));
+            $qb->andWhere('b.dateCreation >= :from')->setParameter('from', $now->modify('today'));
         } elseif ('week' === $periodFilter) {
-            $qb->andWhere('b.dateCreation >= :from')
-               ->setParameter('from', $now->modify('monday this week'));
+            $qb->andWhere('b.dateCreation >= :from')->setParameter('from', $now->modify('monday this week'));
         } elseif ('month' === $periodFilter) {
-            $qb->andWhere('b.dateCreation >= :from')
-               ->setParameter('from', $now->modify('first day of this month'));
+            $qb->andWhere('b.dateCreation >= :from')->setParameter('from', $now->modify('first day of this month'));
         }
 
-        // Tri
         match ($sortFilter) {
             'oldest'      => $qb->orderBy('b.dateCreation', 'ASC'),
-            'most_viewed' => $qb->orderBy('b.datePublication', 'DESC'), // affiné plus bas
+            'most_viewed' => $qb->orderBy('b.datePublication', 'DESC'),
             'alpha'       => $qb->orderBy('b.titre', 'ASC'),
             default       => $qb->orderBy('b.dateCreation', 'DESC'),
         };
@@ -77,18 +71,15 @@ final class BlogController extends AbstractController
         /** @var Blog[] $blogs */
         $blogs = $qb->getQuery()->getResult();
 
-        // Métriques
-        $allBlogs   = $blogRepository->findAll();
+        $allBlogs    = $blogRepository->findAll();
         $blogMetrics = $blogRecommendationService->buildMetrics($allBlogs);
 
-        // Tri par vues (après récupération)
         if ('most_viewed' === $sortFilter) {
             usort($blogs, fn (Blog $a, Blog $b) =>
                 ($blogMetrics[$b->getId()]['views'] ?? 0) <=> ($blogMetrics[$a->getId()]['views'] ?? 0)
             );
         }
 
-        // Filtre catégorie (post-query via métriques)
         if ([] !== $selectedCategories) {
             $blogs = array_values(array_filter($blogs, function (Blog $blog) use ($blogMetrics, $selectedCategories): bool {
                 $cat = $blogMetrics[$blog->getId()]['category'] ?? '';
@@ -96,13 +87,11 @@ final class BlogController extends AbstractController
             }));
         }
 
-        // Catégories disponibles
         $availableCategories = array_values(array_unique(array_filter(
             array_map(fn (array $m): string => (string) ($m['category'] ?? ''), $blogMetrics),
             fn (string $c): bool => '' !== $c
         )));
 
-        // Stats globales
         $allCount       = count($allBlogs);
         $publishedCount = count(array_filter($allBlogs, fn (Blog $b): bool => (bool) $b->getStatus()));
         $draftCount     = count(array_filter($allBlogs, fn (Blog $b): bool => !$b->getStatus() && !$b->isPublicationRequested()));
@@ -125,14 +114,49 @@ final class BlogController extends AbstractController
     }
 
     #[Route('/{id}', name: 'admin_blog_show', requirements: ['id' => '\d+'], methods: ['GET'])]
-    public function show(Blog $blog): Response
+    public function show(Blog $blog, CommentaireRepository $commentaireRepository, BlogViewsRepository $blogViewsRepository): Response
     {
-        if (!$blog->getStatus()) {
-            // Les admins peuvent voir même les brouillons
+        $comments = $commentaireRepository->findBy(
+            ['blog' => $blog],
+            ['dateCreation' => 'DESC']
+        );
+
+        // Calcul des réactions par commentaire
+        $commentReactionCounts = [];
+        foreach ($comments as $comment) {
+            $commentReactionCounts[$comment->getId()] = $comment->getLikesCount() ?? 0;
         }
 
+        // IDs des commentaires avec signalements en attente
+        $pendingReportCommentIds = [];
+
+        // Image de couverture
+        $coverImage = $blog->getImageCouverture() ?? '';
+
+        // Label et classe de statut
+        $statusLabel = $blog->getStatus() ? 'Publié' : 'Brouillon';
+        $statusClass = $blog->getStatus() ? 'status-badge--publie' : 'status-badge--brouillon';
+        if ($blog->isPublicationRequested() && !$blog->getStatus()) {
+            $statusLabel = 'En attente';
+            $statusClass = 'status-badge--attente';
+        }
+
+        // Total réactions
+        $totalReactions = array_sum($commentReactionCounts);
+
+        // Nombre de vues
+        $viewsCount = count($blogViewsRepository->findBy(['blog' => $blog]));
+
         return $this->render('admin/blog/show.html.twig', [
-            'blog' => $blog,
+            'blog'                       => $blog,
+            'comments'                   => $comments,
+            'comment_reaction_counts'    => $commentReactionCounts,
+            'pending_report_comment_ids' => $pendingReportCommentIds,
+            'coverImage'                 => $coverImage,
+            'statusLabel'                => $statusLabel,
+            'statusClass'                => $statusClass,
+            'totalReactions'             => $totalReactions,
+            'views_count'                => $viewsCount,
         ]);
     }
 
@@ -153,8 +177,7 @@ final class BlogController extends AbstractController
             $blog->setStatus(true);
             $blog->setPublicationRequested(false);
             if (null === $blog->getDatePublication()) {
-                $blog->setDatePublication(new \DateTime());
-            }
+$blog->setDatePublication(new \DateTimeImmutable());            }
             $this->addFlash('success', 'Blog published successfully.');
         } elseif ('draft' === $action) {
             $blog->setStatus(false);
@@ -164,7 +187,6 @@ final class BlogController extends AbstractController
 
         $entityManager->flush();
 
-        // Redirige en préservant les filtres
         return $this->redirectToRoute('admin_blogs', array_filter([
             'q'          => $request->request->get('q'),
             'sort'       => $request->request->get('sort'),

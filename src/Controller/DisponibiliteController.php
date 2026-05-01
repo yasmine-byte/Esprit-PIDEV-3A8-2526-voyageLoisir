@@ -6,12 +6,10 @@ use App\Repository\ReservationRepository;
 use App\Repository\HebergementRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
 
 class DisponibiliteController extends AbstractController
 {
-    // ── API Calendrier ──────────────────────────────────────────────────────────
     #[Route('/api/hebergement/{id}/calendrier', name: 'api_hebergement_calendrier', methods: ['GET'])]
     public function calendrier(
         int $id,
@@ -26,27 +24,76 @@ class DisponibiliteController extends AbstractController
 
         $events = [];
 
-        // ✅ Disponibilités (vert)
-        $disponibilites = $dispoRepo->findBy(['hebergement' => $hebergement, 'disponible' => true]);
-        foreach ($disponibilites as $dispo) {
-            $events[] = [
-                'id'              => 'dispo-' . $dispo->getId(),
-                'title'           => '✅ Disponible',
-                'start'           => $dispo->getDateDebut()?->format('Y-m-d'),
-                'end'             => $dispo->getDateFin()?->format('Y-m-d'),
-                'color'           => '#22c55e',
-                'textColor'       => '#fff',
-                'type'            => 'disponible',
-                'display'         => 'background',
-            ];
-        }
-
-        // ❌ Réservations confirmées (rouge)
-        $reservations = $reservationRepo->findBy([
+        // Récupérer toutes les réservations (confirmées + en attente)
+        $reservationsConfirmees = $reservationRepo->findBy([
             'hebergement' => $hebergement,
             'statut'      => 'confirmee',
         ]);
-        foreach ($reservations as $resa) {
+        $reservationsAttente = $reservationRepo->findBy([
+            'hebergement' => $hebergement,
+            'statut'      => 'en_attente',
+        ]);
+
+        $toutesReservations = array_merge($reservationsConfirmees, $reservationsAttente);
+
+        // ✅ Disponibilités — divisées autour des réservations
+        $disponibilites = $dispoRepo->findBy(['hebergement' => $hebergement, 'disponible' => true]);
+
+        foreach ($disponibilites as $dispo) {
+            $dispoDebut = clone $dispo->getDateDebut();
+            $dispoFin   = clone $dispo->getDateFin();
+
+            // Construire les périodes disponibles en soustrayant les réservations
+            $periodesDispo = [['debut' => $dispoDebut, 'fin' => $dispoFin]];
+
+            foreach ($toutesReservations as $resa) {
+                $resaDebut = $resa->getDateDebut();
+                $resaFin   = $resa->getDateFin();
+
+                $nouvellesPeriodes = [];
+                foreach ($periodesDispo as $periode) {
+                    // Pas de chevauchement → garder la période
+                    if ($resaFin <= $periode['debut'] || $resaDebut >= $periode['fin']) {
+                        $nouvellesPeriodes[] = $periode;
+                        continue;
+                    }
+                    // Chevauchement → diviser en deux
+                    // Partie avant la réservation
+                    if ($periode['debut'] < $resaDebut) {
+                        $nouvellesPeriodes[] = [
+                            'debut' => clone $periode['debut'],
+                            'fin'   => clone $resaDebut,
+                        ];
+                    }
+                    // Partie après la réservation
+                    if ($resaFin < $periode['fin']) {
+                        $nouvellesPeriodes[] = [
+                            'debut' => clone $resaFin,
+                            'fin'   => clone $periode['fin'],
+                        ];
+                    }
+                }
+                $periodesDispo = $nouvellesPeriodes;
+            }
+
+            // Ajouter les périodes disponibles restantes
+            foreach ($periodesDispo as $periode) {
+                if ($periode['debut'] < $periode['fin']) {
+                    $events[] = [
+                        'id'        => 'dispo-' . $dispo->getId() . '-' . $periode['debut']->format('Ymd'),
+                        'title'     => '✅ Disponible',
+                        'start'     => $periode['debut']->format('Y-m-d'),
+                        'end'       => $periode['fin']->format('Y-m-d'),
+                        'color'     => '#22c55e',
+                        'textColor' => '#fff',
+                        'display'   => 'background',
+                    ];
+                }
+            }
+        }
+
+        // ❌ Réservations confirmées (rouge)
+        foreach ($reservationsConfirmees as $resa) {
             $events[] = [
                 'id'        => 'resa-' . $resa->getId(),
                 'title'     => '❌ Réservé',
@@ -54,15 +101,10 @@ class DisponibiliteController extends AbstractController
                 'end'       => $resa->getDateFin()?->format('Y-m-d'),
                 'color'     => '#ef4444',
                 'textColor' => '#fff',
-                'type'      => 'reserve',
             ];
         }
 
         // ⏳ Réservations en attente (orange)
-        $reservationsAttente = $reservationRepo->findBy([
-            'hebergement' => $hebergement,
-            'statut'      => 'en_attente',
-        ]);
         foreach ($reservationsAttente as $resa) {
             $events[] = [
                 'id'        => 'attente-' . $resa->getId(),
@@ -71,7 +113,6 @@ class DisponibiliteController extends AbstractController
                 'end'       => $resa->getDateFin()?->format('Y-m-d'),
                 'color'     => '#f59e0b',
                 'textColor' => '#fff',
-                'type'      => 'attente',
             ];
         }
 

@@ -20,47 +20,23 @@ class BlogViews
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $userIdentifier = null;
 
+    // ✅ FIX : DateTimeImmutable
     #[ORM\Column(nullable: true)]
-    private ?\DateTime $viewDate = null;
+    private ?\DateTimeImmutable $viewDate = null;
 
-    public function getId(): ?int
+    public function __construct()
     {
-        return $this->id;
+        $this->viewDate = new \DateTimeImmutable();
     }
 
-    public function getBlog(): ?Blog
-    {
-        return $this->blog;
-    }
+    public function getId(): ?int { return $this->id; }
 
-    public function setBlog(?Blog $blog): static
-    {
-        $this->blog = $blog;
+    public function getBlog(): ?Blog { return $this->blog; }
+    public function setBlog(?Blog $blog): static { $this->blog = $blog; return $this; }
 
-        return $this;
-    }
+    public function getUserIdentifier(): ?string { return $this->userIdentifier; }
+    public function setUserIdentifier(?string $userIdentifier): static { $this->userIdentifier = $userIdentifier; return $this; }
 
-    public function getUserIdentifier(): ?string
-    {
-        return $this->userIdentifier;
-    }
-
-    public function setUserIdentifier(?string $userIdentifier): static
-    {
-        $this->userIdentifier = $userIdentifier;
-
-        return $this;
-    }
-
-    public function getViewDate(): ?\DateTime
-    {
-        return $this->viewDate;
-    }
-
-    public function setViewDate(?\DateTime $viewDate): static
-    {
-        $this->viewDate = $viewDate;
-
-        return $this;
-    }
+    public function getViewDate(): ?\DateTimeImmutable { return $this->viewDate; }
+    public function setViewDate(?\DateTimeImmutable $viewDate): static { $this->viewDate = $viewDate; return $this; }
 }
