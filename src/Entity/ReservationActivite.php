@@ -44,7 +44,7 @@ class ReservationActivite
 
     // ✅ FIX FK : name garde 'id_activite' pour la compatibilité BDD existante
     #[ORM\ManyToOne(inversedBy: 'reservations')]
-    #[ORM\JoinColumn(name: 'id_activite', referencedColumnName: 'id_activite', nullable: false)]
+    #[ORM\JoinColumn(name: 'activite_id', referencedColumnName: 'id_activite', nullable: false)]
     #[Assert\NotNull(message: "L'activité est obligatoire.")]
     private ?Activite $activite = null;
 
