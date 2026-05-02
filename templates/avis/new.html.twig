@@ -1,133 +1,238 @@
 {% extends 'base_front.html.twig' %}
-{% block title %}Donner mon avis - Villa Agency{% endblock %}
-{% block body %}
-    
-    <style>
-        @keyframes fadeInUp{from{opacity:0;transform:translateY(30px);}to{opacity:1;transform:translateY(0);}}
-        @keyframes bounce{0%,100%{transform:scale(1);}50%{transform:scale(1.3) rotate(10deg);}}
-        @keyframes slideDown{from{opacity:0;max-height:0;padding:0;margin:0;border:none;}to{opacity:1;max-height:100px;}}
-        @keyframes spin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
-        .animate-fade{animation:fadeInUp 0.6s ease forwards;}
-        .floating-card{background:#fff;border-radius:20px;box-shadow:0 20px 40px rgba(0,0,0,0.1);padding:40px;position:relative;z-index:10;margin-top:-50px;}
-        .stars-creative{display:flex;justify-content:center;gap:15px;margin:20px 0;}
-        .star-box{font-size:3rem;color:#e9ecef;cursor:pointer;transition:all 0.2s;}
-        .star-box:hover{transform:scale(1.15) rotate(5deg);}
-        .star-box.gold{color:#ffc107;text-shadow:0 0 10px rgba(255,193,7,0.5);}
-        .star-box.bounce-anim{animation:bounce 0.4s ease;}
-        #star-message{font-weight:bold;text-align:center;min-height:25px;font-size:1.1rem;transition:color 0.3s;}
-        .negative-warning{background:#fff3cd;border-left:5px solid #ffc107;color:#856404;padding:15px;border-radius:8px;display:none;overflow:hidden;}
-        .negative-warning.show{display:block;animation:slideDown 0.4s ease forwards;}
-        .custom-select-new{border:2px solid #e9ecef;border-radius:12px;padding:12px 15px;transition:border-color 0.3s;appearance:none;background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%236c757d' viewBox='0 0 16 16'><path fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/></svg>") no-repeat right 15px center;background-size:16px;width:100%;}
-        .custom-select-new:focus{border-color:#f35525;outline:none;box-shadow:0 0 0 3px rgba(243,85,37,0.1);}
-        .custom-textarea{border:2px solid #e9ecef;border-radius:12px;padding:15px;transition:border-color 0.3s;resize:none;width:100%;}
-        .custom-textarea:focus{border-color:#f35525;outline:none;box-shadow:0 0 0 3px rgba(243,85,37,0.1);}
-        .char-counter{text-align:right;font-size:0.85rem;font-weight:600;margin-top:5px;color:#28a745;}
-        .btn-submit-creative{background:linear-gradient(45deg,#f35525,#dc3545);color:#fff;border:none;border-radius:50px;padding:14px 36px;font-size:1rem;font-weight:700;transition:transform 0.3s,box-shadow 0.3s;display:inline-flex;align-items:center;gap:10px;}
-        .btn-submit-creative:hover{transform:scale(1.05);box-shadow:0 10px 20px rgba(243,85,37,0.3);color:#fff;}
-        .btn-cancel-new{background:#fff;color:#888;border:2px solid #e0e0e0;border-radius:50px;padding:14px 36px;font-size:1rem;font-weight:600;transition:all 0.25s;display:inline-flex;align-items:center;gap:8px;text-decoration:none;}
-        .btn-cancel-new:hover{background:#f5f5f5;border-color:#bbb;color:#444;text-decoration:none;}
-        .spinner-icon{display:none;animation:spin 1s linear infinite;}
-        .btn-submit-creative.loading .submit-icon{display:none;}
-        .btn-submit-creative.loading .spinner-icon{display:inline-block;}
-    </style>
+{% block title %}Donner mon avis – ViaNoVa{% endblock %}
 
-    <div class="page-heading header-text" style="padding-bottom:120px;">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-12">
-                    <span class="breadcrumb"><a href="{{ path('avis_index') }}">Avis</a> / Donner mon avis</span>
-                    <h3>Votre Expérience</h3>
-                </div>
+{% block stylesheets %}
+{{ parent() }}
+<style>
+@keyframes fadeInUp{from{opacity:0;transform:translateY(28px);}to{opacity:1;transform:translateY(0);}}
+@keyframes pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.06);}}
+@keyframes bounce{0%,100%{transform:scale(1);}50%{transform:scale(1.3) rotate(10deg);}}
+@keyframes spin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
+.avis-page-wrap{background:linear-gradient(135deg,#fff8f4 0%,#fef0e8 50%,#f8f9fa 100%);min-height:100vh;padding:0 0 60px;}
+.avis-hero{background:linear-gradient(135deg,#d4845a 0%,#e8a87c 60%,#f5c99a 100%);padding:50px 0 90px;position:relative;overflow:hidden;}
+.avis-hero::before{content:'';position:absolute;top:-40px;right:-60px;width:320px;height:320px;border-radius:50%;background:rgba(255,255,255,0.08);pointer-events:none;}
+.avis-hero::after{content:'';position:absolute;bottom:-60px;left:-40px;width:220px;height:220px;border-radius:50%;background:rgba(255,255,255,0.06);pointer-events:none;}
+.avis-hero-icon{font-size:52px;margin-bottom:14px;animation:pulse 2.5s ease infinite;}
+.avis-hero h2{color:#fff;font-size:2rem;font-weight:800;margin:0 0 6px;}
+.avis-hero p{color:rgba(255,255,255,0.82);font-size:1rem;margin:0;}
+.avis-breadcrumb a{color:rgba(255,255,255,0.75);font-size:0.85rem;text-decoration:none;}
+.avis-breadcrumb span{color:rgba(255,255,255,0.5);margin:0 6px;}
+.avis-card{background:#fff;border-radius:24px;box-shadow:0 20px 60px rgba(212,132,90,0.13),0 4px 20px rgba(0,0,0,0.05);padding:44px 48px;margin-top:-55px;position:relative;z-index:10;animation:fadeInUp 0.65s ease forwards;}
+.avis-card-border{position:absolute;top:0;left:0;right:0;height:5px;border-radius:24px 24px 0 0;background:linear-gradient(90deg,#d4845a,#e8a87c,#f5c99a);}
+.step-label{display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,#fff3eb,#ffe9d5);border:1px solid #f5cba7;border-radius:30px;padding:5px 16px;font-size:0.8rem;font-weight:700;color:#d4845a;margin-bottom:28px;}
+.field-block{margin-bottom:26px;}
+.field-label{display:block;font-size:0.82rem;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;color:#555;margin-bottom:9px;}
+.field-error{font-size:0.78rem;color:#ef4444;margin-top:4px;font-weight:600;}
+.stars-creative{display:flex;justify-content:center;gap:15px;margin:20px 0;}
+.star-box{font-size:3rem;color:#e9ecef;cursor:pointer;transition:all 0.2s;}
+.star-box:hover{transform:scale(1.15) rotate(5deg);}
+.star-box.gold{color:#f59e0b;text-shadow:0 0 10px rgba(245,158,11,0.5);}
+.star-box.bounce-anim{animation:bounce 0.4s ease;}
+#star-message{font-weight:bold;text-align:center;min-height:25px;font-size:1.1rem;transition:color 0.3s;}
+.negative-warning{background:#fff3cd;border-left:5px solid #ffc107;color:#856404;padding:15px;border-radius:8px;display:none;}
+.negative-warning.show{display:block;}
+.field-select{width:100%;padding:13px 42px 13px 16px;border:2px solid #eee;border-radius:14px;font-size:0.95rem;color:#333;background:#fafafa url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' fill='%23d4845a' viewBox='0 0 16 16'><path fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/></svg>") no-repeat right 16px center;appearance:none;transition:border-color 0.25s;box-sizing:border-box;}
+.field-select:focus{outline:none;border-color:#d4845a;box-shadow:0 0 0 4px rgba(212,132,90,0.12);background-color:#fff;}
+.field-textarea{width:100%;padding:13px 16px;border:2px solid #eee;border-radius:14px;font-size:0.95rem;color:#333;resize:none;transition:border-color 0.25s,box-shadow 0.25s;box-sizing:border-box;background:#fafafa;}
+.field-textarea:focus{outline:none;border-color:#d4845a;box-shadow:0 0 0 4px rgba(212,132,90,0.12);background:#fff;}
+.quality-wrap{margin-top:8px;}
+.quality-bar{height:5px;background:#eee;border-radius:4px;overflow:hidden;}
+.quality-fill{height:100%;width:0;border-radius:4px;transition:width 0.3s,background 0.3s;}
+.quality-meta{display:flex;justify-content:space-between;font-size:0.78rem;font-weight:600;margin-top:4px;}
+.btn-send{background:linear-gradient(135deg,#d4845a,#e8a87c);color:#fff;border:none;border-radius:50px;padding:14px 40px;font-size:1rem;font-weight:800;cursor:pointer;transition:all 0.25s;display:inline-flex;align-items:center;gap:10px;box-shadow:0 8px 24px rgba(212,132,90,0.35);}
+.btn-send:hover{transform:translateY(-2px);box-shadow:0 12px 32px rgba(212,132,90,0.45);}
+.btn-send .spin-icon{display:none;animation:spin 1s linear infinite;}
+.btn-send.loading .send-label{display:none;}
+.btn-send.loading .spin-icon{display:inline-block;}
+.btn-back-link{background:#fff;color:#888;border:2px solid #e8e8e8;border-radius:50px;padding:14px 36px;font-size:0.95rem;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;gap:8px;transition:all 0.22s;}
+.btn-back-link:hover{background:#f5f5f5;border-color:#ccc;color:#444;text-decoration:none;}
+@media(max-width:768px){.avis-card{padding:28px 20px;}}
+.linked-box { display:none; margin-top:12px; border-radius:16px; overflow:hidden; background:#fff; box-shadow:0 4px 20px rgba(212,132,90,0.12); border:1.5px solid #f5cba7; }
+.linked-box.show { display:block; animation:fadeInUp 0.3s ease; }
+.linked-box-header { background:linear-gradient(135deg,#fff3eb,#ffe9d5); padding:13px 20px; font-size:0.78rem; font-weight:800; text-transform:uppercase; letter-spacing:0.07em; color:#d4845a; border-bottom:1.5px solid #f5cba7; display:flex; align-items:center; gap:8px; }
+.linked-box-body { padding:14px 16px; }
+.linked-select {
+    width:100%;
+    padding:13px 42px 13px 16px;
+    border:2px solid #eee;
+    border-radius:14px;
+    font-size:0.92rem;
+    color:#333;
+    background:#fafafa url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' fill='%23d4845a' viewBox='0 0 16 16'><path fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/></svg>") no-repeat right 16px center;
+    appearance:none;
+    transition:border-color 0.25s, box-shadow 0.25s;
+    box-sizing:border-box;
+    cursor:pointer;
+}
+.linked-select:focus { outline:none; border-color:#d4845a; box-shadow:0 0 0 4px rgba(212,132,90,0.12); background-color:#fff; }
+.linked-hint { font-size:0.75rem; color:#aaa; margin-top:7px; display:flex; align-items:center; gap:5px; }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="avis-page-wrap">
+    <div class="avis-hero">
+        <div class="container text-center">
+            <div class="avis-breadcrumb mb-3">
+                <a href="{{ path('front_profile') }}">Mon Profil</a>
+                <span>›</span>
+                <span style="color:rgba(255,255,255,0.85)">Donner mon avis</span>
             </div>
+            <div class="avis-hero-icon">⭐</div>
+            <h2>Partager votre expérience</h2>
+            <p>Votre avis aide les autres voyageurs et améliore nos services.</p>
         </div>
     </div>
 
-    <div class="container mb-5">
+    <div class="container">
         <div class="row justify-content-center">
-            <div class="col-md-8 col-lg-7">
-                <div class="floating-card animate-fade">
-                    <h4 class="text-center mb-4 fw-bold">Qu'avez-vous pensé de nos services ?</h4>
+            <div class="col-md-9 col-lg-7">
+                <div class="avis-card">
+                    <div class="avis-card-border"></div>
+                    <div class="step-label">✍️ Remplissez le formulaire ci-dessous</div>
 
-                    {{ form_start(form, {'attr': {'novalidate': 'novalidate', 'id': 'form-avis'}}) }}
+                    {{ form_start(form, {'attr': {'novalidate':'novalidate','id':'form-avis'}}) }}
 
-                        <div class="mb-4">
-                            <div class="stars-creative" id="starContainer">
-                                <span class="star-box" data-val="1">★</span>
-                                <span class="star-box" data-val="2">★</span>
-                                <span class="star-box" data-val="3">★</span>
-                                <span class="star-box" data-val="4">★</span>
-                                <span class="star-box" data-val="5">★</span>
+                    {# Étoiles interactives #}
+                    <div class="field-block">
+                        <label class="field-label">⭐ Votre note</label>
+                        <div class="stars-creative" id="starContainer">
+                            <span class="star-box" data-val="1">★</span>
+                            <span class="star-box" data-val="2">★</span>
+                            <span class="star-box" data-val="3">★</span>
+                            <span class="star-box" data-val="4">★</span>
+                            <span class="star-box" data-val="5">★</span>
+                        </div>
+                        <div id="star-message" class="mb-2"></div>
+                        <div id="negativeWarning" class="negative-warning mt-3">
+                            ⚠️ <strong>Note basse :</strong> Un avis de 1 ou 2 étoiles génèrera automatiquement une réclamation.
+                        </div>
+                        <div class="d-none">{{ form_widget(form.nbEtoiles, {'id': 'hidden_etoiles'}) }}</div>
+                        <div class="field-error text-center">{{ form_errors(form.nbEtoiles) }}</div>
+                    </div>
+
+                    {# Catégorie #}
+                    <div class="field-block">
+                        <label class="field-label">🏷 Catégorie de l'avis</label>
+                        {{ form_widget(form.type, {'attr':{'class':'field-select', 'id':'avis-type-select'}}) }}
+                        <div class="field-error">{{ form_errors(form.type) }}</div>
+
+                        {# ── Box réservation ── #}
+                        <div id="box-reservation" style="display:none;margin-top:12px;border-radius:16px;overflow:hidden;background:#fff;box-shadow:0 4px 20px rgba(212,132,90,0.12);border:1.5px solid #f5cba7;">
+                            <div style="background:linear-gradient(135deg,#fff3eb,#ffe9d5);padding:13px 20px;font-size:0.78rem;font-weight:800;text-transform:uppercase;letter-spacing:0.07em;color:#d4845a;border-bottom:1.5px solid #f5cba7;">
+                                🏨 Sélectionnez votre réservation concernée
                             </div>
-                            <div id="star-message" class="mb-2"></div>
-                            <div id="negativeWarning" class="negative-warning mt-3">
-                                ⚠️ <strong>Note basse :</strong> Un avis de 1 ou 2 étoiles génèrera automatiquement une réclamation.
+                            <div style="padding:14px 16px;">
+                                {{ form_widget(form.reservation, {'attr':{'class':'field-select','style':'margin:0;'}}) }}
+                                <div style="font-size:0.75rem;color:#aaa;margin-top:7px;">ℹ️ Seules vos réservations personnelles sont affichées.</div>
+                                <div class="field-error">{{ form_errors(form.reservation) }}</div>
                             </div>
-                            <div class="d-none">{{ form_widget(form.nbEtoiles, {'id': 'hidden_etoiles'}) }}</div>
-                            <div class="text-danger small text-center mt-1 fw-bold">{{ form_errors(form.nbEtoiles) }}</div>
                         </div>
 
-                        <div class="mb-4">
-                            {{ form_label(form.type, 'Catégorie de l\'avis', {'label_attr': {'class': 'form-label fw-bold text-muted'}}) }}
-                            {{ form_widget(form.type, {'attr': {'class': 'form-select custom-select-new'}}) }}
-                            <div class="text-danger small mt-1">{{ form_errors(form.type) }}</div>
+                        {# ── Box activité ── #}
+                        <div id="box-activite" style="display:none;margin-top:12px;border-radius:16px;overflow:hidden;background:#fff;box-shadow:0 4px 20px rgba(212,132,90,0.12);border:1.5px solid #f5cba7;">
+                            <div style="background:linear-gradient(135deg,#fff3eb,#ffe9d5);padding:13px 20px;font-size:0.78rem;font-weight:800;text-transform:uppercase;letter-spacing:0.07em;color:#d4845a;border-bottom:1.5px solid #f5cba7;">
+                                🎯 Sélectionnez votre activité concernée
+                            </div>
+                            <div style="padding:14px 16px;">
+                                {{ form_widget(form.reservationActivite, {'attr':{'class':'field-select','style':'margin:0;'}}) }}
+                                <div style="font-size:0.75rem;color:#aaa;margin-top:7px;">ℹ️ Seules vos activités personnelles sont affichées.</div>
+                                <div class="field-error">{{ form_errors(form.reservationActivite) }}</div>
+                            </div>
                         </div>
-
-                        <div class="mb-4">
-                            {{ form_label(form.contenu, 'Dites-nous tout', {'label_attr': {'class': 'form-label fw-bold text-muted'}}) }}
-                            {{ form_widget(form.contenu, {'attr': {'class': 'form-control custom-textarea', 'rows': 5, 'placeholder': 'Racontez-nous votre expérience... Chaque détail compte ! ✍️', 'maxlength': 500, 'id': 'review-text'}}) }}
-                            <div class="char-counter" id="char-count">0 / 500 caractères</div>
-                            <div class="text-danger small mt-1">{{ form_errors(form.contenu) }}</div>
+                    </div>
+                    {# Contenu #}
+                    <div class="field-block">
+                        <label class="field-label">💬 Votre expérience</label>
+                        {{ form_widget(form.contenu, {'attr':{'class':'field-textarea','rows':5,'placeholder':'Racontez-nous votre expérience… Chaque détail compte ! ✍️','maxlength':500,'id':'review-text'}}) }}
+                        <div class="quality-wrap">
+                            <div class="quality-meta">
+                                <span id="char-count" style="color:#aaa">0 / 500 caractères</span>
+                                <span id="quality-label" style="font-weight:700;"></span>
+                            </div>
+                            <div class="quality-bar"><div class="quality-fill" id="quality-fill"></div></div>
                         </div>
+                        <div class="field-error">{{ form_errors(form.contenu) }}</div>
+                    </div>
 
-                        <div class="mt-5 d-flex justify-content-center gap-3 flex-wrap">
-                            <button type="submit" class="btn-submit-creative" id="btn-submit">
-                                <span class="submit-text">Publier mon avis</span>
-                                <i class="fas fa-paper-plane submit-icon"></i>
-                                <i class="fas fa-spinner spinner-icon"></i>
-                            </button>
-                            <a href="{{ path('avis_index') }}" class="btn-cancel-new">✕ Annuler</a>
-                        </div>
+                    <div style="display:flex;justify-content:center;gap:14px;flex-wrap:wrap;margin-top:32px;">
+                        <button type="submit" class="btn-send" id="btn-send">
+                            <span class="send-label">🚀 Publier mon avis</span>
+                            <span class="spin-icon">⏳</span>
+                        </button>
+                        <a href="{{ path('front_profile') }}" class="btn-back-link">✕ Annuler</a>
+                    </div>
 
-                        <div class="d-none">{{ form_rest(form) }}</div>
+                    <div class="d-none">{{ form_rest(form) }}</div>
                     {{ form_end(form, {'render_rest': false}) }}
                 </div>
             </div>
         </div>
     </div>
+</div>
 
-    
-    <script>
-    document.addEventListener("DOMContentLoaded", function() {
-        const stars = document.querySelectorAll('.star-box');
-        const hiddenInput = document.getElementById('hidden_etoiles');
-        const starMessage = document.getElementById('star-message');
-        const warningBox  = document.getElementById('negativeWarning');
-        const msgs = {1:{t:"😞 Très déçu(e)",c:"#dc3545"},2:{t:"😕 Déçu(e)",c:"#fd7e14"},3:{t:"😐 Correct",c:"#ffc107"},4:{t:"😊 Satisfait(e)",c:"#0dcaf0"},5:{t:"🤩 Excellent !",c:"#28a745"}};
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const stars = document.querySelectorAll('.star-box');
+    const hiddenInput = document.getElementById('hidden_etoiles');
+    const starMessage = document.getElementById('star-message');
+    const warningBox  = document.getElementById('negativeWarning');
+    const msgs = {1:{t:"😞 Très déçu(e)",c:"#dc2626"},2:{t:"😕 Déçu(e)",c:"#f97316"},3:{t:"😐 Correct",c:"#eab308"},4:{t:"😊 Satisfait(e)",c:"#0ea5e9"},5:{t:"🤩 Excellent !",c:"#22c55e"}};
 
-        function updateStars(val, click) {
-            stars.forEach(function(s){
-                const sv=parseInt(s.getAttribute('data-val'));
-                s.classList.toggle('gold', sv<=val);
-                if(click && sv<=val){s.classList.remove('bounce-anim');void s.offsetWidth;s.classList.add('bounce-anim');}
-            });
-            if(val>0){starMessage.textContent=msgs[val].t;starMessage.style.color=msgs[val].c;warningBox.classList.toggle('show',val<=2);}
-            else{starMessage.textContent='';warningBox.classList.remove('show');}
-        }
-
+    function updateStars(val, click) {
         stars.forEach(function(s){
-            s.addEventListener('mouseover',function(){updateStars(parseInt(this.getAttribute('data-val')));});
-            s.addEventListener('mouseout', function(){updateStars(parseInt(hiddenInput.value)||0);});
-            s.addEventListener('click',    function(){const v=parseInt(this.getAttribute('data-val'));hiddenInput.value=v;updateStars(v,true);});
+            const sv = parseInt(s.getAttribute('data-val'));
+            s.classList.toggle('gold', sv <= val);
+            if(click && sv <= val){s.classList.remove('bounce-anim');void s.offsetWidth;s.classList.add('bounce-anim');}
         });
-        if(hiddenInput.value) updateStars(parseInt(hiddenInput.value));
+        if(val>0){starMessage.textContent=msgs[val].t;starMessage.style.color=msgs[val].c;warningBox.classList.toggle('show',val<=2);}
+        else{starMessage.textContent='';warningBox.classList.remove('show');}
+    }
 
-        const ta=document.getElementById('review-text'), cc=document.getElementById('char-count');
-        ta.addEventListener('input',function(){const l=this.value.length;cc.textContent=l+' / 500 caractères';cc.style.color=l<400?'#28a745':(l<500?'#fd7e14':'#dc3545');});
-        ta.dispatchEvent(new Event('input'));
-
-        document.getElementById('form-avis').addEventListener('submit',function(){
-            const b=document.getElementById('btn-submit');b.classList.add('loading');b.querySelector('.submit-text').textContent='Envoi en cours...';
-        });
+    stars.forEach(function(s){
+        s.addEventListener('mouseover',function(){updateStars(parseInt(this.getAttribute('data-val')));});
+        s.addEventListener('mouseout', function(){updateStars(parseInt(hiddenInput.value)||0);});
+        s.addEventListener('click',    function(){const v=parseInt(this.getAttribute('data-val'));hiddenInput.value=v;updateStars(v,true);});
     });
-    </script>
+    if(hiddenInput.value) updateStars(parseInt(hiddenInput.value));
+
+    const ta = document.getElementById('review-text');
+    const cc = document.getElementById('char-count');
+    const qFill = document.getElementById('quality-fill');
+    const qLabel = document.getElementById('quality-label');
+    ta.addEventListener('input', function(){
+        const l = this.value.length;
+        cc.textContent = l + ' / 500 caractères';
+        qFill.style.width = Math.min((l/200)*100, 100) + '%';
+        if(l<50){qFill.style.background='#ef4444';qLabel.textContent='Trop court';qLabel.style.color='#ef4444';}
+        else if(l<150){qFill.style.background='#f97316';qLabel.textContent='Acceptable';qLabel.style.color='#f97316';}
+        else{qFill.style.background='#22c55e';qLabel.textContent='Bien détaillé ✓';qLabel.style.color='#22c55e';}
+    });
+    ta.dispatchEvent(new Event('input'));
+
+
+
+    document.getElementById('form-avis').addEventListener('submit', function(){
+        document.getElementById('btn-send').classList.add('loading');
+    });
+
+    // ── Affichage dynamique réservation/activité ──
+    var avisTypeSel = document.getElementById('avis-type-select');
+    if (avisTypeSel) {
+        function checkAvisCat() {
+            var txt = avisTypeSel.options[avisTypeSel.selectedIndex]
+                ? avisTypeSel.options[avisTypeSel.selectedIndex].text.toLowerCase().trim()
+                : '';
+            var boxR = document.getElementById('box-reservation');
+            var boxA = document.getElementById('box-activite');
+            boxR.style.display = 'none';
+            boxA.style.display = 'none';
+            if (txt.indexOf('servation') !== -1) boxR.style.display = 'block';
+            else if (txt.indexOf('activit') !== -1) boxA.style.display = 'block';
+        }
+        avisTypeSel.addEventListener('change', checkAvisCat);
+        checkAvisCat();
+    }
+});
+</script>
 {% endblock %}

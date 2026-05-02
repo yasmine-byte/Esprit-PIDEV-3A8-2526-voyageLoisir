@@ -171,6 +171,14 @@ class Reclamation
     #[ORM\Column(type: Types::DECIMAL, precision: 11, scale: 8, nullable: true)]
     private ?string $longitude = null;
 
+
+    #[ORM\ManyToOne]
+    private ?Reservation $reservation = null;
+
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(referencedColumnName: 'id_reservation')]
+    private ?ReservationActivite $reservationActivite = null;
+
     public function getReponse(): ?string
     {
         return $this->reponse;
@@ -203,6 +211,30 @@ class Reclamation
     public function setLongitude(?string $longitude): static
     {
         $this->longitude = $longitude;
+
+        return $this;
+    }
+
+    public function getReservation(): ?Reservation
+    {
+        return $this->reservation;
+    }
+
+    public function setReservation(?Reservation $reservation): static
+    {
+        $this->reservation = $reservation;
+
+        return $this;
+    }
+
+    public function getReservationActivite(): ?ReservationActivite
+    {
+        return $this->reservationActivite;
+    }
+
+    public function setReservationActivite(?ReservationActivite $reservationActivite): static
+    {
+        $this->reservationActivite = $reservationActivite;
 
         return $this;
     }

@@ -125,6 +125,13 @@ class Avis
     #[ORM\Column(nullable: true)]
     private ?float $sentimentScore = null;
 
+    #[ORM\ManyToOne]
+    private ?Reservation $reservation = null;
+
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(referencedColumnName: 'id_reservation')]
+    private ?ReservationActivite $reservationActivite = null;
+
     public function getReponse(): ?string
     {
         return $this->reponse;
@@ -156,6 +163,30 @@ class Avis
     public function setSentimentScore(?float $sentimentScore): static
     {
         $this->sentimentScore = $sentimentScore;
+        return $this;
+    }
+
+    public function getReservation(): ?Reservation
+    {
+        return $this->reservation;
+    }
+
+    public function setReservation(?Reservation $reservation): static
+    {
+        $this->reservation = $reservation;
+
+        return $this;
+    }
+
+    public function getReservationActivite(): ?ReservationActivite
+    {
+        return $this->reservationActivite;
+    }
+
+    public function setReservationActivite(?ReservationActivite $reservationActivite): static
+    {
+        $this->reservationActivite = $reservationActivite;
+
         return $this;
     }
 }

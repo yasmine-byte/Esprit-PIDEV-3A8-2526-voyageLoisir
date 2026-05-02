@@ -3,8 +3,11 @@
 namespace App\Controller;
 
 use App\Entity\Reclamation;
+use App\Entity\Users;
 use App\Form\ReclamationType;
+use App\Repository\AvisRepository;
 use App\Repository\ReclamationRepository;
+use App\Repository\UsersRepository;
 use App\Service\MailerService;
 use Doctrine\ORM\EntityManagerInterface;
 use Knp\Component\Pager\PaginatorInterface;
@@ -30,9 +33,10 @@ use Dompdf\Options;
 class ReclamationController extends AbstractController
 {
     public function __construct(
+        /** @phpstan-ignore-next-line */
         private readonly HttpClientInterface $httpClient,
 
-        /** Clé Hugging Face injectée depuis .env */
+        /** @phpstan-ignore-next-line */
         #[Autowire('%env(HUGGINGFACE_API_KEY)%')]
         private readonly string $hfApiKey
     ) {}
@@ -47,7 +51,12 @@ class ReclamationController extends AbstractController
         ReclamationRepository $reclamationRepository,
         PaginatorInterface $paginator
     ): Response {
-        $userId = 1;
+        /** @var \App\Entity\Users|null $user */
+        $user = $this->getUser();
+        if (!$user instanceof \App\Entity\Users) {
+            return $this->redirectToRoute('admin_login');
+        }
+        $userId = $user->getId();
         $statut   = $request->query->get('statut');
         $priorite = $request->query->get('priorite');
         $recherche = $request->query->get('recherche');
@@ -93,7 +102,12 @@ class ReclamationController extends AbstractController
     #[Route('/search', name: 'reclamation_search', methods: ['GET'])]
     public function search(Request $request, ReclamationRepository $reclamationRepository, \Symfony\Component\Security\Csrf\CsrfTokenManagerInterface $csrfTokenManager): JsonResponse
     {
-        $userId   = 1;
+        /** @var \App\Entity\Users|null $user */
+        $user = $this->getUser();
+        if (!$user instanceof \App\Entity\Users) {
+            return $this->json(['error' => 'Non autorisé'], 403);
+        }
+        $userId   = $user->getId();
         $q        = $request->query->get('q', '');
         $statut   = $request->query->get('statut', '');
         $priorite = $request->query->get('priorite', '');
@@ -146,6 +160,56 @@ class ReclamationController extends AbstractController
         ], $results);
 
         return $this->json(['results' => $data, 'total' => count($data)]);
+    }
+
+    #[Route('/mes-reclamations', name: 'reclamation_mes_reclamations', methods: ['GET'])]
+    public function mesReclamations(
+        ReclamationRepository $reclamationRepository,
+        PaginatorInterface $paginator,
+        Request $request
+    ): Response {
+        /** @var \App\Entity\Users|null $user */
+        $user = $this->getUser();
+        if (!$user instanceof \App\Entity\Users) {
+            return $this->redirectToRoute('admin_login');
+        }
+        $qb = $reclamationRepository->createQueryBuilder('r')
+            ->where('r.userId = :userId')
+            ->setParameter('userId', $user->getId())
+            ->orderBy('r.dateCreation', 'DESC');
+        $reclamations = $paginator->paginate(
+            $qb->getQuery(),
+            $request->query->getInt('page', 1),
+            6
+        );
+        return $this->render('reclamation/mes_reclamations.html.twig', [
+            'reclamations' => $reclamations,
+        ]);
+    }
+
+    #[Route('/mes-avis', name: 'reclamation_mes_avis', methods: ['GET'])]
+    public function mesAvis(
+        AvisRepository $avisRepository,
+        PaginatorInterface $paginator,
+        Request $request
+    ): Response {
+        /** @var \App\Entity\Users|null $user */
+        $user = $this->getUser();
+        if (!$user instanceof \App\Entity\Users) {
+            return $this->redirectToRoute('admin_login');
+        }
+        $qb = $avisRepository->createQueryBuilder('a')
+            ->where('a.userId = :userId')
+            ->setParameter('userId', $user->getId())
+            ->orderBy('a.dateAvis', 'DESC');
+        $avis = $paginator->paginate(
+            $qb->getQuery(),
+            $request->query->getInt('page', 1),
+            6
+        );
+        return $this->render('avis/mes_avis.html.twig', [
+            'avis' => $avis,
+        ]);
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -232,23 +296,34 @@ class ReclamationController extends AbstractController
     public function new(
         Request                $request,
         EntityManagerInterface $entityManager,
-        MailerService          $mailerService
+        MailerService          $mailerService,
+        UsersRepository        $usersRepository,
+        \App\Repository\ReservationRepository $reservationRepository,
+        \App\Repository\ReservationActiviteRepository $reservationActiviteRepository
     ): Response {
+        /** @var \App\Entity\Users|null $user */
+        $user = $this->getUser();
+        if (!$user instanceof \App\Entity\Users) {
+            return $this->redirectToRoute('admin_login');
+        }
         $reclamation = new Reclamation();
-        $form        = $this->createForm(ReclamationType::class, $reclamation);
+        $form = $this->createForm(ReclamationType::class, $reclamation, [
+            'user_id' => $user->getId(),
+            'user_email' => $user->getEmail(),
+        ]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $reclamation->setUserId(1);
+            $reclamation->setUserId((int)$user->getId());
             $reclamation->setDateCreation(new \DateTime());
             $reclamation->setStatut('En attente');
 
-            // S'assurer qu'une priorité est définie (valeur par défaut si non renseignée)
+            // S'assurer qu'une priorité est définie
             if (!$reclamation->getPriorite()) {
                 $reclamation->setPriorite('Moyenne');
             }
 
-            // Mettre une valeur par défaut pour typeFeedback afin d'éviter l'erreur SQL "cannot be null"
+            // Mettre une valeur par défaut pour typeFeedback
             if (!$reclamation->getTypeFeedback()) {
                 $reclamation->setTypeFeedback('Général');
             }
@@ -256,10 +331,10 @@ class ReclamationController extends AbstractController
             $entityManager->persist($reclamation);
             $entityManager->flush();
 
-            // ── Email de confirmation au client ────────────────────
+            // Email de confirmation au client
             $mailerService->sendConfirmationReclamation($reclamation);
 
-            // ── Notification admin en session ──────────────────────
+            // Notification admin en session
             $session  = $request->getSession();
             $notifs   = $session->get('admin_notifications', []);
             $priorite = $reclamation->getPriorite();
@@ -269,7 +344,7 @@ class ReclamationController extends AbstractController
                 'type'    => $type,
                 'icon'    => $icon,
                 'message' => 'Nouvelle réclamation : "'
-                    . mb_substr($reclamation->getTitre(), 0, 40)
+                    . mb_substr((string)$reclamation->getTitre(), 0, 40)
                     . '" — Priorité : ' . $priorite,
                 'time'    => (new \DateTime())->format('H:i'),
             ];
@@ -277,12 +352,11 @@ class ReclamationController extends AbstractController
 
             $this->addFlash('success', 'Réclamation créée avec succès ! Un email de confirmation vous a été envoyé.');
 
-            return $this->redirectToRoute('reclamation_index', [], Response::HTTP_SEE_OTHER);
+            return $this->redirectToRoute('front_profile', [], Response::HTTP_SEE_OTHER);
         }
 
         return $this->render('reclamation/new.html.twig', [
-            'reclamation' => $reclamation,
-            'form'        => $form->createView(),
+            'form'         => $form->createView(),
         ]);
     }
 
@@ -293,6 +367,15 @@ class ReclamationController extends AbstractController
     #[Route('/{id}', name: 'reclamation_show', methods: ['GET'])]
     public function show(Reclamation $reclamation): Response
     {
+        /** @var \App\Entity\Users|null $currentUser */
+        $currentUser = $this->getUser();
+        if (!$currentUser instanceof \App\Entity\Users) {
+            return $this->redirectToRoute('admin_login');
+        }
+        if ($reclamation->getUserId() !== $currentUser->getId()) {
+            throw $this->createAccessDeniedException('Accès interdit à cette réclamation.');
+        }
+
         return $this->render('reclamation/show.html.twig', [
             'reclamation' => $reclamation,
             'avis'        => $reclamation->getAvis(),
@@ -305,6 +388,7 @@ class ReclamationController extends AbstractController
         $html = $this->renderView('reclamation/pdf.html.twig', [
             'reclamation' => $reclamation,
             'avis'        => $reclamation->getAvis(),
+            'user'        => $this->getUser(),
         ]);
 
         $options = new Options();
@@ -336,12 +420,29 @@ class ReclamationController extends AbstractController
     #[Route('/{id}/edit', name: 'reclamation_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Reclamation $reclamation, EntityManagerInterface $entityManager): Response
     {
+        /** @var \App\Entity\Users|null $currentUser */
+        $currentUser = $this->getUser();
+        if (!$currentUser instanceof \App\Entity\Users) {
+            return $this->redirectToRoute('admin_login');
+        }
+        if ($reclamation->getUserId() !== $currentUser->getId()) {
+            throw $this->createAccessDeniedException('Accès interdit à cette réclamation.');
+        }
+
         if ($reclamation->getStatut() === 'Fermée') {
             $this->addFlash('error', 'Une réclamation fermée ne peut pas être modifiée.');
             return $this->redirectToRoute('reclamation_index');
         }
 
-        $form = $this->createForm(ReclamationType::class, $reclamation);
+        /** @var \App\Entity\Users|null $user */
+        $user = $this->getUser();
+        if (!$user instanceof \App\Entity\Users) {
+            return $this->redirectToRoute('admin_login');
+        }
+        $form = $this->createForm(ReclamationType::class, $reclamation, [
+            'user_id' => $user->getId(),
+            'user_email' => $user->getEmail(),
+        ]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
@@ -359,7 +460,7 @@ class ReclamationController extends AbstractController
             ];
             $session->set('admin_notifications', $notifs);
 
-            return $this->redirectToRoute('reclamation_index', [], Response::HTTP_SEE_OTHER);
+            return $this->redirectToRoute('front_profile', [], Response::HTTP_SEE_OTHER);
         }
 
         return $this->render('reclamation/edit.html.twig', [
@@ -375,11 +476,20 @@ class ReclamationController extends AbstractController
     #[Route('/{id}', name: 'reclamation_delete', methods: ['POST'])]
     public function delete(Request $request, Reclamation $reclamation, EntityManagerInterface $entityManager): Response
     {
-        if ($this->isCsrfTokenValid('delete' . $reclamation->getId(), $request->request->get('_token'))) {
+        /** @var \App\Entity\Users|null $currentUser */
+        $currentUser = $this->getUser();
+        if (!$currentUser instanceof \App\Entity\Users) {
+            return $this->redirectToRoute('admin_login');
+        }
+        if ($reclamation->getUserId() !== $currentUser->getId()) {
+            throw $this->createAccessDeniedException('Accès interdit à cette réclamation.');
+        }
+
+        if ($this->isCsrfTokenValid('delete' . $reclamation->getId(), (string)$request->request->get('_token'))) {
             $entityManager->remove($reclamation);
             $entityManager->flush();
             $this->addFlash('success', 'Réclamation supprimée avec succès.');
         }
-        return $this->redirectToRoute('reclamation_index', [], Response::HTTP_SEE_OTHER);
+        return $this->redirectToRoute('front_profile', [], Response::HTTP_SEE_OTHER);
     }
 }

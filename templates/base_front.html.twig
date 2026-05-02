@@ -99,7 +99,7 @@
     </script>
 
     {% set current_route = app.request.attributes.get('_route') %}
-    {% if current_route starts with 'reclamation' or current_route starts with 'avis' %}
+    {% if current_route starts with 'reclamation' or current_route starts with 'avis' or current_route == 'front_profile' %}
         {% include 'chatbot/chatbot_widget.html.twig' %}
     {% endif %}
 </body>

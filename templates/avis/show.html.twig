@@ -1,199 +1,167 @@
 {% extends 'base_front.html.twig' %}
-{% block title %}Mon avis - Villa Agency{% endblock %}
-{% block body %}
+{% block title %}Détail – Mon Avis – ViaNoVa{% endblock %}
 
-    <div class="page-heading header-text">
+{% block stylesheets %}
+{{ parent() }}
+<style>
+@keyframes fadeInUp{from{opacity:0;transform:translateY(24px);}to{opacity:1;transform:translateY(0);}}
+.show-page-wrap{background:linear-gradient(135deg,#fff8f4,#fef0e8 50%,#f8f9fa);min-height:100vh;padding:0 0 70px;}
+.show-hero{background:linear-gradient(135deg,#d4845a,#e8a87c 60%,#f5c99a);padding:50px 0 90px;position:relative;overflow:hidden;}
+.show-hero::before{content:'';position:absolute;top:-50px;right:-70px;width:300px;height:300px;border-radius:50%;background:rgba(255,255,255,0.07);}
+.show-hero h2{color:#fff;font-size:1.8rem;font-weight:800;margin:0 0 4px;}
+.show-hero p{color:rgba(255,255,255,0.78);font-size:0.93rem;}
+.hero-back{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,0.18);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:30px;padding:5px 14px;font-size:0.82rem;font-weight:600;text-decoration:none;margin-bottom:14px;transition:background 0.2s;}
+.hero-back:hover{background:rgba(255,255,255,0.28);color:#fff;text-decoration:none;}
+.show-card{background:#fff;border-radius:24px;box-shadow:0 20px 60px rgba(212,132,90,0.12),0 4px 20px rgba(0,0,0,0.05);padding:40px 48px;margin-top:-55px;position:relative;z-index:10;animation:fadeInUp 0.6s ease forwards;}
+.show-card-border{position:absolute;top:0;left:0;right:0;height:5px;border-radius:24px 24px 0 0;background:linear-gradient(90deg,#d4845a,#e8a87c,#f5c99a);}
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;}
+.detail-box{background:#f9f9f9;border-radius:14px;padding:16px 20px;border:1px solid #f0f0f0;}
+.detail-box-label{font-size:0.72rem;font-weight:800;text-transform:uppercase;letter-spacing:0.07em;color:#bbb;margin-bottom:6px;}
+.detail-box-value{font-size:0.95rem;font-weight:700;color:#333;}
+.stars-show{display:flex;gap:4px;font-size:1.8rem;}
+.star-on{color:#f59e0b;} .star-off{color:#e2e8f0;}
+.badge-s-show{display:inline-block;padding:5px 14px;border-radius:30px;font-size:0.82rem;font-weight:700;}
+.badge-s-show.en_attente{background:#fef9c3;color:#854d0e;border:1px solid #fde68a;}
+.badge-s-show.valide{background:#dcfce7;color:#166534;border:1px solid #bbf7d0;}
+.badge-s-show.rejete{background:#fee2e2;color:#991b1b;border:1px solid #fecaca;}
+.badge-sent-show{display:inline-block;padding:5px 14px;border-radius:30px;font-size:0.82rem;font-weight:700;}
+.badge-sent-show.positive{background:#dcfce7;color:#166534;border:1px solid #bbf7d0;}
+.badge-sent-show.negative{background:#fee2e2;color:#991b1b;border:1px solid #fecaca;}
+.badge-sent-show.neutral{background:#f1f5f9;color:#64748b;border:1px solid #e2e8f0;}
+.contenu-block{background:linear-gradient(135deg,#fff8f4,#fef0e8);border-radius:16px;padding:22px 24px;border:1px solid #f5cba7;margin-bottom:24px;font-size:0.95rem;color:#444;line-height:1.75;}
+.contenu-label{font-size:0.72rem;font-weight:800;text-transform:uppercase;letter-spacing:0.07em;color:#d4845a;margin-bottom:10px;}
+.reponse-block{background:linear-gradient(135deg,#f0fdf4,#dcfce7);border-radius:16px;padding:20px 24px;border-left:4px solid #22c55e;margin-bottom:24px;}
+.reponse-label{font-size:0.72rem;font-weight:800;text-transform:uppercase;letter-spacing:0.07em;color:#16a34a;margin-bottom:8px;}
+.reponse-text{font-size:0.93rem;color:#166534;line-height:1.65;}
+.action-bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding-top:24px;border-top:2px solid #f5f5f5;}
+.btn-show-edit{display:inline-flex;align-items:center;gap:7px;padding:11px 24px;border-radius:50px;background:linear-gradient(135deg,#d4845a,#e8a87c);color:#fff;font-weight:700;font-size:0.88rem;text-decoration:none;transition:opacity 0.2s;}
+.btn-show-edit:hover{opacity:0.88;color:#fff;text-decoration:none;}
+.btn-show-del{display:inline-flex;align-items:center;gap:7px;padding:11px 24px;border-radius:50px;background:#fee2e2;color:#dc2626;font-weight:700;font-size:0.88rem;border:1.5px solid #fecaca;cursor:pointer;transition:background 0.2s;}
+.btn-show-del:hover{background:#fecaca;}
+.btn-show-pdf{display:inline-flex;align-items:center;gap:7px;padding:11px 24px;border-radius:50px;background:#1a1a2e;color:#fff;font-weight:700;font-size:0.88rem;text-decoration:none;transition:opacity 0.2s;}
+.btn-show-pdf:hover{opacity:0.85;color:#fff;text-decoration:none;}
+.btn-show-back{display:inline-flex;align-items:center;gap:7px;padding:11px 24px;border-radius:50px;background:#f1f5f9;color:#64748b;font-weight:700;font-size:0.88rem;text-decoration:none;transition:background 0.2s;margin-left:auto;}
+.btn-show-back:hover{background:#e2e8f0;color:#333;text-decoration:none;}
+@media(max-width:768px){.detail-grid{grid-template-columns:1fr;}.show-card{padding:28px 18px;}.action-bar{flex-direction:column;align-items:stretch;}.btn-show-back{margin-left:0;}}
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="show-page-wrap">
+    <div class="show-hero">
         <div class="container">
-            <div class="row">
-                <div class="col-lg-12">
-                    <span class="breadcrumb"><a href="{{ path('avis_index') }}">Avis</a> / Détails</span>
-                    <h3>Détails de mon avis</h3>
-                </div>
-            </div>
+            <a href="{{ path('front_profile') }}" class="hero-back">← Retour au profil</a>
+            <h2>Détail de l'avis</h2>
+            <p>📅 Publié le {{ avis.dateAvis|date('d/m/Y à H:i') }}</p>
         </div>
     </div>
 
-    <style>
-        .show-card {
-            background: #fff;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-            padding: 36px;
-            max-width: 680px;
-            margin: 0 auto;
-        }
-        .show-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 28px;
-            border-bottom: 2px solid #f8f8f8;
-            padding-bottom: 20px;
-        }
-        .show-type { font-size: 1.3rem; font-weight: 700; color: #222; }
-        .badge-statut { padding: 6px 16px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; }
-        .badge-attente  { background: #fff3cd; color: #856404; border: 1px solid #ffc107; }
-        .badge-valide   { background: #d4edda; color: #155724; border: 1px solid #28a745; }
-        .badge-rejete   { background: #f8d7da; color: #721c24; border: 1px solid #dc3545; }
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-9 col-lg-8">
+                <div class="show-card">
+                    <div class="show-card-border"></div>
 
-        .info-row { display: flex; align-items: flex-start; gap: 16px; margin-bottom: 22px; }
-        .info-lbl { font-size: 0.82rem; font-weight: 700; color: #aaa; text-transform: uppercase; letter-spacing: 0.05em; min-width: 90px; padding-top: 2px; }
-        .info-val { font-size: 0.95rem; color: #333; flex: 1; }
-
-        .stars-show { display: flex; gap: 4px; }
-        .star-show { font-size: 1.8rem; line-height: 1; }
-        .star-show.on  { color: #f35525; }
-        .star-show.off { color: #e0e0e0; }
-
-        .contenu-box {
-            background: #f8f9fa;
-            border-radius: 12px;
-            padding: 14px 18px;
-            font-size: 0.95rem;
-            color: #444;
-            line-height: 1.6;
-            border-left: 4px solid #f35525;
-        }
-
-        .reponse-card {
-            background: #f0fff4;
-            border: 1px solid #b2dfdb;
-            border-radius: 12px;
-            padding: 16px 20px;
-            margin-top: 24px;
-        }
-        .reponse-label {
-            font-size: 0.75rem; font-weight: 700; color: #28a745;
-            text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px;
-        }
-        .reponse-text { font-size: 0.92rem; color: #155724; font-style: italic; }
-
-        .btn-modifier {
-            background: transparent;
-            color: #333;
-            border: 2px solid #e0e0e0;
-            border-radius: 50px;
-            padding: 10px 28px;
-            font-weight: 600;
-            font-size: 0.9rem;
-            text-decoration: none;
-            transition: all 0.2s;
-        }
-        .btn-modifier:hover { border-color: #f35525; color: #f35525; }
-        .btn-retour {
-            background: #f35525;
-            color: #fff;
-            border: none;
-            border-radius: 50px;
-            padding: 10px 28px;
-            font-weight: 600;
-            font-size: 0.9rem;
-            text-decoration: none;
-            transition: all 0.2s;
-        }
-        .btn-retour:hover { background: #d44620; color: #fff; }
-
-        /* Bouton PDF */
-        .btn-pdf {
-            background: #fff;
-            color: #f35525;
-            border: 2px solid #f35525;
-            border-radius: 50px;
-            padding: 10px 22px;
-            font-weight: 600;
-            font-size: 0.88rem;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .btn-pdf:hover { background: #f35525; color: #fff; }
-    </style>
-
-    <div class="container mt-5 mb-5 pb-5 pt-3" style="min-height:40vh;">
-
-        {% for message in app.flashes('success') %}
-            <div class="alert alert-success alert-dismissible fade show mb-4">{{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
-        {% endfor %}
-        {% for message in app.flashes('info') %}
-            <div class="alert alert-info alert-dismissible fade show mb-4">{{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
-        {% endfor %}
-        {% for message in app.flashes('warning') %}
-            <div class="alert alert-warning alert-dismissible fade show mb-4">{{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
-        {% endfor %}
-
-        <div class="show-card">
-
-            {# En-tête #}
-            <div class="show-header">
-                <div class="show-type">Avis : {{ avis.type ? avis.type.nom : '—' }}</div>
-                {% if avis.statut == 'Validé' %}
-                    <span class="badge-statut badge-valide">✓ Validé</span>
-                {% elseif avis.statut == 'Rejeté' %}
-                    <span class="badge-statut badge-rejete">✗ Rejeté</span>
-                {% else %}
-                    <span class="badge-statut badge-attente">⏳ En attente</span>
-                {% endif %}
-            </div>
-
-            {# Note étoiles #}
-            <div class="info-row">
-                <span class="info-lbl">Note</span>
-                <div class="info-val">
-                    <div class="stars-show">
-                        {% for i in 1..5 %}
-                            <span class="star-show {{ i <= avis.nbEtoiles ? 'on' : 'off' }}">★</span>
-                        {% endfor %}
+                    {# Étoiles + Statut + Sentiment #}
+                    <div class="detail-grid">
+                        <div class="detail-box">
+                            <div class="detail-box-label">Note</div>
+                            <div class="detail-box-value">
+                                <div class="stars-show">
+                                    {% for i in 1..5 %}
+                                        <span class="{{ i <= avis.nbEtoiles ? 'star-on' : 'star-off' }}">★</span>
+                                    {% endfor %}
+                                </div>
+                                <div style="font-size:0.78rem;color:#aaa;margin-top:4px;">{{ avis.nbEtoiles }}/5 étoiles</div>
+                            </div>
+                        </div>
+                        <div class="detail-box">
+                            <div class="detail-box-label">Statut</div>
+                            <div class="detail-box-value">
+                                {% set sc = avis.statut|lower|replace({' ':'_','é':'e','è':'e','ê':'e'}) %}
+                                <span class="badge-s-show {{ sc }}">
+                                    {% if avis.statut=='Validé' or avis.statut=='Valide' %}✅
+                                    {% elseif avis.statut=='Rejeté' or avis.statut=='Rejete' %}❌
+                                    {% else %}⏸{% endif %}
+                                    {{ avis.statut }}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="detail-box">
+                            <div class="detail-box-label">Catégorie</div>
+                            <div class="detail-box-value">{{ avis.type ? avis.type.nom : '—' }}</div>
+                        </div>
+                        <div class="detail-box">
+                            <div class="detail-box-label">Sentiment IA</div>
+                            <div class="detail-box-value">
+                                {% if avis.sentimentLabel %}
+                                    <span class="badge-sent-show {{ avis.sentimentLabel }}">
+                                        {% if avis.sentimentLabel=='positive' %}😊 Positif
+                                        {% elseif avis.sentimentLabel=='negative' %}😞 Négatif
+                                        {% else %}😐 Neutre{% endif %}
+                                    </span>
+                                {% else %}—{% endif %}
+                            </div>
+                        </div>
                     </div>
-                    <div style="font-size:0.78rem; color:#aaa; margin-top:4px;">
-                        {{ avis.nbEtoiles }}/5 étoiles
+
+                    <div class="contenu-label">💬 Votre expérience</div>
+                    <div class="contenu-block">{{ avis.contenu|nl2br }}</div>
+
+                    {% if avis.reponse %}
+                    <div class="reponse-block">
+                        <div class="reponse-label">💼 Réponse de l'administration</div>
+                        <div class="reponse-text">{{ avis.reponse|nl2br }}</div>
                     </div>
-                </div>
-            </div>
-
-            {# Catégorie #}
-            <div class="info-row">
-                <span class="info-lbl">Catégorie</span>
-                <span class="info-val">{{ avis.type ? avis.type.nom : '—' }}</span>
-            </div>
-
-            {# Date #}
-            <div class="info-row">
-                <span class="info-lbl">Date</span>
-                <span class="info-val">{{ avis.dateAvis ? avis.dateAvis|date('d/m/Y') : '—' }}</span>
-            </div>
-
-            {# Contenu #}
-            <div class="info-row" style="align-items:flex-start;">
-                <span class="info-lbl">Contenu</span>
-                <div class="info-val">
-                    <div class="contenu-box">{{ avis.contenu|nl2br }}</div>
-                </div>
-            </div>
-
-            {# Réponse admin #}
-            {% if avis.reponse %}
-            <div class="reponse-card">
-                <div class="reponse-label">💬 Réponse de l'administrateur</div>
-                <div class="reponse-text">{{ avis.reponse }}</div>
-            </div>
-            {% endif %}
-
-            {# Boutons #}
-            <div class="mt-4 pt-3" style="border-top:1px solid #f0f0f0; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
-                <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
-                    {% if avis.statut == 'En attente' %}
-                        <a href="{{ path('avis_edit', {'id': avis.id}) }}" class="btn-modifier">✏ Modifier</a>
-                    {% else %}
-                        <div></div>
                     {% endif %}
 
-                    <a href="{{ path('avis_pdf', {id: avis.id}) }}" class="btn-pdf" target="_blank" style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
-                        📄 Télécharger mon avis en PDF
-                    </a>
+                    <div class="action-bar">
+                        {% if avis.statut == 'En attente' %}
+                            <a href="{{ path('avis_edit', {'id': avis.id}) }}" class="btn-show-edit">✏️ Modifier</a>
+                            <button type="button" class="btn-show-del" onclick="openDeleteModal('{{ path('avis_delete', {'id': avis.id}) }}', '{{ csrf_token('delete'~avis.id) }}', 'cet avis')">🗑 Supprimer</button>
+                        {% else %}
+                            <div style="background:#f9f9f9; padding:10px 20px; border-radius:12px; border:1px solid #eee; color:#999; font-size:13px; font-style:italic;">
+                                🔒 Cet avis a été traité et ne peut plus être modifié ou supprimé.
+                            </div>
+                        {% endif %}
+                        <a href="{{ path('avis_pdf', {'id': avis.id}) }}" class="btn-show-pdf" target="_blank">📄 Télécharger PDF</a>
+                        <a href="{{ path('front_profile') }}" class="btn-show-back" style="margin-left:auto;">← Retour au profil</a>
+                    </div>
                 </div>
-                <a href="{{ path('avis_index') }}" class="btn-retour">← Retour à la liste</a>
             </div>
-
         </div>
     </div>
+</div>
+{# ── Modal de suppression personnalisée ── #}
+<div id="deleteModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center; backdrop-filter: blur(4px);">
+    <div style="background:#fff; padding:30px; border-radius:24px; width:90%; max-width:420px; text-align:center; box-shadow:0 25px 70px rgba(0,0,0,0.3); animation: fadeInUp 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);">
+        <div style="font-size:60px; margin-bottom:15px;">🗑️</div>
+        <h3 style="font-size:1.5rem; font-weight:800; color:#333; margin-bottom:12px;">Suppression</h3>
+        <p style="color:#666; margin-bottom:30px; line-height:1.5;">Voulez-vous vraiment supprimer <span id="deleteTargetLabel" style="font-weight:700; color:#d4845a;"></span> ?<br>Cette action est définitive.</p>
+        <div style="display:flex; gap:12px; justify-content:center;">
+            <button onclick="closeDeleteModal()" style="padding:12px 24px; border-radius:50px; border:1px solid #ddd; background:#fff; color:#666; font-weight:700; cursor:pointer; transition:all 0.2s;">Annuler</button>
+            <form id="deleteModalForm" method="POST" style="margin:0;">
+                <input type="hidden" name="_method" value="DELETE">
+                <input type="hidden" name="_token" id="deleteModalToken">
+                <button type="submit" style="padding:12px 28px; border-radius:50px; border:none; background:linear-gradient(135deg,#dc2626,#ef4444); color:#fff; font-weight:700; cursor:pointer; box-shadow:0 4px 15px rgba(220,38,38,0.25);">Supprimer</button>
+            </form>
+        </div>
+    </div>
+</div>
 
+<script>
+function openDeleteModal(url, token, label) {
+    document.getElementById('deleteModalForm').action = url;
+    document.getElementById('deleteModalToken').value = token;
+    document.getElementById('deleteTargetLabel').textContent = label;
+    document.getElementById('deleteModal').style.display = 'flex';
+}
+function closeDeleteModal() {
+    document.getElementById('deleteModal').style.display = 'none';
+}
+window.onclick = function(event) {
+    let modal = document.getElementById('deleteModal');
+    if (event.target == modal) closeDeleteModal();
+}
+</script>
 {% endblock %}

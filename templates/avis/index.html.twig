@@ -1,388 +1,312 @@
 {% extends 'base_front.html.twig' %}
+{% block title %}Avis des voyageurs – ViaNoVa{% endblock %}
 
-{% block title %}Mes Avis - Villa Agency{% endblock %}
+{% block stylesheets %}
+{{ parent() }}
+<style>
+@keyframes fadeInUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+@keyframes likeAnim{0%{transform:scale(1);}50%{transform:scale(1.4);}100%{transform:scale(1);}}
+.avis-index-wrap{background:linear-gradient(135deg,#fff8f4,#fef0e8 50%,#f8f9fa);min-height:100vh;padding:0 0 70px;}
+.ai-hero{background:linear-gradient(135deg,#d4845a,#e8a87c 60%,#f5c99a);padding:50px 0 90px;position:relative;overflow:hidden;}
+.ai-hero::before{content:'';position:absolute;top:-50px;right:-60px;width:280px;height:280px;border-radius:50%;background:rgba(255,255,255,0.08);}
+.ai-hero h2{color:#fff;font-size:2rem;font-weight:800;margin:0 0 6px;}
+.ai-hero p{color:rgba(255,255,255,0.82);font-size:1rem;margin:0;}
+.ai-card{background:#fff;border-radius:24px;box-shadow:0 20px 60px rgba(212,132,90,0.12);padding:32px 40px;margin-top:-55px;position:relative;z-index:10;}
+.ai-card-top{position:absolute;top:0;left:0;right:0;height:5px;border-radius:24px 24px 0 0;background:linear-gradient(90deg,#d4845a,#e8a87c,#f5c99a);}
+/* Filtres */
+.filters-bar{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:28px;}
+.filter-input{flex:1;min-width:200px;padding:10px 16px;border:2px solid #eee;border-radius:30px;font-size:0.9rem;outline:none;transition:border-color 0.2s;}
+.filter-input:focus{border-color:#d4845a;}
+.filter-select{padding:10px 16px;border:2px solid #eee;border-radius:30px;font-size:0.9rem;outline:none;background:#fff;cursor:pointer;transition:border-color 0.2s;}
+.filter-select:focus{border-color:#d4845a;}
+/* Post card */
+.post-card{background:#fff;border-radius:20px;border:1.5px solid #f0ebe5;box-shadow:0 4px 20px rgba(0,0,0,0.05);margin-bottom:20px;overflow:hidden;animation:fadeInUp 0.5s ease forwards;transition:transform 0.2s,box-shadow 0.2s;}
+.post-card:hover{transform:translateY(-3px);box-shadow:0 10px 32px rgba(212,132,90,0.13);}
+.post-header{padding:18px 22px 14px;display:flex;align-items:center;gap:14px;border-bottom:1px solid #f7f3ef;}
+.post-avatar{width:48px;height:48px;border-radius:50%;object-fit:cover;border:2.5px solid #e8a87c;flex-shrink:0;}
+.post-avatar-fallback{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#d4845a,#e8a87c);display:flex;align-items:center;justify-content:center;font-size:1.3rem;font-weight:800;color:#fff;border:2.5px solid #e8a87c;flex-shrink:0;}
+.post-author-name{font-size:15px;font-weight:800;color:#222;}
+.post-author-meta{font-size:12px;color:#aaa;margin-top:1px;}
+.post-badge{margin-left:auto;display:flex;flex-direction:column;align-items:flex-end;gap:4px;}
+.post-body{padding:16px 22px;}
+.post-stars{display:flex;gap:3px;font-size:20px;margin-bottom:8px;}
+.star-on{color:#f59e0b;} .star-off{color:#e2e8f0;}
+.post-type-tag{display:inline-block;background:linear-gradient(135deg,#fff3eb,#ffe9d5);color:#d4845a;border:1px solid #f5cba7;border-radius:20px;padding:3px 12px;font-size:11px;font-weight:700;margin-bottom:10px;}
+.post-text{font-size:0.95rem;color:#444;line-height:1.75;margin-bottom:12px;}
+.post-reponse{background:linear-gradient(135deg,#f0fdf4,#dcfce7);border-radius:12px;padding:12px 16px;border-left:3px solid #22c55e;margin-top:10px;}
+.post-reponse-label{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.05em;color:#16a34a;margin-bottom:4px;}
+.post-reponse-text{font-size:0.88rem;color:#166534;}
+.post-footer{padding:12px 22px;border-top:1px solid #f7f3ef;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.post-date{font-size:11px;color:#bbb;margin-right:auto;}
+/* Like/Dislike */
+.reaction-btn{display:inline-flex;align-items:center;gap:5px;padding:6px 14px;border-radius:30px;border:1.5px solid #eee;background:#fafafa;font-size:13px;font-weight:700;cursor:pointer;transition:all 0.2s;user-select:none;}
+.reaction-btn:hover{transform:translateY(-1px);}
+.reaction-btn.liked{background:#fff0f6;border-color:#ec4899;color:#be185d;}
+.reaction-btn.liked .like-icon{animation:likeAnim 0.3s ease;}
+.reaction-btn.disliked{background:#eff6ff;border-color:#3b82f6;color:#1d4ed8;}
+.reaction-count{font-weight:800;}
+/* Badges */
+.badge-statut{display:inline-block;padding:3px 12px;border-radius:20px;font-size:11px;font-weight:700;}
+.badge-statut.valide{background:#dcfce7;color:#166534;}
+.badge-statut.en_attente{background:#fef9c3;color:#854d0e;}
+.badge-statut.rejete{background:#fee2e2;color:#991b1b;}
+.badge-sent{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;}
+.badge-sent.positive{background:#dcfce7;color:#166534;}
+.badge-sent.negative{background:#fee2e2;color:#991b1b;}
+.badge-sent.neutral{background:#f1f5f9;color:#64748b;}
+/* Boutons action */
+.btn-action{display:inline-flex;align-items:center;gap:4px;padding:5px 12px;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;border:none;cursor:pointer;transition:all 0.18s;}
+.btn-voir{background:#f0f5ff;color:#3b82f6;border:1px solid #bfdbfe;}
+.btn-voir:hover{background:#dbeafe;color:#1d4ed8;text-decoration:none;}
+.btn-edit{background:#fff8e1;color:#d97706;border:1px solid #fde68a;}
+.btn-edit:hover{background:#fef3c7;color:#92400e;text-decoration:none;}
+.btn-del{background:#fee2e2;color:#dc2626;border:1px solid #fecaca;}
+.btn-del:hover{background:#fecaca;}
+/* Pagination */
+.pagination-wrap{display:flex;justify-content:center;margin-top:28px;}
+.empty-state{text-align:center;padding:60px 20px;}
+.empty-state-icon{font-size:56px;margin-bottom:16px;}
+.btn-new-avis{display:inline-flex;align-items:center;gap:8px;padding:12px 28px;background:linear-gradient(135deg,#d4845a,#e8a87c);color:#fff;border-radius:50px;font-size:0.95rem;font-weight:800;text-decoration:none;box-shadow:0 8px 24px rgba(212,132,90,0.35);transition:all 0.2s;}
+.btn-new-avis:hover{transform:translateY(-2px);opacity:0.92;color:#fff;text-decoration:none;}
+@media(max-width:768px){.ai-card{padding:22px 16px;}.filters-bar{flex-direction:column;}.post-badge{flex-direction:row;margin-left:0;}}
+</style>
+{% endblock %}
 
 {% block body %}
-    
+<div class="avis-index-wrap">
+    <div class="ai-hero">
+        <div class="container text-center">
+            <h2>⭐ Avis des voyageurs</h2>
+            <p>Découvrez les expériences partagées par notre communauté de voyageurs.</p>
+        </div>
+    </div>
 
-    <div class="page-heading header-text">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-12">
-                    <span class="breadcrumb"><a href="{{ path('app_home') }}">Home</a> / Avis</span>
-                    <h3>Mes Avis</h3>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-9">
+                <div class="ai-card">
+                    <div class="ai-card-top"></div>
+
+                    {# Flash messages #}
+                    {% for msg in app.flashes('success') %}
+                        <div class="alert alert-success alert-dismissible fade show mb-3">{{ msg }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+                    {% endfor %}
+                    {% for msg in app.flashes('warning') %}
+                        <div class="alert alert-warning alert-dismissible fade show mb-3">{{ msg }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+                    {% endfor %}
+
+                    {# Header actions #}
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
+                        <div style="font-size:15px;font-weight:800;color:#333;">
+                            {{ avis.getTotalItemCount() }} avis au total
+                        </div>
+                    </div>
+
+                    {# Filtres #}
+                    <div class="filters-bar">
+                        <input type="text" id="searchInput" class="filter-input" placeholder="🔍 Rechercher dans les avis…">
+                        <select id="filterEtoiles" class="filter-select">
+                            <option value="">Toutes les notes</option>
+                            <option value="5">⭐⭐⭐⭐⭐ (5 étoiles)</option>
+                            <option value="4">⭐⭐⭐⭐ (4 étoiles)</option>
+                            <option value="3">⭐⭐⭐ (3 étoiles)</option>
+                            <option value="2">⭐⭐ (2 étoiles)</option>
+                            <option value="1">⭐ (1 étoile)</option>
+                        </select>
+                        <select id="filterSentiment" class="filter-select">
+                            <option value="">Tous les sentiments</option>
+                            <option value="positive">😊 Positif</option>
+                            <option value="neutral">😐 Neutre</option>
+                            <option value="negative">😞 Négatif</option>
+                        </select>
+                    </div>
+
+                    {# Posts #}
+                    <div id="posts-container">
+                    {% if avis|length > 0 %}
+                        {% for avi in avis %}
+                        <div class="post-card"
+                             data-contenu="{{ avi.contenu|lower }}"
+                             data-etoiles="{{ avi.nbEtoiles }}"
+                             data-sentiment="{{ avi.sentimentLabel }}">
+
+                            {# Header post : auteur depuis usersMap #}
+                            <div class="post-header">
+                                {% set avisUser = usersMap[avi.userId] is defined ? usersMap[avi.userId] : null %}
+                                {% if avisUser and avisUser.avatarName %}
+                                    <img src="/uploads/avatars/{{ avisUser.avatarName }}"
+                                         class="post-avatar"
+                                         alt="{{ avisUser.prenom }} {{ avisUser.nom }}">
+                                {% else %}
+                                    <div class="post-avatar-fallback">
+                                        {{ avisUser ? (avisUser.prenom|slice(0,1)|upper) : '?' }}
+                                    </div>
+                                {% endif %}
+                                <div>
+                                    <div class="post-author-name">
+                                        {{ avisUser ? (avisUser.prenom ~ ' ' ~ avisUser.nom) : 'Utilisateur #' ~ avi.userId }}
+                                    </div>
+                                    <div class="post-author-meta">
+                                        📅 {{ avi.dateAvis ? avi.dateAvis|date('d/m/Y à H:i') : '—' }}
+                                        {% if avi.type %} · 🏷 {{ avi.type.nom }}{% endif %}
+                                    </div>
+                                </div>
+                                <div class="post-badge">
+                                    {% set sc = avi.statut|lower|replace({' ':'_','é':'e','è':'e','ê':'e'}) %}
+                                    <span class="badge-statut {{ sc }}">
+                                        {% if avi.statut=='Validé' or avi.statut=='Valide' %}✅
+                                        {% elseif avi.statut=='Rejeté' or avi.statut=='Rejete' %}❌
+                                        {% else %}⏸{% endif %}
+                                        {{ avi.statut }}
+                                    </span>
+                                    {% if avi.sentimentLabel %}
+                                    <span class="badge-sent {{ avi.sentimentLabel }}">
+                                        {% if avi.sentimentLabel=='positive' %}😊 Positif
+                                        {% elseif avi.sentimentLabel=='negative' %}😞 Négatif
+                                        {% else %}😐 Neutre{% endif %}
+                                    </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            {# Corps du post #}
+                            <div class="post-body">
+                                <div class="post-stars">
+                                    {% for i in 1..5 %}
+                                        <span class="{{ i <= avi.nbEtoiles ? 'star-on' : 'star-off' }}">★</span>
+                                    {% endfor %}
+                                    <span style="font-size:13px;color:#aaa;margin-left:6px;">{{ avi.nbEtoiles }}/5</span>
+                                </div>
+                                {% if avi.type %}
+                                    <div class="post-type-tag">🏷 {{ avi.type.nom }}</div>
+                                {% endif %}
+                                <div class="post-text">{{ avi.contenu }}</div>
+
+                                {% if avi.reponse %}
+                                <div class="post-reponse">
+                                    <div class="post-reponse-label">💬 Réponse de l'administration</div>
+                                    <div class="post-reponse-text">{{ avi.reponse }}</div>
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            {# Footer : date + like/dislike + actions #}
+                            <div class="post-footer">
+                                <span class="post-date">{{ avi.dateAvis ? avi.dateAvis|date('d/m/Y') : '—' }}</span>
+
+                                {# Bouton Like #}
+                                <button class="reaction-btn like-btn" data-id="{{ avi.id }}" onclick="toggleReaction({{ avi.id }}, 'like', this)">
+                                    <span class="like-icon">👍</span>
+                                    <span class="reaction-count like-count" id="like-count-{{ avi.id }}">0</span>
+                                </button>
+
+                                {# Bouton Dislike #}
+                                <button class="reaction-btn dislike-btn" data-id="{{ avi.id }}" onclick="toggleReaction({{ avi.id }}, 'dislike', this)">
+                                    <span>👎</span>
+                                    <span class="reaction-count dislike-count" id="dislike-count-{{ avi.id }}">0</span>
+                                </button>
+
+                                {# Actions #}
+                                {% if app.user and app.user.id == avi.userId %}
+                                    <a href="{{ path('avis_edit', {'id': avi.id}) }}" class="btn-action btn-edit">✏️ Modifier</a>
+                                    <form method="post" action="{{ path('avis_delete', {'id': avi.id}) }}"
+                                          onsubmit="return confirm('Supprimer cet avis ?');" style="margin:0;">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete'~avi.id) }}">
+                                        <button type="submit" class="btn-action btn-del">🗑 Supprimer</button>
+                                    </form>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="empty-state">
+                            <div class="empty-state-icon">⭐</div>
+                            <p style="color:#aaa;font-size:15px;margin-bottom:16px;">Aucun avis pour le moment.</p>
+                            <a href="{{ path('avis_new') }}" class="btn-new-avis">Soyez le premier à donner votre avis !</a>
+                        </div>
+                    {% endif %}
+                    </div>
+
+                    <div class="pagination-wrap">{{ knp_pagination_render(avis) }}</div>
                 </div>
             </div>
         </div>
     </div>
-
-    <div class="container mt-5 mb-5 pb-5 pt-3" style="min-height:50vh;">
-
-        {% for message in app.flashes('success') %}
-            <div class="alert alert-success alert-dismissible fade show">{{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
-        {% endfor %}
-        {% for message in app.flashes('warning') %}
-            <div class="alert alert-warning alert-dismissible fade show">{{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
-        {% endfor %}
-        {% for message in app.flashes('danger') %}
-            <div class="alert alert-danger alert-dismissible fade show">{{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
-        {% endfor %}
-
-        {# Header #}
-        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
-            <h4 class="mb-0 fw-bold">Tous mes avis</h4>
-            <a href="{{ path('avis_new') }}" class="btn text-white rounded-pill px-4 py-2"
-               style="background-color:#f35525; font-weight:600;">
-                <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16" style="margin-right:5px;"><path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/></svg>
-                Donner mon avis
-            </a>
-        </div>
-
-        {# Barre de filtres — recherche + statut + étoiles + tri : TOUT AUTO via JS #}
-        <div class="row g-2 mb-4 align-items-center">
-            <div class="col-md-4">
-                <input type="text" id="searchInput" class="form-control rounded-pill"
-                       placeholder="🔍 Rechercher dans vos avis...">
-            </div>
-            <div class="col-md-3">
-                <select id="filterStatut" class="form-select rounded-pill">
-                    <option value="">Tous les statuts</option>
-                    <option value="En attente">⏳ En attente</option>
-                    <option value="Validé">✓ Validé</option>
-                    <option value="Rejeté">✗ Rejeté</option>
-                </select>
-            </div>
-            <div class="col-md-2">
-                <select id="filterEtoiles" class="form-select rounded-pill">
-                    <option value="">Toutes notes</option>
-                    <option value="1">1 ★</option>
-                    <option value="2">2 ★</option>
-                    <option value="3">3 ★</option>
-                    <option value="4">4 ★</option>
-                    <option value="5">5 ★</option>
-                </select>
-            </div>
-            <div class="col-md-3">
-                <select id="sortSelect" class="form-select rounded-pill">
-                    <option value="">Trier par...</option>
-                    <option value="date-desc">Date ↓ (récent)</option>
-                    <option value="date-asc">Date ↑ (ancien)</option>
-                    <option value="etoiles-desc">Note ↓ (meilleure)</option>
-                    <option value="etoiles-asc">Note ↑ (plus basse)</option>
-                </select>
-            </div>
-        </div>
-
-        {# Compteur résultats #}
-        <div id="resultCount" class="mb-2" style="font-size:0.85rem; color:#888;"></div>
-
-        {# Tableau #}
-        <div class="table-responsive shadow-sm bg-white rounded-3 p-3">
-            <table class="table table-hover align-middle mb-0" id="avisTable">
-                <thead style="background:#f8f9fa;">
-                    <tr>
-                        <th style="color:#f35525; cursor:pointer;" data-col="0" class="sort-th">
-                            Contenu <span class="sort-icon">⇅</span>
-                        </th>
-                        <th style="color:#f35525; cursor:pointer;" data-col="1" class="sort-th">
-                            Note <span class="sort-icon">⇅</span>
-                        </th>
-                        <th style="color:#f35525;">Type</th>
-                        <th style="color:#f35525; cursor:pointer;" data-col="3" class="sort-th">
-                            Statut <span class="sort-icon">⇅</span>
-                        </th>
-                        <th style="color:#f35525; cursor:pointer;" data-col="4" class="sort-th">
-                            Date <span class="sort-icon">⇅</span>
-                        </th>
-                        <th style="color:#f35525;">Sentiment IA</th>
-                        <th style="color:#f35525;">💬 Réponse admin</th>
-                        <th style="color:#f35525;">Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="avisBody">
-                {% for avi in avis %}
-                    <tr
-                        data-contenu="{{ avi.contenu|lower }}"
-                        data-statut="{{ avi.statut }}"
-                        data-etoiles="{{ avi.nbEtoiles }}"
-                        data-date="{{ avi.dateAvis ? avi.dateAvis|date('Y-m-d') : '0000-00-00' }}"
-                    >
-                        <td style="max-width:220px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"
-                            title="{{ avi.contenu }}">
-                            {{ avi.contenu }}
-                        </td>
-                        <td style="white-space:nowrap;" data-val="{{ avi.nbEtoiles }}">
-                            {% for i in 1..5 %}
-                                {% if i <= avi.nbEtoiles %}
-                                    <span style="color:#f35525;">★</span>
-                                {% else %}
-                                    <span style="color:#ddd;">★</span>
-                                {% endif %}
-                            {% endfor %}
-                        </td>
-                        <td>{{ avi.type ? avi.type.nom : '—' }}</td>
-                        <td>
-                            {% if avi.statut == 'Validé' %}
-                                <span class="badge rounded-pill bg-success">✓ Validé</span>
-                            {% elseif avi.statut == 'Rejeté' %}
-                                <span class="badge rounded-pill bg-danger">✗ Rejeté</span>
-                            {% else %}
-                                <span class="badge rounded-pill bg-warning text-dark">⏳ En attente</span>
-                            {% endif %}
-                        </td>
-                        <td style="white-space:nowrap; font-size:0.85rem; color:#888;">
-                            {{ avi.dateAvis ? avi.dateAvis|date('d/m/Y') : '—' }}
-                        </td>
-                        <td>
-                            {% if avi.sentimentLabel == 'positive' %}
-                                <span class="badge rounded-pill" style="background:#e8f5e9; color:#2e7d32; border:1px solid #a5d6a7;">😊 Positif</span>
-                            {% elseif avi.sentimentLabel == 'negative' %}
-                                <span class="badge rounded-pill" style="background:#ffebee; color:#c62828; border:1px solid #ef9a9a;">☹️ Négatif</span>
-                            {% else %}
-                                <span class="badge rounded-pill" style="background:#f5f5f5; color:#757575; border:1px solid #e0e0e0;">😐 Neutre</span>
-                            {% endif %}
-                        </td>
-                        <td style="max-width:200px;">
-                            {% if avi.reponse %}
-                                <div style="background:#f0fff4; border-left:3px solid #28a745; border-radius:6px; padding:6px 10px;">
-                                    <div style="font-size:0.7rem; color:#28a745; font-weight:600; margin-bottom:2px;">Réponse admin :</div>
-                                    <div style="font-size:0.82rem; color:#333;">{{ avi.reponse }}</div>
-                                </div>
-                            {% else %}
-                                <span style="font-size:0.8rem; color:#bbb; font-style:italic;">En attente...</span>
-                            {% endif %}
-                        </td>
-                        <td style="white-space:nowrap;">
-                            <div style="display:flex; gap:5px; align-items:center; flex-wrap:nowrap;">
-
-                                {# 👁 Voir — toujours actif #}
-                                <a href="{{ path('avis_show', {'id': avi.id}) }}"
-                                   class="btn btn-sm rounded-pill"
-                                   style="background:#f0f5ff; color:#3a7bd5; border:1px solid #c5d8ff; font-size:0.78rem; padding:4px 10px; font-weight:600;">
-                                    👁 Voir
-                                </a>
-
-                                {# ✏ Modifier — actif si En attente, grisé sinon #}
-                                {% if avi.statut == 'En attente' %}
-                                <a href="{{ path('avis_edit', {'id': avi.id}) }}"
-                                   class="btn btn-sm rounded-pill"
-                                   style="background:#fff8e1; color:#e65100; border:1px solid #ffcc80; font-size:0.78rem; padding:4px 10px; font-weight:600;">
-                                    ✏ Modifier
-                                </a>
-                                {% else %}
-                                <span class="btn btn-sm rounded-pill"
-                                      style="background:#f5f5f5; color:#bbb; border:1px solid #e0e0e0; font-size:0.78rem; padding:4px 10px; font-weight:600; cursor:not-allowed;"
-                                      title="Non modifiable ({{ avi.statut }})">
-                                    ✏ Modifier
-                                </span>
-                                {% endif %}
-
-                                {# 🗑 Supprimer — actif si En attente, grisé sinon #}
-                                {% if avi.statut == 'En attente' %}
-                                <form method="post" action="{{ path('avis_delete', {'id': avi.id}) }}"
-                                      onsubmit="return confirm('Supprimer cet avis ?');" style="display:inline-block; margin:0;">
-                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ avi.id) }}">
-                                    <button type="submit" class="btn btn-sm rounded-pill"
-                                            style="background:#fff0f0; color:#c0392b; border:1px solid #ffb3b3; font-size:0.78rem; padding:4px 10px; font-weight:600;">
-                                        🗑 Supprimer
-                                    </button>
-                                </form>
-                                {% else %}
-                                <span class="btn btn-sm rounded-pill"
-                                      style="background:#f5f5f5; color:#bbb; border:1px solid #e0e0e0; font-size:0.78rem; padding:4px 10px; font-weight:600; cursor:not-allowed;"
-                                      title="Non supprimable ({{ avi.statut }})">
-                                    🗑 Supprimer
-                                </span>
-                                {% endif %}
-
-                            </div>
-                        </td>
-                    </tr>
-                {% else %}
-                    <tr id="emptyRow">
-                        <td colspan="8" class="text-center py-5" style="color:#bbb;">
-                            <div style="font-size:2.5rem; margin-bottom:10px;">⭐</div>
-                            Vous n'avez pas encore soumis d'avis.<br>
-                            <a href="{{ path('avis_new') }}" style="color:#f35525;">Donnez votre premier avis !</a>
-                        </td>
-                    </tr>
-                {% endfor %}
-                </tbody>
-            </table>
-            <div id="noResults" style="display:none; text-align:center; padding:40px; color:#bbb;">
-                Aucun avis ne correspond à votre recherche.
-            </div>
-        </div>
-
-        {# Pagination #}
-        {% if avis.pageCount is defined and avis.pageCount > 1 %}
-        <div class="d-flex justify-content-between align-items-center mt-4 px-2">
-            <div style="font-size:0.85rem; color:#888;">
-                Page <strong>{{ avis.currentPageNumber }}</strong> sur <strong>{{ avis.pageCount }}</strong>
-                &mdash; <strong>{{ avis.totalItemCount }}</strong> avis
-            </div>
-            <nav>
-                <ul class="pagination pagination-sm mb-0">
-                    <li class="page-item {{ avis.currentPageNumber == 1 ? 'disabled' : '' }}">
-                        <a class="page-link rounded-pill px-3" href="?page={{ avis.currentPageNumber - 1 }}">&laquo;</a>
-                    </li>
-                    {% for page in avis.paginationData.pagesInRange %}
-                        <li class="page-item {{ page == avis.currentPageNumber ? 'active' : '' }}">
-                            <a class="page-link rounded-pill px-3" href="?page={{ page }}"
-                               style="{{ page == avis.currentPageNumber ? 'background:#f35525; border-color:#f35525; color:#fff;' : '' }}">
-                                {{ page }}
-                            </a>
-                        </li>
-                    {% endfor %}
-                    <li class="page-item {{ avis.currentPageNumber == avis.pageCount ? 'disabled' : '' }}">
-                        <a class="page-link rounded-pill px-3" href="?page={{ avis.currentPageNumber + 1 }}">&raquo;</a>
-                    </li>
-                </ul>
-            </nav>
-        </div>
-        {% endif %}
-
-    </div>
-
-    
+</div>
 
 <script>
-// ── Recherche AJAX côté serveur — avis ───────────────────────────────────
-// Remplace le filtrage JS client par des appels AJAX vers GET /avis/search
-// Debounce 300ms sur l'input texte pour éviter les requêtes intempestives
-(function () {
-  'use strict';
-
-  const searchURL    = '{{ path("avis_search") }}';
-  const searchInput  = document.getElementById('searchInput');
-  const filterStatut = document.getElementById('filterStatut');
-  const filterEtoiles= document.getElementById('filterEtoiles');
-  const sortSelect   = document.getElementById('sortSelect');
-  const tbody        = document.getElementById('avisBody');
-  const resultCount  = document.getElementById('resultCount');
-  const noResults    = document.getElementById('noResults');
-
-  // Spinner (ajouté dynamiquement)
-  const spinner = document.createElement('div');
-  spinner.id    = 'ajax-spinner';
-  spinner.innerHTML = '<div style="text-align:center; padding:20px; color:#f35525;">⏳ Recherche en cours...</div>';
-  spinner.style.display = 'none';
-  if (tbody.parentNode) tbody.parentNode.insertBefore(spinner, tbody);
-
-  // ── Reconstruction des lignes du tableau depuis JSON ────────────────────
-  function renderRows(results) {
-    tbody.innerHTML = '';
-
-    if (results.length === 0) {
-      tbody.innerHTML = `
-        <tr><td colspan="8" class="text-center py-5" style="color:#bbb;">
-          <div style="font-size:2.5rem; margin-bottom:10px;">🔍</div>
-          Aucun avis ne correspond à votre recherche.
-        </td></tr>`;
-      if (noResults) noResults.style.display = 'none';
+// ── Like / Dislike via localStorage ─────────────────────────────────
+function getReactions(id) {
+    const data = localStorage.getItem('avis_reactions_' + id);
+    return data ? JSON.parse(data) : {likes: 0, dislikes: 0, myReaction: null};
+}
+function saveReactions(id, data) {
+    localStorage.setItem('avis_reactions_' + id, JSON.stringify(data));
+}
+function toggleReaction(id, type, btn) {
+    const r = getReactions(id);
+    if (r.myReaction === type) {
+        // Annuler
+        r.myReaction = null;
+        if (type === 'like') r.likes = Math.max(0, r.likes - 1);
+        else r.dislikes = Math.max(0, r.dislikes - 1);
     } else {
-      results.forEach(function (a) {
-        // Étoiles
-        let stars = '';
-        for (let i = 1; i <= 5; i++) {
-          stars += `<span style="color:${i <= a.nbEtoiles ? '#f35525' : '#ddd'};">★</span>`;
-        }
-
-        // Badge statut
-        const statutBadge = a.statut === 'Validé'
-          ? '<span class="badge rounded-pill bg-success">✓ Validé</span>'
-          : a.statut === 'Rejeté'
-            ? '<span class="badge rounded-pill bg-danger">✗ Rejeté</span>'
-            : '<span class="badge rounded-pill bg-warning text-dark">⏳ En attente</span>';
-        
-        // Badge sentiment
-        const sentimentBadge = a.sentiment === 'positive'
-          ? '<span class="badge rounded-pill" style="background:#e8f5e9;color:#2e7d32;border:1px solid #a5d6a7;">😊 Positif</span>'
-          : a.sentiment === 'negative'
-            ? '<span class="badge rounded-pill" style="background:#ffebee;color:#c62828;border:1px solid #ef9a9a;">☹️ Négatif</span>'
-            : '<span class="badge rounded-pill" style="background:#f5f5f5;color:#757575;border:1px solid #e0e0e0;">😐 Neutre</span>';
-
-        // Réponse admin
-        const reponseHtml = a.reponse
-          ? `<div style="background:#f0fff4;border-left:3px solid #28a745;border-radius:6px;padding:6px 10px;">
-               <div style="font-size:0.7rem;color:#28a745;font-weight:600;margin-bottom:2px;">Réponse admin :</div>
-               <div style="font-size:0.82rem;color:#333;">${a.reponse}</div>
-             </div>`
-          : '<span style="font-size:0.8rem;color:#bbb;font-style:italic;">En attente...</span>';
-
-        // Boutons d'action selon statut
-        const canEdit   = a.statut === 'En attente';
-        const editBtn   = canEdit
-          ? `<a href="${a.editUrl}" class="btn btn-sm rounded-pill" style="background:#fff8e1;color:#e65100;border:1px solid #ffcc80;font-size:0.78rem;padding:4px 10px;font-weight:600;">✏ Modifier</a>`
-          : `<span class="btn btn-sm rounded-pill" style="background:#f5f5f5;color:#bbb;border:1px solid #e0e0e0;font-size:0.78rem;padding:4px 10px;cursor:not-allowed;">✏ Modifier</span>`;
-
-        const delBtn  = a.statut === 'En attente'
-        ? `<form method="post" action="${a.deleteUrl}" onsubmit="return confirm('Supprimer cet avis ?');" style="display:inline;margin:0;">
-             <input type="hidden" name="_token" value="${a.csrfToken}">
-             <button class="btn btn-sm rounded-pill" style="background:#fff0f0;color:#c0392b;border:1px solid #ffb3b3;font-size:0.78rem;padding:4px 10px;font-weight:600;">🗑 Supprimer</button></form>`
-        : `<span class="btn btn-sm rounded-pill" style="background:#f5f5f5;color:#bbb;border:1px solid #e0e0e0;font-size:0.78rem;padding:4px 10px;cursor:not-allowed;">🗑 Supprimer</span>`;
-
-        tbody.insertAdjacentHTML('beforeend', `
-          <tr>
-            <td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${a.contenu}">${a.contenu}</td>
-            <td style="white-space:nowrap;">${stars}</td>
-            <td>${a.type}</td>
-            <td>${statutBadge}</td>
-            <td style="white-space:nowrap;font-size:0.85rem;color:#888;">${a.dateAvis}</td>
-            <td>${sentimentBadge}</td>
-            <td style="max-width:200px;">${reponseHtml}</td>
-            <td style="white-space:nowrap;">
-              <div style="display:flex;gap:5px;align-items:center;flex-wrap:nowrap;">
-                <a href="${a.showUrl}" class="btn btn-sm rounded-pill" style="background:#f0f5ff;color:#3a7bd5;border:1px solid #c5d8ff;font-size:0.78rem;padding:4px 10px;font-weight:600;">👁 Voir</a>
-                ${editBtn}
-                ${delBtn}
-              </div>
-            </td>
-          </tr>`);
-      });
+        // Annuler l'autre si existant
+        if (r.myReaction === 'like') r.likes = Math.max(0, r.likes - 1);
+        if (r.myReaction === 'dislike') r.dislikes = Math.max(0, r.dislikes - 1);
+        r.myReaction = type;
+        if (type === 'like') r.likes++;
+        else r.dislikes++;
     }
+    saveReactions(id, r);
+    renderReactions(id, r);
+}
+function renderReactions(id, r) {
+    const likeEl   = document.getElementById('like-count-' + id);
+    const dislikeEl = document.getElementById('dislike-count-' + id);
+    if (likeEl)    likeEl.textContent    = r.likes;
+    if (dislikeEl) dislikeEl.textContent = r.dislikes;
 
-    if (resultCount) {
-      resultCount.textContent = results.length + ' avis affiché' + (results.length > 1 ? 's' : '');
-    }
-  }
+    // Boutons actifs
+    const card = document.querySelector('.like-btn[data-id="' + id + '"]');
+    const dcard = document.querySelector('.dislike-btn[data-id="' + id + '"]');
+    if (card)  card.classList.toggle('liked',     r.myReaction === 'like');
+    if (dcard) dcard.classList.toggle('disliked', r.myReaction === 'dislike');
+}
 
-  // ── Appel AJAX ─────────────────────────────────────────────────────────
-  async function doSearch() {
-    spinner.style.display = 'block';
-    tbody.style.opacity   = '0.4';
-
-    const params = new URLSearchParams({
-      q:       searchInput  ? searchInput.value.trim()  : '',
-      statut:  filterStatut ? filterStatut.value        : '',
-      etoiles: filterEtoiles? filterEtoiles.value       : '',
-      sort:    sortSelect   ? sortSelect.value          : 'date-desc',
+// Init au chargement
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.like-btn').forEach(function(btn) {
+        const id = btn.dataset.id;
+        const r  = getReactions(id);
+        renderReactions(id, r);
     });
 
-    try {
-      const res  = await fetch(searchURL + '?' + params.toString());
-      const data = await res.json();
-      renderRows(data.results || []);
-    } catch (e) {
-      tbody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-danger">Erreur lors de la recherche.</td></tr>';
-    } finally {
-      spinner.style.display = 'none';
-      tbody.style.opacity   = '1';
+    // ── Filtres côté client ─────────────────────────────────────────
+    const searchInput    = document.getElementById('searchInput');
+    const filterEtoiles  = document.getElementById('filterEtoiles');
+    const filterSentiment= document.getElementById('filterSentiment');
+    const posts          = document.querySelectorAll('.post-card');
+
+    function applyFilters() {
+        const q   = searchInput.value.toLowerCase().trim();
+        const et  = filterEtoiles.value;
+        const sent= filterSentiment.value;
+        posts.forEach(function(p) {
+            const contenu   = p.dataset.contenu || '';
+            const etoiles   = p.dataset.etoiles || '';
+            const sentiment = p.dataset.sentiment || '';
+            const ok = (!q || contenu.includes(q)) &&
+                       (!et || etoiles === et) &&
+                       (!sent || sentiment === sent);
+            p.style.display = ok ? '' : 'none';
+        });
     }
-  }
 
-  // ── Debounce pour l'input texte (300ms) ────────────────────────────────
-  let debounceTimer = null;
-  function debounced() {
-    clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(doSearch, 300);
-  }
-
-  if (searchInput)   searchInput.addEventListener('input',  debounced);
-  if (filterStatut)  filterStatut.addEventListener('change', doSearch);
-  if (filterEtoiles) filterEtoiles.addEventListener('change', doSearch);
-  if (sortSelect)    sortSelect.addEventListener('change',    doSearch);
-
-})();
+    let timer;
+    searchInput.addEventListener('input', function() { clearTimeout(timer); timer = setTimeout(applyFilters, 300); });
+    filterEtoiles.addEventListener('change', applyFilters);
+    filterSentiment.addEventListener('change', applyFilters);
+});
 </script>
 {% endblock %}

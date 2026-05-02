@@ -1,93 +1,155 @@
 {% extends 'base_front.html.twig' %}
+{% block title %}Détail – {{ reclamation.titre }} – ViaNoVa{% endblock %}
 
-{% block title %}Détail de la Réclamation - Villa Agency{% endblock %}
+{% block stylesheets %}
+{{ parent() }}
+<style>
+@keyframes fadeInUp{from{opacity:0;transform:translateY(24px);}to{opacity:1;transform:translateY(0);}}
+.show-page-wrap{background:linear-gradient(135deg,#fff8f4,#fef0e8 50%,#f8f9fa);min-height:100vh;padding:0 0 70px;}
+.show-hero{background:linear-gradient(135deg,#d4845a,#e8a87c 60%,#f5c99a);padding:50px 0 90px;position:relative;overflow:hidden;}
+.show-hero::before{content:'';position:absolute;top:-50px;right:-70px;width:300px;height:300px;border-radius:50%;background:rgba(255,255,255,0.07);}
+.show-hero h2{color:#fff;font-size:1.8rem;font-weight:800;margin:0 0 4px;word-break:break-word;}
+.show-hero p{color:rgba(255,255,255,0.78);font-size:0.93rem;}
+.hero-back{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,0.18);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:30px;padding:5px 14px;font-size:0.82rem;font-weight:600;text-decoration:none;margin-bottom:14px;transition:background 0.2s;}
+.hero-back:hover{background:rgba(255,255,255,0.28);color:#fff;text-decoration:none;}
+.show-card{background:#fff;border-radius:24px;box-shadow:0 20px 60px rgba(212,132,90,0.12),0 4px 20px rgba(0,0,0,0.05);padding:40px 48px;margin-top:-55px;position:relative;z-index:10;animation:fadeInUp 0.6s ease forwards;}
+.show-card-border{position:absolute;top:0;left:0;right:0;height:5px;border-radius:24px 24px 0 0;background:linear-gradient(90deg,#d4845a,#e8a87c,#f5c99a);}
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;}
+.detail-box{background:#f9f9f9;border-radius:14px;padding:16px 20px;border:1px solid #f0f0f0;}
+.detail-box-label{font-size:0.72rem;font-weight:800;text-transform:uppercase;letter-spacing:0.07em;color:#bbb;margin-bottom:6px;}
+.detail-box-value{font-size:0.95rem;font-weight:700;color:#333;}
+.badge-s-show{display:inline-block;padding:5px 14px;border-radius:30px;font-size:0.82rem;font-weight:700;}
+.badge-s-show.en_attente{background:#fef9c3;color:#854d0e;border:1px solid #fde68a;}
+.badge-s-show.en_cours{background:#dbeafe;color:#1e40af;border:1px solid #bfdbfe;}
+.badge-s-show.resolue{background:#dcfce7;color:#166534;border:1px solid #bbf7d0;}
+.badge-s-show.rejetee{background:#fee2e2;color:#991b1b;border:1px solid #fecaca;}
+.badge-p-show{display:inline-block;padding:5px 14px;border-radius:30px;font-size:0.82rem;font-weight:700;}
+.badge-p-show.basse{background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0;}
+.badge-p-show.moyenne{background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;}
+.badge-p-show.haute{background:#fff7ed;color:#c2410c;border:1px solid #fed7aa;}
+.badge-p-show.urgente{background:#fef2f2;color:#dc2626;border:1px solid #fecaca;}
+.contenu-block{background:linear-gradient(135deg,#fff8f4,#fef0e8);border-radius:16px;padding:22px 24px;border:1px solid #f5cba7;margin-bottom:24px;font-size:0.95rem;color:#444;line-height:1.75;}
+.contenu-label{font-size:0.72rem;font-weight:800;text-transform:uppercase;letter-spacing:0.07em;color:#d4845a;margin-bottom:10px;}
+.reponse-block{background:linear-gradient(135deg,#f0fdf4,#dcfce7);border-radius:16px;padding:20px 24px;border-left:4px solid #22c55e;margin-bottom:24px;}
+.reponse-label{font-size:0.72rem;font-weight:800;text-transform:uppercase;letter-spacing:0.07em;color:#16a34a;margin-bottom:8px;}
+.reponse-text{font-size:0.93rem;color:#166534;line-height:1.65;}
+.action-bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding-top:24px;border-top:2px solid #f5f5f5;}
+.btn-show-edit{display:inline-flex;align-items:center;gap:7px;padding:11px 24px;border-radius:50px;background:linear-gradient(135deg,#d4845a,#e8a87c);color:#fff;font-weight:700;font-size:0.88rem;text-decoration:none;transition:opacity 0.2s;}
+.btn-show-edit:hover{opacity:0.88;color:#fff;text-decoration:none;}
+.btn-show-del{display:inline-flex;align-items:center;gap:7px;padding:11px 24px;border-radius:50px;background:#fee2e2;color:#dc2626;font-weight:700;font-size:0.88rem;border:1.5px solid #fecaca;cursor:pointer;transition:background 0.2s;}
+.btn-show-del:hover{background:#fecaca;}
+.btn-show-pdf{display:inline-flex;align-items:center;gap:7px;padding:11px 24px;border-radius:50px;background:#1a1a2e;color:#fff;font-weight:700;font-size:0.88rem;text-decoration:none;transition:opacity 0.2s;}
+.btn-show-pdf:hover{opacity:0.85;color:#fff;text-decoration:none;}
+.btn-show-back{display:inline-flex;align-items:center;gap:7px;padding:11px 24px;border-radius:50px;background:#f1f5f9;color:#64748b;font-weight:700;font-size:0.88rem;text-decoration:none;transition:background 0.2s;margin-left:auto;}
+.btn-show-back:hover{background:#e2e8f0;color:#333;text-decoration:none;}
+@media(max-width:768px){.detail-grid{grid-template-columns:1fr;}.show-card{padding:28px 18px;}.action-bar{flex-direction:column;align-items:stretch;}.btn-show-back{margin-left:0;}}
+</style>
+{% endblock %}
 
 {% block body %}
-    
-
-    <div class="page-heading header-text">
+<div class="show-page-wrap">
+    <div class="show-hero">
         <div class="container">
-            <div class="row">
-                <div class="col-lg-12">
-                    <span class="breadcrumb"><a href="{{ path('reclamation_index') }}">Réclamations</a> / Détails</span>
-                    <h3>Détails de la Réclamation</h3>
-                </div>
-            </div>
+            <a href="{{ path('front_profile') }}" class="hero-back">← Retour au profil</a>
+            <h2>{{ reclamation.titre }}</h2>
+            <p>📅 Soumise le {{ reclamation.dateCreation|date('d/m/Y à H:i') }}</p>
         </div>
     </div>
 
-    <div class="container mt-5 mb-5 pb-5 pt-3" style="min-height: 40vh;">
+    <div class="container">
         <div class="row justify-content-center">
-            <div class="col-md-8">
-                <div class="card shadow-sm border-0 mb-4 p-4">
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <h4>{{ reclamation.titre }}</h4>
-                        {% if reclamation.statut == 'Fermée' %}
-                            <span class="badge bg-secondary py-2 px-3">Fermée</span>
-                        {% elseif reclamation.statut == 'Traitée' %}
-                            <span class="badge bg-success py-2 px-3">Traitée</span>
-                        {% elseif reclamation.statut == 'En cours' %}
-                            <span class="badge bg-primary py-2 px-3">En cours</span>
+            <div class="col-md-9 col-lg-8">
+                <div class="show-card">
+                    <div class="show-card-border"></div>
+
+                    <div class="detail-grid">
+                        <div class="detail-box">
+                            <div class="detail-box-label">Statut</div>
+                            <div class="detail-box-value">
+                                {% set sc=reclamation.statut|lower|replace({' ':'_','é':'e','è':'e','ê':'e'}) %}
+                                <span class="badge-s-show {{ sc }}">
+                                    {% if reclamation.statut=='Résolue' or reclamation.statut=='Resolue'%}✅{% elseif reclamation.statut=='En cours'%}⏳{% elseif reclamation.statut=='Rejetée' or reclamation.statut=='Rejetee'%}❌{% else %}⏸{% endif %}
+                                    {{ reclamation.statut }}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="detail-box">
+                            <div class="detail-box-label">Priorité</div>
+                            <div class="detail-box-value">
+                                {% set pc=reclamation.priorite|lower %}
+                                <span class="badge-p-show {{ pc }}">
+                                    {% if reclamation.priorite=='Urgente'%}🔴{% elseif reclamation.priorite=='Haute'%}🟠{% elseif reclamation.priorite=='Moyenne'%}🔵{% else %}🟢{% endif %}
+                                    {{ reclamation.priorite }}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="detail-box">
+                            <div class="detail-box-label">Catégorie</div>
+                            <div class="detail-box-value">{{ reclamation.type ? reclamation.type.nom : '—' }}</div>
+                        </div>
+                        <div class="detail-box">
+                            <div class="detail-box-label">Date de soumission</div>
+                            <div class="detail-box-value">{{ reclamation.dateCreation|date('d/m/Y') }}</div>
+                        </div>
+                    </div>
+
+                    <div class="contenu-label">📄 Description du problème</div>
+                    <div class="contenu-block">{{ reclamation.contenu|nl2br }}</div>
+
+                    {% if reclamation.reponse %}
+                    <div class="reponse-block">
+                        <div class="reponse-label">💬 Réponse de l'administration</div>
+                        <div class="reponse-text">{{ reclamation.reponse|nl2br }}</div>
+                    </div>
+                    {% endif %}
+
+                    <div class="action-bar">
+                        {% if reclamation.statut == 'En attente' %}
+                            <a href="{{ path('reclamation_edit', {'id':reclamation.id}) }}" class="btn-show-edit">✏️ Modifier</a>
+                            <button type="button" class="btn-show-del" onclick="openDeleteModal('{{ path('reclamation_delete', {'id':reclamation.id}) }}', '{{ csrf_token('delete'~reclamation.id) }}', 'cette réclamation')">🗑 Supprimer</button>
                         {% else %}
-                            <span class="badge bg-warning text-dark py-2 px-3">En attente</span>
+                            <div style="background:#f9f9f9; padding:10px 20px; border-radius:12px; border:1px solid #eee; color:#999; font-size:13px; font-style:italic;">
+                                🔒 Cette réclamation est en cours de traitement et ne peut plus être modifiée ou supprimée.
+                            </div>
                         {% endif %}
-                    </div>
-                    
-                    <div class="row mb-3">
-                        <div class="col-sm-3 fw-bold text-muted">Type:</div>
-                        <div class="col-sm-9">{{ reclamation.type ? reclamation.type.nom : 'Non défini' }}</div>
-                    </div>
-                    
-                    <div class="row mb-3">
-                        <div class="col-sm-3 fw-bold text-muted">Priorité:</div>
-                        <div class="col-sm-9">
-                            {% if reclamation.priorite == 'Basse' %}
-                                <span class="badge bg-secondary">Basse</span>
-                            {% elseif reclamation.priorite == 'Moyenne' %}
-                                <span class="badge bg-info text-dark">Moyenne</span>
-                            {% elseif reclamation.priorite == 'Haute' %}
-                                <span class="badge bg-warning text-dark">Haute</span>
-                            {% elseif reclamation.priorite == 'Urgente' %}
-                                <span class="badge bg-danger">Urgente</span>
-                            {% endif %}
-                        </div>
-                    </div>
-
-                    <div class="row mb-3">
-                        <div class="col-sm-3 fw-bold text-muted">Date:</div>
-                        <div class="col-sm-9">{{ reclamation.dateCreation ? reclamation.dateCreation|date('d/m/Y') : '' }}</div>
-                    </div>
-                    
-                    <div class="row mb-3">
-                        <div class="col-sm-3 fw-bold text-muted">Description:</div>
-                        <div class="col-sm-9 bg-light p-3 rounded" style="font-size:1.05rem;">
-                            {{ reclamation.contenu|nl2br }}
-                        </div>
-                    </div>
-
-                    <div class="mt-4 pt-3 border-top d-flex justify-content-between">
-                        <div>
-                            {% if reclamation.statut != 'Fermée' %}
-                                <a href="{{ path('reclamation_edit', {'id': reclamation.id}) }}" class="btn btn-outline-dark px-4 py-2 rounded-pill me-2">Modifier</a>
-                            {% endif %}
-                            <form method="post" action="{{ path('reclamation_delete', {'id': reclamation.id}) }}" onsubmit="return confirm('Sûr ?');" style="display:inline-block;">
-                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ reclamation.id) }}">
-                                <button class="btn btn-outline-danger px-4 py-2 rounded-pill">Supprimer</button>
-                            </form>
-                        </div>
-                        <a href="{{ path('reclamation_pdf', {'id': reclamation.id}) }}" 
-                           class="btn px-4 py-2 rounded-pill"
-                           style="background:#1a1a2e; color:#fff; border:none;">
-                            📄 Télécharger en PDF
-                        </a>
-                        <a href="{{ path('reclamation_index') }}" class="btn text-white px-4 py-2 rounded-pill" style="background-color: #f35525;">Retour à la liste</a>
+                        <a href="{{ path('reclamation_pdf', {'id':reclamation.id}) }}" class="btn-show-pdf">📄 Télécharger PDF</a>
+                        <a href="{{ path('front_profile') }}" class="btn-show-back" style="margin-left:auto;">← Retour au profil</a>
                     </div>
                 </div>
-
-
             </div>
         </div>
     </div>
+</div>
+{# ── Modal de suppression personnalisée ── #}
+<div id="deleteModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center; backdrop-filter: blur(4px);">
+    <div style="background:#fff; padding:30px; border-radius:24px; width:90%; max-width:420px; text-align:center; box-shadow:0 25px 70px rgba(0,0,0,0.3); animation: fadeInUp 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);">
+        <div style="font-size:60px; margin-bottom:15px;">🗑️</div>
+        <h3 style="font-size:1.5rem; font-weight:800; color:#333; margin-bottom:12px;">Suppression</h3>
+        <p style="color:#666; margin-bottom:30px; line-height:1.5;">Voulez-vous vraiment supprimer <span id="deleteTargetLabel" style="font-weight:700; color:#d4845a;"></span> ?<br>Cette action est définitive.</p>
+        <div style="display:flex; gap:12px; justify-content:center;">
+            <button onclick="closeDeleteModal()" style="padding:12px 24px; border-radius:50px; border:1px solid #ddd; background:#fff; color:#666; font-weight:700; cursor:pointer; transition:all 0.2s;">Annuler</button>
+            <form id="deleteModalForm" method="POST" style="margin:0;">
+                <input type="hidden" name="_method" value="DELETE">
+                <input type="hidden" name="_token" id="deleteModalToken">
+                <button type="submit" style="padding:12px 28px; border-radius:50px; border:none; background:linear-gradient(135deg,#dc2626,#ef4444); color:#fff; font-weight:700; cursor:pointer; box-shadow:0 4px 15px rgba(220,38,38,0.25);">Supprimer</button>
+            </form>
+        </div>
+    </div>
+</div>
 
-    
+<script>
+function openDeleteModal(url, token, label) {
+    document.getElementById('deleteModalForm').action = url;
+    document.getElementById('deleteModalToken').value = token;
+    document.getElementById('deleteTargetLabel').textContent = label;
+    document.getElementById('deleteModal').style.display = 'flex';
+}
+function closeDeleteModal() {
+    document.getElementById('deleteModal').style.display = 'none';
+}
+window.onclick = function(event) {
+    let modal = document.getElementById('deleteModal');
+    if (event.target == modal) closeDeleteModal();
+}
+</script>
 {% endblock %}
