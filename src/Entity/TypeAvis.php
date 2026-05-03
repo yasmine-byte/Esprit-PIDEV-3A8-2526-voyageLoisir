@@ -15,12 +15,14 @@ class TypeAvis
     #[ORM\Column]
     private ?int $id = null;
 
+    // ✅ FIX : non-nullable string
     #[ORM\Column(length: 50)]
     private string $nom = '';
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $description = null;
 
+    // ✅ FIX : DateTimeImmutable non-nullable
     #[ORM\Column]
     private \DateTimeImmutable $dateCreation;
 
@@ -29,44 +31,14 @@ class TypeAvis
         $this->dateCreation = new \DateTimeImmutable();
     }
 
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
+    public function getId(): ?int { return $this->id; }
 
-    public function getNom(): string
-    {
-        return $this->nom;
-    }
+    public function getNom(): string { return $this->nom; }
+    public function setNom(string $nom): static { $this->nom = $nom; return $this; }
 
-    public function setNom(string $nom): static
-    {
-        $this->nom = $nom;
+    public function getDescription(): ?string { return $this->description; }
+    public function setDescription(?string $description): static { $this->description = $description; return $this; }
 
-        return $this;
-    }
-
-    public function getDescription(): ?string
-    {
-        return $this->description;
-    }
-
-    public function setDescription(?string $description): static
-    {
-        $this->description = $description;
-
-        return $this;
-    }
-
-    public function getDateCreation(): \DateTimeImmutable
-    {
-        return $this->dateCreation;
-    }
-
-    public function setDateCreation(\DateTimeImmutable $dateCreation): static
-    {
-        $this->dateCreation = $dateCreation;
-
-        return $this;
-    }
+    public function getDateCreation(): \DateTimeImmutable { return $this->dateCreation; }
+    public function setDateCreation(\DateTimeImmutable $dateCreation): static { $this->dateCreation = $dateCreation; return $this; }
 }

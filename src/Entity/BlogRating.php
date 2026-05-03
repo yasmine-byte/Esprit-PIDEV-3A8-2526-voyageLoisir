@@ -18,80 +18,40 @@ class BlogRating
     #[ORM\JoinColumn(nullable: false)]
     private ?Blog $blog = null;
 
+    // ✅ FIX : non-nullable string
     #[ORM\Column(length: 255)]
-    private ?string $userName = null;
+    private string $userName = '';
 
+    // ✅ FIX : non-nullable int
     #[ORM\Column]
-    private ?int $rating = null;
+    private int $rating = 1;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $reviewText = null;
 
-    #[ORM\Column(nullable: true)]
-    private ?\DateTime $createdAt = null;
+    // ✅ FIX : DateTimeImmutable non-nullable
+    #[ORM\Column]
+    private \DateTimeImmutable $createdAt;
 
-    public function getId(): ?int
+    public function __construct()
     {
-        return $this->id;
+        $this->createdAt = new \DateTimeImmutable();
     }
 
-    public function getBlog(): ?Blog
-    {
-        return $this->blog;
-    }
+    public function getId(): ?int { return $this->id; }
 
-    public function setBlog(?Blog $blog): static
-    {
-        $this->blog = $blog;
+    public function getBlog(): ?Blog { return $this->blog; }
+    public function setBlog(?Blog $blog): static { $this->blog = $blog; return $this; }
 
-        return $this;
-    }
+    public function getUserName(): string { return $this->userName; }
+    public function setUserName(string $userName): static { $this->userName = $userName; return $this; }
 
-    public function getUserName(): ?string
-    {
-        return $this->userName;
-    }
+    public function getRating(): int { return $this->rating; }
+    public function setRating(int $rating): static { $this->rating = $rating; return $this; }
 
-    public function setUserName(string $userName): static
-    {
-        $this->userName = $userName;
+    public function getReviewText(): ?string { return $this->reviewText; }
+    public function setReviewText(?string $reviewText): static { $this->reviewText = $reviewText; return $this; }
 
-        return $this;
-    }
-
-    public function getRating(): ?int
-    {
-        return $this->rating;
-    }
-
-    public function setRating(int $rating): static
-    {
-        $this->rating = $rating;
-
-        return $this;
-    }
-
-    public function getReviewText(): ?string
-    {
-        return $this->reviewText;
-    }
-
-    public function setReviewText(?string $reviewText): static
-    {
-        $this->reviewText = $reviewText;
-
-        return $this;
-    }
-
-    public function getCreatedAt(): ?\DateTime
-    {
-        return $this->createdAt;
-    }
-
-    public function setCreatedAt(?\DateTime $createdAt): static
-    {
-        $this->createdAt = $createdAt;
-
-        return $this;
-    }
+    public function getCreatedAt(): \DateTimeImmutable { return $this->createdAt; }
+    public function setCreatedAt(\DateTimeImmutable $createdAt): static { $this->createdAt = $createdAt; return $this; }
 }

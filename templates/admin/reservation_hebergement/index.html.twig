@@ -134,6 +134,7 @@
                     {# Changer statut #}
                     <form method="post" action="{{ path('admin_reservation_hebergement_statut', {'id': reservation.id}) }}" style="display:inline">
                         <select name="statut" onchange="this.form.submit()"
+        {% if reservation.statut == 'confirmee' %}disabled{% endif %}
                                 style="padding:4px 8px;border-radius:6px;border:1px solid #333;background:#1a1a2e;color:#fff;font-size:12px;cursor:pointer">
                             <option value="en_attente" {{ reservation.statut == 'en_attente' ? 'selected' : '' }}>En attente</option>
                             <option value="confirmee"  {{ reservation.statut == 'confirmee'  ? 'selected' : '' }}>Confirmée</option>

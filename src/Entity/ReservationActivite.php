@@ -16,19 +16,19 @@ class ReservationActivite
     #[ORM\Column(name: 'id_reservation')]
     private ?int $id = null;
 
-    #[ORM\Column(name: 'date_reservation', type: Types::DATE_MUTABLE)]
+    // ✅ FIX : DateTimeImmutable non-nullable
+    #[ORM\Column(name: 'date_reservation', type: Types::DATE_IMMUTABLE)]
     #[Assert\NotNull(message: "La date de réservation est obligatoire.")]
     #[Assert\GreaterThanOrEqual(
         value: "today",
         message: "La date de réservation ne peut pas être dans le passé."
     )]
-    private ?\DateTimeInterface $dateReservation = null;
+    private \DateTimeImmutable $dateReservation;
 
     #[ORM\Column(name: 'nombre_personnes')]
     #[Assert\NotNull(message: "Le nombre de personnes est obligatoire.")]
-    #[Assert\Type(type: 'integer', message: "Le nombre de personnes doit être un entier.")]
     #[Assert\Positive(message: "Le nombre de personnes doit être supérieur à 0.")]
-    private ?int $nombrePersonnes = null;
+    private int $nombrePersonnes = 1;
 
     #[ORM\Column(length: 30)]
     #[Assert\NotBlank(message: "Le statut est obligatoire.")]
@@ -36,15 +36,15 @@ class ReservationActivite
         choices: ['EN_ATTENTE', 'CONFIRMEE', 'ANNULEE'],
         message: "Le statut doit être EN_ATTENTE, CONFIRMEE ou ANNULEE."
     )]
-    private ?string $statut = null;
+    private string $statut = 'EN_ATTENTE';
 
-    #[ORM\Column]
-    #[Assert\Type(type: 'numeric', message: "Le total doit être un nombre.")]
+    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
     #[Assert\PositiveOrZero(message: "Le total doit être positif ou nul.")]
-    private ?float $total = null;
+    private string $total = '0.00';
 
+    // ✅ FIX FK : name garde 'id_activite' pour la compatibilité BDD existante
     #[ORM\ManyToOne(inversedBy: 'reservations')]
-    #[ORM\JoinColumn(name: 'id_activite', referencedColumnName: 'id_activite', nullable: false)]
+    #[ORM\JoinColumn(name: 'activite_id', referencedColumnName: 'id_activite', nullable: false)]
     #[Assert\NotNull(message: "L'activité est obligatoire.")]
     private ?Activite $activite = null;
 
@@ -52,74 +52,28 @@ class ReservationActivite
     #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL')]
     private ?Users $user = null;
 
-    public function getId(): ?int
+    public function __construct()
     {
-        return $this->id;
+        $this->dateReservation = new \DateTimeImmutable();
     }
 
-    public function getDateReservation(): ?\DateTimeInterface
-    {
-        return $this->dateReservation;
-    }
+    public function getId(): ?int { return $this->id; }
 
-    public function setDateReservation(\DateTimeInterface $dateReservation): static
-    {
-        $this->dateReservation = $dateReservation;
-        return $this;
-    }
+    public function getDateReservation(): \DateTimeImmutable { return $this->dateReservation; }
+    public function setDateReservation(\DateTimeImmutable $dateReservation): static { $this->dateReservation = $dateReservation; return $this; }
 
-    public function getNombrePersonnes(): ?int
-    {
-        return $this->nombrePersonnes;
-    }
+    public function getNombrePersonnes(): int { return $this->nombrePersonnes; }
+    public function setNombrePersonnes(int $nombrePersonnes): static { $this->nombrePersonnes = $nombrePersonnes; return $this; }
 
-    public function setNombrePersonnes(int $nombrePersonnes): static
-    {
-        $this->nombrePersonnes = $nombrePersonnes;
-        return $this;
-    }
+    public function getStatut(): string { return $this->statut; }
+    public function setStatut(string $statut): static { $this->statut = $statut; return $this; }
 
-    public function getStatut(): ?string
-    {
-        return $this->statut;
-    }
+    public function getTotal(): string { return $this->total; }
+    public function setTotal(string $total): static { $this->total = $total; return $this; }
 
-    public function setStatut(string $statut): static
-    {
-        $this->statut = $statut;
-        return $this;
-    }
+    public function getActivite(): ?Activite { return $this->activite; }
+    public function setActivite(?Activite $activite): static { $this->activite = $activite; return $this; }
 
-    public function getTotal(): ?float
-    {
-        return $this->total;
-    }
-
-    public function setTotal(float $total): static
-    {
-        $this->total = $total;
-        return $this;
-    }
-
-    public function getActivite(): ?Activite
-    {
-        return $this->activite;
-    }
-
-    public function setActivite(?Activite $activite): static
-    {
-        $this->activite = $activite;
-        return $this;
-    }
-
-    public function getUser(): ?Users
-    {
-        return $this->user;
-    }
-
-    public function setUser(?Users $user): static
-    {
-        $this->user = $user;
-        return $this;
-    }
+    public function getUser(): ?Users { return $this->user; }
+    public function setUser(?Users $user): static { $this->user = $user; return $this; }
 }
