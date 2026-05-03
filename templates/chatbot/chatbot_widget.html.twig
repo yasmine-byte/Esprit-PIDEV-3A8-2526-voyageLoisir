@@ -133,10 +133,49 @@
     </div>
 </div>
 
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+{# jQuery est déjà inclus dans le layout de base #}
 <script>
 $(document).ready(function() {
     let conversationHistory = [];
+
+    // Fonction pour ajouter un message au chat
+    function addMessage(text, role) {
+        const cls = role === 'user' ? 'user-message' : 'bot-message';
+        $('#chat-messages').append('<div class="' + cls + '">' + (role === 'bot' ? text : escapeHtml(text)) + '</div>');
+        $('#chat-messages').scrollTop($('#chat-messages')[0].scrollHeight);
+    }
+
+    // Fonction globale pour ouvrir le chatbot depuis l'extérieur
+    window.openChatbot = function() {
+        $('#chatbot-btn').click();
+    };
+
+    // Fonction pour créer avis/réclamation depuis le chatbot
+    async function createFromChatbot(data) {
+        try {
+            const response = await fetch('/chatbot/create', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            const result = await response.json();
+            if (result.success) {
+                // Afficher message de succès dans le chat
+                addMessage(
+                    result.type === 'avis'
+                        ? '✅ Votre avis a été enregistré avec succès ! Un email de confirmation vous a été envoyé. Vous pouvez le retrouver dans votre profil → Mes Feedbacks.'
+                        : '✅ Votre réclamation a été enregistrée avec succès ! Un email de confirmation vous a été envoyé. Vous pouvez la retrouver dans votre profil → Mes Feedbacks.',
+                    'bot'
+                );
+                // Lien vers le profil
+                setTimeout(() => {
+                    addMessage('👉 <a href="/profile" style="color:#d4845a;font-weight:700;">Voir dans mon profil →</a>', 'bot');
+                }, 800);
+            }
+        } catch(e) {
+            console.error('Erreur création depuis chatbot:', e);
+        }
+    }
 
     $('#chatbot-btn').click(function() {
         $(this).hide();
@@ -162,63 +201,113 @@ $(document).ready(function() {
         $('#chat-messages').append($loader);
         $('#chat-messages').scrollTop($('#chat-messages')[0].scrollHeight);
 
+        // Détecter DIRECTEMENT si c'est une réclamation ou un avis AVANT d'appeler l'IA
+        var msgLower = message.toLowerCase();
+        var isReclamation = msgLower.indexOf('réclamation') !== -1 ||
+                            msgLower.indexOf('reclamation') !== -1 ||
+                            msgLower.indexOf('problème') !== -1 ||
+                            msgLower.indexOf('probleme') !== -1 ||
+                            msgLower.indexOf('plainte') !== -1 ||
+                            msgLower.indexOf('chambre') !== -1 ||
+                            msgLower.indexOf('hôtel') !== -1 ||
+                            msgLower.indexOf('hotel') !== -1 ||
+                            msgLower.indexOf('sale') !== -1 ||
+                            msgLower.indexOf('mauvais') !== -1 ||
+                            msgLower.indexOf('panne') !== -1 ||
+                            msgLower.indexOf('broken') !== -1 ||
+                            msgLower.indexOf('service client') !== -1 ||
+                            msgLower.indexOf('remboursement') !== -1 ||
+                            msgLower.indexOf('annul') !== -1;
+
+        var isAvis = (msgLower.indexOf('avis') !== -1 ||
+                      msgLower.indexOf('étoile') !== -1 ||
+                      msgLower.indexOf('etoile') !== -1 ||
+                      msgLower.indexOf('note') !== -1 ||
+                      msgLower.indexOf('★') !== -1) && !isReclamation;
+
+        if (isReclamation) {
+            $loader.remove();
+            $('#chat-messages').append('<div class="bot-message">✨ Création de votre réclamation...</div>');
+            $('#chat-messages').scrollTop($('#chat-messages')[0].scrollHeight);
+
+            $.post('/chatbot/submit-reclamation', {
+                titre: message.substring(0, 100),
+                contenu: message,
+                priorite: 'Moyenne'
+            }, function(res) {
+                if (res.success) {
+                    $('#chat-messages').append(
+                        '<div class="bot-message" style="background:linear-gradient(135deg,#d4845a,#e8a87c);color:white;border-radius:12px;padding:12px 16px;">' +
+                        '✅ Réclamation <strong>#' + res.id + '</strong> créée avec succès !<br>' +
+                        '<small style="opacity:0.85;">Un email de confirmation vous a été envoyé.</small>' +
+                        '</div>'
+                    );
+                    setTimeout(function(){ window.location.reload(); }, 2500);
+                } else {
+                    $('#chat-messages').append(
+                        '<div class="bot-message" style="color:red;">❌ ' + (res.message || 'Erreur. Réessayez.') + '</div>'
+                    );
+                }
+                $('#chat-messages').scrollTop($('#chat-messages')[0].scrollHeight);
+            }).fail(function(xhr) {
+                $('#chat-messages').append(
+                    '<div class="bot-message" style="color:red;">❌ Erreur serveur : ' + xhr.status + '. Réessayez.</div>'
+                );
+                $('#chat-messages').scrollTop($('#chat-messages')[0].scrollHeight);
+            });
+            return;
+        }
+
+        if (isAvis) {
+            $loader.remove();
+            var nbEtoiles = 3;
+            var etoilesMatch = message.match(/([1-5])\s*[éeEÉ]toile/i) || message.match(/([1-5])\s*★/);
+            if (etoilesMatch) nbEtoiles = parseInt(etoilesMatch[1]);
+
+            $('#chat-messages').append('<div class="bot-message">⭐ Création de votre avis...</div>');
+            $('#chat-messages').scrollTop($('#chat-messages')[0].scrollHeight);
+
+            $.post('/chatbot/submit-avis', {
+                contenu: message,
+                nbEtoiles: nbEtoiles,
+                type: 'Service Client'
+            }, function(res) {
+                if (res.success) {
+                    $('#chat-messages').append(
+                        '<div class="bot-message" style="background:linear-gradient(135deg,#d4845a,#e8a87c);color:white;border-radius:12px;padding:12px 16px;">' +
+                        '✅ Avis <strong>#' + res.id + '</strong> créé avec succès !' +
+                        (res.reclamation_auto ? '<br><small style="opacity:0.85;">⚠️ Note basse détectée — une réclamation a été créée automatiquement.</small>' : '<br><small style="opacity:0.85;">Un email de confirmation vous a été envoyé.</small>') +
+                        '</div>'
+                    );
+                    setTimeout(function(){ window.location.reload(); }, 2500);
+                } else {
+                    $('#chat-messages').append(
+                        '<div class="bot-message" style="color:red;">❌ ' + (res.message || 'Erreur. Réessayez.') + '</div>'
+                    );
+                }
+                $('#chat-messages').scrollTop($('#chat-messages')[0].scrollHeight);
+            }).fail(function(xhr) {
+                $('#chat-messages').append(
+                    '<div class="bot-message" style="color:red;">❌ Erreur serveur : ' + xhr.status + '. Réessayez.</div>'
+                );
+                $('#chat-messages').scrollTop($('#chat-messages')[0].scrollHeight);
+            });
+            return;
+        }
+
+        // Si ni réclamation ni avis → réponse normale de l'IA
         $.post('/chatbot/ask', {
             message: message,
             history: JSON.stringify(conversationHistory)
         }, function(data) {
             $loader.remove();
-            let txt = data.response;
-
-            // Détecter JSON action
-            let jsonMatch = txt.match(/\{[^{}]+\}/);
-            if (jsonMatch) {
-                try {
-                    let action = JSON.parse(jsonMatch[0]);
-                    if (action.action === 'create_reclamation') {
-                        $('#chat-messages').append('<div class="bot-message">✨ Génération de votre réclamation...</div>');
-                        $('#chat-messages').scrollTop($('#chat-messages')[0].scrollHeight);
-                        $.post('/chatbot/submit-reclamation', {
-                            titre: action.titre,
-                            contenu: action.contenu,
-                            priorite: action.priorite
-                        }, function(res) {
-                            if (res.success) {
-                                $('#chat-messages').append('<div class="bot-message" style="background:#28a745;color:white;">✅ Réclamation #' + res.id + ' créée avec succès !</div>');
-                                setTimeout(function(){ window.location.reload(); }, 2000);
-                            } else {
-                                $('#chat-messages').append('<div class="bot-message" style="background:#dc3545;color:white;">Erreur lors de la création.</div>');
-                            }
-                            $('#chat-messages').scrollTop($('#chat-messages')[0].scrollHeight);
-                        });
-                        return;
-                    } else if (action.action === 'create_avis') {
-                        $('#chat-messages').append('<div class="bot-message">✨ Génération de votre avis...</div>');
-                        $('#chat-messages').scrollTop($('#chat-messages')[0].scrollHeight);
-                        $.post('/chatbot/submit-avis', {
-                            contenu: action.contenu,
-                            nbEtoiles: action.nbEtoiles,
-                            type: action.type
-                        }, function(res) {
-                            if (res.success) {
-                                $('#chat-messages').append('<div class="bot-message" style="background:#28a745;color:white;">✅ Avis #' + res.id + ' créé avec succès !</div>');
-                                setTimeout(function(){ window.location.reload(); }, 2000);
-                            } else {
-                                $('#chat-messages').append('<div class="bot-message" style="background:#dc3545;color:white;">Erreur lors de la création.</div>');
-                            }
-                            $('#chat-messages').scrollTop($('#chat-messages')[0].scrollHeight);
-                        });
-                        return;
-                    }
-                } catch(e) {}
-            }
-
+            var txt = data.response || 'Je suis là pour vous aider à créer une réclamation ou un avis.';
             conversationHistory.push({role: 'assistant', content: txt});
             $('#chat-messages').append('<div class="bot-message">' + escapeHtml(txt) + '</div>');
             $('#chat-messages').scrollTop($('#chat-messages')[0].scrollHeight);
-
         }).fail(function() {
             $loader.remove();
-            $('#chat-messages').append('<div class="bot-message" style="color:red;">Erreur de communication avec l\'assistant.</div>');
+            $('#chat-messages').append('<div class="bot-message" style="color:red;">Erreur de communication.</div>');
         });
     }
 

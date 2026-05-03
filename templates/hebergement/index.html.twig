@@ -1,82 +1,183 @@
 {% extends 'admin/base_admin.html.twig' %}
-{% block title %}Gestion Hébergements{% endblock %}
+
+{% block title %}Hébergements{% endblock %}
+
 {% block admin_content %}
-<div class="main-content">
+<style>
+.heb-table { width:100%; border-collapse:separate; border-spacing:0; }
+.heb-table thead tr { background:#12122a; }
+.heb-table thead th {
+    padding:12px 16px; font-size:11px; font-weight:700; letter-spacing:.08em;
+    text-transform:uppercase; color:#6b7280; border-bottom:1px solid #1e1e3a; white-space:nowrap;
+}
+.heb-table thead th a { color:inherit; text-decoration:none; }
+.heb-table thead th a:hover { color:#e0e0e0; }
+.heb-table tbody tr { transition:background .15s; border-bottom:1px solid #1a1a30; }
+.heb-table tbody tr:hover { background:#14142a; }
+.heb-table tbody td { padding:13px 16px; vertical-align:middle; }
 
-    <div style="display:flex; gap:10px; margin-bottom:16px;">
-        <a href="{{ path('app_hebergement_new') }}" style="background:var(--accent-primary); color:#fff; padding:10px 20px; border-radius:8px; text-decoration:none; font-weight:600; display:flex; align-items:center; gap:8px;">
-            + Nouvel Hébergement
-        </a>
-        <a href="{{ path('app_chambre_new') }}" style="background:#22c55e; color:#fff; padding:10px 20px; border-radius:8px; text-decoration:none; font-weight:600; display:flex; align-items:center; gap:8px;">
-            + Chambre
-        </a>
-        <a href="{{ path('app_type_new') }}" style="background:#6c63ff; color:#fff; padding:10px 20px; border-radius:8px; text-decoration:none; font-weight:600; display:flex; align-items:center; gap:8px;">
-            + Type
-        </a>
+.hbadge-id    { background:#1e1e2a; color:#818cf8; border-radius:6px; padding:3px 9px; font-size:12px; font-weight:700; }
+.hbadge-desc  { font-size:13px; font-weight:600; color:#e2e8f0; }
+.hbadge-prix  { color:#4ade80; font-size:13px; font-weight:700; }
+.hbadge-type  { background:#1e1e2a; color:#a78bfa; border:1px solid #2e2050; border-radius:6px; padding:3px 9px; font-size:12px; font-weight:600; }
+.hbadge-chambres { background:#1e1e2a; color:#7dd3fc; border:1px solid #0e2a4a; border-radius:6px; padding:3px 9px; font-size:11px; font-weight:600; }
+
+.thumb-wrap {
+    width:64px; height:50px; border-radius:8px; overflow:hidden;
+    border:1px solid #2a2a3a; background:#1e1e2a;
+    display:inline-flex; align-items:center; justify-content:center;
+    color:#4b5563; font-size:18px;
+}
+.thumb-wrap img { width:100%; height:100%; object-fit:cover; display:block; }
+
+.hact { display:flex; gap:6px; align-items:center; flex-wrap:nowrap; }
+.hbtn {
+    display:inline-flex; align-items:center; gap:4px;
+    padding:5px 11px; border-radius:6px; font-size:12px; font-weight:500;
+    text-decoration:none; border:1px solid #2a2a3a; cursor:pointer;
+    background:#1a1a28; color:#94a3b8;
+    transition:color .15s, border-color .15s; white-space:nowrap;
+}
+.hbtn:hover { color:#e0e0e0; border-color:#444; }
+.hbtn-view  { color:#818cf8; border-color:#2e2e50; }
+.hbtn-edit  { color:#fbbf24; border-color:#4a3010; }
+.hbtn-add   { color:#4ade80; border-color:#1a3d28; }
+.hbtn-del   { color:#f87171; border-color:#3d1f1f; }
+.hbtn-del form, .hbtn-del button {
+    margin:0; padding:0; background:none; border:none;
+    color:inherit; font:inherit; font-size:12px; font-weight:500;
+    cursor:pointer; display:inline;
+}
+</style>
+
+<div class="page-header">
+    <h1>Hébergements</h1>
+    <p>Gérer tous les hébergements</p>
+</div>
+
+{# ===== FILTRES ===== #}
+<div class="card" style="margin-bottom:20px">
+    <div class="card-header"><h3 class="card-title">Filtres & Recherche</h3></div>
+    <form method="GET" action="{{ path('app_hebergement_index') }}"
+          style="display:flex;flex-wrap:wrap;gap:12px;padding:16px;align-items:flex-end">
+
+        <div style="flex:1;min-width:180px">
+            <label style="display:block;font-size:12px;margin-bottom:4px;color:#888">Recherche (description, type)</label>
+            <input type="text" name="search" value="{{ search|default('') }}" placeholder="Rechercher..."
+                   style="width:100%;padding:8px 12px;border-radius:6px;border:1px solid #333;background:#1a1a2e;color:#fff;font-size:13px">
+        </div>
+
+        <div style="min-width:150px">
+            <label style="display:block;font-size:12px;margin-bottom:4px;color:#888">Type</label>
+            <select name="type" style="width:100%;padding:8px 12px;border-radius:6px;border:1px solid #333;background:#1a1a2e;color:#fff;font-size:13px">
+                <option value="">Tous</option>
+                {% for type in types|default([]) %}
+                    <option value="{{ type.id }}" {{ (typeFilter|default('')) == (type.id~'') ? 'selected' : '' }}>{{ type.nom }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div style="min-width:150px">
+            <label style="display:block;font-size:12px;margin-bottom:4px;color:#888">Trier par</label>
+            <select name="tri" style="width:100%;padding:8px 12px;border-radius:6px;border:1px solid #333;background:#1a1a2e;color:#fff;font-size:13px">
+                <option value="id"   {{ (tri|default('id'))   == 'id'   ? 'selected' : '' }}>ID</option>
+                <option value="prix" {{ (tri|default('id'))   == 'prix' ? 'selected' : '' }}>Prix</option>
+            </select>
+        </div>
+
+        <div style="min-width:120px">
+            <label style="display:block;font-size:12px;margin-bottom:4px;color:#888">Ordre</label>
+            <select name="ordre" style="width:100%;padding:8px 12px;border-radius:6px;border:1px solid #333;background:#1a1a2e;color:#fff;font-size:13px">
+                <option value="ASC"  {{ (ordre|default('ASC')) == 'ASC'  ? 'selected' : '' }}>▲ Croissant</option>
+                <option value="DESC" {{ (ordre|default('ASC')) == 'DESC' ? 'selected' : '' }}>▼ Décroissant</option>
+            </select>
+        </div>
+
+        <div style="display:flex;gap:8px">
+            <button type="submit" style="padding:8px 18px;border-radius:6px;border:none;background:#6c63ff;color:#fff;font-size:13px;cursor:pointer;font-weight:600">🔍 Filtrer</button>
+            <a href="{{ path('app_hebergement_index') }}" style="padding:8px 18px;border-radius:6px;border:1px solid #555;color:#aaa;font-size:13px;text-decoration:none;display:flex;align-items:center">✕ Reset</a>
+        </div>
+    </form>
+</div>
+
+{# ===== TABLEAU ===== #}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">
+            Liste des Hébergements
+            <span style="font-size:13px;color:#888;font-weight:normal;margin-left:8px">
+                ({{ hebergements|length }} résultat{{ hebergements|length > 1 ? 's' : '' }})
+            </span>
+        </h3>
+        <div style="display:flex;gap:8px">
+            <a href="{{ path('app_hebergement_new') }}" class="action-btn primary">+ Ajouter</a>
+            <a href="{{ path('app_chambre_new') }}" style="padding:8px 16px;border-radius:6px;border:none;background:#1a3d28;color:#4ade80;font-size:13px;font-weight:600;text-decoration:none;display:flex;align-items:center">+ Chambre</a>
+            <a href="{{ path('app_type_new') }}" style="padding:8px 16px;border-radius:6px;border:none;background:#2e2050;color:#a78bfa;font-size:13px;font-weight:600;text-decoration:none;display:flex;align-items:center">+ Type</a>
+        </div>
     </div>
 
-    <div style="margin-bottom:24px;">
-        <h2 style="color:var(--text-primary); margin:0;">Gestion des Hébergements</h2>
-        <p style="color:var(--text-secondary); margin:4px 0 0;">{{ hebergements|length }} hébergement(s) trouvé(s)</p>
-    </div>
-
-    <div style="background:var(--bg-card); border-radius:12px; overflow:hidden; border:1px solid var(--border-color);">
-        <table style="width:100%; border-collapse:collapse;">
-            <thead>
-                <tr style="background:var(--bg-secondary); border-bottom:1px solid var(--border-color);">
-                    <th style="padding:14px 20px; text-align:left; color:var(--text-secondary); font-size:13px; font-weight:600;">#</th>
-                    <th style="padding:14px 20px; text-align:left; color:var(--text-secondary); font-size:13px; font-weight:600;">Image</th>
-                    <th style="padding:14px 20px; text-align:left; color:var(--text-secondary); font-size:13px; font-weight:600;">Description</th>
-                    <th style="padding:14px 20px; text-align:left; color:var(--text-secondary); font-size:13px; font-weight:600;">Prix</th>
-                    <th style="padding:14px 20px; text-align:left; color:var(--text-secondary); font-size:13px; font-weight:600;">Type</th>
-                    <th style="padding:14px 20px; text-align:left; color:var(--text-secondary); font-size:13px; font-weight:600;">Chambres</th>
-                    <th style="padding:14px 20px; text-align:center; color:var(--text-secondary); font-size:13px; font-weight:600;">Actions</th>
-                </tr>
-            </thead>
-            <tbody>
+    <div style="overflow-x:auto">
+    <table class="heb-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Image</th>
+                <th>Description</th>
+                <th>Prix</th>
+                <th>Type</th>
+                <th>Chambres</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
             {% for hebergement in hebergements %}
-                <tr style="border-bottom:1px solid var(--border-color);">
-                    <td style="padding:14px 20px; color:var(--text-secondary);">{{ hebergement.id }}</td>
-                    <td style="padding:10px 20px;">
+            <tr>
+                <td><span class="hbadge-id">#{{ hebergement.id }}</span></td>
+                <td>
+                    <div class="thumb-wrap">
                         {% if hebergement.imagePath %}
-                            <img src="{{ asset('uploads/hebergements/' ~ hebergement.imagePath) }}"
-                                 style="width:70px; height:50px; object-fit:cover; border-radius:6px; border:1px solid var(--border-color);">
+                            <img src="{{ asset('uploads/hebergements/' ~ hebergement.imagePath) }}" alt="Hébergement">
                         {% else %}
-                            <div style="width:70px; height:50px; background:var(--bg-secondary); border-radius:6px; display:flex; align-items:center; justify-content:center; color:var(--text-secondary); font-size:11px;">
-                                No img
-                            </div>
+                            🏨
                         {% endif %}
-                    </td>
-                    <td style="padding:14px 20px; color:var(--text-primary); max-width:200px;">
-                        <div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ hebergement.description|slice(0,40) }}{% if hebergement.description|length > 40 %}...{% endif %}</div>
-                    </td>
-                    <td style="padding:14px 20px;">
-                        <span style="color:#22c55e; font-weight:600;">{{ hebergement.prix }} TND</span>
-                    </td>
-                    <td style="padding:14px 20px;">
-                        <span style="background:var(--bg-secondary); color:var(--accent-primary); padding:4px 12px; border-radius:20px; font-size:12px; font-weight:600;">
-                            {{ hebergement.type ? hebergement.type.nom : 'N/A' }}
-                        </span>
-                    </td>
-                    <td style="padding:14px 20px; color:var(--text-primary);">{{ hebergement.no|length }}</td>
-                    <td style="padding:14px 20px; text-align:center;">
-                        <div style="display:flex; gap:8px; justify-content:center; flex-wrap:wrap;">
-                            <a href="{{ path('app_hebergement_show', {'id': hebergement.id}) }}" style="background:#3b82f620; color:#3b82f6; padding:6px 12px; border-radius:6px; text-decoration:none; font-size:13px; font-weight:500;">Voir</a>
-                            <a href="{{ path('app_hebergement_edit', {'id': hebergement.id}) }}" style="background:#f59e0b20; color:#f59e0b; padding:6px 12px; border-radius:6px; text-decoration:none; font-size:13px; font-weight:500;">Modifier</a>
-                            <a href="{{ path('app_chambre_new', {'hebergement': hebergement.id}) }}" style="background:#22c55e20; color:#22c55e; padding:6px 12px; border-radius:6px; text-decoration:none; font-size:13px; font-weight:500;">+ Chambre</a>
-                            {{ include('hebergement/_delete_form.html.twig') }}
-                        </div>
-                    </td>
-                </tr>
+                    </div>
+                </td>
+                <td>
+                    <span class="hbadge-desc">
+                        {{ hebergement.description|slice(0,45) }}{% if hebergement.description|length > 45 %}…{% endif %}
+                    </span>
+                </td>
+                <td><span class="hbadge-prix">{{ hebergement.prix }} TND</span></td>
+                <td>
+                    {% if hebergement.type %}
+                        <span class="hbadge-type">{{ hebergement.type.nom }}</span>
+                    {% else %}
+                        <span style="color:#4b5563;font-size:12px">—</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if hebergement.no|length > 0 %}
+                        <span class="hbadge-chambres">{{ hebergement.no|length }} chambre{{ hebergement.no|length > 1 ? 's' : '' }}</span>
+                    {% else %}
+                        <span style="color:#4b5563;font-size:12px">—</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <div class="hact">
+                        <a href="{{ path('app_hebergement_show', {'id': hebergement.id}) }}" class="hbtn hbtn-view">👁 Voir</a>
+                        <a href="{{ path('app_hebergement_edit', {'id': hebergement.id}) }}" class="hbtn hbtn-edit">✏️ Modifier</a>
+                        <a href="{{ path('app_chambre_new', {'hebergement': hebergement.id}) }}" class="hbtn hbtn-add">+ Chambre</a>
+                        <span class="hbtn hbtn-del">{{ include('hebergement/_delete_form.html.twig') }}</span>
+                    </div>
+                </td>
+            </tr>
             {% else %}
-                <tr>
-                    <td colspan="7" style="padding:40px; text-align:center; color:var(--text-secondary);">
-                        Aucun hébergement trouvé
-                    </td>
-                </tr>
+            <tr><td colspan="7" style="text-align:center;color:#4b5563;padding:40px;font-size:14px">Aucun hébergement trouvé</td></tr>
             {% endfor %}
-            </tbody>
-        </table>
+        </tbody>
+    </table>
     </div>
 </div>
+
+<footer class="copyright">Copyright &copy; 2026 VoyageLoisir</footer>
 {% endblock %}

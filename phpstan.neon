@@ -1,0 +1,9 @@
+parameters:
+    level: 8
+    paths:
+        - src
+    ignoreErrors:
+        - '#Call to an undefined method App\\Entity\\#'
+        - '#Cannot call method get.*\(\) on.*null#'
+    excludePaths:
+        - src/Kernel.php

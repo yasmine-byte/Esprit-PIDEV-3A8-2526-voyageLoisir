@@ -38,9 +38,43 @@ class ReclamationType extends AbstractType
                 ],
                 'label' => 'Priorité'
             ])
+            ->add('reservation', EntityType::class, [
+                'class' => \App\Entity\Reservation::class,
+                'choice_label' => function (\App\Entity\Reservation $res) {
+                    return sprintf("#%d - %s (%s)", $res->getId(), $res->getHebergement()?->getDescription() ?? 'Hébergement', $res->getDateDebut()?->format('d/m/Y') ?? '—');
+                },
+                'label' => 'Sélectionner la réservation concernée',
+                'required' => false,
+                'placeholder' => 'Choisissez une réservation',
+                'query_builder' => function (\App\Repository\ReservationRepository $repo) use ($options) {
+                    $qb = $repo->createQueryBuilder('r');
+                    if ($options['user_email']) {
+                        $qb->where('r.clientEmail = :email')
+                           ->setParameter('email', $options['user_email']);
+                    }
+                    return $qb;
+                }
+            ])
+            ->add('reservationActivite', EntityType::class, [
+                'class' => \App\Entity\ReservationActivite::class,
+                'choice_label' => function (\App\Entity\ReservationActivite $res) {
+                    return sprintf("#%d - %s (%s)", $res->getId(), $res->getActivite()?->getNom() ?? 'Activité', $res->getDateReservation()?->format('d/m/Y') ?? '—');
+                },
+                'label' => 'Sélectionner l\'activité concernée',
+                'required' => false,
+                'placeholder' => 'Choisissez une activité',
+                'query_builder' => function (\App\Repository\ReservationActiviteRepository $repo) use ($options) {
+                    $qb = $repo->createQueryBuilder('ra');
+                    if ($options['user_id']) {
+                        $qb->where('ra.user = :userId')
+                           ->setParameter('userId', $options['user_id']);
+                    }
+                    return $qb;
+                }
+            ])
             ->add('submit', SubmitType::class, [
                 'label' => 'Envoyer la réclamation',
-                'attr' => ['class' => 'btn btn-primary']
+                'attr' => ['class' => 'btn btn-primary w-100 mt-3']
             ])
         ;
     }
@@ -49,6 +83,8 @@ class ReclamationType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => Reclamation::class,
+            'user_id' => null,
+            'user_email' => null,
         ]);
     }
 }

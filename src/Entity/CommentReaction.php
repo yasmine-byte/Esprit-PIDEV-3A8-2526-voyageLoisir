@@ -23,77 +23,37 @@ class CommentReaction
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?Users $user = null;
 
+    // ✅ FIX : non-nullable string
     #[ORM\Column(length: 20)]
-    private ?string $reactionType = null;
+    private string $reactionType = '';
 
+    // ✅ FIX : DateTimeImmutable non-nullable
+    #[ORM\Column]
+    private \DateTimeImmutable $createdAt;
+
+    // ✅ FIX : DateTimeImmutable nullable
     #[ORM\Column(nullable: true)]
-    private ?\DateTime $createdAt = null;
+    private ?\DateTimeImmutable $updatedAt = null;
 
-    #[ORM\Column(nullable: true)]
-    private ?\DateTime $updatedAt = null;
-
-    public function getId(): ?int
+    public function __construct()
     {
-        return $this->id;
+        $this->createdAt = new \DateTimeImmutable();
     }
 
-    public function getCommentaire(): ?Commentaire
-    {
-        return $this->commentaire;
-    }
+    public function getId(): ?int { return $this->id; }
 
-    public function setCommentaire(?Commentaire $commentaire): static
-    {
-        $this->commentaire = $commentaire;
+    public function getCommentaire(): ?Commentaire { return $this->commentaire; }
+    public function setCommentaire(?Commentaire $commentaire): static { $this->commentaire = $commentaire; return $this; }
 
-        return $this;
-    }
+    public function getUser(): ?Users { return $this->user; }
+    public function setUser(?Users $user): static { $this->user = $user; return $this; }
 
-    public function getUser(): ?Users
-    {
-        return $this->user;
-    }
+    public function getReactionType(): string { return $this->reactionType; }
+    public function setReactionType(string $reactionType): static { $this->reactionType = $reactionType; return $this; }
 
-    public function setUser(?Users $user): static
-    {
-        $this->user = $user;
+    public function getCreatedAt(): \DateTimeImmutable { return $this->createdAt; }
+    public function setCreatedAt(\DateTimeImmutable $createdAt): static { $this->createdAt = $createdAt; return $this; }
 
-        return $this;
-    }
-
-    public function getReactionType(): ?string
-    {
-        return $this->reactionType;
-    }
-
-    public function setReactionType(string $reactionType): static
-    {
-        $this->reactionType = $reactionType;
-
-        return $this;
-    }
-
-    public function getCreatedAt(): ?\DateTime
-    {
-        return $this->createdAt;
-    }
-
-    public function setCreatedAt(?\DateTime $createdAt): static
-    {
-        $this->createdAt = $createdAt;
-
-        return $this;
-    }
-
-    public function getUpdatedAt(): ?\DateTime
-    {
-        return $this->updatedAt;
-    }
-
-    public function setUpdatedAt(?\DateTime $updatedAt): static
-    {
-        $this->updatedAt = $updatedAt;
-
-        return $this;
-    }
+    public function getUpdatedAt(): ?\DateTimeImmutable { return $this->updatedAt; }
+    public function setUpdatedAt(?\DateTimeImmutable $updatedAt): static { $this->updatedAt = $updatedAt; return $this; }
 }

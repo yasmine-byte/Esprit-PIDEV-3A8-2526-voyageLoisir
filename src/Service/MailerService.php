@@ -27,7 +27,10 @@ class MailerService
     /** Email de l'administrateur (destinataire des alertes) */
     private const ADMIN_EMAIL = 'rayenhafian72@gmail.com';
 
-    public function __construct(private readonly MailerInterface $mailer) {}
+    public function __construct(
+        private readonly MailerInterface $mailer,
+        private readonly \App\Repository\UsersRepository $usersRepository
+    ) {}
 
     // ─────────────────────────────────────────────────────────────
     // 1. Confirmation d'avis
@@ -189,8 +192,8 @@ class MailerService
      */
     private function getUserEmail(int $userId): string
     {
-        // Pour les tests, tous les emails clients vont vers cette adresse
-        return 'rayenhafian72@gmail.com';
+        $user = $this->usersRepository->find($userId);
+        return $user ? $user->getEmail() : 'rayenhafian72@gmail.com';
     }
 
     /**

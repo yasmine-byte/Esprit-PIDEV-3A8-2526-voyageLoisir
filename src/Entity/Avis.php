@@ -15,36 +15,55 @@ class Avis
     #[ORM\Column]
     private ?int $id = null;
 
+    // ✅ FIX : non-nullable int (type mismatch fix)
     #[ORM\Column]
-    private ?int $userId = null;
+    private int $userId = 0;
 
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
     #[Assert\NotNull(message: "Le type est obligatoire")]
     private ?TypeAvis $type = null;
 
+    // ✅ FIX : non-nullable string (type mismatch fix)
     #[ORM\Column(type: Types::TEXT)]
     #[Assert\NotBlank(message: "Le contenu est obligatoire")]
     #[Assert\Length(min: 10, minMessage: "Minimum 10 caractères")]
-    private ?string $contenu = null;
+    private string $contenu = '';
 
+    // ✅ FIX : non-nullable int (type mismatch fix)
     #[ORM\Column]
     #[Assert\NotBlank]
     #[Assert\Range(min: 1, max: 5, notInRangeMessage: "Entre 1 et 5 étoiles")]
-    private ?int $nbEtoiles = null;
+    private int $nbEtoiles = 1;
 
+    // ✅ FIX : non-nullable string (type mismatch fix)
     #[ORM\Column(length: 20)]
-    private ?string $statut = null;
+    private string $statut = 'en_attente';
 
+    // ✅ FIX : DateTimeImmutable non-nullable (mutable DateTime fix)
     #[ORM\Column]
-    private ?\DateTime $dateAvis = null;
+    private \DateTimeImmutable $dateAvis;
+
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $reponse = null;
+
+    #[ORM\Column(length: 20, nullable: true)]
+    private ?string $sentimentLabel = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?float $sentimentScore = null;
+
+    public function __construct()
+    {
+        $this->dateAvis = new \DateTimeImmutable();
+    }
 
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getUserId(): ?int
+    public function getUserId(): int
     {
         return $this->userId;
     }
@@ -52,7 +71,6 @@ class Avis
     public function setUserId(int $userId): static
     {
         $this->userId = $userId;
-
         return $this;
     }
 
@@ -64,11 +82,10 @@ class Avis
     public function setType(?TypeAvis $type): static
     {
         $this->type = $type;
-
         return $this;
     }
 
-    public function getContenu(): ?string
+    public function getContenu(): string
     {
         return $this->contenu;
     }
@@ -76,11 +93,10 @@ class Avis
     public function setContenu(string $contenu): static
     {
         $this->contenu = $contenu;
-
         return $this;
     }
 
-    public function getNbEtoiles(): ?int
+    public function getNbEtoiles(): int
     {
         return $this->nbEtoiles;
     }
@@ -88,11 +104,10 @@ class Avis
     public function setNbEtoiles(int $nbEtoiles): static
     {
         $this->nbEtoiles = $nbEtoiles;
-
         return $this;
     }
 
-    public function getStatut(): ?string
+    public function getStatut(): string
     {
         return $this->statut;
     }
@@ -100,30 +115,19 @@ class Avis
     public function setStatut(string $statut): static
     {
         $this->statut = $statut;
-
         return $this;
     }
 
-    public function getDateAvis(): ?\DateTime
+    public function getDateAvis(): \DateTimeImmutable
     {
         return $this->dateAvis;
     }
 
-    public function setDateAvis(\DateTime $dateAvis): static
+    public function setDateAvis(\DateTimeImmutable $dateAvis): static
     {
         $this->dateAvis = $dateAvis;
-
         return $this;
     }
-
-    #[ORM\Column(type: Types::TEXT, nullable: true)]
-    private ?string $reponse = null;
-
-    #[ORM\Column(length: 20, nullable: true)]
-    private ?string $sentimentLabel = null;
-
-    #[ORM\Column(nullable: true)]
-    private ?float $sentimentScore = null;
 
     public function getReponse(): ?string
     {
@@ -133,7 +137,6 @@ class Avis
     public function setReponse(?string $reponse): static
     {
         $this->reponse = $reponse;
-
         return $this;
     }
 

@@ -58,7 +58,7 @@
             {{ hebergement.type ? hebergement.type.nom : 'Hébergement' }}
             {% if hebergement.adresse %} — {{ hebergement.adresse|slice(0,40) }}{% endif %}
           </h3>
-          <p style="color:#fff; font-size:18px; margin-top:10px;">{{ hebergement.prix }} TND / nuit</p>
+          <p style="color:#fff; font-size:18px; margin-top:10px;">À partir de {{ hebergement.prix }} TND / nuit</p>
         </div>
       </div>
     </div>
@@ -83,7 +83,7 @@
             <span class="category">{{ hebergement.type ? hebergement.type.nom : 'Hébergement' }}</span>
             <h4 style="font-size:18px;">{{ hebergement.description|slice(0,80) }}{% if hebergement.description|length > 80 %}...{% endif %}</h4>
             <p style="margin-top:10px; color:#666; line-height:1.7;">{{ hebergement.description }}</p>
-            <p>Prix : <strong style="color:#f75959;">{{ hebergement.prix }} TND / nuit</strong></p>
+            <p>Prix : <strong style="color:#f75959;" id="prixHebergement">Sélectionnez une chambre</strong></p>
           </div>
 
           {# ===== CHAMBRES CLIQUABLES ===== #}
@@ -271,8 +271,10 @@
     document.getElementById('badge-' + id).style.display = 'block';
     document.getElementById('selectedChambreId').value = id;
     document.getElementById('selectedPrix').value = prix;
+    document.getElementById('prixHebergement').innerText = prix + ' TND / nuit';
     selectedChambreId = id;
     selectedPrixNuit  = prix;
+     
     document.getElementById('chambreSelectionnee').style.display = 'block';
     document.getElementById('chambreAlert').style.display = 'none';
     document.getElementById('chambreInfo').innerText = numero + ' — ' + type + ' — ' + capacite + ' personnes';

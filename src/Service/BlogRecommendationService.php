@@ -114,10 +114,8 @@ class BlogRecommendationService
             + (($minimumVotes / ($voteCount + $minimumVotes)) * $globalAverageRating);
     }
 
-    private function calculateRecencyScore(?\DateTime $publishedAt): float
-    {
-        if (!$publishedAt instanceof \DateTime) {
-            return 0.0;
+private function calculateRecencyScore(?\DateTimeInterface $publishedAt): float    {
+if (!$publishedAt instanceof \DateTimeInterface) {            return 0.0;
         }
 
         $ageInDays = max(0, (int) $publishedAt->diff(new \DateTime())->days);

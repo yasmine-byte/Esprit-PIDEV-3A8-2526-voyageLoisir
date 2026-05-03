@@ -1,184 +1,200 @@
 {% extends 'base_front.html.twig' %}
-{% block title %}Modifier la réclamation - Villa Agency{% endblock %}
-{% block body %}
-    
-    <style>
-        @keyframes fadeInUp{from{opacity:0;transform:translateY(30px);}to{opacity:1;transform:translateY(0);}}
-        @keyframes spin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
-        .animate-fade{animation:fadeInUp 0.6s ease forwards;}
-        .floating-card{background:#fff;border-radius:20px;box-shadow:0 20px 40px rgba(0,0,0,0.1);padding:40px;position:relative;z-index:10;margin-top:-50px;}
-        .edit-badge{display:inline-block;background:#fff3f0;color:#f35525;border:1px solid #f35525;border-radius:20px;padding:4px 14px;font-size:0.82rem;font-weight:600;margin-bottom:16px;}
-        .custom-input{border:2px solid #e9ecef;border-radius:12px;padding:12px 15px 12px 45px;transition:all 0.3s;width:100%;}
-        .custom-input:focus{border-color:#f35525;box-shadow:0 0 0 3px rgba(243,85,37,0.1);outline:none;}
-        .input-icon{position:absolute;left:15px;top:50%;transform:translateY(-50%);color:#6c757d;}
-        .input-group-custom{position:relative;margin-bottom:5px;}
-        .custom-select{border:2px solid #e9ecef;border-radius:12px;padding:12px 15px;width:100%;appearance:none;background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%236c757d' viewBox='0 0 16 16'><path fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/></svg>") no-repeat right 15px center;background-color:#fff;}
-        .custom-select:focus{border-color:#f35525;outline:none;box-shadow:0 0 0 3px rgba(243,85,37,0.1);}
-        .priority-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
-        .prio-card{border:2px solid #e9ecef;border-radius:10px;padding:10px 5px;text-align:center;cursor:pointer;transition:0.3s;font-weight:bold;font-size:0.85rem;color:#6c757d;}
-        .prio-card:hover{transform:translateY(-3px);}
-        .prio-card.active[data-val="Basse"]{background:rgba(108,117,125,0.1);border-color:#6c757d;color:#6c757d;}
-        .prio-card.active[data-val="Moyenne"]{background:rgba(13,202,240,0.1);border-color:#0dcaf0;color:#0dcaf0;}
-        .prio-card.active[data-val="Haute"]{background:rgba(253,126,20,0.1);border-color:#fd7e14;color:#fd7e14;}
-        .prio-card.active[data-val="Urgente"]{background:rgba(220,53,69,0.1);border-color:#dc3545;color:#dc3545;}
-        .hidden-select{display:none !important;}
-        .quality-bar{height:6px;background:#e9ecef;border-radius:3px;margin-top:5px;overflow:hidden;}
-        .quality-fill{height:100%;width:0%;transition:0.3s ease;}
-        .quality-text{font-size:0.8rem;font-weight:bold;text-align:right;margin-top:3px;}
-        .btn-submit{background:linear-gradient(45deg,#dc3545,#f35525);color:#fff;border:none;border-radius:50px;padding:14px 36px;font-size:1rem;font-weight:700;transition:0.3s;display:inline-flex;align-items:center;gap:10px;}
-        .btn-submit:hover{transform:scale(1.03);box-shadow:0 10px 20px rgba(220,53,69,0.3);color:#fff;}
-        .btn-cancel-new{background:#fff;color:#888;border:2px solid #e0e0e0;border-radius:50px;padding:14px 36px;font-size:1rem;font-weight:600;transition:all 0.25s;display:inline-flex;align-items:center;gap:8px;text-decoration:none;}
-        .btn-cancel-new:hover{background:#f5f5f5;border-color:#bbb;color:#444;text-decoration:none;}
-        .spinner-icon{display:none;animation:spin 1s linear infinite;}
-        .btn-submit.loading .btn-text-content{display:none;}
-        .btn-submit.loading .spinner-icon{display:inline-block;}
-        @media(max-width:768px){.priority-grid{grid-template-columns:repeat(2,1fr);}}
-    </style>
+{% block title %}Modifier la Réclamation – ViaNoVa{% endblock %}
 
-    <div class="page-heading header-text" style="padding-bottom:120px;">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-12">
-                    <span class="breadcrumb"><a href="{{ path('reclamation_index') }}">Réclamations</a> / Modifier</span>
-                    <h3>Modifier la réclamation</h3>
-                </div>
-            </div>
+{% block stylesheets %}
+{{ parent() }}
+<style>
+@keyframes fadeInUp{from{opacity:0;transform:translateY(28px);}to{opacity:1;transform:translateY(0);}}
+@keyframes spin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
+.recl-page-wrap{background:linear-gradient(135deg,#fff8f4 0%,#fef0e8 50%,#f8f9fa 100%);min-height:100vh;padding:0 0 60px;}
+.recl-hero{background:linear-gradient(135deg,#d4845a 0%,#e8a87c 60%,#f5c99a 100%);padding:50px 0 90px;position:relative;overflow:hidden;}
+.recl-hero::before{content:'';position:absolute;top:-40px;right:-60px;width:300px;height:300px;border-radius:50%;background:rgba(255,255,255,0.08);pointer-events:none;}
+.recl-hero h2{color:#fff;font-size:2rem;font-weight:800;margin:0 0 6px;}
+.recl-hero p{color:rgba(255,255,255,0.82);font-size:1rem;margin:0;}
+.edit-pill{display:inline-block;background:rgba(255,255,255,0.2);color:#fff;border:1px solid rgba(255,255,255,0.35);border-radius:30px;padding:5px 16px;font-size:0.82rem;font-weight:700;margin-bottom:10px;}
+.recl-card{background:#fff;border-radius:24px;box-shadow:0 20px 60px rgba(212,132,90,0.13),0 4px 20px rgba(0,0,0,0.05);padding:44px 48px;margin-top:-55px;position:relative;z-index:10;animation:fadeInUp 0.65s ease forwards;}
+.recl-card-border-top{position:absolute;top:0;left:0;right:0;height:5px;border-radius:24px 24px 0 0;background:linear-gradient(90deg,#d4845a,#e8a87c,#f5c99a);}
+.field-block{margin-bottom:26px;}
+.field-label{display:block;font-size:0.82rem;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;color:#555;margin-bottom:9px;}
+.field-input{width:100%;padding:13px 16px 13px 46px;border:2px solid #eee;border-radius:14px;font-size:0.95rem;color:#333;transition:border-color 0.25s,box-shadow 0.25s;box-sizing:border-box;background:#fafafa;}
+.field-input:focus{outline:none;border-color:#d4845a;box-shadow:0 0 0 4px rgba(212,132,90,0.12);background:#fff;}
+.field-input.valid{border-color:#22c55e;background:#f0fdf4;}
+.field-input.invalid{border-color:#ef4444;background:#fef2f2;}
+.field-input-wrap{position:relative;}
+.field-icon{position:absolute;left:15px;top:50%;transform:translateY(-50%);font-size:16px;pointer-events:none;}
+.field-select{width:100%;padding:13px 42px 13px 16px;border:2px solid #eee;border-radius:14px;font-size:0.95rem;color:#333;background:#fafafa url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' fill='%23d4845a' viewBox='0 0 16 16'><path fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/></svg>") no-repeat right 16px center;appearance:none;transition:border-color 0.25s;box-sizing:border-box;}
+.field-select:focus{outline:none;border-color:#d4845a;box-shadow:0 0 0 4px rgba(212,132,90,0.12);background-color:#fff;}
+.field-hint{font-size:0.78rem;color:#aaa;margin-top:5px;}
+.field-error{font-size:0.78rem;color:#ef4444;margin-top:4px;font-weight:600;}
+.prio-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:4px;}
+.prio-btn{border:2px solid #eee;border-radius:14px;padding:13px 6px;text-align:center;cursor:pointer;transition:all 0.22s;font-weight:700;font-size:0.82rem;color:#aaa;background:#fafafa;user-select:none;}
+.prio-btn:hover{transform:translateY(-3px);box-shadow:0 6px 16px rgba(0,0,0,0.08);}
+.prio-btn.sel-basse{background:#f0fdf4;border-color:#22c55e;color:#16a34a;}
+.prio-btn.sel-moyenne{background:#eff6ff;border-color:#3b82f6;color:#1d4ed8;}
+.prio-btn.sel-haute{background:#fff7ed;border-color:#f97316;color:#c2410c;}
+.prio-btn.sel-urgente{background:#fef2f2;border-color:#ef4444;color:#dc2626;}
+.hidden-field{display:none !important;}
+.quality-wrap{margin-top:8px;}
+.quality-bar{height:5px;background:#eee;border-radius:4px;overflow:hidden;}
+.quality-fill{height:100%;width:0;border-radius:4px;transition:width 0.3s,background 0.3s;}
+.quality-meta{display:flex;justify-content:space-between;font-size:0.78rem;font-weight:600;margin-top:4px;}
+.btn-save{background:linear-gradient(135deg,#d4845a,#e8a87c);color:#fff;border:none;border-radius:50px;padding:14px 40px;font-size:1rem;font-weight:800;cursor:pointer;transition:all 0.25s;display:inline-flex;align-items:center;gap:10px;box-shadow:0 8px 24px rgba(212,132,90,0.35);}
+.btn-save:hover{transform:translateY(-2px);box-shadow:0 12px 32px rgba(212,132,90,0.45);}
+.btn-save .spin-icon{display:none;animation:spin 1s linear infinite;}
+.btn-save.loading .save-label{display:none;}
+.btn-save.loading .spin-icon{display:inline-block;}
+.btn-back-link{background:#fff;color:#888;border:2px solid #e8e8e8;border-radius:50px;padding:14px 36px;font-size:0.95rem;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;gap:8px;transition:all 0.22s;}
+.btn-back-link:hover{background:#f5f5f5;border-color:#ccc;color:#444;text-decoration:none;}
+@media(max-width:768px){.prio-grid{grid-template-columns:repeat(2,1fr);}.recl-card{padding:28px 20px;}}
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="recl-page-wrap">
+    <div class="recl-hero">
+        <div class="container text-center">
+            <div class="edit-pill">✏️ Modification de votre réclamation</div>
+            <h2>Mettre à jour la réclamation</h2>
+            <p>Apportez vos corrections puis enregistrez les modifications.</p>
         </div>
     </div>
 
-    <div class="container mb-5">
+    <div class="container">
         <div class="row justify-content-center">
             <div class="col-md-9 col-lg-8">
-                <div class="floating-card animate-fade">
-                    <div class="text-center mb-1">
-                        <span class="edit-badge">✏ Modification de votre réclamation</span>
+                <div class="recl-card">
+                    <div class="recl-card-border-top"></div>
+
+                    {{ form_start(form, {'attr':{'novalidate':'novalidate','id':'form-edit'}}) }}
+
+                    <div class="field-block">
+                        <label class="field-label">📌 Titre de la réclamation</label>
+                        <div class="field-input-wrap">
+                            <span class="field-icon">✏️</span>
+                            {{ form_widget(form.titre, {'attr':{'class':'field-input','placeholder':'Résumé du problème','id':'inp-titre'}}) }}
+                        </div>
+                        <div class="field-hint" id="hint-titre"></div>
+                        <div class="field-error">{{ form_errors(form.titre) }}</div>
                     </div>
-                    <h3 class="mb-4 fw-bold text-center">Mettre à jour la réclamation</h3>
 
-                    {{ form_start(form, {'attr': {'novalidate': 'novalidate', 'id': 'form-recl-edit'}}) }}
+                    <div class="field-block">
+                        <label class="field-label">🏷 Catégorie du problème</label>
+                        {{ form_widget(form.type, {'attr':{'class':'field-select', 'id':'recl-type-select'}}) }}
+                        <div class="field-error">{{ form_errors(form.type) }}</div>
+                    </div>
 
-                        {# Titre #}
-                        <div class="mb-4">
-                            {{ form_label(form.titre, 'Titre de la réclamation', {'label_attr': {'class': 'form-label fw-bold'}}) }}
-                            <div class="input-group-custom">
-                                <i class="fas fa-pen input-icon" id="titre-icon"></i>
-                                {{ form_widget(form.titre, {'attr': {'class': 'custom-input', 'placeholder': 'Résumé du problème', 'id': 'input-titre'}}) }}
-                            </div>
-                            <div id="titre-feedback" class="small mt-1 text-muted"></div>
-                            <div class="text-danger small mt-1">{{ form_errors(form.titre) }}</div>
+                    {# Réservation (conditionnel) #}
+                    <div class="field-block" id="reservation-block" style="display:none;">
+                        <label class="field-label">🏨 Réservation concernée</label>
+                        {{ form_widget(form.reservation, {'attr':{'class':'field-select'}}) }}
+                        <div class="field-error">{{ form_errors(form.reservation) }}</div>
+                    </div>
+
+                    {# Activité (conditionnel) #}
+                    <div class="field-block" id="activite-block" style="display:none;">
+                        <label class="field-label">🎯 Activité concernée</label>
+                        {{ form_widget(form.reservationActivite, {'attr':{'class':'field-select'}}) }}
+                        <div class="field-error">{{ form_errors(form.reservationActivite) }}</div>
+                    </div>
+
+                    <div class="field-block">
+                        <label class="field-label">🎯 Niveau de priorité</label>
+                        <div class="prio-grid">
+                            <div class="prio-btn" data-val="Basse">🟢<br>Basse</div>
+                            <div class="prio-btn" data-val="Moyenne">🔵<br>Moyenne</div>
+                            <div class="prio-btn" data-val="Haute">🟠<br>Haute</div>
+                            <div class="prio-btn" data-val="Urgente">🔴<br>Urgente</div>
                         </div>
+                        <div class="hidden-field">{{ form_widget(form.priorite, {'id':'hidden-prio'}) }}</div>
+                        <div class="field-error">{{ form_errors(form.priorite) }}</div>
+                    </div>
 
-                        {# Type #}
-                        <div class="mb-4">
-                            {{ form_label(form.type, 'Catégorie du problème', {'label_attr': {'class': 'form-label fw-bold'}}) }}
-                            {{ form_widget(form.type, {'attr': {'class': 'custom-select'}}) }}
-                            <div class="text-danger small mt-1">{{ form_errors(form.type) }}</div>
-                        </div>
-
-                        {# Priorité interactive #}
-                        <div class="mb-4">
-                            <label class="form-label fw-bold">Niveau de Priorité</label>
-                            <div class="priority-grid">
-                                <div class="prio-card" data-val="Basse">🟢 Basse</div>
-                                <div class="prio-card" data-val="Moyenne">🔵 Moyenne</div>
-                                <div class="prio-card" data-val="Haute">🟠 Haute</div>
-                                <div class="prio-card" data-val="Urgente">🔴 Urgente</div>
-                            </div>
-                            <div class="hidden-select">{{ form_widget(form.priorite, {'id': 'hidden-priorite'}) }}</div>
-                            <div class="text-danger small mt-1">{{ form_errors(form.priorite) }}</div>
-                        </div>
-
-                        {# Contenu #}
-                        <div class="mb-4">
-                            {{ form_label(form.contenu, 'Détails du problème', {'label_attr': {'class': 'form-label fw-bold'}}) }}
-                            {{ form_widget(form.contenu, {'attr': {'class': 'custom-input', 'style': 'padding-left:15px;resize:none;', 'rows': 6, 'placeholder': 'Décrivez votre problème en détail...', 'id': 'input-desc'}}) }}
-                            <div class="d-flex justify-content-between align-items-center mt-2">
-                                <div class="text-muted small"><span id="char-count">0</span> caractères</div>
-                                <div class="quality-text" id="quality-text"></div>
+                    <div class="field-block">
+                        <label class="field-label">📄 Détails du problème</label>
+                        {{ form_widget(form.contenu, {'attr':{'class':'field-input','style':'padding-left:16px;resize:none;min-height:140px;','rows':6,'placeholder':'Décrivez votre problème en détail…','id':'inp-desc'}}) }}
+                        <div class="quality-wrap">
+                            <div class="quality-meta">
+                                <span id="char-count" style="color:#aaa">0 caractères</span>
+                                <span id="quality-label" style="font-weight:700;"></span>
                             </div>
                             <div class="quality-bar"><div class="quality-fill" id="quality-fill"></div></div>
-                            <div class="text-danger small mt-1">{{ form_errors(form.contenu) }}</div>
                         </div>
+                        <div class="field-error">{{ form_errors(form.contenu) }}</div>
+                    </div>
 
-                        {# Boutons #}
-                        <div class="mt-5 d-flex justify-content-center gap-3 flex-wrap">
-                            <button type="submit" class="btn-submit" id="btn-submit">
-                                <span class="btn-text-content">Enregistrer les modifications 💾</span>
-                                <i class="fas fa-spinner spinner-icon"></i>
-                            </button>
-                            <a href="{{ path('reclamation_index') }}" class="btn-cancel-new">✕ Annuler</a>
-                        </div>
+                    <div style="display:flex;justify-content:center;gap:14px;flex-wrap:wrap;margin-top:32px;">
+                        <button type="submit" class="btn-save" id="btn-save">
+                            <span class="save-label">💾 Enregistrer les modifications</span>
+                            <span class="spin-icon">⏳</span>
+                        </button>
+                        <a href="{{ path('front_profile') }}" class="btn-back-link">✕ Annuler</a>
+                    </div>
 
-                        <div class="d-none">{{ form_rest(form) }}</div>
-                    {{ form_end(form, {'render_rest': false}) }}
+                    <div class="hidden-field">{{ form_rest(form) }}</div>
+                    {{ form_end(form, {'render_rest':false}) }}
                 </div>
             </div>
         </div>
     </div>
+</div>
 
-    
-    <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const inputTitre    = document.getElementById('input-titre');
-        const titreFeedback = document.getElementById('titre-feedback');
-        const titreIcon     = document.getElementById('titre-icon');
-
-        if(inputTitre) {
-            inputTitre.addEventListener('input', function() {
-                const v = this.value.trim();
-                if(!v)          { this.style.borderColor='#e9ecef'; titreIcon.style.color='#6c757d'; titreFeedback.textContent=''; }
-                else if(v.length<5){ this.style.borderColor='#dc3545'; titreIcon.style.color='#dc3545'; titreFeedback.textContent='Trop court.'; titreFeedback.style.color='#dc3545'; }
-                else               { this.style.borderColor='#28a745'; titreIcon.style.color='#28a745'; titreFeedback.textContent='Titre valide ✓'; titreFeedback.style.color='#28a745'; }
-            });
-            inputTitre.dispatchEvent(new Event('input'));
-        }
-
-        const inputDesc   = document.getElementById('input-desc');
-        const charCount   = document.getElementById('char-count');
-        const qualityFill = document.getElementById('quality-fill');
-        const qualityText = document.getElementById('quality-text');
-
-        if(inputDesc) {
-            inputDesc.addEventListener('input', function() {
-                const l = this.value.length;
-                charCount.textContent = l;
-                qualityFill.style.width = Math.min((l/200)*100, 100) + '%';
-                if(l<50)       { qualityFill.style.background='#dc3545'; qualityText.textContent='Trop court';     qualityText.style.color='#dc3545'; }
-                else if(l<150) { qualityFill.style.background='#fd7e14'; qualityText.textContent='Acceptable';    qualityText.style.color='#fd7e14'; }
-                else           { qualityFill.style.background='#28a745'; qualityText.textContent='Très détaillé ✓'; qualityText.style.color='#28a745'; }
-            });
-            inputDesc.dispatchEvent(new Event('input'));
-        }
-
-        const hiddenPrio = document.getElementById('hidden-priorite');
-        const prioCards  = document.querySelectorAll('.prio-card');
-
-        if(hiddenPrio && hiddenPrio.value) {
-            prioCards.forEach(function(c){ if(c.getAttribute('data-val')===hiddenPrio.value) c.classList.add('active'); });
-        }
-        prioCards.forEach(function(card) {
-            card.addEventListener('click', function() {
-                prioCards.forEach(function(c){ c.classList.remove('active'); });
-                this.classList.add('active');
-                if(hiddenPrio) hiddenPrio.value = this.getAttribute('data-val');
-            });
-        });
-
-        const formEl = document.getElementById('form-recl-edit');
-        const btnSub = document.getElementById('btn-submit');
-        let initialData = '';
-        if(formEl) { 
-            setTimeout(function() { initialData = new URLSearchParams(new FormData(formEl)).toString(); }, 200);
-            formEl.addEventListener('submit', function(e){
-                const currentData = new URLSearchParams(new FormData(formEl)).toString();
-                if (initialData === currentData) {
-                    e.preventDefault();
-                    alert("Vous n'avez effectué aucune modification. Veuillez modifier au moins un champ avant d'enregistrer.");
-                    return;
-                }
-                btnSub.classList.add('loading'); 
-            }); 
-        }
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const inpTitre=document.getElementById('inp-titre');
+    const hintTitre=document.getElementById('hint-titre');
+    if(inpTitre){
+        const check=function(){const v=inpTitre.value.trim();if(!v){inpTitre.className='field-input';hintTitre.textContent='';}else if(v.length<5){inpTitre.className='field-input invalid';hintTitre.textContent='Trop court.';hintTitre.style.color='#ef4444';}else{inpTitre.className='field-input valid';hintTitre.textContent='✓ Valide';hintTitre.style.color='#22c55e';}};
+        inpTitre.addEventListener('input',check); check();
+    }
+    const inpDesc=document.getElementById('inp-desc');
+    const ccEl=document.getElementById('char-count');
+    const qFill=document.getElementById('quality-fill');
+    const qLabel=document.getElementById('quality-label');
+    if(inpDesc){
+        const update=function(){const l=inpDesc.value.length;ccEl.textContent=l+' caractères';qFill.style.width=Math.min((l/200)*100,100)+'%';if(l<50){qFill.style.background='#ef4444';qLabel.textContent='Trop court';qLabel.style.color='#ef4444';}else if(l<150){qFill.style.background='#f97316';qLabel.textContent='Acceptable';qLabel.style.color='#f97316';}else{qFill.style.background='#22c55e';qLabel.textContent='Très détaillé ✓';qLabel.style.color='#22c55e';}};
+        inpDesc.addEventListener('input',update); update();
+    }
+    const hiddenPrio=document.getElementById('hidden-prio');
+    document.querySelectorAll('.prio-btn').forEach(function(btn){
+        if(hiddenPrio&&hiddenPrio.value===btn.dataset.val)btn.classList.add('sel-'+btn.dataset.val.toLowerCase());
+        btn.addEventListener('click',function(){document.querySelectorAll('.prio-btn').forEach(b=>b.className='prio-btn');this.classList.add('sel-'+this.dataset.val.toLowerCase());if(hiddenPrio)hiddenPrio.value=this.dataset.val;});
     });
-    </script>
+
+    // --- Gestion de l'affichage dynamique des réservations ---
+    const typeSelect = document.getElementById('recl-type-select');
+    const resBlock = document.getElementById('reservation-block');
+    const actBlock = document.getElementById('activite-block');
+
+    function toggleRelatedFields() {
+        const selectedText = typeSelect.options[typeSelect.selectedIndex].text;
+        console.log("Selected Type:", selectedText);
+        
+        resBlock.style.display = 'none';
+        actBlock.style.display = 'none';
+
+        if (selectedText.includes('Réservation')) {
+            resBlock.style.display = 'block';
+        } else if (selectedText.includes('Activité')) {
+            actBlock.style.display = 'block';
+        }
+    }
+
+    if (typeSelect) {
+        typeSelect.addEventListener('change', toggleRelatedFields);
+        toggleRelatedFields(); // Initial check
+    }
+
+    const formEl=document.getElementById('form-edit');
+    const btnSave=document.getElementById('btn-save');
+    let snapshot='';
+    if(formEl){
+        setTimeout(function(){snapshot=new URLSearchParams(new FormData(formEl)).toString();},200);
+        formEl.addEventListener('submit',function(e){
+            const current=new URLSearchParams(new FormData(formEl)).toString();
+            if(snapshot&&snapshot===current){e.preventDefault();alert("Aucune modification détectée.");return;}
+            btnSave.classList.add('loading');
+        });
+    }
+});
+</script>
 {% endblock %}

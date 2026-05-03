@@ -5,7 +5,7 @@
     <style>
         body { font-family: Arial, sans-serif; background:#f5f5f5; margin:0; padding:0; }
         .container { max-width:600px; margin:30px auto; background:#fff; border-radius:12px; overflow:hidden; box-shadow:0 2px 12px rgba(0,0,0,0.08); }
-        .header { background:#f75959; padding:30px; text-align:center; }
+        .header { background:linear-gradient(135deg,#f97316,#ea580c); padding:30px; text-align:center; }
         .header h1 { color:#fff; margin:0; font-size:24px; }
         .content { padding:30px; }
         .badge { display:inline-block; background:#22c55e; color:#fff; padding:6px 16px; border-radius:20px; font-size:13px; font-weight:600; margin-bottom:20px; }
@@ -13,8 +13,8 @@
         td { padding:12px; border-bottom:1px solid #eee; font-size:14px; }
         td:first-child { color:#888; }
         td:last-child { font-weight:600; text-align:right; }
-        .total td { font-size:18px; color:#f75959; }
-        .footer { background:#f9f9f9; padding:20px; text-align:center; font-size:12px; color:#888; }
+        .total td { font-size:18px; color:#f97316; }
+        .footer { background:#fff7ed; padding:20px; text-align:center; font-size:12px; color:#888; border-top:3px solid #f97316; }
     </style>
 </head>
 <body>
@@ -27,7 +27,6 @@
             <span class="badge">Paiement reçu</span>
             <h2 style="color:#1c1c1e; margin-bottom:8px;">Bonjour {{ reservation.clientNom }},</h2>
             <p style="color:#666; font-size:14px;">Votre réservation a été confirmée avec succès. Voici le récapitulatif :</p>
-
             <table>
                 <tr>
                     <td>Numéro de réservation</td>
@@ -54,8 +53,7 @@
                     <td>{{ reservation.total }} TND</td>
                 </tr>
             </table>
-
-            <p style="color:#666; font-size:13px;">Si vous avez des questions, contactez-nous à <a href="mailto:ferjanimehdi02@gmail.com" style="color:#f75959;">ferjanimehdi02@gmail.com</a></p>
+            <p style="color:#666; font-size:13px;">Si vous avez des questions, contactez-nous à <a href="mailto:ferjanimehdi02@gmail.com" style="color:#f97316;">ferjanimehdi02@gmail.com</a></p>
         </div>
         <div class="footer">
             <p>© 2026 Vianova. Tous droits réservés.</p>

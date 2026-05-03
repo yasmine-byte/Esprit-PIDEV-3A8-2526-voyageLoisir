@@ -11,6 +11,8 @@ use App\Entity\Users;
 use App\Repository\UsersRepository;
 use App\Repository\VoyageRepository;
 use App\Repository\ReservationRepository;
+use App\Repository\ReclamationRepository;
+use App\Repository\AvisRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Vich\UploaderBundle\Handler\UploadHandler;
 
@@ -22,6 +24,8 @@ class ProfileController extends AbstractController
         private UsersRepository          $usersRepository,
         private VoyageRepository         $voyageRepository,
         private ReservationRepository    $reservationRepository,
+        private ReclamationRepository    $reclamationRepository,
+        private AvisRepository           $avisRepository,
         private UploadHandler            $uploadHandler
     ) {}
 
@@ -107,10 +111,24 @@ foreach ($reservations as $voyage) {
         // Récupérer les réservations hébergement via l'email du client
         $reservationsHebergement = $this->reservationRepository->findBy(['clientEmail' => $user->getEmail()]);
 
+        // Réclamations de l'utilisateur connecté (uniquement les siennes)
+        $reclamations = $this->reclamationRepository->findBy(
+            ['userId' => $user->getId()],
+            ['dateCreation' => 'DESC']
+        );
+
+        // Avis de l'utilisateur connecté (uniquement les siens)
+        $avisUtilisateur = $this->avisRepository->findBy(
+            ['userId' => $user->getId()],
+            ['dateAvis' => 'DESC']
+        );
+
         return $this->render('home/profile.html.twig', [
             'user'                    => $user,
             'reservations'            => $reservations,
             'reservationsHebergement' => $reservationsHebergement,
+            'reclamations'            => $reclamations,
+            'avisUtilisateur'         => $avisUtilisateur,
             'fieldErrors'             => [],
             'globalError'             => null,
         ]);
@@ -257,10 +275,24 @@ foreach ($reservations as $voyage) {
 }
         $reservationsHebergement = $this->reservationRepository->findBy(['clientEmail' => $user->getEmail()]);
 
+        // Réclamations de l'utilisateur connecté (uniquement les siennes)
+        $reclamations = $this->reclamationRepository->findBy(
+            ['userId' => $user->getId()],
+            ['dateCreation' => 'DESC']
+        );
+
+        // Avis de l'utilisateur connecté (uniquement les siens)
+        $avisUtilisateur = $this->avisRepository->findBy(
+            ['userId' => $user->getId()],
+            ['dateAvis' => 'DESC']
+        );
+
         return $this->render('home/profile.html.twig', [
             'user'                    => $user,
             'reservations'            => $reservations,
             'reservationsHebergement' => $reservationsHebergement,
+            'reclamations'            => $reclamations,
+            'avisUtilisateur'         => $avisUtilisateur,
             'fieldErrors'             => $fieldErrors,
             'globalError'             => $globalError,
         ]);

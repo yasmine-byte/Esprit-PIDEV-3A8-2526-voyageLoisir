@@ -1,162 +1,131 @@
 {% extends 'base_front.html.twig' %}
-
-{% block title %}Contact - Villa Agency{% endblock %}
+{% block title %}Contact – ViaNoVa{% endblock %}
 
 {% block body %}
+<style>
+@keyframes fadeInUp { from{opacity:0;transform:translateY(24px);}to{opacity:1;transform:translateY(0);} }
+.contact-page { background:linear-gradient(135deg,#fff8f4 0%,#fef0e8 50%,#f8f9fa 100%); min-height:100vh; padding:0 0 70px; }
+.contact-hero { background:linear-gradient(135deg,#d4845a,#e8a87c 60%,#f5c99a); padding:60px 0 100px; position:relative; overflow:hidden; text-align:center; }
+.contact-hero::before { content:''; position:absolute; top:-40px; right:-60px; width:300px; height:300px; border-radius:50%; background:rgba(255,255,255,0.08); }
+.contact-hero::after  { content:''; position:absolute; bottom:-60px; left:-40px; width:200px; height:200px; border-radius:50%; background:rgba(255,255,255,0.06); }
+.contact-hero h1 { color:#fff; font-size:2.4rem; font-weight:800; margin:0 0 10px; position:relative; z-index:1; }
+.contact-hero p  { color:rgba(255,255,255,0.85); font-size:1rem; margin:0; position:relative; z-index:1; }
+.contact-card { background:#fff; border-radius:24px; box-shadow:0 20px 60px rgba(212,132,90,0.13); padding:44px 48px; margin-top:-60px; position:relative; z-index:10; animation:fadeInUp 0.6s ease forwards; max-width: 600px; margin-left: auto; margin-right: auto; }
+.contact-card-top { position:absolute; top:0; left:0; right:0; height:5px; border-radius:24px 24px 0 0; background:linear-gradient(90deg,#d4845a,#e8a87c,#f5c99a); }
+.contact-grid { display:block; }
+.info-block h3 { font-size:1.1rem; font-weight:800; color:#333; margin-bottom:20px; }
+.info-item { display:flex; align-items:flex-start; gap:14px; margin-bottom:20px; }
+.info-icon { width:42px; height:42px; border-radius:12px; background:linear-gradient(135deg,#fff3eb,#ffe9d5); border:1.5px solid #f5cba7; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.info-label { font-size:0.75rem; font-weight:800; text-transform:uppercase; letter-spacing:0.06em; color:#bbb; margin-bottom:3px; }
+.info-value { font-size:0.95rem; font-weight:600; color:#333; }
+.form-block h3 { font-size:1.1rem; font-weight:800; color:#333; margin-bottom:20px; }
+.f-group { margin-bottom:18px; }
+.f-label { display:block; font-size:0.78rem; font-weight:800; text-transform:uppercase; letter-spacing:0.06em; color:#555; margin-bottom:8px; }
+.f-input { width:100%; padding:12px 16px; border:2px solid #eee; border-radius:12px; font-size:0.92rem; color:#333; background:#fafafa; box-sizing:border-box; transition:border-color 0.25s,box-shadow 0.25s; font-family:inherit; }
+.f-input:focus { outline:none; border-color:#d4845a; box-shadow:0 0 0 4px rgba(212,132,90,0.1); background:#fff; }
+.f-textarea { resize:vertical; min-height:130px; }
+.btn-send { width:100%; padding:14px; background:linear-gradient(135deg,#d4845a,#e8a87c); color:#fff; border:none; border-radius:12px; font-size:1rem; font-weight:800; cursor:pointer; transition:all 0.25s; box-shadow:0 8px 24px rgba(212,132,90,0.3); font-family:inherit; }
+.btn-send:hover { transform:translateY(-2px); box-shadow:0 12px 32px rgba(212,132,90,0.4); }
+.divider { height:2px; background:linear-gradient(90deg,#f5cba7,transparent); border-radius:2px; margin:32px 0; }
+@media(max-width:768px) { .contact-grid{grid-template-columns:1fr;} .contact-card{padding:28px 20px;} }
+</style>
 
-  <div id="js-preloader" class="js-preloader">
-    <div class="preloader-inner">
-      <span class="dot"></span>
-      <div class="dots">
-        <span></span>
-        <span></span>
-        <span></span>
-      </div>
-    </div>
-  </div>
-
-  <div class="sub-header">
-    <div class="container">
-      <div class="row">
-        <div class="col-lg-8 col-md-8">
-          <ul class="info">
-            <li><i class="fa fa-envelope"></i> info@company.com</li>
-            <li><i class="fa fa-map"></i> Sunny Isles Beach, FL 33160</li>
-          </ul>
+<div class="contact-page">
+    <div class="contact-hero">
+        <div class="container">
+            <div style="font-size:3rem; margin-bottom:12px;">✉️</div>
+            <h1>Contactez-nous</h1>
+            <p>Notre équipe est disponible pour répondre à toutes vos questions.</p>
         </div>
-        <div class="col-lg-4 col-md-4">
-          <ul class="social-links">
-            <li><a href="#"><i class="fab fa-facebook"></i></a></li>
-            <li><a href="#"><i class="fab fa-twitter"></i></a></li>
-            <li><a href="#"><i class="fab fa-linkedin"></i></a></li>
-            <li><a href="#"><i class="fab fa-instagram"></i></a></li>
-          </ul>
-        </div>
-      </div>
     </div>
-  </div>
 
-  <header class="header-area header-sticky">
     <div class="container">
-      <div class="row">
-        <div class="col-12">
-          <nav class="main-nav">
-            <a href="{{ path('app_home') }}" class="logo"><h1>Villa</h1></a>
-            <ul class="nav">
-              <li><a href="{{ path('app_home') }}">Home</a></li>
-              <li><a href="{{ path('app_properties') }}">Properties</a></li>
-              <li><a href="{{ path('app_property_details') }}">Property Details</a></li>
-              <li><a href="{{ path('app_contact') }}" class="active">Contact Us</a></li>
-            </ul>
-            <a class='menu-trigger'><span>Menu</span></a>
-          </nav>
-        </div>
-      </div>
-    </div>
-  </header>
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="contact-card">
+                    <div class="contact-card-top"></div>
 
-  <div class="page-heading header-text">
-    <div class="container">
-      <div class="row">
-        <div class="col-lg-12">
-          <span class="breadcrumb"><a href="#">Home</a> / Contact Us</span>
-          <h3>Contact Us</h3>
-        </div>
-      </div>
-    </div>
-  </div>
+                    <div class="contact-grid">
 
-  <div class="contact-page section">
-    <div class="container">
-      <div class="row">
-        <div class="col-lg-6">
-          <div class="section-heading">
-            <h6>| Contact Us</h6>
-            <h2>Get In Touch With Our Agents</h2>
-          </div>
-          <p>When you really need to download free CSS templates, please remember our website TemplateMo.</p>
-          <div class="row">
-            <div class="col-lg-12">
-              <div class="item phone">
-                <img src="{{ asset('assets_front/images/images/phone-icon.png') }}" alt="" style="max-width: 52px;">
-                <h6>010-020-0340<br><span>Phone Number</span></h6>
-              </div>
+                        {# ── Infos de contact ── #}
+                        <div class="info-block">
+                            <h3>📍 Nos coordonnées</h3>
+
+                            <div class="info-item">
+                                <div class="info-icon">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#d4845a" stroke-width="2">
+                                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                                        <circle cx="12" cy="10" r="3"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <div class="info-label">Adresse</div>
+                                    <div class="info-value">Tunis, Tunisie</div>
+                                </div>
+                            </div>
+
+                            <div class="info-item">
+                                <div class="info-icon">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#d4845a" stroke-width="2">
+                                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <div class="info-label">Téléphone</div>
+                                    <div class="info-value">+216 71 000 000</div>
+                                </div>
+                            </div>
+
+                            <div class="info-item">
+                                <div class="info-icon">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#d4845a" stroke-width="2">
+                                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                                        <polyline points="22,6 12,12 2,6"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <div class="info-label">Email</div>
+                                    <div class="info-value">contact@vianova.tn</div>
+                                </div>
+                            </div>
+
+                            <div class="info-item">
+                                <div class="info-icon">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#d4845a" stroke-width="2">
+                                        <circle cx="12" cy="12" r="10"/>
+                                        <polyline points="12 6 12 12 16 14"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <div class="info-label">Horaires</div>
+                                    <div class="info-value">Lun – Ven : 8h00 – 18h00</div>
+                                </div>
+                            </div>
+
+                            <div class="divider"></div>
+
+                            <h3>🌐 Réseaux sociaux</h3>
+                            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                                <a href="#" style="display:flex;align-items:center;gap:7px;padding:9px 16px;border-radius:10px;background:#1877F2;color:#fff;text-decoration:none;font-size:13px;font-weight:700;transition:opacity 0.2s;" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                                    Facebook
+                                </a>
+                                <a href="#" style="display:flex;align-items:center;gap:7px;padding:9px 16px;border-radius:10px;background:linear-gradient(45deg,#f09433,#dc2743,#bc1888);color:#fff;text-decoration:none;font-size:13px;font-weight:700;transition:opacity 0.2s;" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.059 1.689.073 4.948.073 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+                                    Instagram
+                                </a>
+                                <a href="#" style="display:flex;align-items:center;gap:7px;padding:9px 16px;border-radius:10px;background:#FF0000;color:#fff;text-decoration:none;font-size:13px;font-weight:700;transition:opacity 0.2s;" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg>
+                                    YouTube
+                                </a>
+                            </div>
+                        </div>
+
+
+                    </div>
+                </div>
             </div>
-            <div class="col-lg-12">
-              <div class="item email">
-                <img src="{{ asset('assets_front/images/images/email-icon.png') }}" alt="" style="max-width: 52px;">
-                <h6>info@villa.co<br><span>Business Email</span></h6>
-              </div>
-            </div>
-          </div>
         </div>
-        <div class="col-lg-6">
-          <form id="contact-form" action="" method="post">
-            <div class="row">
-              <div class="col-lg-12">
-                <fieldset>
-                  <label for="name">Full Name</label>
-                  <input type="text" name="name" id="name" placeholder="Your Name..." required>
-                </fieldset>
-              </div>
-              <div class="col-lg-12">
-                <fieldset>
-                  <label for="email">Email Address</label>
-                  <input type="email" name="email" id="email" placeholder="Your E-mail..." required>
-                </fieldset>
-              </div>
-              <div class="col-lg-12">
-                <fieldset>
-                  <label for="subject">Subject</label>
-                  <input type="text" name="subject" id="subject" placeholder="Subject...">
-                </fieldset>
-              </div>
-              <div class="col-lg-12">
-                <fieldset>
-                  <label for="message">Message</label>
-                  <textarea name="message" id="message" placeholder="Your Message"></textarea>
-                </fieldset>
-              </div>
-              <div class="col-lg-12">
-                <fieldset>
-                  <button type="submit" class="orange-button">Send Message</button>
-                </fieldset>
-              </div>
-            </div>
-          </form>
-        </div>
-        <script>
-        (function() {
-            var params = new URLSearchParams(window.location.search);
-            var voyageNom = params.get('voyage_nom');
-            var voyagePrix = params.get('voyage_prix');
-            var voyageId = params.get('voyage_id');
-            if (voyageId) {
-                var subject = document.getElementById('subject');
-                var message = document.getElementById('message');
-                if (subject) subject.value = 'Réservation Voyage #' + voyageId + (voyageNom ? ' — ' + voyageNom : '');
-                if (message) message.value = 'Bonjour,\n\nJe souhaite réserver le voyage #' + voyageId
-                    + (voyageNom ? ' (' + voyageNom + ')' : '')
-                    + (voyagePrix ? ' au prix de ' + voyagePrix + ' €' : '')
-                    + '.\n\nMerci de me contacter pour confirmer la réservation.';
-            }
-        })();
-        </script>
-        <div class="col-lg-12">
-          <div id="map">
-            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d12469.776493332698!2d-80.14036379941481!3d25.907788681148624!2m3!1f357.26927939317244!2f20.870722720054623!3f0!3m2!1i1024!2i768!4f35!3m3!1m2!1s0x88d9add4b4ac788f%3A0xe77469d09480fcdb!2sSunny%20Isles%20Beach!5e1!3m2!1sen!2sth!4v1642869952544!5m2!1sen!2sth" width="100%" height="500px" frameborder="0" style="border:0; border-radius: 10px; box-shadow: 0px 0px 15px rgba(0,0,0,0.15);" allowfullscreen=""></iframe>
-          </div>
-        </div>
-      </div>
     </div>
-  </div>
-
-  <footer>
-    <div class="container">
-      <div class="col-lg-12">
-        <p>Copyright &copy; 2026 Villa Agency Co., Ltd. All rights reserved. Design: <a rel="nofollow" href="https://templatemo.com" target="_blank">TemplateMo</a></p>
-      </div>
-    </div>
-  </footer>
-
+</div>
 {% endblock %}
