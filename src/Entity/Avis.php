@@ -16,7 +16,7 @@ class Avis
     private ?int $id = null;
 
     #[ORM\Column]
-    private ?int $userId = null;
+    private int $userId = 0;
 
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
@@ -26,25 +26,30 @@ class Avis
     #[ORM\Column(type: Types::TEXT)]
     #[Assert\NotBlank(message: "Le contenu est obligatoire")]
     #[Assert\Length(min: 10, minMessage: "Minimum 10 caractères")]
-    private ?string $contenu = null;
+    private string $contenu = '';
 
     #[ORM\Column]
     #[Assert\NotBlank]
     #[Assert\Range(min: 1, max: 5, notInRangeMessage: "Entre 1 et 5 étoiles")]
-    private ?int $nbEtoiles = null;
+    private int $nbEtoiles = 0;
 
     #[ORM\Column(length: 20)]
-    private ?string $statut = null;
+    private string $statut = 'En attente';
 
     #[ORM\Column]
-    private ?\DateTime $dateAvis = null;
+    private \DateTimeImmutable $dateAvis;
+
+    public function __construct()
+    {
+        $this->dateAvis = new \DateTimeImmutable();
+    }
 
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getUserId(): ?int
+    public function getUserId(): int
     {
         return $this->userId;
     }
@@ -68,7 +73,7 @@ class Avis
         return $this;
     }
 
-    public function getContenu(): ?string
+    public function getContenu(): string
     {
         return $this->contenu;
     }
@@ -80,7 +85,7 @@ class Avis
         return $this;
     }
 
-    public function getNbEtoiles(): ?int
+    public function getNbEtoiles(): int
     {
         return $this->nbEtoiles;
     }
@@ -92,7 +97,7 @@ class Avis
         return $this;
     }
 
-    public function getStatut(): ?string
+    public function getStatut(): string
     {
         return $this->statut;
     }
@@ -104,12 +109,12 @@ class Avis
         return $this;
     }
 
-    public function getDateAvis(): ?\DateTime
+    public function getDateAvis(): \DateTimeImmutable
     {
         return $this->dateAvis;
     }
 
-    public function setDateAvis(\DateTime $dateAvis): static
+    public function setDateAvis(\DateTimeImmutable $dateAvis): static
     {
         $this->dateAvis = $dateAvis;
 

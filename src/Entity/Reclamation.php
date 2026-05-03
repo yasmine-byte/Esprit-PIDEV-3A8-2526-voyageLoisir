@@ -16,7 +16,7 @@ class Reclamation
     private ?int $id = null;
 
     #[ORM\Column]
-    private ?int $userId = null;
+    private int $userId = 0;
 
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
@@ -28,33 +28,38 @@ class Reclamation
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank(message: "Le titre est obligatoire")]
     #[Assert\Length(min: 5, max: 255, minMessage: "Minimum 5 caractères", maxMessage: "Maximum 255 caractères")]
-    private ?string $titre = null;
+    private string $titre = '';
 
     #[ORM\Column(type: Types::TEXT)]
     #[Assert\NotBlank(message: "Le contenu est obligatoire")]
     #[Assert\Length(min: 10, minMessage: "Minimum 10 caractères")]
-    private ?string $contenu = null;
+    private string $contenu = '';
 
     #[ORM\Column(length: 20)]
-    private ?string $typeFeedback = null;
+    private string $typeFeedback = 'Général';
 
     #[ORM\Column(length: 20)]
-    private ?string $statut = null;
+    private string $statut = 'En attente';
 
     #[ORM\Column(length: 20)]
     #[Assert\NotBlank(message: "La priorité est obligatoire")]
     #[Assert\Choice(choices: ['Basse', 'Moyenne', 'Haute', 'Urgente'])]
-    private ?string $priorite = null;
+    private string $priorite = 'Moyenne';
 
     #[ORM\Column]
-    private ?\DateTime $dateCreation = null;
+    private \DateTimeImmutable $dateCreation;
+
+    public function __construct()
+    {
+        $this->dateCreation = new \DateTimeImmutable();
+    }
 
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getUserId(): ?int
+    public function getUserId(): int
     {
         return $this->userId;
     }
@@ -90,7 +95,7 @@ class Reclamation
         return $this;
     }
 
-    public function getTitre(): ?string
+    public function getTitre(): string
     {
         return $this->titre;
     }
@@ -102,7 +107,7 @@ class Reclamation
         return $this;
     }
 
-    public function getContenu(): ?string
+    public function getContenu(): string
     {
         return $this->contenu;
     }
@@ -114,7 +119,7 @@ class Reclamation
         return $this;
     }
 
-    public function getTypeFeedback(): ?string
+    public function getTypeFeedback(): string
     {
         return $this->typeFeedback;
     }
@@ -126,7 +131,7 @@ class Reclamation
         return $this;
     }
 
-    public function getStatut(): ?string
+    public function getStatut(): string
     {
         return $this->statut;
     }
@@ -138,7 +143,7 @@ class Reclamation
         return $this;
     }
 
-    public function getPriorite(): ?string
+    public function getPriorite(): string
     {
         return $this->priorite;
     }
@@ -150,12 +155,12 @@ class Reclamation
         return $this;
     }
 
-    public function getDateCreation(): ?\DateTime
+    public function getDateCreation(): \DateTimeImmutable
     {
         return $this->dateCreation;
     }
 
-    public function setDateCreation(\DateTime $dateCreation): static
+    public function setDateCreation(\DateTimeImmutable $dateCreation): static
     {
         $this->dateCreation = $dateCreation;
 
