@@ -168,8 +168,51 @@ class AvisController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // ... (rest of the logic)
-            // Note: I'm only showing the part that changes the setup and return
+            $avis->setUserId($user->getId());
+            $avis->setStatut('En attente');
+            $avis->setDateAvis(new \DateTime());
+
+            // 1. Analyse de sentiment IA (Hugging Face)
+            $sentiment = $this->analyzeSentimentInternal((string)$avis->getContenu());
+            $avis->setSentimentLabel($sentiment['label'] ?? 'neutral');
+            $avis->setSentimentScore((float)($sentiment['score'] ?? 0.5));
+
+            $entityManager->persist($avis);
+            $entityManager->flush();
+
+            // 2. Email de confirmation au client
+            $mailerService->sendConfirmationAvis($avis);
+
+            // 3. Si note <= 2 : Alerte admin + Création Réclamation Auto
+            if ($avis->getNbEtoiles() <= 2) {
+                // Alerte Admin
+                $mailerService->sendAlertAdminAvisNegatif($avis);
+
+                // Réclamation automatique
+                $reclamation = new Reclamation();
+                $reclamation->setUserId($user->getId());
+                $reclamation->setTitre('Avis négatif #' . $avis->getId());
+                $reclamation->setContenu('Avis client (' . $avis->getNbEtoiles() . '/5) : ' . $avis->getContenu());
+                $reclamation->setPriorite($avis->getNbEtoiles() === 1 ? 'Urgente' : 'Haute');
+                $reclamation->setStatut('En attente');
+                $reclamation->setDateCreation(new \DateTime());
+                $reclamation->setAvis($avis); // Liaison bidirectionnelle
+                $reclamation->setTypeFeedback('reclamation');
+                
+                // Le type est obligatoire pour Reclamation aussi
+                if ($avis->getType()) {
+                    $reclamation->setType($avis->getType());
+                }
+
+                $entityManager->persist($reclamation);
+                $entityManager->flush();
+
+                $this->addFlash('warning', 'Votre avis a été publié. Une réclamation a été créée automatiquement car votre note est faible.');
+            } else {
+                $this->addFlash('success', 'Votre avis a bien été publié ! Merci pour votre retour.');
+            }
+
+            return $this->redirectToRoute('front_profile');
         }
 
         return $this->render('avis/new.html.twig', [

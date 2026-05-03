@@ -42,6 +42,11 @@
         </script>
     {% endblock %}
 
+    {% set current_route = app.request.attributes.get('_route') %}
+    {% if current_route starts with 'reclamation' or current_route starts with 'avis' or current_route == 'front_profile' %}
+        {% include 'chatbot/chatbot_widget.html.twig' %}
+    {% endif %}
+
     {# ✅ Firebase FCM #}
     <script type="module">
         import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
@@ -98,9 +103,5 @@
         setupFcmToken();
     </script>
 
-    {% set current_route = app.request.attributes.get('_route') %}
-    {% if current_route starts with 'reclamation' or current_route starts with 'avis' or current_route == 'front_profile' %}
-        {% include 'chatbot/chatbot_widget.html.twig' %}
-    {% endif %}
 </body>
 </html>

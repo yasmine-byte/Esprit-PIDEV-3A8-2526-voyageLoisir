@@ -1,86 +1,187 @@
-<div class="sub-header">
-  <div class="container">
-    <div class="row">
-      <div class="col-lg-8 col-md-8">
-        <ul class="info">
-          <li><i class="fa fa-envelope"></i> vianova.com</li>
-          <li><i class="fa fa-map"></i> Tunis, Tunisie Lac1 33160</li>
-        </ul>
-      </div>
-      <div class="col-lg-4 col-md-4">
-        <ul class="social-links">
-          <li><a href="#"><i class="fab fa-facebook"></i></a></li>
-          <li><a href="#"><i class="fab fa-twitter"></i></a></li>
-          <li><a href="#"><i class="fab fa-linkedin"></i></a></li>
-          <li><a href="#"><i class="fab fa-instagram"></i></a></li>
-        </ul>
-      </div>
-    </div>
-  </div>
-</div>
+<style>
+/* Force une seule ligne et style pro */
+.navbar { 
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    flex-wrap: nowrap !important; 
+    padding: 0 55px;
+}
+.navbar-collapse { 
+    display: flex !important; 
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    flex-wrap: nowrap !important; 
+    width: 100%;
+}
+.navbar-nav { 
+    display: flex !important; 
+    flex-direction: row !important; 
+    align-items: center !important;
+    flex-wrap: nowrap !important; 
+    gap: 15px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+.nav-item, .nav-item a { 
+    white-space: nowrap !important; 
+}
 
-<header class="header-area header-sticky">
-  <div class="container">
-    <div class="row">
-      <div class="col-12">
-        <nav class="main-nav">
-          <a href="{{ path('app_home') }}" class="logo"><h1>Vianova</h1></a>
-          <ul class="nav">
-            <li><a href="{{ path('app_home') }}">Home</a></li>
-            <li><a href="{{ path('app_destinations') }}">Destination</a></li>
-            <li><a href="{{ path('app_hebergements_front') }}">Hébergement</a></li>
-            <li><a href="{{ path('app_activite_index') }}">Activité</a></li>
-            <li><a href="{{ path('app_properties') }}">Properties</a></li>
-            <li><a href="{{ path('avis_index') }}">Avis</a></li>
-            <li><a href="{{ path('app_blog_index') }}">Blog</a></li>
-            <li>
-              <a href="{{ path('app_contact') }}">
-                <i class="fa fa-envelope" style="margin-right:5px;"></i> Contact
-              </a>
-            </li>
+/* Ajustement pour le logo */
+.logo {
+    margin-right: 30px;
+}
+</style>
 
-            {% if app.user %}
-              {% if is_granted('ROLE_ADMIN') %}
-                <li>
-                  <a href="{{ path('app_admin') }}" style="color:#d4845a; font-weight:600;">
-                    <i class="fa fa-cog"></i> Admin
-                  </a>
-                </li>
-              {% endif %}
-              {% if is_granted('ROLE_USER') %}
-                <li>
-                  <a href="{{ path('app_mon_espace') }}" style="color:#E8602D; font-weight:600;">
-                    <i class="fa fa-compass"></i> Mon Espace
-                  </a>
-                </li>
-              {% endif %}
-              <li>
-                <a href="{{ path('front_profile') }}" style="font-weight:600;">
-                  <i class="fa fa-user-circle"></i>
-                  {{ (app.user.prenom|default('') ~ ' ' ~ app.user.nom|default(''))|trim ?: app.user.userIdentifier }}
+<header class="header-area header-sticky" style="width: 100%;">
+        <nav style="display:flex; align-items:center; justify-content:space-between;
+                    width:100%; padding:0 60px; height:70px;
+                    background:#fff; box-shadow:0 2px 8px rgba(0,0,0,0.06);
+                    box-sizing:border-box; position:relative;">
+
+            <!-- 1. Logo à gauche -->
+            <a href="{{ path('app_home') }}"
+               style="font-size:25px; font-weight:900; color:#111;
+                      text-decoration:none; letter-spacing:2px; flex-shrink:0; z-index:1;">
+                VIANOVA
+            </a>
+
+            <!-- 2. Liens au CENTRE absolu -->
+            <div style="position:absolute; left:50%; transform:translateX(-50%);
+                        display:flex; align-items:center; gap:4px;">
+                <a href="{{ path('app_home') }}"
+                   style="padding:8px 18px; font-size:20px; font-weight:600;
+                          color:#333; text-decoration:none; white-space:nowrap;
+                          border-radius:8px; transition:color 0.2s;"
+                   onmouseover="this.style.color='#d4845a'"
+                   onmouseout="this.style.color='#333'">Home</a>
+
+                <a href="{{ path('app_destinations') }}"
+                   style="padding:8px 18px; font-size:20px; font-weight:600;
+                          color:#333; text-decoration:none; white-space:nowrap;
+                          border-radius:8px; transition:color 0.2s;"
+                   onmouseover="this.style.color='#d4845a'"
+                   onmouseout="this.style.color='#333'">Destination</a>
+
+                <a href="{{ path('app_hebergements_front') }}"
+                   style="padding:8px 18px; font-size:20px; font-weight:600;
+                          color:#333; text-decoration:none; white-space:nowrap;
+                          border-radius:8px; transition:color 0.2s;"
+                   onmouseover="this.style.color='#d4845a'"
+                   onmouseout="this.style.color='#333'">Hébergement</a>
+
+                <a href="{{ path('app_activite_index') }}"
+                   style="padding:8px 18px; font-size:20px; font-weight:600;
+                          color:#333; text-decoration:none; white-space:nowrap;
+                          border-radius:8px; transition:color 0.2s;"
+                   onmouseover="this.style.color='#d4845a'"
+                   onmouseout="this.style.color='#333'">Activité</a>
+
+                <a href="{{ path('avis_index') }}"
+                   style="display:inline-flex; align-items:center; gap:4px;
+                          padding:8px 18px; font-size:20px; font-weight:600;
+                          color:#333; text-decoration:none; white-space:nowrap;
+                          border-radius:8px; transition:color 0.2s;"
+                   onmouseover="this.style.color='#d4845a'"
+                   onmouseout="this.style.color='#333'">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                    </svg>
+                    Avis
                 </a>
-              </li>
-              <li>
-                <a href="{{ path('front_logout') }}" title="Déconnexion" style="color:#ef4444;">
-                  <i class="fa fa-sign-out-alt"></i>
+
+                <a href="{{ path('app_blog_index') }}"
+                   style="padding:8px 18px; font-size:20px; font-weight:600;
+                          color:#333; text-decoration:none; white-space:nowrap;
+                          border-radius:8px; transition:color 0.2s;"
+                   onmouseover="this.style.color='#d4845a'"
+                   onmouseout="this.style.color='#333'">Blog</a>
+
+                <a href="{{ path('app_contact') }}"
+                   style="display:inline-flex; align-items:center; gap:4px;
+                          padding:8px 18px; font-size:20px; font-weight:600;
+                          color:#333; text-decoration:none; white-space:nowrap;
+                          border-radius:8px; transition:color 0.2s;"
+                   onmouseover="this.style.color='#d4845a'"
+                   onmouseout="this.style.color='#333'">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                        <polyline points="22,6 12,12 2,6"/>
+                    </svg>
+                    Contact
                 </a>
-              </li>
-            {% else %}
-  <li>
-    <a href="http://127.0.0.1:8000/admin/login"
-       style="background:#1a1a1a; color:#fff; padding:10px 22px; border-radius:30px; font-weight:600; font-size:14px; text-decoration:none;"
-       onmouseover="this.style.background='#f97316'"
-       onmouseout="this.style.background='#1a1a1a'">
-      <i class="fa fa-sign-in-alt"></i> Login
-    </a>
-  </li>
-{% endif %}
-          </ul>
-          <a class="menu-trigger"><span>Menu</span></a>
+            </div>
+
+            <!-- 3. Droite : Mon Espace + Nom + Déconnexion -->
+            <div style="display:flex; align-items:center; gap:12px;
+                        flex-shrink:0; flex-wrap:nowrap; z-index:1;">
+
+                {% if app.user %}
+                <!-- Mon Espace -->
+                <a href="{{ path('front_profile') }}"
+                   style="display:inline-flex; align-items:center; gap:6px;
+                          padding:7px 14px; border-radius:8px;
+                          background:#fff3eb; border:1.5px solid #f5cba7;
+                          color:#d4845a; font-size:19px; font-weight:700;
+                          text-decoration:none; white-space:nowrap; flex-shrink:0;
+                          transition:all 0.2s;"
+                   onmouseover="this.style.background='#fde9d4';this.style.borderColor='#d4845a'"
+                   onmouseout="this.style.background='#fff3eb';this.style.borderColor='#f5cba7'">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+                         stroke="#d4845a" stroke-width="2.5">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                        <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                    Mon Espace
+                </a>
+
+                <!-- Avatar + Nom -->
+                <div style="display:inline-flex; align-items:center; gap:7px; flex-shrink:0;">
+                    <div style="width:32px; height:32px; border-radius:50%;
+                                background:linear-gradient(135deg,#d4845a,#e8a87c);
+                                display:flex; align-items:center; justify-content:center;
+                                color:#fff; font-size:16px; font-weight:800; flex-shrink:0;">
+                        {{ app.user.prenom|slice(0,1)|upper }}{{ app.user.nom|slice(0,1)|upper }}
+                    </div>
+                    <span style="font-size:14px; font-weight:600; color:#333; white-space:nowrap;">
+                        {{ app.user.prenom }} {{ app.user.nom }}
+                    </span>
+                </div>
+
+                <!-- Déconnexion -->
+                <form method="post" action="{{ path('front_logout') }}" style="margin:0;display:inline-flex;">
+                    <button type="submit"
+                            title="Se déconnecter"
+                            style="display:inline-flex; align-items:center; justify-content:center;
+                                   width:34px; height:34px; border-radius:8px;
+                                   background:#fff0f0; border:1.5px solid #fecaca;
+                                   color:#dc2626; cursor:pointer; transition:all 0.2s;
+                                   flex-shrink:0; padding:0;"
+                            onmouseover="this.style.background='#fee2e2';this.style.borderColor='#dc2626';this.style.transform='translateY(-1px)'"
+                            onmouseout="this.style.background='#fff0f0';this.style.borderColor='#fecaca';this.style.transform='translateY(0)'">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+                             stroke="#dc2626" stroke-width="2.5"
+                             stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                            <polyline points="16 17 21 12 16 7"/>
+                            <line x1="21" y1="12" x2="9" y2="12"/>
+                        </svg>
+                    </button>
+                </form>
+                {% else %}
+                <a href="http://127.0.0.1:8000/admin/login"
+                   style="background:#1a1a1a; color:#fff; padding:10px 22px; border-radius:30px; font-weight:600; font-size:13px; text-decoration:none; transition:all 0.2s;"
+                   onmouseover="this.style.background='#f97316'"
+                   onmouseout="this.style.background='#1a1a1a'">
+                  Login
+                </a>
+                {% endif %}
+
+            </div>
+
         </nav>
-      </div>
-    </div>
-  </div>
 </header>
 
 {% if not app.user %}
