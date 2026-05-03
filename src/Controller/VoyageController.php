@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Controller;
 
 use App\Entity\Voyage;
@@ -13,8 +14,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-use Psr\Log\LoggerInterface;
-
 
 #[Route("/voyage")]
 final class VoyageController extends AbstractController
@@ -41,13 +40,17 @@ final class VoyageController extends AbstractController
         $destinationId = $request->query->getInt('destination_id');
         if ($destinationId) {
             $destination = $destRepo->find($destinationId);
-            if ($destination) $voyage->setDestination($destination);
+            if ($destination instanceof \App\Entity\Destination) {
+                $voyage->setDestination($destination);
+            }
         }
         $form = $this->createForm(VoyageType::class, $voyage);
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
             $user = $this->getUser();
-            if ($user) $voyage->setCreatedBy($user);
+            if ($user instanceof Users) {
+                $voyage->setCreatedBy($user);
+            }
             $entityManager->persist($voyage);
             $entityManager->flush();
             return $this->redirectToRoute("app_voyage_index", [], Response::HTTP_SEE_OTHER);
@@ -74,7 +77,7 @@ final class VoyageController extends AbstractController
 
             $usersAnnules = [];
             foreach ($voyage->getReservedByUsers() as $user) {
-                $isPaid = method_exists($voyage, 'isPaid') ? $voyage->isPaid() : false;
+                $isPaid = $voyage->isPaid();
                 if (!$isPaid) $usersAnnules[] = $user;
             }
 
@@ -96,32 +99,32 @@ final class VoyageController extends AbstractController
             if (!empty($usersAnnules)) $entityManager->flush();
 
             $expires[] = [
-                'id'          => $voyage->getId(),
-                'pointDepart' => $voyage->getPointDepart()  ?? '?',
-                'pointArrivee'=> $voyage->getPointArrivee() ?? '?',
-                'dateDepart'  => $voyage->getDateDepart()->format('d/m/Y'),
-                'destination' => $voyage->getDestination()?->getNom() ?? '',
-                'annulations' => count($usersAnnules),
+                'id'           => $voyage->getId(),
+                'pointDepart'  => $voyage->getPointDepart()  ?? '?',
+                'pointArrivee' => $voyage->getPointArrivee() ?? '?',
+                'dateDepart'   => $voyage->getDateDepart()->format('d/m/Y'),
+                'destination'  => $voyage->getDestination()?->getNom() ?? '',
+                'annulations'  => count($usersAnnules),
             ];
         }
 
         return $this->json(['voyages' => $expires]);
     }
 
-   #[Route("/{id}", name: "app_voyage_show", methods: ["GET"])]
-public function show(Voyage $voyage, EntityManagerInterface $entityManager): Response
-{
-    $rows = $entityManager->getConnection()->fetchAllAssociative(
-        'SELECT users_id FROM voyage_reservations WHERE voyage_id = :vid AND paid = 1',
-        ['vid' => $voyage->getId()]
-    );
-    $paidUserIds = array_column($rows, 'users_id');
+    #[Route("/{id}", name: "app_voyage_show", methods: ["GET"])]
+    public function show(Voyage $voyage, EntityManagerInterface $entityManager): Response
+    {
+        $rows = $entityManager->getConnection()->fetchAllAssociative(
+            'SELECT users_id FROM voyage_reservations WHERE voyage_id = :vid AND paid = 1',
+            ['vid' => $voyage->getId()]
+        );
+        $paidUserIds = array_column($rows, 'users_id');
 
-    return $this->render("voyage/show.html.twig", [
-        "voyage"      => $voyage,
-        "paidUserIds" => $paidUserIds,
-    ]);
-}
+        return $this->render("voyage/show.html.twig", [
+            "voyage"      => $voyage,
+            "paidUserIds" => $paidUserIds,
+        ]);
+    }
 
     #[Route("/{id}/edit", name: "app_voyage_edit", methods: ["GET", "POST"])]
     public function edit(Request $request, Voyage $voyage, EntityManagerInterface $entityManager): Response
@@ -139,11 +142,11 @@ public function show(Voyage $voyage, EntityManagerInterface $entityManager): Res
     public function cancel(Request $request, Voyage $voyage, EntityManagerInterface $entityManager): Response
     {
         $user = $this->getUser();
-        if (!$user || !$voyage->isReservedByUser($user)) {
+        if (!$user || !($user instanceof Users) || !$voyage->isReservedByUser($user)) {
             $this->addFlash('error', 'Action non autorisée.');
             return $this->redirectToRoute('front_profile');
         }
-        if (!$this->isCsrfTokenValid('cancel' . $voyage->getId(), $request->request->get('_token'))) {
+        if (!$this->isCsrfTokenValid('cancel' . $voyage->getId(), (string)$request->request->get('_token'))) {
             $this->addFlash('error', 'Token invalide.');
             return $this->redirectToRoute('front_profile');
         }
@@ -161,30 +164,33 @@ public function show(Voyage $voyage, EntityManagerInterface $entityManager): Res
             $this->addFlash('error', 'Vous devez être connecté pour réserver.');
             return $this->redirectToRoute('app_home');
         }
-        if (!$this->isCsrfTokenValid('reserve' . $voyage->getId(), $request->request->get('_token'))) {
+        if (!$this->isCsrfTokenValid('reserve' . $voyage->getId(), (string)$request->request->get('_token'))) {
             $this->addFlash('error', 'Token invalide.');
             return $this->redirectToRoute('app_destinations');
         }
-        if ($voyage->isReservedByUser($user)) {
+        if (!($user instanceof Users) || $voyage->isReservedByUser($user)) {
             $this->addFlash('error', 'Vous avez déjà réservé ce voyage.');
         } else {
             $voyage->addReservation($user);
             $entityManager->flush();
             $this->addFlash('success', 'Voyage réservé avec succès !');
-            if ($user instanceof Users && $user->getTelegramChatId()) {
+            if ($user->getTelegramChatId()) {
                 $dest    = $voyage->getDestination();
                 $destNom = $dest ? $dest->getNom() . ' (' . $dest->getPays() . ')' : 'N/A';
-                $telegram->send($user->getTelegramChatId(),
+                $telegram->send(
+                    $user->getTelegramChatId(),
                     "✅ <b>VoyageLoisir — Réservation confirmée !</b>\n\n"
                     . "📍 Destination : <b>{$destNom}</b>\n"
                     . "📅 Départ : " . ($voyage->getDateDepart()?->format('d/m/Y') ?? 'N/A') . "\n"
                     . "📅 Retour : " . ($voyage->getDateArrivee()?->format('d/m/Y') ?? 'N/A') . "\n"
-                    . "💶 Prix : " . ($voyage->getPrix() ? number_format($voyage->getPrix(), 2, ',', ' ') . ' €' : 'N/A') . "\n\nMerci !"
+                    . "💶 Prix : " . number_format((float)($voyage->getPrix() ?? 0), 2, ',', ' ') . " €\n\nMerci !"
                 );
             }
         }
         $destination = $voyage->getDestination();
-        if ($destination) return $this->redirectToRoute('app_destination_detail', ['id' => $destination->getId()]);
+        if ($destination) {
+            return $this->redirectToRoute('app_destination_detail', ['id' => $destination->getId()]);
+        }
         return $this->redirectToRoute('app_destinations');
     }
 
@@ -200,25 +206,27 @@ public function show(Voyage $voyage, EntityManagerInterface $entityManager): Res
 
     #[Route("/{id}/admin-cancel/{userId}", name: "app_voyage_admin_cancel", methods: ["POST"])]
     public function adminCancel(
-        Request $request, Voyage $voyage, int $userId,
+        Request $request,
+        Voyage $voyage,
+        int $userId,
         EntityManagerInterface $entityManager,
         \App\Repository\UsersRepository $usersRepository,
         TelegramService $telegram
     ): Response {
-        if (!$this->isCsrfTokenValid('admin_cancel' . $voyage->getId() . $userId, $request->request->get('_token'))) {
+        if (!$this->isCsrfTokenValid('admin_cancel' . $voyage->getId() . $userId, (string)$request->request->get('_token'))) {
             $this->addFlash('error', 'Token invalide.');
             return $this->redirectToRoute('app_voyage_show', ['id' => $voyage->getId()]);
         }
         $user = $usersRepository->find($userId);
-        if ($user) {
+        if ($user instanceof Users) {
             $voyage->removeReservation($user);
             $entityManager->flush();
             $this->addFlash('success', 'Réservation annulée.');
-            $chatId = method_exists($user, 'getTelegramChatId') ? $user->getTelegramChatId() : null;
+            $chatId = $user->getTelegramChatId();
             if ($chatId) {
                 $telegram->notifyReservationCancelled(
                     $chatId,
-                    $voyage->getPointDepart() ?? 'N/A',
+                    $voyage->getPointDepart()  ?? 'N/A',
                     $voyage->getPointArrivee() ?? 'N/A',
                     $voyage->getDateDepart() ? $voyage->getDateDepart()->format('d/m/Y') : 'N/A'
                 );
@@ -227,88 +235,74 @@ public function show(Voyage $voyage, EntityManagerInterface $entityManager): Res
         return $this->redirectToRoute('app_voyage_show', ['id' => $voyage->getId()]);
     }
 
-    // ÉTAPE 1 — Envoyer l'email de confirmation avec lien vers la page de paiement
-#[Route("/{id}/checkout", name: "app_payment_checkout", methods: ["GET", "POST"])]
-public function checkout(Voyage $voyage): Response
-{
-    $user = $this->getUser();
-    if (!$user) return $this->redirectToRoute('app_home');
+    #[Route("/{id}/checkout", name: "app_payment_checkout", methods: ["GET", "POST"])]
+    public function checkout(Voyage $voyage): Response
+    {
+        $user = $this->getUser();
+        if (!$user) return $this->redirectToRoute('app_home');
 
-    // ✅ Remise -20% pour destinations Hiver
-    $prix = $voyage->getPrix();
-    $destination = $voyage->getDestination();
-    $remise = false;
-    if ($destination && $destination->getMeilleureSaison() === 'Hiver') {
-        $prix = $prix * 0.80;
-        $remise = true;
-    }
+        $prix = $voyage->getPrix() ?? 0;
+        $destination = $voyage->getDestination();
+        $remise = false;
+        if ($destination && $destination->getMeilleureSaison() === 'Hiver') {
+            $prix = $prix * 0.80;
+            $remise = true;
+        }
 
-    $nomProduit = 'Voyage ' . ($voyage->getPointDepart() ?? '') . ' → ' . ($voyage->getPointArrivee() ?? '');
-    if ($remise) {
-        $nomProduit .= ' ❄️ -20% Offre Hiver';
-    }
+        $nomProduit = 'Voyage ' . ($voyage->getPointDepart() ?? '') . ' → ' . ($voyage->getPointArrivee() ?? '');
+        if ($remise) {
+            $nomProduit .= ' ❄️ -20% Offre Hiver';
+        }
 
-    \Stripe\Stripe::setApiKey($_ENV['STRIPE_SECRET_KEY']);
-    $session = \Stripe\Checkout\Session::create([
-        'payment_method_types' => ['card'],
-        'line_items' => [[
-            'price_data' => [
-                'currency'    => 'eur',
-                'unit_amount' => (int)($prix * 100),
-                'product_data' => [
-                    'name' => $nomProduit,
+        \Stripe\Stripe::setApiKey($_ENV['STRIPE_SECRET_KEY']);
+        $session = \Stripe\Checkout\Session::create([
+            'payment_method_types' => ['card'],
+            'line_items' => [[
+                'price_data' => [
+                    'currency'     => 'eur',
+                    'unit_amount'  => (int)($prix * 100),
+                    'product_data' => ['name' => $nomProduit],
                 ],
-            ],
-            'quantity' => 1,
-        ]],
-        'mode'        => 'payment',
-        'success_url' => $this->generateUrl('app_payment_success', ['id' => $voyage->getId()], UrlGeneratorInterface::ABSOLUTE_URL),
-        'cancel_url'  => $this->generateUrl('app_payment_cancel',  ['id' => $voyage->getId()], UrlGeneratorInterface::ABSOLUTE_URL),
-    ]);
+                'quantity' => 1,
+            ]],
+            'mode'        => 'payment',
+            'success_url' => $this->generateUrl('app_payment_success', ['id' => $voyage->getId()], UrlGeneratorInterface::ABSOLUTE_URL),
+            'cancel_url'  => $this->generateUrl('app_payment_cancel',  ['id' => $voyage->getId()], UrlGeneratorInterface::ABSOLUTE_URL),
+        ]);
 
-    return $this->redirect($session->url);
-}
-    // ÉTAPE 2 — Page de paiement (depuis le lien email) → crée session Stripe → redirige vers Stripe
-    
+        return $this->redirect((string)$session->url);
+    }
 
-    // ✅ SUCCÈS — isPaid = true + email succès
     #[Route("/{id}/payment-success", name: "app_payment_success")]
-public function paymentSuccess(Voyage $voyage, EntityManagerInterface $entityManager, TelegramService $telegram): Response
+    public function paymentSuccess(Voyage $voyage, EntityManagerInterface $entityManager, TelegramService $telegram): Response
     {
         $user = $this->getUser();
         if ($user instanceof Users) {
-            // ✅ Marquer SEULEMENT la réservation de cet user comme payée
             $entityManager->getConnection()->executeStatement(
                 'UPDATE voyage_reservations SET paid = 1 WHERE voyage_id = :vid AND users_id = :uid',
                 ['vid' => $voyage->getId(), 'uid' => $user->getId()]
             );
-            $entityManager->getConnection()->executeStatement(
-    'UPDATE voyage_reservations SET paid = 1 WHERE voyage_id = :vid AND users_id = :uid',
-    ['vid' => $voyage->getId(), 'uid' => $user->getId()]
-);
-
-// ✅ Ajoute ça juste après :
-if ($user->getTelegramChatId()) {
-    $dest    = $voyage->getDestination();
-    $destNom = $dest ? $dest->getNom() . ' (' . $dest->getPays() . ')' : 'N/A';
-    $telegram->send(
-        $user->getTelegramChatId(),
-        "✅ <b>Vianova — Paiement confirmé !</b>\n\n"
-        . "📍 Destination : <b>{$destNom}</b>\n"
-        . "🛫 Trajet : <b>" . ($voyage->getPointDepart() ?? 'N/A') . " → " . ($voyage->getPointArrivee() ?? 'N/A') . "</b>\n"
-        . "📅 Départ : " . ($voyage->getDateDepart()?->format('d/m/Y') ?? 'N/A') . "\n"
-        . "📅 Retour : " . ($voyage->getDateArrivee()?->format('d/m/Y') ?? 'N/A') . "\n"
-        . "💶 Montant payé : <b>" . number_format($voyage->getPrix(), 2, ',', ' ') . " €</b>\n\n"
-        . "🌍 Bon voyage avec <b>Vianova Travel Agency</b> !"
-    );
-}
-
-            
+            $chatId = $user->getTelegramChatId();
+            if ($chatId) {
+                $dest    = $voyage->getDestination();
+                $destNom = $dest ? $dest->getNom() . ' (' . $dest->getPays() . ')' : 'N/A';
+                $telegram->send(
+                    $chatId,
+                    "✅ <b>Vianova — Paiement confirmé !</b>\n\n"
+                    . "📍 Destination : <b>{$destNom}</b>\n"
+                    . "🛫 Trajet : <b>" . ($voyage->getPointDepart() ?? 'N/A') . " → " . ($voyage->getPointArrivee() ?? 'N/A') . "</b>\n"
+                    . "📅 Départ : " . ($voyage->getDateDepart()?->format('d/m/Y') ?? 'N/A') . "\n"
+                    . "📅 Retour : " . ($voyage->getDateArrivee()?->format('d/m/Y') ?? 'N/A') . "\n"
+                    . "💶 Montant payé : <b>" . number_format((float)($voyage->getPrix() ?? 0), 2, ',', ' ') . " €</b>\n\n"
+                    . "🌍 Bon voyage avec <b>Vianova Travel Agency</b> !"
+                );
+            }
         }
 
         $this->addFlash('success', '✅ Paiement effectué ! Un email de confirmation vous a été envoyé.');
         return $this->redirectToRoute('front_profile');
     }
+
     #[Route("/{id}/payment-cancel", name: "app_payment_cancel")]
     public function paymentCancel(Voyage $voyage): Response
     {

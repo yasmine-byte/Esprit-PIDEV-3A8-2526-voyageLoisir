@@ -1,0 +1,10 @@
+parameters:
+    level: 8
+    paths:
+        - src
+    ignoreErrors:
+        - '#Call to an undefined method object::#'
+        - '#curl_setopt_array#'
+        - '#Binary operation#'
+        - '#unresolvable type#'
+        - '#template type T#'

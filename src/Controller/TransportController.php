@@ -42,9 +42,9 @@ final class TransportController extends AbstractController
         $voyageId = $request->query->getInt('voyage_id');
         if ($voyageId) {
             $voyage = $voyageRepo->find($voyageId);
-            if ($voyage) {
-                $transport->setVoyage($voyage);
-            }
+            if ($voyage instanceof \App\Entity\Voyage) {
+    $transport->setVoyage($voyage);
+}
         }
 
         $form = $this->createForm(TransportType::class, $transport);

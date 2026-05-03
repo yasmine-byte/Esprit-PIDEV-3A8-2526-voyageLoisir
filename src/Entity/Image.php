@@ -17,8 +17,9 @@ class Image
     #[ORM\Column(length: 255)]
     private ?string $url_image = null;
 
-    #[ORM\ManyToOne(inversedBy: "images")]
-    #[Assert\NotNull(message: "La destination est obligatoire.")]
+#[ORM\ManyToOne(inversedBy: "images")]
+#[ORM\JoinColumn(onDelete: "CASCADE")]
+#[Assert\NotNull(message: "La destination est obligatoire.")]
     private ?Destination $destination = null;
 
     public function getId(): ?int { return $this->id; }

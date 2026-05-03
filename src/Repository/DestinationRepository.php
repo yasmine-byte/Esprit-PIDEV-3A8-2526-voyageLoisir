@@ -19,7 +19,7 @@ class DestinationRepository extends ServiceEntityRepository
         if (!in_array($tri, $allowed)) $tri = 'id';
         $ordre = strtoupper($ordre) === 'DESC' ? 'DESC' : 'ASC';
 
-        $qb = $this->createQueryBuilder('d');
+        $qb = $this->createQueryBuilder('d')->select('d.id');
 
         if ($search) {
             if (is_numeric($search)) {
@@ -33,17 +33,27 @@ class DestinationRepository extends ServiceEntityRepository
         }
 
         if ($saison) {
-            $qb->andWhere('d.meilleure_saison = :saison')
-               ->setParameter('saison', $saison);
+            $qb->andWhere('d.meilleure_saison = :saison')->setParameter('saison', $saison);
         }
 
         if ($statut !== '') {
-            $qb->andWhere('d.statut = :statut')
-               ->setParameter('statut', (bool) $statut);
+            $qb->andWhere('d.statut = :statut')->setParameter('statut', (bool) $statut);
         }
 
-        $qb->orderBy('d.' . $tri, $ordre);
+        $qb->orderBy('d.' . $tri, $ordre)->setMaxResults(50);
+        $ids = array_column($qb->getQuery()->getArrayResult(), 'id');
 
-        return $qb->getQuery()->getResult();
+        if (empty($ids)) return [];
+
+       return $this->createQueryBuilder('d')
+    ->leftJoin('d.voyages', 'v')
+    ->addSelect('v')
+    ->leftJoin('d.images', 'i')
+    ->addSelect('i')
+    ->where('d.id IN (:ids)')
+    ->setParameter('ids', $ids)
+    ->orderBy('d.' . $tri, $ordre)
+    ->getQuery()
+    ->getResult();
     }
 }

@@ -60,3 +60,6 @@ composer.lock
 
 # Firebase / credentials sensibles
 config/firebase-credentials.json
+###> phpstan/phpstan ###
+phpstan.neon
+###< phpstan/phpstan ###

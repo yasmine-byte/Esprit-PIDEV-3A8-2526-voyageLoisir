@@ -26,8 +26,8 @@ final class DestinationController extends AbstractController
         return $this->getParameter('kernel.project_dir') . '/var/recherche_vocale.json';
     }
 
-    private function lireStats(): array
-    {
+/** @return array<string, mixed> */
+private function lireStats(): array    {
         $file = $this->getStatsFile();
         if (!file_exists($file)) {
             return [
@@ -36,13 +36,12 @@ final class DestinationController extends AbstractController
                 'pays'    => [],
             ];
         }
-        $data = json_decode(file_get_contents($file), true) ?? [];
-        if (!isset($data['pays'])) $data['pays'] = [];
+$data = json_decode((string)file_get_contents($file), true) ?? [];        if (!isset($data['pays'])) $data['pays'] = [];
         return $data;
     }
 
-    private function sauvegarderStats(array $stats): void
-    {
+/** @param array<string, mixed> $stats */
+private function sauvegarderStats(array $stats): void    {
         file_put_contents($this->getStatsFile(), json_encode($stats, JSON_PRETTY_PRINT));
     }
 
@@ -101,7 +100,7 @@ final class DestinationController extends AbstractController
                         ]
                     ])
                 ]);
-                $response = curl_exec($ch); curl_close($ch);
+                $response = (string) curl_exec($ch); curl_close($ch);
                 $result = json_decode($response, true);
                 $text = trim($result['choices'][0]['message']['content'] ?? "Erreur génération");
                 $destination->setDescription($text);
@@ -115,12 +114,12 @@ final class DestinationController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->persist($destination);
             $entityManager->flush();
-            $telegram->notifyNewDestination(
-                $usersRepository->findAll(),
-                $destination->getNom(),
-                $destination->getPays(),
-                $destination->getMeilleureSaison() ?? 'N/A'
-            );
+           $telegram->notifyNewDestination(
+    $usersRepository->findAll(),
+    $destination->getNom() ?? '',
+    $destination->getPays() ?? '',
+    $destination->getMeilleureSaison() ?? 'N/A'
+);
             return $this->redirectToRoute('app_destination_index', [], Response::HTTP_SEE_OTHER);
         }
 
@@ -164,8 +163,7 @@ final class DestinationController extends AbstractController
             }
         }
 
-        $destinations = $destinationRepository->findAll();
-        $paysConnus = [];
+$destinations = $destinationRepository->findBy([], null, 50);        $paysConnus = [];
         foreach ($destinations as $d) {
             if ($d->getPays()) {
                 $paysConnus[mb_strtolower($d->getPays())] = $d->getPays();
@@ -243,7 +241,7 @@ If all results are from the catalogue, set hors_catalogue.existe = false.";
                 ]
             ])
         ]);
-        $response = curl_exec($ch); curl_close($ch);
+        $response = (string) curl_exec($ch); curl_close($ch);
         $result = json_decode($response, true);
         $raw    = $result['choices'][0]['message']['content'] ?? '{}';
         $raw    = preg_replace('/```json|```/', '', $raw);
@@ -270,7 +268,7 @@ If all results are from the catalogue, set hors_catalogue.existe = false.";
         $url    = "https://v6.exchangerate-api.com/v6/$apiKey/pair/$from/$to";
         $ch = curl_init();
         curl_setopt_array($ch, [CURLOPT_URL => $url, CURLOPT_RETURNTRANSFER => true]);
-        $response = curl_exec($ch); curl_close($ch);
+        $response = (string) curl_exec($ch);curl_close($ch);
         $data = json_decode($response, true);
         return $this->json(['rate' => $data['conversion_rate'] ?? null]);
     }
@@ -453,12 +451,11 @@ If all results are from the catalogue, set hors_catalogue.existe = false.";
         if (!$user) {
             return $this->redirectToRoute('app_login');
         }
-        if (!$this->isCsrfTokenValid('telegram_save', $request->request->get('_token'))) {
+        if (!$this->isCsrfTokenValid('telegram_save', (string)$request->request->get('_token'))) {
             $this->addFlash('error', 'Token invalide.');
             return $this->redirectToRoute('app_destinations');
         }
-        $chatId = trim($request->request->get('telegram_chat_id', ''));
-        if ($user instanceof \App\Entity\Users) {
+$chatId = trim((string)$request->request->get('telegram_chat_id', ''));        if ($user instanceof \App\Entity\Users) {
             $user->setTelegramChatId($chatId ?: null);
             $entityManager->flush();
             $this->addFlash('success', $chatId ? 'Notifications Telegram activées !' : 'Notifications Telegram désactivées.');
@@ -509,7 +506,7 @@ If all results are from the catalogue, set hors_catalogue.existe = false.";
                         ]
                     ])
                 ]);
-                $response = curl_exec($ch); curl_close($ch);
+                $response = (string) curl_exec($ch); curl_close($ch);
                 $result = json_decode($response, true);
                 $text   = trim($result['choices'][0]['message']['content'] ?? "Erreur génération");
                 $destination->setDescription($text);
@@ -530,8 +527,7 @@ If all results are from the catalogue, set hors_catalogue.existe = false.";
                     }
                 }
                 if (!empty($usersANotifier)) {
-                    $telegram->notifyDestinationInactive(array_values($usersANotifier), $destination->getNom());
-                }
+$telegram->notifyDestinationInactive(array_values($usersANotifier), $destination->getNom() ?? '');                }
             }
             $entityManager->flush();
             return $this->redirectToRoute('app_destination_index', [], Response::HTTP_SEE_OTHER);
@@ -566,7 +562,7 @@ Réponds UNIQUEMENT avec le JSON, sans texte avant ou après.";
                 "messages"   => [["role" => "user", "content" => $prompt]]
             ])
         ]);
-        $response = curl_exec($ch); curl_close($ch);
+        $response = (string) curl_exec($ch); curl_close($ch);
         $result = json_decode($response, true);
         $text   = preg_replace('/```json|```/', '', $result['choices'][0]['message']['content'] ?? '{}');
         return $this->json(json_decode(trim($text), true));
@@ -582,7 +578,7 @@ Réponds UNIQUEMENT avec le JSON, sans texte avant ou après.";
         $url    = "https://www.googleapis.com/youtube/v3/search?part=snippet&q=$query&type=video&maxResults=1&key=$apiKey";
         $ch = curl_init();
         curl_setopt_array($ch, [CURLOPT_URL => $url, CURLOPT_RETURNTRANSFER => true]);
-        $response = curl_exec($ch); curl_close($ch);
+        $response = (string) curl_exec($ch); curl_close($ch);
         $data  = json_decode($response, true);
         $video = null;
         if (!empty($data['items'][0])) {

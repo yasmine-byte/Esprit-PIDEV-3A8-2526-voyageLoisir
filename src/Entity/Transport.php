@@ -20,9 +20,7 @@ class Transport
     private ?string $type_transport = null;
 
     #[ORM\ManyToOne(targetEntity: Voyage::class, inversedBy: "transports")]
-    #[ORM\JoinColumn(nullable: true, onDelete: "SET NULL")]
-    #[Assert\NotNull(message: "Le voyage est obligatoire.")]
-    private ?Voyage $voyage = null;
+#[ORM\JoinColumn(nullable: false, onDelete: "CASCADE")]    private ?Voyage $voyage = null;
 
     public function getId(): ?int { return $this->id; }
     public function getTypeTransport(): ?string { return $this->type_transport; }

@@ -40,9 +40,9 @@ public function index(Request $request, ImageRepository $repo): Response
         $destinationId = $request->query->getInt('destination_id');
         if ($destinationId) {
             $destination = $destRepo->find($destinationId);
-            if ($destination) {
-                $image->setDestination($destination);
-            }
+            if ($destination instanceof \App\Entity\Destination) {
+    $image->setDestination($destination);
+}
         }
 
         $form  = $this->createForm(ImageType::class, $image);

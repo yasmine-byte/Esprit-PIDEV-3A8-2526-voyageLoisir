@@ -12,11 +12,11 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Entity(repositoryClass: DestinationRepository::class)]
 class Destination
 {
-    #[ORM\Id]
-    #[ORM\GeneratedValue]
-    #[ORM\Column]
-    private ?int $id = null;
-
+   /** @var int|null */
+#[ORM\Id]
+#[ORM\GeneratedValue]
+#[ORM\Column]
+private ?int $id = null;
     #[ORM\Column(length: 100)]
     #[Assert\NotBlank(message: "Le nom est obligatoire.")]
     #[Assert\Length(min: 2, max: 100, minMessage: "Min 2 caracteres.", maxMessage: "Max 100 caracteres.")]
@@ -61,12 +61,11 @@ class Destination
     #[ORM\Column(length: 500, nullable: true)]
     private ?string $video_path = null;
 
-    #[ORM\OneToMany(mappedBy: "destination", targetEntity: Voyage::class, cascade: ["persist", "remove"])]
-    private Collection $voyages;
-
-    #[ORM\OneToMany(mappedBy: "destination", targetEntity: Image::class, cascade: ["persist", "remove"])]
-    private Collection $images;
-
+    /** @var Collection<int, Voyage> */
+#[ORM\OneToMany(mappedBy: "destination", targetEntity: Voyage::class, cascade: ["persist"])]private Collection $voyages;
+    /** @var Collection<int, Image> */
+#[ORM\OneToMany(mappedBy: "destination", targetEntity: Image::class, cascade: ["persist", "remove"])]
+private Collection $images;
     public function __construct()
     {
         $this->voyages = new ArrayCollection();
@@ -97,8 +96,8 @@ public function setNbLikes(?int $nbLikes): static { $this->nbLikes = $nbLikes; r
     public function setNbVisites(?int $nb_visites): static { $this->nb_visites = $nb_visites; return $this; }
     public function getVideoPath(): ?string { return $this->video_path; }
     public function setVideoPath(?string $video_path): static { $this->video_path = $video_path; return $this; }
-    public function getVoyages(): Collection { return $this->voyages; }
-    public function addVoyage(Voyage $voyage): static
+/** @return Collection<int, Voyage> */
+public function getVoyages(): Collection { return $this->voyages; }    public function addVoyage(Voyage $voyage): static
     {
         if (!$this->voyages->contains($voyage)) {
             $this->voyages->add($voyage);
@@ -114,8 +113,8 @@ public function setNbLikes(?int $nbLikes): static { $this->nbLikes = $nbLikes; r
         return $this;
     }
 
-    public function getImages(): Collection { return $this->images; }
-    public function addImage(Image $image): static
+/** @return Collection<int, Image> */
+public function getImages(): Collection { return $this->images; }    public function addImage(Image $image): static
     {
         if (!$this->images->contains($image)) {
             $this->images->add($image);

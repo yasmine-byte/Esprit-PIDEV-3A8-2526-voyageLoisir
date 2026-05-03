@@ -37,15 +37,12 @@ class TelegramService
 
     /**
      * Envoie un message a plusieurs users en meme temps.
-     * Chaque user doit avoir un telegramChatId non nul.
+     * @param array<int, \App\Entity\Users> $users
      */
     public function sendToMany(array $users, string $message): void
     {
         foreach ($users as $user) {
-            $chatId = method_exists($user, 'getTelegramChatId')
-                ? $user->getTelegramChatId()
-                : null;
-
+$chatId = $user->getTelegramChatId();
             if ($chatId && trim($chatId) !== '') {
                 $this->send($chatId, $message);
             }
@@ -55,6 +52,10 @@ class TelegramService
     // ----------------------------------------------------------------
     // CAS 1 — Nouvelle destination => tous les users
     // ----------------------------------------------------------------
+
+    /**
+     * @param array<int, \App\Entity\Users> $users
+     */
     public function notifyNewDestination(array $users, string $nom, string $pays, string $saison): void
     {
         $message = "🌍 <b>VoyageLoisir — Nouvelle destination !</b>\n\n"
@@ -68,6 +69,10 @@ class TelegramService
     // ----------------------------------------------------------------
     // CAS 2 — Destination inactive => users ayant reservé un voyage lié
     // ----------------------------------------------------------------
+
+    /**
+     * @param array<int, \App\Entity\Users> $users
+     */
     public function notifyDestinationInactive(array $users, string $nom): void
     {
         $message = "⚠️ <b>VoyageLoisir — Destination indisponible</b>\n\n"

@@ -13,6 +13,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Entity(repositoryClass: VoyageRepository::class)]
 class Voyage
 {
+    /** @var int|null */
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -47,11 +48,11 @@ class Voyage
     private ?float $prix = null;
 
     #[ORM\ManyToOne(targetEntity: Destination::class, inversedBy: "voyages")]
-    #[ORM\JoinColumn(nullable: true, onDelete: "SET NULL")]
+    #[ORM\JoinColumn(nullable: false)]
     private ?Destination $destination = null;
 
-    #[ORM\OneToMany(mappedBy: "voyage", targetEntity: Transport::class, cascade: ["persist", "remove"])]
-    private Collection $transports;
+    /** @var Collection<int, Transport> */
+#[ORM\OneToMany(mappedBy: "voyage", targetEntity: Transport::class, cascade: ["persist", "remove"], orphanRemoval: true)]    private Collection $transports;
 
     #[ORM\ManyToOne(targetEntity: Users::class)]
     #[ORM\JoinColumn(nullable: true, onDelete: "SET NULL")]
@@ -59,11 +60,13 @@ class Voyage
 
     /**
      * Tous les users qui ont réservé ce voyage (chacun indépendamment).
+     * @var Collection<int, Users>
      */
     #[ORM\ManyToMany(targetEntity: Users::class)]
     #[ORM\JoinTable(name: "voyage_reservations")]
     private Collection $reservedByUsers;
 
+    /** @var Collection<int, Hebergement> */
     #[ORM\ManyToMany(targetEntity: Hebergement::class, inversedBy: 'voyages')]
     #[ORM\JoinTable(name: "voyage_hebergement")]
     private Collection $hebergements;
@@ -170,6 +173,7 @@ class Voyage
     // Transports
     // ----------------------------------------------------------------
 
+    /** @return Collection<int, Transport> */
     public function getTransports(): Collection
     {
         return $this->transports;
@@ -215,6 +219,7 @@ class Voyage
 
     /**
      * Retourne tous les users qui ont réservé ce voyage.
+     * @return Collection<int, Users>
      */
     public function getReservedByUsers(): Collection
     {
@@ -245,20 +250,21 @@ class Voyage
      * Vérifie si un user précis a réservé ce voyage.
      * Utiliser dans Twig : voyage.isReservedByUser(app.user)
      */
-   public function isReservedByUser($user): bool
-{
-    if (!$user) return false;
-    foreach ($this->reservedByUsers as $u) {
-        if ($u->getId() === $user->getId()) return true;
+    public function isReservedByUser(?Users $user): bool
+    {
+        if (!$user) return false;
+        foreach ($this->reservedByUsers as $u) {
+            if ($u->getId() === $user->getId()) return true;
+        }
+        return false;
     }
-    return false;
-}
 
-public function isPaidByUser($user): bool
-{
-    // On vérifie via une requête directe — géré dans le controller
-    return false; // placeholder
-}
+    public function isPaidByUser(?Users $user): bool
+    {
+        // On vérifie via une requête directe — géré dans le controller
+        return false; // placeholder
+    }
+
     /**
      * Compatibilité : indique si au moins un user a réservé ce voyage.
      * Utile pour l'affichage admin (colonne "Réservé par").
@@ -267,14 +273,17 @@ public function isPaidByUser($user): bool
     {
         return $this->reservedByUsers->first() ?: null;
     }
+
     private bool $paid = false;
 
-public function isPaid(): bool { return $this->paid; }
-public function setPaid(bool $paid): static { $this->paid = $paid; return $this; }
+    public function isPaid(): bool { return $this->paid; }
+    public function setPaid(bool $paid): static { $this->paid = $paid; return $this; }
+
     // ----------------------------------------------------------------
     // Hébergements (ManyToMany)
     // ----------------------------------------------------------------
 
+    /** @return Collection<int, Hebergement> */
     public function getHebergements(): Collection
     {
         return $this->hebergements;

@@ -33,8 +33,9 @@ class ImageRepository extends ServiceEntityRepository
             }
         }
 
-        $qb->orderBy($tri, $ordre);
+        $qb->orderBy($tri, $ordre)
+   ->setMaxResults(50);
 
-        return $qb->getQuery()->getResult();
+return $qb->getQuery()->getResult();
     }
 }
