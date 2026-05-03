@@ -15,7 +15,6 @@ class Reclamation
     #[ORM\Column]
     private ?int $id = null;
 
-    // ✅ FIX : non-nullable int
     #[ORM\Column]
     private int $userId = 0;
 
@@ -26,33 +25,27 @@ class Reclamation
     #[ORM\ManyToOne]
     private ?Avis $avis = null;
 
-    // ✅ FIX : non-nullable string
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank(message: "Le titre est obligatoire")]
-    #[Assert\Length(min: 5, max: 255, minMessage: "Minimum 5 caractères", maxMessage: "Maximum 255 caractères")]
+    #[Assert\Length(min: 5, max: 255, minMessage: "Minimum 5 caracteres", maxMessage: "Maximum 255 caracteres")]
     private string $titre = '';
 
-    // ✅ FIX : non-nullable string
     #[ORM\Column(type: Types::TEXT)]
     #[Assert\NotBlank(message: "Le contenu est obligatoire")]
-    #[Assert\Length(min: 10, minMessage: "Minimum 10 caractères")]
+    #[Assert\Length(min: 10, minMessage: "Minimum 10 caracteres")]
     private string $contenu = '';
 
-    // ✅ FIX : non-nullable string
     #[ORM\Column(length: 20)]
     private string $typeFeedback = '';
 
-    // ✅ FIX : non-nullable string
     #[ORM\Column(length: 20)]
     private string $statut = 'en_attente';
 
-    // ✅ FIX : non-nullable string
     #[ORM\Column(length: 20)]
-    #[Assert\NotBlank(message: "La priorité est obligatoire")]
+    #[Assert\NotBlank(message: "La priorite est obligatoire")]
     #[Assert\Choice(choices: ['Basse', 'Moyenne', 'Haute', 'Urgente'])]
     private string $priorite = 'Moyenne';
 
-    // ✅ FIX : DateTimeImmutable non-nullable
     #[ORM\Column]
     private \DateTimeImmutable $dateCreation;
 
@@ -64,6 +57,14 @@ class Reclamation
 
     #[ORM\Column(type: Types::DECIMAL, precision: 11, scale: 8, nullable: true)]
     private ?string $longitude = null;
+
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(name: 'reservation_id', nullable: true)]
+    private ?Reservation $reservation = null;
+
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(name: 'reservation_activite_id', referencedColumnName: 'id_reservation', nullable: true)]
+    private ?ReservationActivite $reservationActivite = null;
 
     public function __construct()
     {
@@ -107,4 +108,10 @@ class Reclamation
 
     public function getLongitude(): ?string { return $this->longitude; }
     public function setLongitude(?string $longitude): static { $this->longitude = $longitude; return $this; }
+
+    public function getReservation(): ?Reservation { return $this->reservation; }
+    public function setReservation(?Reservation $reservation): static { $this->reservation = $reservation; return $this; }
+
+    public function getReservationActivite(): ?ReservationActivite { return $this->reservationActivite; }
+    public function setReservationActivite(?ReservationActivite $reservationActivite): static { $this->reservationActivite = $reservationActivite; return $this; }
 }
