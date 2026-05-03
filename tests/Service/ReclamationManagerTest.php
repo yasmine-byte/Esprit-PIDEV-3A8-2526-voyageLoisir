@@ -14,7 +14,7 @@ class ReclamationManagerTest extends TestCase
         $r->setContenu('Ma chambre était sale et non conforme aux photos du site.');
         $r->setPriorite('Haute');
         $r->setStatut('En attente');
-        $r->setDateCreation(new \DateTime('-1 day'));
+        $r->setDateCreation(new \DateTimeImmutable('-1 day'));
         $r->setUserId(1);
         return $r;
     }
@@ -118,7 +118,7 @@ class ReclamationManagerTest extends TestCase
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('La date de création ne peut pas être dans le futur.');
         $r = $this->makeReclamation();
-        $r->setDateCreation(new \DateTime('+1 day'));
+        $r->setDateCreation(new \DateTimeImmutable('+1 day'));
         (new ReclamationManager())->validerDateCreation($r);
     }
 
@@ -126,7 +126,7 @@ class ReclamationManagerTest extends TestCase
     public function testDateAujourdhuiValide(): void
     {
         $r = $this->makeReclamation();
-        $r->setDateCreation(new \DateTime());
+        $r->setDateCreation(new \DateTimeImmutable());
         $this->assertTrue((new ReclamationManager())->validerDateCreation($r));
     }
 
