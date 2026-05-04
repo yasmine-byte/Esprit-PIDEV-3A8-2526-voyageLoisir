@@ -1,6 +1,6 @@
 # Voyage - Travel & Accommodation Management Platform
 
-A comprehensive Symfony 7.4-based web application for managing travel accommodations, activities, reservations, and travel-related services with integrated AI features and payment processing.
+A comprehensive Symfony 6.4-based web application for managing travel accommodations, activities, reservations, and travel-related services with integrated AI features and payment processing.
 
 ## 🎯 Project Overview
 
@@ -17,10 +17,10 @@ The platform includes both **public-facing** and **admin** interfaces with dual 
 
 ## 🏗️ Architecture
 
-This is a **Symfony 7.4 monolith** built with:
+This is a **Symfony 6.4 monolith** built with:
 
 ### Core Components
-- **Framework**: Symfony 7.4 with Doctrine ORM
+- **Framework**: Symfony 6.4 with Doctrine ORM
 - **Database**: Doctrine migrations for schema management
 - **Templating**: Twig
 - **Frontend**: Asset Mapper with Stimulus.js
