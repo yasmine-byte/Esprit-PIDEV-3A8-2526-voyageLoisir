@@ -142,27 +142,7 @@ php bin/phpunit --filter testMethodName tests/SomeTest.php
 
 Tests are configured via `phpunit.dist.xml` and executable at `bin/phpunit`.
 
-## 🔍 Code Quality & Linting
 
-Lint the service container:
-```bash
-php bin/console lint:container
-```
-
-Lint YAML configuration:
-```bash
-php bin/console lint:yaml config
-```
-
-Lint Twig templates:
-```bash
-php bin/console lint:twig templates
-```
-
-Static analysis with PHPStan:
-```bash
-php bin/phpstan analyze
-```
 
 ## 📁 Project Structure
 
